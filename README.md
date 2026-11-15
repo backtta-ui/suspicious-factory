@@ -13,3 +13,5 @@
 [변경·검증 보고서](reports/jeon-woochi/0.1.2/PERFORMANCE-V0.1.2.md) / [성능 비교 JSON](reports/jeon-woochi/0.1.2/performance-comparison.json) / [실제 실행 화면](reports/jeon-woochi/0.1.2/screenshots/village.png)
 
 기존 APK와 공장 백업을 보존했습니다. SHA256SUMS.txt에서 파일별 무결성을 확인할 수 있습니다.
+
+[Actions APK Artifacts](https://github.com/backtta-ui/suspicious-factory/actions/runs/43713439068) → `jeon-woochi-verified-apk` ZIP을 받아 압축을 풀고 APK를 설치할 수도 있습니다. 14일 보관. 공개 다운로드 및 아티팩트 재다운로드 SHA256 확인 완료.

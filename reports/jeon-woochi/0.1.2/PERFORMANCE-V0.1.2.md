@@ -31,3 +31,7 @@
 최종 APK의 리소스로 메뉴·이동·둔갑·대화 실행 검사와 효과음/저장 검사 20개를 통과했습니다. PCM 신호 검사에서 5종 모두 비무음·비클리핑을 확인했습니다. 스피커 청취 검사는 하지 않았습니다.
 
 APK SHA256: `89e374d095469f60d8050bbd8988c9a89bafe094882f101736d4ffb89d9ac0fa`
+
+## 전달 확인
+
+[직접 APK 주소](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-0.1.2.apk)에서 53,550,845바이트를 다시 받아 SHA256 일치를 확인했습니다. [Actions 전달 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/43713439068)도 성공했고, `jeon-woochi-verified-apk` ZIP을 다시 받아 내부 APK 해시 일치를 확인했습니다. 아티팩트 보관 14일, 직접 APK 주소는 유지합니다. 게임은 Cloud에서 빌드했으며 Actions 성공은 해당 파일 검증·전달 성공입니다.
