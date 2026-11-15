@@ -1,4 +1,4 @@
-name: Android APK checkpoint
+name: Jeon Woochi Android APK checkpoint
 
 on:
   push:
@@ -91,7 +91,7 @@ jobs:
       - name: Save verified APK and reports
         uses: actions/upload-artifact@v4
         with:
-          name: factory-apk-${{ github.run_number }}-${{ github.run_attempt }}
+          name: woo-apk-${{ github.run_number }}-${{ github.run_attempt }}
           retention-days: 14
           if-no-files-found: error
           path: |
@@ -101,17 +101,21 @@ jobs:
             builds/SHA256SUMS.txt
             builds/test-results.txt
             builds/touch-test-results.txt
+            builds/save_recovery-results.txt
+            builds/restart-*-results.txt
       - name: Save failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: factory-failure-${{ github.run_number }}-${{ github.run_attempt }}
+          name: woo-failure-${{ github.run_number }}-${{ github.run_attempt }}
           retention-days: 7
           if-no-files-found: ignore
           path: |
             builds/android-build.log
             builds/test-results.txt
             builds/touch-test-results.txt
+            builds/save_recovery-results.txt
+            builds/restart-*-results.txt
             builds/apk-verification.json
 
   release:
@@ -123,7 +127,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: factory-apk-${{ github.run_number }}-${{ github.run_attempt }}
+          name: woo-apk-${{ github.run_number }}-${{ github.run_attempt }}
           path: verified
       - name: Verify transfer and publish test download
         env:
@@ -139,10 +143,10 @@ jobs:
           r = json.loads(Path('apk-verification.json').read_text())
           if r['status'] != 'passed':
               raise SystemExit('Refusing to publish a failed build')
-          Path('release-notes.md').write_text('삼성 갤럭시용 개발 테스트 APK입니다. Android 10 이상 ARM64, 가로 화면.\n\n자동 테스트 및 APK 서명·Manifest·정렬 검증 통과. 실제 기기 검증은 별도입니다.\n\nSHA256: ' + r['sha256'] + '\n')
+          Path('release-notes.md').write_text('도사: 전우치 V0.1 삼성 갤럭시용 오프라인 테스트 APK입니다. Android 10 이상 ARM64, 가로 화면.\n\n자동 테스트 및 APK 서명·Manifest·정렬 검증 통과. 실제 기기 검증은 별도입니다.\n\nSHA256: ' + r['sha256'] + '\n')
           PY
           gh release create "test-apk-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" \
             --target "$GITHUB_SHA" --prerelease \
-            --title "수상한 공장 테스트 APK ${GITHUB_RUN_NUMBER}" \
+            --title "도사 전우치 테스트 APK ${GITHUB_RUN_NUMBER}" \
             --notes-file release-notes.md \
             ./*.apk SHA256SUMS.txt apk-verification.json apk-verification.txt test-results.txt touch-test-results.txt

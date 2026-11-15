@@ -14,22 +14,14 @@ if not match:
 print(match.group(1))
 PY
 )"
-APK_PATH="$PROJECT_DIR/builds/suspicious-factory-$APK_VERSION.apk"
+APK_PATH="$PROJECT_DIR/builds/jeon-woochi-$APK_VERSION.apk"
 mkdir -p "$PROJECT_DIR/builds"
 # A failed new build must not be confused with an earlier APK or success report.
 rm -f "$PROJECT_DIR/builds/apk-verification.json" "$PROJECT_DIR/builds/apk-verification.txt"
 python3 "$PROJECT_DIR/tools/prepare_android_template.py" "$GODOT_ANDROID_TEMPLATE"
 "$GODOT_BIN" --headless --editor --path "$PROJECT_DIR" --import --quit
-# Mandatory game checks, isolated from actual player preferences.
-XDG_DATA_HOME="${TMPDIR:-/tmp}/suspicious-factory-tests" \
-  "$GODOT_BIN" --headless --path "$PROJECT_DIR" --script res://tests/stage1.gd \
-  > "$PROJECT_DIR/builds/test-results.txt" 2>&1
-cat "$PROJECT_DIR/builds/test-results.txt"
-# Exercise native ScreenTouch -> GUI -> released button -> scene transitions.
-XDG_DATA_HOME="${TMPDIR:-/tmp}/suspicious-factory-touch-tests" \
-  "$GODOT_BIN" --headless --path "$PROJECT_DIR" --script res://tests/touch_ui.gd \
-  > "$PROJECT_DIR/builds/touch-test-results.txt" 2>&1
-cat "$PROJECT_DIR/builds/touch-test-results.txt"
+# Mandatory native touch, gameplay, saving and real process-restart checks.
+bash "$PROJECT_DIR/tools/test.sh"
 # Export to a temporary directory; preserve the last working APK on failure.
 STAGING_DIR="$(mktemp -d "$PROJECT_DIR/builds/.android-export.XXXXXX")"
 trap 'rm -rf "$STAGING_DIR"' EXIT

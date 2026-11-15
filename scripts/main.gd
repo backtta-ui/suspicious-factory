@@ -1,670 +1,454 @@
 extends Node
-
-const Worker = preload("res://scripts/worker.gd")
-const Map = preload("res://scripts/factory.gd")
+const Actor = preload("res://scripts/woo/actor.gd")
+const Village = preload("res://scripts/woo/village.gd")
+const Layout = preload("res://scripts/woo/village_layout.gd")
+const Save = preload("res://scripts/woo/save_game.gd")
+const MobileButton = preload("res://scripts/woo/mobile_button.gd")
 const Joystick = preload("res://scripts/joystick.gd")
-const Session = preload("res://scripts/factory_session.gd")
-const MiniMap = preload("res://scripts/minimap.gd")
 const DebugInput = preload("res://scripts/touch_debug.gd")
-const INK := Color("0e1c29")
-const GOLD := Color("f3ca59")
-var hat := 1
-var vest := 0
-var nickname := "신입사원"
-var world: Node2D
-var factory: FactoryMap
-var player: FactoryWorker
-var camera: Camera2D
-var ui: Control
-var layer: CanvasLayer
-var joystick: TouchJoystick
-var location_label: Label
-var position_label: Label
-var use_button: Button
-var toast: Label
-var toast_time := 0.0
-var paused := false
-var preview: FactoryWorker
-var modal: Control
-var safe_margin := 36
-var visited: Dictionary = {}
-var walk_distance := 0.0
-var previous_position := Vector2.ZERO
-var smooth_camera := true
-var in_game := false
+const FONT = preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
+const INK := Color("12242b")
+const GOLD := Color("c9af78")
 var screen_name := "menu"
-var ui_action_pending := false
-var touch_debug: TouchDebug
-var session: FactorySession
-var remote_workers: Dictionary = {}
-var network_host := ""
-var network_port := 24560
-var network_label: Label
-var mini_map: FactoryMinimap
-var map_view: FactoryMinimap
-var map_button: Button
+var active_context := "menu"
+var ui_generation := 0
+var action_pending := false
+var layer: CanvasLayer
+var ui: Control
+var modal: Control
 var modal_kind := ""
-var guide_index := 0
-var guide_label: Label
-var app_version: String = ProjectSettings.get_setting("application/config/version", "0.1.1")
+var world: WooVillage
+var player: WooActor
+var camera: Camera2D
+var actors: Array[WooActor] = []
+var joystick: TouchJoystick
+var run_button: WooMobileButton
+var interact_button: WooMobileButton
+var spell_button: WooMobileButton
+var hint: Label
+var place_label: Label
+var touch_debug: TouchDebug
+var settings := {"smooth_camera":true,"day_cycle":true}
+var unlocked: Array = ["jar"]
+var nearest_npc := -1
+var near_well := false
+var dialogue_index := 0
+var dialogue_lines: Array = []
+var dialogue_name := ""
+var paused := false
+var save_elapsed := 0.0
+var saved_indicator := 0.0
+var last_save_error := OK
 
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
-	load_profile()
-	setup_theme()
-	session = Session.new()
-	session.name = "FactorySession"
-	add_child(session)
-	session.status_changed.connect(on_session_status)
-	session.snapshot_changed.connect(sync_remote_workers)
+	settings = Save.settings()
 	layer = CanvasLayer.new()
+	layer.layer = 1
 	add_child(layer)
-	show_menu()
+	show_menu(false)
 	touch_debug = DebugInput.new()
 	touch_debug.target = self
 	add_child(touch_debug)
 
-func setup_theme() -> void:
-	var theme := Theme.new()
-	theme.default_font = load("res://assets/fonts/NotoSansCJK-Regular.ttc")
-	theme.default_font_size = 21
-	for state in ["normal","hover","pressed","disabled","focus"]:
-		var color := Color("243d4c")
-		if state == "hover": color = Color("335569")
-		if state == "pressed": color = Color("48768a")
-		if state == "disabled": color = Color("1c2a35")
-		var style := box(color,14)
-		if state == "focus":
-			style.bg_color = Color.TRANSPARENT
-			style.border_color = GOLD
-			style.set_border_width_all(2)
-		theme.set_stylebox(state,"Button",style)
-	theme.set_stylebox("normal","LineEdit",box(Color("0b1824"),10))
-	theme.set_color("font_color","Label",Color("edf1e5"))
-	theme.set_color("font_color","Button",Color("edf1e5"))
-	theme.set_constant("separation","VBoxContainer",14)
-	theme.set_constant("separation","HBoxContainer",18)
-	ThemeDB.get_default_theme().default_font = theme.default_font
-	get_viewport().set_meta("game_theme",theme)
+func style(color: Color, radius: int = 5) -> StyleBoxFlat:
+	var box := StyleBoxFlat.new()
+	box.bg_color = color
+	box.border_color = color.lightened(0.18)
+	box.set_border_width_all(1)
+	box.set_corner_radius_all(radius)
+	box.content_margin_left = 20
+	box.content_margin_right = 20
+	box.content_margin_top = 12
+	box.content_margin_bottom = 12
+	return box
 
-func box(color: Color, radius: int = 18) -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = color
-	style.set_corner_radius_all(radius)
-	style.content_margin_left = 22
-	style.content_margin_right = 22
-	style.content_margin_top = 12
-	style.content_margin_bottom = 12
-	return style
+func text(value: String, font_size: int = 22, color: Color = Color("e8e1cc")) -> Label:
+	var label := Label.new()
+	label.text = value
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_size_override("font_size",font_size)
+	label.add_theme_color_override("font_color",color)
+	return label
+
+func button(value: String, callback: Callable, primary: bool = false) -> WooMobileButton:
+	var node := MobileButton.new()
+	node.text = value
+	var context := active_context
+	var generation := ui_generation
+	node.allowed = func() -> bool: return context==active_context and generation==ui_generation
+	node.add_theme_stylebox_override("normal",style(GOLD if primary else Color("273e45")))
+	node.add_theme_stylebox_override("hover",style(Color("3c5960")))
+	node.add_theme_stylebox_override("pressed",style(Color("6b8d87")))
+	node.add_theme_stylebox_override("hover_pressed",style(Color("6b8d87")))
+	node.add_theme_stylebox_override("disabled",style(Color("1a2d34")))
+	node.add_theme_color_override("font_color",INK if primary else Color("e8e1cc"))
+	node.add_theme_color_override("font_pressed_color",Color("fff4cd"))
+	node.observed.connect(func(event: InputEvent) -> void:
+		if is_instance_valid(touch_debug): touch_debug.observe(event,screen_name,ui))
+	node.pressed.connect(func() -> void:
+		if action_pending: return
+		action_pending = true
+		perform_action.call_deferred(weakref(node),callback))
+	return node
+
+func perform_action(source: WeakRef, callback: Callable) -> void:
+	var node = source.get_ref()
+	if is_instance_valid(node) and node.is_inside_tree() and node.usable(): callback.call()
+	action_pending = false
 
 func new_ui() -> void:
+	ui_generation += 1
 	if is_instance_valid(ui):
-		layer.remove_child(ui)
+		ui.hide()
 		ui.queue_free()
 	modal = null
 	modal_kind = ""
-	map_view = null
 	ui = Control.new()
 	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	ui.theme = get_viewport().get_meta("game_theme")
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var theme := Theme.new()
+	theme.default_font = FONT
+	theme.default_font_size = 22
+	theme.set_constant("separation","VBoxContainer",12)
+	theme.set_constant("separation","HBoxContainer",18)
+	ui.theme = theme
 	layer.add_child(ui)
 	if is_instance_valid(touch_debug): touch_debug.record("SCREEN",screen_name)
 
-func label(text: String, font_size: int = 22, color: Color = Color("edf1e5")) -> Label:
-	var node := Label.new()
-	node.text = text
-	node.add_theme_font_size_override("font_size",font_size)
-	node.add_theme_color_override("font_color",color)
-	return node
-
-func button(text: String, callback: Callable, primary: bool = false) -> Button:
-	var node := Button.new()
-	node.text = text
-	node.name = "Action_" + str(text.hash())
-	node.custom_minimum_size = Vector2(100,64)
-	node.mouse_filter = Control.MOUSE_FILTER_STOP
-	node.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
-	node.button_down.connect(func() -> void: trace_button("BUTTON_DOWN",node))
-	node.button_up.connect(func() -> void: trace_button("BUTTON_UP",node))
-	node.gui_input.connect(func(event: InputEvent) -> void:
-		if event is InputEventScreenTouch or event is InputEventMouseButton:
-			trace_button("GUI",node))
-	node.pressed.connect(func() -> void: activate_button(node,callback))
-	if primary:
-		node.add_theme_stylebox_override("normal",box(GOLD,14))
-		node.add_theme_stylebox_override("hover",box(GOLD.lightened(0.12),14))
-		node.add_theme_stylebox_override("pressed",box(GOLD.darkened(0.12),14))
-		node.add_theme_color_override("font_color",INK)
-		node.add_theme_color_override("font_hover_color",INK)
-		node.add_theme_color_override("font_pressed_color",INK)
-	return node
-
-func panel(parent: Node, color: Color = Color("162a38")) -> PanelContainer:
-	var node := PanelContainer.new()
-	node.add_theme_stylebox_override("panel",box(color,22))
-	parent.add_child(node)
-	return node
-
-func screen_stack() -> VBoxContainer:
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left","right"]:
-		margin.add_theme_constant_override("margin_"+side,48)
-	for side in ["top","bottom"]:
-		margin.add_theme_constant_override("margin_"+side,26)
-	ui.add_child(margin)
-	var stack := VBoxContainer.new()
-	margin.add_child(stack)
-	return stack
-
-func show_menu() -> void:
-	if is_instance_valid(session) and session.active: session.disconnect_session()
-	remote_workers.clear()
-	screen_name = "menu"
-	in_game = false
-	paused = false
+func show_menu(save_before: bool = true) -> void:
+	if save_before and screen_name=="playing": save_progress()
 	if is_instance_valid(world):
 		world.queue_free()
 		world = null
+	player = null
+	camera = null
+	actors.clear()
+	paused = false
+	screen_name = "menu"
+	active_context = "menu"
 	new_ui()
 	var bg := ColorRect.new()
 	bg.color = INK
-	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.add_child(bg)
-	var stack := screen_stack()
-	var header := HBoxContainer.new()
-	stack.add_child(header)
-	var tag := label("SF  /  SUSPICIOUS FACTORY",18,Color("86b6b5"))
-	tag.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(tag)
-	header.add_child(label("공장 지도 테스트   •   " + app_version,18,Color("92a6b2")))
-	var body := HBoxContainer.new()
-	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	stack.add_child(body)
-	var left := VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 1.25
-	body.add_child(left)
-	left.add_spacer(false)
-	left.add_child(label("야간 근무에 오신 것을 환영합니다",20,Color("85c5b5")))
-	left.add_child(label("수상한 공장",70))
-	left.add_child(label("평범한 작업장, 수상한 동료들.",25,GOLD))
-	left.add_child(label("첫 출근입니다. 공장을 둘러보세요.\n현재 버전은 혼자 걷는 1차 이동 테스트입니다.",20,Color("b5c6cb")))
-	left.add_spacer(false)
-	left.add_child(button("공장 들어가기   →",start_game,true))
-	var row := HBoxContainer.new()
-	left.add_child(row)
-	var customize := button("캐릭터 꾸미기",show_customize)
-	customize.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(customize)
-	row.add_child(button("설정",show_settings))
-	left.add_spacer(false)
-	var right := panel(body)
-	right.custom_minimum_size.x = 380
-	right.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	var card := VBoxContainer.new()
-	right.add_child(card)
-	card.add_child(label("EMPLOYEE  /  001",16,Color("85c5b5")))
-	var stage := Control.new()
-	stage.custom_minimum_size = Vector2(300,270)
-	stage.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	card.add_child(stage)
-	add_preview(stage,2.5)
-	var name_label := label(nickname,27)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card.add_child(name_label)
-	var status := label("●  출근 준비 완료",18,GOLD)
-	status.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	card.add_child(status)
-	stack.add_child(label("OFFLINE BUILD     /     모자·조끼 자유 조합     /     Android 가로 화면",16,Color("8299a5")))
-
-func add_preview(parent: Control, zoom: float) -> void:
-	preview = Worker.new()
-	preview.hat = hat
-	preview.vest = vest
-	preview.nickname = ""
-	preview.enabled = false
-	preview.scale = Vector2.ONE * zoom
-	parent.add_child(preview)
-	var worker := preview
-	var place := func() -> void:
-		worker.position = Vector2(parent.size.x/2,parent.size.y/2+100)
-	parent.resized.connect(place)
-	place.call_deferred()
-
-func show_customize() -> void:
-	screen_name = "customize"
-	new_ui()
-	var stack := screen_stack()
-	stack.add_child(button("← 메인 메뉴",show_menu))
-	stack.add_child(label("나의 작업복",38))
+	var margin := MarginContainer.new()
+	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	for side in ["left","right"]: margin.add_theme_constant_override("margin_"+side,52)
+	for side in ["top","bottom"]: margin.add_theme_constant_override("margin_"+side,30)
+	ui.add_child(margin)
+	var stack := VBoxContainer.new()
+	margin.add_child(stack)
+	stack.add_child(text("WOOCHI   /   THE TAOIST",17,Color("96b5ae")))
 	var row := HBoxContainer.new()
 	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stack.add_child(row)
-	var card := panel(row)
-	card.custom_minimum_size.x = 380
-	card.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var left := VBoxContainer.new()
+	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	left.size_flags_stretch_ratio = 1.2
+	row.add_child(left)
+	left.add_spacer(false)
+	left.add_child(text("달빛에 숨고, 도술로 길을 열다",20,GOLD))
+	left.add_child(text("도사: 전우치",64))
+	left.add_child(text("계월촌에 내려앉은 기묘한 밤.\n검은 갓 아래, 새로운 이야기가 시작됩니다.",21,Color("aabdb7")))
+	left.add_spacer(false)
+	left.add_child(button("게임 시작",start_game.bind(false),true))
+	var resume := button("이어하기",start_game.bind(true))
+	resume.disabled = Save.load_game().is_empty()
+	left.add_child(resume)
+	var bottom := HBoxContainer.new()
+	left.add_child(bottom)
+	var settings_button := button("설정",show_settings)
+	settings_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bottom.add_child(settings_button)
+	var exit_button := button("종료",quit_game)
+	exit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	bottom.add_child(exit_button)
+	left.add_spacer(false)
+	var portrait := PanelContainer.new()
+	portrait.custom_minimum_size.x = 420
+	portrait.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	portrait.add_theme_stylebox_override("panel",style(Color("1c343b"),10))
+	row.add_child(portrait)
 	var stage := Control.new()
-	card.add_child(stage)
-	add_preview(stage,2.8)
-	var choices := VBoxContainer.new()
-	choices.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	row.add_child(choices)
-	choices.add_child(label("닉네임 (최대 12자)",18))
-	var name_edit := LineEdit.new()
-	name_edit.text = nickname
-	name_edit.max_length = 12
-	name_edit.custom_minimum_size.y = 56
-	name_edit.virtual_keyboard_enabled = true
-	name_edit.text_changed.connect(func(value: String) -> void:
-		nickname = value.strip_edges().replace("\n","").replace("\r","")
-		save_profile())
-	choices.add_child(name_edit)
-	choices.add_child(label("모자",22,GOLD))
-	add_choices(choices,["없음","파랑","초록"],hat,func(index: int) -> void: hat = index; update_outfit())
-	choices.add_child(label("조끼",22,GOLD))
-	add_choices(choices,["기본 작업복","파랑","초록"],vest,func(index: int) -> void: vest = index; update_outfit())
-	choices.add_child(label("외형은 역할과 무관합니다.\n선택한 작업복은 기기에 저장됩니다.",17,Color("99b3bf")))
-	stack.add_child(button("이 작업복으로 출근하기   →",start_game,true))
+	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	portrait.add_child(stage)
+	var moon := Control.new()
+	moon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	stage.add_child(moon)
+	moon.draw.connect(func() -> void:
+		var center := Vector2(stage.size.x/2,stage.size.y*0.36)
+		moon.draw_circle(center,84,Color("b4b99d"))
+		moon.draw_circle(center+Vector2(18,-13),77,Color("1c343b"))
+		moon.draw_line(Vector2(28,stage.size.y*0.78),Vector2(stage.size.x-28,stage.size.y*0.78),Color("637f77"),2))
+	var hero := Actor.new()
+	hero.enabled = false
+	hero.scale = Vector2.ONE*4
+	stage.add_child(hero)
+	stage.resized.connect(func() -> void:
+		hero.position = Vector2(stage.size.x/2,stage.size.y*0.78)
+		moon.queue_redraw())
+	var caption := text("第一章  ·  계월촌",19,GOLD)
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	caption.offset_top = -54
+	stage.add_child(caption)
+	stack.add_child(text("V0.1   ·   싱글플레이   ·   오프라인 저장",16,Color("849d99")))
 
-func add_choices(parent: Node, names: Array, selected: int, callback: Callable) -> void:
-	var row := HBoxContainer.new()
-	parent.add_child(row)
-	var group := ButtonGroup.new()
-	for i in range(names.size()):
-		var b := button(names[i],callback.bind(i))
-		b.toggle_mode = true
-		b.button_group = group
-		b.button_pressed = i == selected
-		b.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		b.add_theme_stylebox_override("pressed",box(Color("397c80"),14))
-		row.add_child(b)
-
-func update_outfit() -> void:
-	if is_instance_valid(preview):
-		preview.hat = hat
-		preview.vest = vest
-		preview.queue_redraw()
-	save_profile()
-
-func start_game() -> void:
-	if in_game: return
-	screen_name = "factory"
-	if nickname.is_empty(): nickname = "신입사원"
-	save_profile()
-	in_game = true
+func start_game(continue_existing: bool = false) -> void:
+	if screen_name=="playing": return
+	var saved := Save.load_game() if continue_existing else {}
+	if continue_existing and saved.is_empty(): return
+	screen_name = "playing"
+	active_context = "hud"
 	paused = false
-	visited.clear()
-	guide_index = 0
-	walk_distance = 0
-	world = Node2D.new()
+	world = Village.new()
 	add_child(world)
-	factory = Map.new()
-	world.add_child(factory)
-	player = Worker.new()
-	player.position = factory.layout.spawn
-	player.hat = hat
-	player.vest = vest
-	player.nickname = nickname
+	world.cycle_enabled = settings.day_cycle
+	if saved.has("time_of_day"): world.time_of_day = clampf(float(saved.time_of_day),0,1)
+	player = Actor.new()
+	player.name = "JeonWoochi"
+	player.position = Vector2(saved.position[0],saved.position[1]) if not saved.is_empty() else Layout.SPAWN
+	player.jar = bool(saved.get("jar",false))
+	unlocked = saved.get("unlocked",["jar"])
 	world.add_child(player)
-	previous_position = player.position
+	actors.append(player)
+	for data in Layout.NPCS:
+		var npc := Actor.new()
+		npc.npc = true
+		npc.npc_name = data.name
+		npc.position = data.position
+		npc.tint = data.tint
+		world.add_child(npc)
+		actors.append(npc)
 	camera = Camera2D.new()
-	camera.position_smoothing_enabled = smooth_camera
-	camera.position_smoothing_speed = 7
+	camera.zoom = Vector2(2,2)
+	camera.position_smoothing_enabled = settings.smooth_camera
+	camera.position_smoothing_speed = 5
 	camera.limit_left = 0
 	camera.limit_top = 0
-	camera.limit_right = int(factory.layout.size.x)
-	camera.limit_bottom = int(factory.layout.size.y)
+	camera.limit_right = int(Layout.SIZE.x)
+	camera.limit_bottom = int(Layout.SIZE.y)
 	player.add_child(camera)
 	camera.make_current()
 	build_hud()
-	show_toast("왼쪽 조이스틱을 밀어 이동하세요. 노란 ! 표시는 설비 안내입니다.",7)
+	save_elapsed = 0
+	save_progress()
 
 func build_hud() -> void:
 	new_ui()
-	var header := HBoxContainer.new()
-	header.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	header.offset_left = safe_margin
-	header.offset_right = -safe_margin
-	header.offset_top = 22
+	var header := PanelContainer.new()
+	header.position = Vector2(34,24)
+	header.add_theme_stylebox_override("panel",style(Color(0.05,0.12,0.15,0.88)))
 	ui.add_child(header)
-	var room_panel := panel(header,Color(0.04,0.09,0.14,0.93))
 	var lines := VBoxContainer.new()
-	room_panel.add_child(lines)
-	lines.add_child(label("야간 순찰  /  1차 이동 테스트",16,Color("7cc5b5")))
-	location_label = label("중앙 복도",29)
-	lines.add_child(location_label)
-	var spacer := Control.new()
-	spacer.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	header.add_child(spacer)
-	header.add_child(button("설정  ☰",show_settings))
-	var info := VBoxContainer.new()
-	info.position = Vector2(safe_margin,155)
-	ui.add_child(info)
-	info.add_child(label("공장 둘러보기",20,GOLD))
-	position_label = label("방문한 방  0 / 12",17)
-	info.add_child(position_label)
-	guide_label = label("",16,Color("f5ce63"))
-	info.add_child(guide_label)
-	info.add_child(label("노란 표시 근처에서 ‘설비 확인’\nPC: WASD / 방향키 · E 확인 · Esc 설정",16,Color("b6c8cc")))
-	build_minimap()
+	header.add_child(lines)
+	lines.add_child(text("도사: 전우치   ·   V0.1",16,GOLD))
+	place_label = text("계월촌",25)
+	lines.add_child(place_label)
+	var settings_button := button("메뉴  ☰",show_settings)
+	settings_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	settings_button.offset_left = -168
+	settings_button.offset_right = -34
+	settings_button.offset_top = 26
+	settings_button.offset_bottom = 90
+	ui.add_child(settings_button)
+	hint = text("주민에게 다가가 대화해 보세요",18,Color("d5d2b4"))
+	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hint.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	hint.offset_left = 350
+	hint.offset_right = -220
+	hint.offset_top = 30
+	ui.add_child(hint)
 	joystick = Joystick.new()
 	joystick.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	joystick.position = Vector2(safe_margin+12,-208)
+	joystick.position = Vector2(44,-210)
 	joystick.size = Vector2(174,174)
 	ui.add_child(joystick)
-	use_button = button("설비 확인",inspect_station,true)
-	use_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	use_button.offset_left = -230-safe_margin
-	use_button.offset_right = -safe_margin
-	use_button.offset_top = -126
-	use_button.offset_bottom = -42
-	ui.add_child(use_button)
-	toast = label("",20,GOLD)
-	toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	toast.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	toast.offset_left = 235
-	toast.offset_right = -285
-	toast.offset_top = -85
-	toast.offset_bottom = -25
-	toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	ui.add_child(toast)
+	run_button = button("달리기",func() -> void: pass)
+	run_button.name = "RunButton"
+	run_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	run_button.offset_left = -350
+	run_button.offset_right = -210
+	run_button.offset_top = -130
+	run_button.offset_bottom = -48
+	run_button.button_down.connect(func() -> void: if is_instance_valid(player): player.running = true)
+	run_button.button_up.connect(func() -> void: if is_instance_valid(player): player.running = false)
+	ui.add_child(run_button)
+	spell_button = button("둔갑술",cast_spell,true)
+	spell_button.name = "SpellButton"
+	spell_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	spell_button.offset_left = -190
+	spell_button.offset_right = -34
+	spell_button.offset_top = -130
+	spell_button.offset_bottom = -48
+	ui.add_child(spell_button)
+	interact_button = button("대화",interact)
+	interact_button.name = "InteractButton"
+	interact_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	interact_button.offset_left = -190
+	interact_button.offset_right = -34
+	interact_button.offset_top = -226
+	interact_button.offset_bottom = -146
+	ui.add_child(interact_button)
 
-func own_objectives() -> PackedVector2Array:
-	# Offline factory tour; real mission assignment is not implemented yet.
-	return PackedVector2Array([factory.stations[guide_index].position])
-
-func build_minimap() -> void:
-	map_button = button("",open_map)
-	map_button.name = "OpenFactoryMap"
-	map_button.tooltip_text = "전체 지도 열기"
-	map_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	map_button.offset_left = -safe_margin-264
-	map_button.offset_right = -safe_margin
-	map_button.offset_top = 145
-	map_button.offset_bottom = 345
-	ui.add_child(map_button)
-	var caption := label("공장 지도   +",14,Color("d4e3d8"))
-	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	caption.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	map_button.add_child(caption)
-	mini_map = MiniMap.new()
-	mini_map.name = "LocalOnlyMinimap"
-	mini_map.layout = factory.layout
-	mini_map.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	mini_map.offset_top = 22
-	mini_map.offset_bottom = -18
-	map_button.add_child(mini_map)
-	var legend := label("파랑: 나   ·   노랑: 안내 목표",11,Color("c2d0d0"))
-	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	legend.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	legend.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	legend.offset_top = -20
-	map_button.add_child(legend)
-	update_maps()
-
-func update_maps() -> void:
-	var points := own_objectives()
-	if is_instance_valid(mini_map): mini_map.update_local(player.position,points)
-	if is_instance_valid(map_view): map_view.update_local(player.position,points)
-	if is_instance_valid(guide_label):
-		guide_label.text = "안내 목표: " + str(factory.stations[guide_index].name)
-
-func open_map() -> void:
-	if not in_game or is_instance_valid(modal): return
-	modal_kind = "map"
-	paused = true
-	joystick.reset()
-	joystick.input_enabled = false
-	player.enabled = false
-	player.input_vector = Vector2.ZERO
-	player.velocity = Vector2.ZERO
-	modal = Control.new()
-	modal.name = "ExpandedFactoryMap"
-	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	ui.add_child(modal)
-	var shade := ColorRect.new()
-	shade.color = Color(0.015,0.025,0.04,0.9)
-	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	modal.add_child(shade)
-	var center := CenterContainer.new()
-	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	modal.add_child(center)
-	var card := panel(center)
-	var stack := VBoxContainer.new()
-	card.add_child(stack)
-	var heading := HBoxContainer.new()
-	stack.add_child(heading)
-	var title := label("공장 전체 지도",26)
-	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	heading.add_child(title)
-	var close := button("닫기  ×",close_settings,true)
-	close.name = "CloseFactoryMap"
-	heading.add_child(close)
-	map_view = MiniMap.new()
-	map_view.name = "ExpandedLocalOnlyMap"
-	map_view.layout = factory.layout
-	map_view.expanded = true
-	map_view.custom_minimum_size = Vector2(860,440)
-	stack.add_child(map_view)
-	stack.add_child(label("파랑: 나   ·   노랑: 설비 안내 목표   ·   지도 확인 중 이동 정지",16,Color("b8c9c7")))
-	update_maps()
-	if is_instance_valid(touch_debug): touch_debug.record("MODAL","open factory map")
-
-func _process(delta: float) -> void:
-	if not in_game or not is_instance_valid(player): return
-	player.input_vector = joystick.vector if is_instance_valid(joystick) and not paused else Vector2.ZERO
-	player.enabled = not paused
-	if session.ready_to_play:
-		player.authoritative = true
-		player.server_target = session.own_position
-	session.local_intent = player.desired_direction() if session.ready_to_play and not paused else Vector2.ZERO
-	update_maps()
-	if paused: return
-	var room := factory.room_at(player.position)
-	var zone := factory.layout.zone_at(player.position)
-	if zone > 0: visited[factory.rooms[zone-1].id] = true
-	location_label.text = room
-	walk_distance += player.position.distance_to(previous_position)
-	previous_position = player.position
-	position_label.text = "방문한 방  %d / %d   ·   이동 %dm" % [visited.size(),factory.rooms.size(),int(walk_distance/80)]
-	var station := factory.nearest_station(player.position)
-	use_button.disabled = station.is_empty()
-	if toast_time > 0:
-		toast_time -= delta
-		if toast_time <= 0: toast.text = ""
-
-func inspect_station() -> void:
-	if paused: return
-	var station := factory.nearest_station(player.position)
-	if station.is_empty(): return
-	show_toast("%s 설비를 확인했습니다. 미션 미니게임은 다음 단계에서 추가됩니다." % station.name,5)
-	if station.id == factory.stations[guide_index].id:
-		guide_index = (guide_index+1)%factory.stations.size()
-	update_maps()
-
-func show_toast(message: String, duration: float = 4) -> void:
-	toast.text = message
-	toast_time = duration
-
-func show_settings() -> void:
-	if is_instance_valid(modal): return
-	modal_kind = "settings"
-	paused = true
-	if in_game:
+func set_paused(value: bool) -> void:
+	paused = value
+	for actor in actors:
+		actor.enabled = not value
+		actor.intent = Vector2.ZERO
+		actor.velocity = Vector2.ZERO
+	if is_instance_valid(player): player.running = false
+	if is_instance_valid(joystick):
 		joystick.reset()
-		joystick.input_enabled = false
-		player.input_vector = Vector2.ZERO
-		player.enabled = false
-		player.velocity = Vector2.ZERO
+		joystick.input_enabled = not value
+	if is_instance_valid(run_button): run_button.cancel()
+
+func open_modal(kind: String) -> VBoxContainer:
+	if is_instance_valid(modal): return null
+	if screen_name=="playing": set_paused(true)
+	active_context = "modal"
+	modal_kind = kind
 	modal = Control.new()
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.add_child(modal)
-	if is_instance_valid(touch_debug): touch_debug.record("MODAL","open settings")
 	var shade := ColorRect.new()
-	shade.color = Color(0.015,0.025,0.04,0.88)
+	shade.color = Color(0.02,0.06,0.08,0.82)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	modal.add_child(shade)
 	var center := CenterContainer.new()
 	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	modal.add_child(center)
-	var card := panel(center)
-	card.custom_minimum_size.x = 530
+	var card := PanelContainer.new()
+	card.custom_minimum_size.x = 620
+	card.add_theme_stylebox_override("panel",style(Color("1b343b"),10))
+	center.add_child(card)
 	var stack := VBoxContainer.new()
 	card.add_child(stack)
-	stack.add_child(label("휴식 시간",32))
-	stack.add_child(label("앱을 벗어나면 이동이 멈춥니다.",19,Color("a9bec5")))
-	var toggle := CheckButton.new()
-	toggle.text = "부드러운 카메라 이동"
-	toggle.button_pressed = smooth_camera
-	toggle.custom_minimum_size.y = 60
-	toggle.toggled.connect(func(value: bool) -> void:
-		smooth_camera = value
-		if is_instance_valid(camera): camera.position_smoothing_enabled = value
-		save_profile())
-	stack.add_child(toggle)
-	stack.add_child(button("계속하기",close_settings,true))
-	if in_game: stack.add_child(button("메인 메뉴로",func() -> void: close_settings(); show_menu()))
-	if in_game: build_network_settings(stack)
-	stack.add_child(label(app_version + " • 개발 테스트",16,Color("90a8b4")))
+	return stack
 
-func build_network_settings(stack: VBoxContainer) -> void:
-	stack.add_child(label("멀티 이동 · 개발 서버 (선택)",16,Color("8dbab8")))
-	var row := HBoxContainer.new()
-	stack.add_child(row)
-	var host := LineEdit.new()
-	host.placeholder_text = "직접 실행한 서버 주소"
-	host.text = network_host
-	host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	host.custom_minimum_size.y = 48
-	host.max_length = 253
-	host.text_changed.connect(func(value: String) -> void: network_host = value.strip_edges(); save_profile())
-	row.add_child(host)
-	var port := LineEdit.new()
-	port.text = str(network_port)
-	port.custom_minimum_size = Vector2(92,48)
-	port.max_length = 5
-	port.text_changed.connect(func(value: String) -> void:
-		if value.is_valid_int() and value.to_int()>0 and value.to_int()<=65535:
-			network_port = value.to_int()
-			save_profile())
-	row.add_child(port)
-	var buttons := HBoxContainer.new()
-	stack.add_child(buttons)
-	var connect_button := button("서버 연결",func() -> void:
-		if network_host.is_empty():
-			on_session_status("직접 실행한 서버 주소를 입력하세요")
-			return
-		var error := session.join(network_host,network_port,{"hat":hat,"vest":vest,"nickname":nickname})
-		if error != OK: on_session_status("연결 요청 실패: "+error_string(error)))
-	connect_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	buttons.add_child(connect_button)
-	buttons.add_child(button("연결 해제",session.disconnect_session))
-	network_label = label(session.status_message,14,Color("b6c8c9"))
-	network_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	stack.add_child(network_label)
-
-func on_session_status(message: String) -> void:
-	if is_instance_valid(network_label): network_label.text = message
-	if not in_game or not is_instance_valid(player): return
-	if not session.ready_to_play:
-		player.authoritative = false
-		for worker in remote_workers.values(): worker.queue_free()
-		remote_workers.clear()
-		if is_instance_valid(joystick): joystick.reset()
-	if is_instance_valid(toast): show_toast(message,5)
-
-func sync_remote_workers() -> void:
-	if not in_game or not is_instance_valid(player): return
-	player.authoritative = true
-	player.server_target = session.own_position
-	for id in remote_workers.keys():
-		if not session.public_peers.has(id):
-			remote_workers[id].queue_free()
-			remote_workers.erase(id)
-	for id in session.public_peers:
-		if id == session.own_id: continue
-		var data: Dictionary = session.public_peers[id]
-		if not remote_workers.has(id):
-			var worker := Worker.new()
-			worker.position = data.position
-			worker.authoritative = true
-			worker.server_target = data.position
-			worker.hat = data.hat
-			worker.vest = data.vest
-			worker.nickname = data.nickname
-			world.add_child(worker)
-			remote_workers[id] = worker
-		remote_workers[id].server_target = data.position
-		remote_workers[id].facing = data.facing
-
-func close_settings() -> void:
-	if is_instance_valid(touch_debug): touch_debug.record("MODAL","close " + modal_kind)
+func close_modal() -> void:
 	if is_instance_valid(modal):
+		modal.hide()
 		modal.queue_free()
 	modal = null
 	modal_kind = ""
-	map_view = null
-	paused = false
-	if is_instance_valid(player): player.enabled = true
-	if in_game and is_instance_valid(joystick): joystick.input_enabled = true
+	active_context = "hud" if screen_name=="playing" else "menu"
+	if screen_name=="playing": set_paused(false)
 
-func trace_button(kind: String, node: Button) -> void:
-	if is_instance_valid(touch_debug):
-		touch_debug.record(kind,"button=%s rect=%s screen=%s" % [node.text,node.get_global_rect(),screen_name])
+func show_settings() -> void:
+	var stack := open_modal("settings")
+	if not stack: return
+	stack.add_child(text("잠시 쉬어가기",30,GOLD))
+	stack.add_child(button("카메라: "+("부드럽게" if settings.smooth_camera else "즉시 추적"),toggle_setting.bind("smooth_camera")))
+	stack.add_child(button("낮과 밤 변화: "+("켜짐" if settings.day_cycle else "꺼짐"),toggle_setting.bind("day_cycle")))
+	stack.add_child(button("돌아가기",close_modal,true))
+	if screen_name=="playing":
+		stack.add_child(button("저장하고 메인으로",func() -> void: close_modal(); show_menu()))
+	stack.add_child(text("자동 저장  ·  계정과 서버 연결 없음",16,Color("9db3ac")))
 
-func activate_button(node: Button, callback: Callable) -> void:
-	trace_button("PRESSED",node)
-	if ui_action_pending: return
-	ui_action_pending = true
-	run_ui_action.call_deferred(weakref(node),callback)
+func toggle_setting(key: String) -> void:
+	settings[key] = not settings[key]
+	Save.save_settings(settings)
+	if is_instance_valid(camera): camera.position_smoothing_enabled = settings.smooth_camera
+	if is_instance_valid(world): world.cycle_enabled = settings.day_cycle
+	close_modal()
+	show_settings()
 
-func run_ui_action(source: WeakRef, callback: Callable) -> void:
-	var node = source.get_ref()
-	if is_instance_valid(node) and node.is_inside_tree() and node.is_visible_in_tree():
-		callback.call()
-	ui_action_pending = false
+func cast_spell() -> void:
+	if screen_name!="playing" or paused or not unlocked.has("jar"): return
+	player.begin_transform()
 
-func navigate_back() -> void:
-	if is_instance_valid(modal): close_settings()
-	elif screen_name == "customize": show_menu()
+func interact() -> void:
+	if screen_name!="playing" or paused: return
+	if nearest_npc>=0:
+		var data: Dictionary = Layout.NPCS[nearest_npc]
+		dialogue_lines = data.lines
+		dialogue_name = data.name
+	elif near_well:
+		dialogue_lines = ["차가운 우물물에 달빛이 흔들린다. 멀리서 방울 소리가 들려온다."]
+		dialogue_name = "오래된 우물"
+	else: return
+	dialogue_index = 0
+	show_dialogue()
+
+func show_dialogue() -> void:
+	var stack := open_modal("dialogue")
+	if not stack: return
+	stack.add_child(text(dialogue_name,26,GOLD))
+	var body := text(str(dialogue_lines[dialogue_index]),23)
+	body.custom_minimum_size = Vector2(660,120)
+	body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stack.add_child(body)
+	var row := HBoxContainer.new()
+	stack.add_child(row)
+	var next := button("다음" if dialogue_index<dialogue_lines.size()-1 else "대화 마치기",next_dialogue,true)
+	next.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.add_child(next)
+	row.add_child(button("닫기",close_modal))
+
+func next_dialogue() -> void:
+	close_modal()
+	dialogue_index += 1
+	if dialogue_index<dialogue_lines.size(): show_dialogue()
+
+func save_progress() -> void:
+	if screen_name!="playing" or not is_instance_valid(player): return
+	var data := {"schema":1,"map":Layout.MAP_ID,"position":[player.position.x,player.position.y],"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day}
+	last_save_error = Save.save_game(data)
+	saved_indicator = 2
+	save_elapsed = 0
+
+func quit_game() -> void:
+	save_progress()
+	Save.save_settings(settings)
+	get_tree().quit()
+
+func _process(delta: float) -> void:
+	if screen_name!="playing" or not is_instance_valid(player): return
+	player.intent = joystick.vector if not paused else Vector2.ZERO
+	player.enabled = not paused
+	spell_button.disabled = paused or player.cooldown>0 or player.transforming>0 or not unlocked.has("jar")
+	spell_button.text = ("둔갑 %.1f" % player.cooldown) if player.cooldown>0 else ("인간 복귀" if player.jar else "둔갑술")
+	run_button.disabled = player.jar or paused
+	place_label.text = "계월촌  ·  "+("밤" if world.time_of_day>0.3 and world.time_of_day<0.7 else "낮")
+	if paused: return
+	nearest_npc = -1
+	var nearest_distance := 58.0
+	for i in range(Layout.NPCS.size()):
+		var npc := actors[i+1]
+		npc.highlighted = false
+		var distance := player.position.distance_to(npc.position)
+		if distance<nearest_distance:
+			nearest_distance = distance
+			nearest_npc = i
+	if nearest_npc>=0: actors[nearest_npc+1].highlighted = true
+	near_well = player.position.distance_to(Vector2(860,510))<60
+	interact_button.visible = nearest_npc>=0 or near_well
+	interact_button.text = "대화" if nearest_npc>=0 else "우물 조사"
+	hint.text = (str(Layout.NPCS[nearest_npc].name)+" · 대화 가능") if nearest_npc>=0 else ("항아리 둔갑 중 · 이동 속도 감소" if player.jar else "주민과 대화하거나 마을을 탐험하세요")
+	if saved_indicator>0:
+		saved_indicator -= delta
+		if last_save_error != OK: hint.text = "저장 실패: 기기 저장 공간을 확인하세요"
+	save_elapsed += delta
+	if save_elapsed>=8: save_progress()
+
+func go_back() -> void:
+	if is_instance_valid(modal): close_modal()
+	elif screen_name=="playing": show_settings()
 	else: show_settings()
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
-		if event.keycode == KEY_ESCAPE:
-			navigate_back()
-		elif event.keycode == KEY_E and in_game:
-			inspect_station()
+		if event.keycode==KEY_ESCAPE: go_back()
+		elif event.keycode==KEY_SPACE: cast_spell()
+		elif event.keycode==KEY_E: interact()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
-		if in_game and not paused: show_settings()
-	elif what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		navigate_back()
-	elif what == NOTIFICATION_WM_CLOSE_REQUEST:
-		save_profile()
-		get_tree().quit()
-
-func save_profile() -> void:
-	var cfg := ConfigFile.new()
-	cfg.set_value("outfit","hat",hat)
-	cfg.set_value("outfit","vest",vest)
-	cfg.set_value("player","nickname",nickname)
-	cfg.set_value("settings","smooth_camera",smooth_camera)
-	cfg.set_value("network","host",network_host)
-	cfg.set_value("network","port",network_port)
-	cfg.save("user://profile.cfg")
-
-func load_profile() -> void:
-	var cfg := ConfigFile.new()
-	if cfg.load("user://profile.cfg") != OK: return
-	hat = clampi(int(cfg.get_value("outfit","hat",1)),0,2)
-	vest = clampi(int(cfg.get_value("outfit","vest",0)),0,2)
-	nickname = str(cfg.get_value("player","nickname","신입사원")).strip_edges().left(12)
-	smooth_camera = bool(cfg.get_value("settings","smooth_camera",true))
-	network_host = str(cfg.get_value("network","host","")).left(253)
-	network_port = clampi(int(cfg.get_value("network","port",24560)),1,65535)
+	if what==NOTIFICATION_APPLICATION_FOCUS_OUT or what==NOTIFICATION_APPLICATION_PAUSED:
+		if screen_name=="playing":
+			save_progress()
+			if not is_instance_valid(modal): show_settings()
+	elif what==NOTIFICATION_WM_GO_BACK_REQUEST: go_back()
+	elif what==NOTIFICATION_WM_CLOSE_REQUEST: quit_game()

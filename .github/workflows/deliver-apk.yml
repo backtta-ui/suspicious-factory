@@ -1,0 +1,51 @@
+name: Verified APK download artifact
+on:
+  workflow_dispatch:
+    inputs:
+      download_ref:
+        description: 'Immutable apk-downloads commit SHA'
+        required: true
+        type: string
+      apk_sha256:
+        description: 'Expected SHA256 of the Cloud-built APK'
+        required: true
+        type: string
+permissions:
+  contents: read
+jobs:
+  deliver:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Download the already built APK and verify integrity
+        env:
+          DOWNLOAD_REF: ${{ inputs.download_ref }}
+          APK_SHA256: ${{ inputs.apk_sha256 }}
+        run: |
+          python3 - <<'PY'
+          import hashlib, os, re, urllib.request, zipfile
+          from pathlib import Path
+          ref = os.environ['DOWNLOAD_REF']
+          digest = os.environ['APK_SHA256']
+          if not re.fullmatch(r'[0-9a-f]{40}', ref) or not re.fullmatch(r'[0-9a-f]{64}', digest):
+              raise SystemExit('Invalid immutable reference or checksum')
+          root = Path('verified'); root.mkdir()
+          name = 'jeon-woochi-0.1.0.apk'
+          url = f'https://raw.githubusercontent.com/{os.environ["GITHUB_REPOSITORY"]}/{ref}/{name}'
+          target = root / name
+          urllib.request.urlretrieve(url, target)
+          if hashlib.sha256(target.read_bytes()).hexdigest() != digest:
+              raise SystemExit('APK checksum mismatch')
+          with zipfile.ZipFile(target) as archive:
+              if archive.testzip() is not None or 'AndroidManifest.xml' not in archive.namelist():
+                  raise SystemExit('Invalid APK archive')
+          (root / 'SHA256SUMS.txt').write_text(f'{digest}  {name}\n')
+          (root / 'PROVENANCE.txt').write_text('Built and signed by the existing Codex Cloud checkpoint. This workflow downloads and validates that exact APK; it does not recompile the game.\n' + url + '\n')
+          PY
+      - name: Provide APK through Actions Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jeon-woochi-v0.1-verified-apk
+          path: verified/
+          retention-days: 14
+          if-no-files-found: error
