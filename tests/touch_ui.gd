@@ -162,6 +162,52 @@ func run() -> void:
 		touch(center+Vector2(65,0),false)
 		await frames(4)
 		check(joystick.vector == Vector2.ZERO and joystick.finger == -1,prefix+"touch release clears joystick")
+		# V0.2 map HUD and modal use the same native touch routing as buttons.
+		check(game.mini_map.is_visible_in_tree(),prefix+"minimap automatically visible")
+		check(not game.map_button.get_global_rect().intersects(joystick.get_global_rect()) and not game.map_button.get_global_rect().intersects(game.use_button.get_global_rect()),prefix+"minimap does not cover movement or task controls")
+		check(not game.map_button.get_global_rect().intersects(find_button("설정  ☰").get_global_rect()),prefix+"minimap does not cover settings")
+		check(game.mini_map.local_position.distance_to(game.player.position)<0.1,prefix+"blue local marker follows movement")
+		check(game.mini_map.objectives == game.own_objectives() and game.mini_map.objectives.size()==1,prefix+"yellow markers contain only current personal objective")
+		await tap(game.map_button)
+		check(game.modal_kind == "map" and is_instance_valid(game.map_view),prefix+"touch minimap expands full floor plan")
+		check(game.paused and not game.player.enabled and not joystick.input_enabled,prefix+"expanded map disables movement input")
+		if DisplayServer.get_name() != "headless":
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png("res://builds/full-map-%dx%d.png" % [window_size.x,window_size.y])
+		origin = game.player.position
+		var key := InputEventKey.new()
+		key.physical_keycode = KEY_D
+		key.keycode = KEY_D
+		key.pressed = true
+		Input.parse_input_event(key)
+		touch(center+Vector2(65,0),true)
+		drag(center+Vector2(65,0))
+		for i in range(8): await physics_frame
+		check(game.player.position.distance_to(origin)<0.1 and joystick.vector == Vector2.ZERO,prefix+"map blocks native joystick and physical keyboard")
+		key.pressed = false
+		Input.parse_input_event(key)
+		touch(center+Vector2(65,0),false)
+		await tap(find_button("닫기  ×"))
+		check(not is_instance_valid(game.modal) and not game.paused and joystick.input_enabled,prefix+"map close restores gameplay")
+		touch(center+Vector2(65,0),true)
+		drag(center+Vector2(65,0))
+		for i in range(10): await physics_frame
+		touch(center+Vector2(65,0),false)
+		await frames(4)
+		check(game.player.position.x > origin.x+10,prefix+"joystick works after map close")
+		await tap(game.map_button)
+		game._notification(Node.NOTIFICATION_WM_GO_BACK_REQUEST)
+		await frames(4)
+		check(not is_instance_valid(game.modal) and not game.paused,prefix+"Android back closes expanded map")
+		var old_guide: int = game.guide_index
+		game.player.position = game.factory.stations[old_guide].position
+		await frames(5)
+		check(not game.use_button.disabled,prefix+"task button enabled near station")
+		await tap(game.use_button)
+		check(game.guide_index != old_guide and game.mini_map.objectives == game.own_objectives(),prefix+"task touch advances personal guide marker")
+		if DisplayServer.get_name() != "headless":
+			await RenderingServer.frame_post_draw
+			root.get_texture().get_image().save_png("res://builds/factory-hud-%dx%d.png" % [window_size.x,window_size.y])
 		# Modal must block joystick acquisition through the shade.
 		await tap(find_button("설정  ☰"))
 		origin = game.player.position

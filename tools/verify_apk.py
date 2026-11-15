@@ -65,8 +65,9 @@ def main():
               'Landscape orientation')
         check('android:allowBackup(0x01010280)=(type 0x12)0x0' in manifest,
               'Android automatic data backup disabled')
-        # Stage 1 is offline; change this policy when real multiplayer is implemented.
-        check('uses-permission' not in manifest, 'Offline stage 1 has no Android permissions')
+        permissions = tool('aapt', 'dump', 'permissions', args.apk)
+        declared = set(re.findall(r"uses-permission: name='([^']+)'", permissions))
+        check(declared == {'android.permission.INTERNET'}, 'Only Internet permission for optional movement server')
         tool('zipalign', '-c', '-P', '16', '4', args.apk)
         check(True, '4-byte ZIP / 16 KiB native library alignment')
         version = re.search(r"versionName='([^']+)'", badging)

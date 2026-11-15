@@ -6,6 +6,8 @@ var vest: int = 0
 var nickname: String = "나"
 var input_vector := Vector2.ZERO
 var enabled := true
+var authoritative := false
+var server_target := Vector2.ZERO
 var facing := 1.0
 var step := 0.0
 const SPEED := 230.0
@@ -22,13 +24,21 @@ func _ready() -> void:
 	collision.shape = shape
 	add_child(collision)
 
+func desired_direction() -> Vector2:
+	if not enabled: return Vector2.ZERO
+	var keyboard := Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))-float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
+	return (input_vector if input_vector.length()>0.05 else keyboard).limit_length()
+
 func _physics_process(delta: float) -> void:
-	var keyboard := Vector2.ZERO
-	if enabled:
-		keyboard = Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT)) - float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)), float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN)) - float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
-	var direction := input_vector if input_vector.length() > 0.05 else keyboard
-	velocity = direction.limit_length() * SPEED if enabled else Vector2.ZERO
-	move_and_slide()
+	var direction := desired_direction()
+	if authoritative:
+		var previous := position
+		if enabled:
+			position = position.lerp(server_target,1.0-exp(-18*delta)) if position.distance_to(server_target)<400 else server_target
+		velocity = (position-previous)/maxf(delta,0.001)
+	else:
+		velocity = direction.limit_length() * SPEED if enabled else Vector2.ZERO
+		move_and_slide()
 	if absf(velocity.x) > 1:
 		facing = signf(velocity.x)
 	step += delta * (12.0 if velocity.length() > 5 else 2.0)

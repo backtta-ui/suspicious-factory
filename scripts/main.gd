@@ -3,6 +3,8 @@ extends Node
 const Worker = preload("res://scripts/worker.gd")
 const Map = preload("res://scripts/factory.gd")
 const Joystick = preload("res://scripts/joystick.gd")
+const Session = preload("res://scripts/factory_session.gd")
+const MiniMap = preload("res://scripts/minimap.gd")
 const DebugInput = preload("res://scripts/touch_debug.gd")
 const INK := Color("0e1c29")
 const GOLD := Color("f3ca59")
@@ -33,12 +35,28 @@ var in_game := false
 var screen_name := "menu"
 var ui_action_pending := false
 var touch_debug: TouchDebug
+var session: FactorySession
+var remote_workers: Dictionary = {}
+var network_host := ""
+var network_port := 24560
+var network_label: Label
+var mini_map: FactoryMinimap
+var map_view: FactoryMinimap
+var map_button: Button
+var modal_kind := ""
+var guide_index := 0
+var guide_label: Label
 var app_version: String = ProjectSettings.get_setting("application/config/version", "0.1.1")
 
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
 	load_profile()
 	setup_theme()
+	session = Session.new()
+	session.name = "FactorySession"
+	add_child(session)
+	session.status_changed.connect(on_session_status)
+	session.snapshot_changed.connect(sync_remote_workers)
 	layer = CanvasLayer.new()
 	add_child(layer)
 	show_menu()
@@ -84,6 +102,8 @@ func new_ui() -> void:
 		layer.remove_child(ui)
 		ui.queue_free()
 	modal = null
+	modal_kind = ""
+	map_view = null
 	ui = Control.new()
 	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.theme = get_viewport().get_meta("game_theme")
@@ -139,6 +159,8 @@ func screen_stack() -> VBoxContainer:
 	return stack
 
 func show_menu() -> void:
+	if is_instance_valid(session) and session.active: session.disconnect_session()
+	remote_workers.clear()
 	screen_name = "menu"
 	in_game = false
 	paused = false
@@ -157,7 +179,7 @@ func show_menu() -> void:
 	var tag := label("SF  /  SUSPICIOUS FACTORY",18,Color("86b6b5"))
 	tag.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(tag)
-	header.add_child(label("터치 수정 테스트   •   " + app_version,18,Color("92a6b2")))
+	header.add_child(label("공장 지도 테스트   •   " + app_version,18,Color("92a6b2")))
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stack.add_child(body)
@@ -275,13 +297,14 @@ func start_game() -> void:
 	in_game = true
 	paused = false
 	visited.clear()
+	guide_index = 0
 	walk_distance = 0
 	world = Node2D.new()
 	add_child(world)
 	factory = Map.new()
 	world.add_child(factory)
 	player = Worker.new()
-	player.position = Vector2(700,1120)
+	player.position = factory.layout.spawn
 	player.hat = hat
 	player.vest = vest
 	player.nickname = nickname
@@ -292,8 +315,8 @@ func start_game() -> void:
 	camera.position_smoothing_speed = 7
 	camera.limit_left = 0
 	camera.limit_top = 0
-	camera.limit_right = 3200
-	camera.limit_bottom = 2200
+	camera.limit_right = int(factory.layout.size.x)
+	camera.limit_bottom = int(factory.layout.size.y)
 	player.add_child(camera)
 	camera.make_current()
 	build_hud()
@@ -321,9 +344,12 @@ func build_hud() -> void:
 	info.position = Vector2(safe_margin,155)
 	ui.add_child(info)
 	info.add_child(label("공장 둘러보기",20,GOLD))
-	position_label = label("방문한 구역  0 / 8",17)
+	position_label = label("방문한 방  0 / 12",17)
 	info.add_child(position_label)
+	guide_label = label("",16,Color("f5ce63"))
+	info.add_child(guide_label)
 	info.add_child(label("노란 표시 근처에서 ‘설비 확인’\nPC: WASD / 방향키 · E 확인 · Esc 설정",16,Color("b6c8cc")))
+	build_minimap()
 	joystick = Joystick.new()
 	joystick.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
 	joystick.position = Vector2(safe_margin+12,-208)
@@ -346,17 +372,105 @@ func build_hud() -> void:
 	toast.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	ui.add_child(toast)
 
+func own_objectives() -> PackedVector2Array:
+	# Offline factory tour; real mission assignment is not implemented yet.
+	return PackedVector2Array([factory.stations[guide_index].position])
+
+func build_minimap() -> void:
+	map_button = button("",open_map)
+	map_button.name = "OpenFactoryMap"
+	map_button.tooltip_text = "전체 지도 열기"
+	map_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	map_button.offset_left = -safe_margin-264
+	map_button.offset_right = -safe_margin
+	map_button.offset_top = 145
+	map_button.offset_bottom = 345
+	ui.add_child(map_button)
+	var caption := label("공장 지도   +",14,Color("d4e3d8"))
+	caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	caption.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
+	map_button.add_child(caption)
+	mini_map = MiniMap.new()
+	mini_map.name = "LocalOnlyMinimap"
+	mini_map.layout = factory.layout
+	mini_map.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	mini_map.offset_top = 22
+	mini_map.offset_bottom = -18
+	map_button.add_child(mini_map)
+	var legend := label("파랑: 나   ·   노랑: 안내 목표",11,Color("c2d0d0"))
+	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	legend.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	legend.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
+	legend.offset_top = -20
+	map_button.add_child(legend)
+	update_maps()
+
+func update_maps() -> void:
+	var points := own_objectives()
+	if is_instance_valid(mini_map): mini_map.update_local(player.position,points)
+	if is_instance_valid(map_view): map_view.update_local(player.position,points)
+	if is_instance_valid(guide_label):
+		guide_label.text = "안내 목표: " + str(factory.stations[guide_index].name)
+
+func open_map() -> void:
+	if not in_game or is_instance_valid(modal): return
+	modal_kind = "map"
+	paused = true
+	joystick.reset()
+	joystick.input_enabled = false
+	player.enabled = false
+	player.input_vector = Vector2.ZERO
+	player.velocity = Vector2.ZERO
+	modal = Control.new()
+	modal.name = "ExpandedFactoryMap"
+	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ui.add_child(modal)
+	var shade := ColorRect.new()
+	shade.color = Color(0.015,0.025,0.04,0.9)
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal.add_child(shade)
+	var center := CenterContainer.new()
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	modal.add_child(center)
+	var card := panel(center)
+	var stack := VBoxContainer.new()
+	card.add_child(stack)
+	var heading := HBoxContainer.new()
+	stack.add_child(heading)
+	var title := label("공장 전체 지도",26)
+	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	heading.add_child(title)
+	var close := button("닫기  ×",close_settings,true)
+	close.name = "CloseFactoryMap"
+	heading.add_child(close)
+	map_view = MiniMap.new()
+	map_view.name = "ExpandedLocalOnlyMap"
+	map_view.layout = factory.layout
+	map_view.expanded = true
+	map_view.custom_minimum_size = Vector2(860,440)
+	stack.add_child(map_view)
+	stack.add_child(label("파랑: 나   ·   노랑: 설비 안내 목표   ·   지도 확인 중 이동 정지",16,Color("b8c9c7")))
+	update_maps()
+	if is_instance_valid(touch_debug): touch_debug.record("MODAL","open factory map")
+
 func _process(delta: float) -> void:
 	if not in_game or not is_instance_valid(player): return
 	player.input_vector = joystick.vector if is_instance_valid(joystick) and not paused else Vector2.ZERO
 	player.enabled = not paused
+	if session.ready_to_play:
+		player.authoritative = true
+		player.server_target = session.own_position
+	session.local_intent = player.desired_direction() if session.ready_to_play and not paused else Vector2.ZERO
+	update_maps()
 	if paused: return
 	var room := factory.room_at(player.position)
-	visited[room] = true
+	var zone := factory.layout.zone_at(player.position)
+	if zone > 0: visited[factory.rooms[zone-1].id] = true
 	location_label.text = room
 	walk_distance += player.position.distance_to(previous_position)
 	previous_position = player.position
-	position_label.text = "방문한 구역  %d / 8   ·   이동 %dm" % [visited.size(),int(walk_distance/80)]
+	position_label.text = "방문한 방  %d / %d   ·   이동 %dm" % [visited.size(),factory.rooms.size(),int(walk_distance/80)]
 	var station := factory.nearest_station(player.position)
 	use_button.disabled = station.is_empty()
 	if toast_time > 0:
@@ -367,7 +481,10 @@ func inspect_station() -> void:
 	if paused: return
 	var station := factory.nearest_station(player.position)
 	if station.is_empty(): return
-	show_toast("%s 설비입니다. 미션 미니게임은 3차 개발에서 추가됩니다." % station.name,5)
+	show_toast("%s 설비를 확인했습니다. 미션 미니게임은 다음 단계에서 추가됩니다." % station.name,5)
+	if station.id == factory.stations[guide_index].id:
+		guide_index = (guide_index+1)%factory.stations.size()
+	update_maps()
 
 func show_toast(message: String, duration: float = 4) -> void:
 	toast.text = message
@@ -375,12 +492,14 @@ func show_toast(message: String, duration: float = 4) -> void:
 
 func show_settings() -> void:
 	if is_instance_valid(modal): return
+	modal_kind = "settings"
 	paused = true
 	if in_game:
 		joystick.reset()
 		joystick.input_enabled = false
 		player.input_vector = Vector2.ZERO
 		player.enabled = false
+		player.velocity = Vector2.ZERO
 	modal = Control.new()
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.add_child(modal)
@@ -409,13 +528,86 @@ func show_settings() -> void:
 	stack.add_child(toggle)
 	stack.add_child(button("계속하기",close_settings,true))
 	if in_game: stack.add_child(button("메인 메뉴로",func() -> void: close_settings(); show_menu()))
-	stack.add_child(label(app_version + " • 로컬 테스트 • 네트워크 연결 없음",16,Color("90a8b4")))
+	if in_game: build_network_settings(stack)
+	stack.add_child(label(app_version + " • 개발 테스트",16,Color("90a8b4")))
+
+func build_network_settings(stack: VBoxContainer) -> void:
+	stack.add_child(label("멀티 이동 · 개발 서버 (선택)",16,Color("8dbab8")))
+	var row := HBoxContainer.new()
+	stack.add_child(row)
+	var host := LineEdit.new()
+	host.placeholder_text = "직접 실행한 서버 주소"
+	host.text = network_host
+	host.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	host.custom_minimum_size.y = 48
+	host.max_length = 253
+	host.text_changed.connect(func(value: String) -> void: network_host = value.strip_edges(); save_profile())
+	row.add_child(host)
+	var port := LineEdit.new()
+	port.text = str(network_port)
+	port.custom_minimum_size = Vector2(92,48)
+	port.max_length = 5
+	port.text_changed.connect(func(value: String) -> void:
+		if value.is_valid_int() and value.to_int()>0 and value.to_int()<=65535:
+			network_port = value.to_int()
+			save_profile())
+	row.add_child(port)
+	var buttons := HBoxContainer.new()
+	stack.add_child(buttons)
+	var connect_button := button("서버 연결",func() -> void:
+		if network_host.is_empty():
+			on_session_status("직접 실행한 서버 주소를 입력하세요")
+			return
+		var error := session.join(network_host,network_port,{"hat":hat,"vest":vest,"nickname":nickname})
+		if error != OK: on_session_status("연결 요청 실패: "+error_string(error)))
+	connect_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	buttons.add_child(connect_button)
+	buttons.add_child(button("연결 해제",session.disconnect_session))
+	network_label = label(session.status_message,14,Color("b6c8c9"))
+	network_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	stack.add_child(network_label)
+
+func on_session_status(message: String) -> void:
+	if is_instance_valid(network_label): network_label.text = message
+	if not in_game or not is_instance_valid(player): return
+	if not session.ready_to_play:
+		player.authoritative = false
+		for worker in remote_workers.values(): worker.queue_free()
+		remote_workers.clear()
+		if is_instance_valid(joystick): joystick.reset()
+	if is_instance_valid(toast): show_toast(message,5)
+
+func sync_remote_workers() -> void:
+	if not in_game or not is_instance_valid(player): return
+	player.authoritative = true
+	player.server_target = session.own_position
+	for id in remote_workers.keys():
+		if not session.public_peers.has(id):
+			remote_workers[id].queue_free()
+			remote_workers.erase(id)
+	for id in session.public_peers:
+		if id == session.own_id: continue
+		var data: Dictionary = session.public_peers[id]
+		if not remote_workers.has(id):
+			var worker := Worker.new()
+			worker.position = data.position
+			worker.authoritative = true
+			worker.server_target = data.position
+			worker.hat = data.hat
+			worker.vest = data.vest
+			worker.nickname = data.nickname
+			world.add_child(worker)
+			remote_workers[id] = worker
+		remote_workers[id].server_target = data.position
+		remote_workers[id].facing = data.facing
 
 func close_settings() -> void:
-	if is_instance_valid(touch_debug): touch_debug.record("MODAL","close settings")
+	if is_instance_valid(touch_debug): touch_debug.record("MODAL","close " + modal_kind)
 	if is_instance_valid(modal):
 		modal.queue_free()
 	modal = null
+	modal_kind = ""
+	map_view = null
 	paused = false
 	if is_instance_valid(player): player.enabled = true
 	if in_game and is_instance_valid(joystick): joystick.input_enabled = true
@@ -463,6 +655,8 @@ func save_profile() -> void:
 	cfg.set_value("outfit","vest",vest)
 	cfg.set_value("player","nickname",nickname)
 	cfg.set_value("settings","smooth_camera",smooth_camera)
+	cfg.set_value("network","host",network_host)
+	cfg.set_value("network","port",network_port)
 	cfg.save("user://profile.cfg")
 
 func load_profile() -> void:
@@ -472,3 +666,5 @@ func load_profile() -> void:
 	vest = clampi(int(cfg.get_value("outfit","vest",0)),0,2)
 	nickname = str(cfg.get_value("player","nickname","신입사원")).strip_edges().left(12)
 	smooth_camera = bool(cfg.get_value("settings","smooth_camera",true))
+	network_host = str(cfg.get_value("network","host","")).left(253)
+	network_port = clampi(int(cfg.get_value("network","port",24560)),1,65535)
