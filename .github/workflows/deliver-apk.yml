@@ -2,6 +2,11 @@ name: Verified APK download artifact
 on:
   workflow_dispatch:
     inputs:
+      apk_name:
+        description: "Cloud-built APK filename"
+        required: true
+        default: "jeon-woochi-0.1.1.apk"
+        type: string
       download_ref:
         description: 'Immutable apk-downloads commit SHA'
         required: true
@@ -19,6 +24,7 @@ jobs:
     steps:
       - name: Download the already built APK and verify integrity
         env:
+          APK_NAME: ${{ inputs.apk_name }}
           DOWNLOAD_REF: ${{ inputs.download_ref }}
           APK_SHA256: ${{ inputs.apk_sha256 }}
         run: |
@@ -30,7 +36,9 @@ jobs:
           if not re.fullmatch(r'[0-9a-f]{40}', ref) or not re.fullmatch(r'[0-9a-f]{64}', digest):
               raise SystemExit('Invalid immutable reference or checksum')
           root = Path('verified'); root.mkdir()
-          name = 'jeon-woochi-0.1.0.apk'
+          name = os.environ['APK_NAME']
+          if not re.fullmatch(r'jeon-woochi-[0-9]+\.[0-9]+\.[0-9]+\.apk', name):
+              raise SystemExit('Invalid APK filename')
           url = f'https://raw.githubusercontent.com/{os.environ["GITHUB_REPOSITORY"]}/{ref}/{name}'
           target = root / name
           urllib.request.urlretrieve(url, target)
@@ -45,7 +53,7 @@ jobs:
       - name: Provide APK through Actions Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: jeon-woochi-v0.1-verified-apk
+          name: jeon-woochi-verified-apk
           path: verified/
           retention-days: 14
           if-no-files-found: error

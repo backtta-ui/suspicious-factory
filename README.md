@@ -1,10 +1,10 @@
-# 도사: 전우치 — V0.1
+# 도사: 전우치 — V0.1.1
 
 Godot 4.6.3 / GDScript로 만든 Android 오프라인 싱글플레이 도술 어드벤처의 첫 플레이 버전입니다. 기존 GitHub 저장소와 Android 패키지·서명·내보내기 기반을 유지하고 게임을 전면 개편했습니다.
 
-[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-0.1.0.apk)
+[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-0.1.1.apk)
 
-Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 0.1.0, versionCode는 4입니다.
+Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 0.1.1, versionCode는 5입니다.
 
 ## 플레이
 
@@ -44,3 +44,5 @@ assets/fonts/            한글 폰트와 라이선스
 Godot로 `project.godot`를 가져와 F5로 실행합니다. `bash tools/checkpoint.sh`는 게임·터치·저장·실제 프로세스 종료/재실행 검사 후 APK 빌드와 검증을 수행합니다. [빌드 안내](docs/BUILD.md), [전환·검증 보고서](docs/CONVERSION-V0.1.md), [개인정보 안내](docs/PRIVACY.md)를 참고하세요.
 
 [Actions APK 아티팩트 실행 기록](https://github.com/backtta-ui/suspicious-factory/actions/runs/43703375678) — 게임은 Cloud에서 빌드했으며 이 작업은 해당 APK를 검사·보관합니다. 아티팩트 ZIP의 파일 일치 검증도 통과했습니다.
+
+V0.1.1은 참고 이미지에 맞춰 타이틀, 한옥·벚나무·등불, 도사 8방향 시트와 주민·항아리, 금빛 UI를 교체했습니다. [그래픽 변경·검증 보고서](docs/VISUAL-V0.1.1.md)를 참고하세요.

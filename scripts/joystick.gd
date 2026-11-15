@@ -53,11 +53,17 @@ func _notification(what: int) -> void:
 		reset()
 
 func _draw() -> void:
-	var center := size / 2
-	draw_circle(center, RADIUS + 6, Color(0.05,0.09,0.14,0.65))
-	draw_circle(center, RADIUS, Color(0.7,0.81,0.86,0.16))
-	draw_arc(center, RADIUS, 0, TAU, 64, Color(0.8,0.9,1,0.38), 2, true)
+	var center := size/2
+	draw_circle(center,RADIUS+6,Color(0.1,0.07,0.13,0.8))
+	draw_arc(center,RADIUS+5,0,TAU,64,Color("bb9b68"),3,true)
+	draw_circle(center,RADIUS,Color(0.34,0.27,0.37,0.25))
+	draw_arc(center,RADIUS-3,0,TAU,64,Color("746252"),1,true)
 	for direction in [Vector2.UP,Vector2.DOWN,Vector2.LEFT,Vector2.RIGHT]:
-		draw_circle(center + direction * 57, 3, Color(1,1,1,0.45))
-	draw_circle(center + vector * 54, 29, Color("cbd9dc"))
-	draw_circle(center + vector * 54 + Vector2(-4,-5), 21, Color("eaf0e8"))
+		var p: Vector2=center+direction*56
+		var side:=Vector2(-direction.y,direction.x)
+		draw_colored_polygon(PackedVector2Array([p+direction*6,p-direction*4+side*4,p-direction*4-side*4]),Color("b6a2a7"))
+	var knob:=center+vector*49
+	draw_circle(knob+Vector2(0,4),30,Color(0,0,0,0.28))
+	draw_circle(knob,29,Color("82758a"))
+	draw_arc(knob,29,0,TAU,48,Color("b8a8b5"),2,true)
+	draw_circle(knob+Vector2(-3,-4),23,Color("92859a"))

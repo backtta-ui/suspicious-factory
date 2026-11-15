@@ -47,7 +47,7 @@ def main():
             check('lib/arm64-v8a/libgodot_android.so' in entries, 'Godot ARM64 engine present')
             check('assets/assets/fonts/NOTICE.txt' in entries, 'Bundled font license present')
             check(any('splash' in entry for entry in entries), 'Splash image present')
-            check(any('woo_sheet' in entry for entry in entries) and any('hanok' in entry for entry in entries), 'Taoist and village pixel assets packaged')
+            check(any('hero.png' in entry for entry in entries) and any('environment.png' in entry for entry in entries) and any('title.png' in entry for entry in entries), 'HD hero, environment atlas and title art packaged')
             check(not any('factory_session' in entry or 'factory_v2' in entry for entry in entries), 'Factory/network game resources removed')
             check(not any(entry.startswith(('assets/tests/', 'assets/tools/', 'assets/builds/'))
                           for entry in entries), 'Development files excluded')

@@ -15,6 +15,7 @@ static func valid(data: Variant) -> bool:
 		if not spell is String or spell!="jar": return false
 	if not data.get("settings",{}) is Dictionary: return false
 	if not data.get("jar",false) is bool: return false
+	if not data.get("talked_to_elder",false) is bool: return false
 	var time = data.get("time_of_day",0.22)
 	if not (time is float or time is int) or not is_finite(float(time)) or float(time)<0 or float(time)>1: return false
 	return true

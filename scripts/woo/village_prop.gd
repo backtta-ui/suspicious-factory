@@ -19,8 +19,22 @@ func _ready() -> void:
 		collider.shape = circle
 		add_child(collider)
 	var sprite := Sprite2D.new()
-	sprite.texture = load("res://assets/woo/"+kind+".png")
-	sprite.position.y = -sprite.texture.get_height()/2.0+4
+	var atlas:=AtlasTexture.new()
+	atlas.atlas=preload("res://assets/woo/hd/environment.png")
+	var index:=0
+	var width:=220.0
+	match kind:
+		"hanok": index=0 if position.x<900 else 1
+		"well": index=2;width=85
+		"market": index=3;width=128
+		"tree": index=4;width=150
+		"lantern": index=5;width=100
+	atlas.region=Rect2((index%3)*512,(index/3)*512,512,512)
+	# Integer row division is explicit; no cropped atlas edits or generated scenery collisions.
+	atlas.region.position.y=floori(float(index)/3)*512
+	sprite.texture=atlas
+	sprite.scale=Vector2.ONE*width/512
+	sprite.position.y=(256-460)*width/512+8
 	add_child(sprite)
 	if kind=="lantern":
 		light = PointLight2D.new()

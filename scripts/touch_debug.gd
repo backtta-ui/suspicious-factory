@@ -18,6 +18,7 @@ func _ready() -> void:
 	if not enabled: return
 	var overlay := Control.new()
 	overlay.name = "NonBlockingTouchDiagnostics"
+	overlay.visible = OS.get_environment("WOO_TOUCH_OVERLAY")=="1"
 	overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(overlay)

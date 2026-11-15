@@ -5,6 +5,7 @@ var enabled := true
 var running := false
 var jar := false
 var npc := false
+var npc_variant := 0
 var npc_name := ""
 var tint := Color.WHITE
 var facing := 2
@@ -21,8 +22,9 @@ const RUN_SPEED := 142.0
 const JAR_SPEED := 46.0
 const TRANSFORM_TIME := 0.42
 const SPELL_COOLDOWN := 2.5
-const SHEET = preload("res://assets/woo/woo_sheet.png")
-const NPC_SHEET = preload("res://assets/woo/villager_sheet.png")
+const FRAMES = preload("res://scripts/woo/art_frames.gd")
+const SHEET = preload("res://assets/woo/hd/hero.png")
+const NPC_SHEET = preload("res://assets/woo/hd/villagers_jars.png")
 const JAR = preload("res://assets/woo/jar.png")
 func _ready() -> void:
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -69,19 +71,30 @@ func _physics_process(delta: float) -> void:
 	update_sprite()
 	queue_redraw()
 func update_sprite() -> void:
+	var region: Array
+	var ratio: float
 	if jar:
-		sprite.texture = JAR
-		sprite.region_enabled = false
-		sprite.position = Vector2(0,-13)
+		sprite.texture=NPC_SHEET
+		var view:=2 if facing in [5,6,7] else (0 if facing==2 else 1)
+		region=FRAMES.VILLAGERS_JARS[6+view]
+		ratio=0.13
+	elif npc:
+		sprite.texture=NPC_SHEET
+		var step:=1 if velocity.length()>2 and int(animation_time)%2==1 else 0
+		region=FRAMES.VILLAGERS_JARS[step*3+clampi(npc_variant,0,2)]
+		ratio=0.14
 	else:
-		sprite.texture = NPC_SHEET if npc else SHEET
-		sprite.region_enabled = true
-		var frame := int(animation_time)%4 if velocity.length()>2 else (5 if fmod(animation_time,4)>3.8 else 4)
-		sprite.region_rect = Rect2(frame*32,facing*48,32,48)
-		sprite.position = Vector2(0,-22)
-	if transforming>0:
-		sprite.modulate = tint.lerp(Color("e9d29a"),0.5+sin(transforming*30)*0.25)
-	else: sprite.modulate = tint
+		sprite.texture=SHEET
+		var frame:=int(animation_time)%4 if velocity.length()>2 else (5 if fmod(animation_time,4)>3.8 else 4)
+		region=FRAMES.HERO[frame*8+facing]
+		ratio=0.34
+	sprite.region_enabled=true
+	sprite.region_rect=Rect2(region[0],region[1],region[2],region[3])
+	sprite.scale=Vector2.ONE*ratio
+	sprite.offset=Vector2(region[2]/2.0-region[4],region[3]/2.0-region[5])
+	sprite.position=Vector2.ZERO
+	sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
+
 func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
 	if highlighted:
@@ -93,3 +106,7 @@ func _draw() -> void:
 			var p := Vector2(cos(angle)*(10+phase*14),sin(angle)*(6+phase*9)-14)
 			draw_rect(Rect2(p.floor(),Vector2(3,3)),Color("f4da8b"))
 			if i%2==0: draw_rect(Rect2(p.floor()+Vector2(-4,-4),Vector2(2,2)),Color("8cb5ab"))
+
+		for side in [-1,1]:
+			var points:=PackedVector2Array([Vector2(side*17,-40),Vector2(side*24,-30),Vector2(side*15,-22),Vector2(side*22,-12)])
+			draw_polyline(points,Color("9abaff"),1.5,true)

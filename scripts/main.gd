@@ -5,10 +5,14 @@ const Layout = preload("res://scripts/woo/village_layout.gd")
 const Save = preload("res://scripts/woo/save_game.gd")
 const MobileButton = preload("res://scripts/woo/mobile_button.gd")
 const Joystick = preload("res://scripts/joystick.gd")
+const Ornament = preload("res://scripts/woo/ornament.gd")
+const MiniMap = preload("res://scripts/woo/minimap.gd")
+const TitleFont = preload("res://assets/fonts/WooTitle.otf")
+const ArtFrames = preload("res://scripts/woo/art_frames.gd")
 const DebugInput = preload("res://scripts/touch_debug.gd")
 const FONT = preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
-const INK := Color("12242b")
-const GOLD := Color("c9af78")
+const INK := Color("191825")
+const GOLD := Color("d8b87e")
 var screen_name := "menu"
 var active_context := "menu"
 var ui_generation := 0
@@ -30,6 +34,9 @@ var place_label: Label
 var touch_debug: TouchDebug
 var settings := {"smooth_camera":true,"day_cycle":true}
 var unlocked: Array = ["jar"]
+var talked_to_elder := false
+var quest_label: Label
+var hud_map: WooLocalMinimap
 var nearest_npc := -1
 var near_well := false
 var dialogue_index := 0
@@ -54,7 +61,7 @@ func _ready() -> void:
 func style(color: Color, radius: int = 5) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = color
-	box.border_color = color.lightened(0.18)
+	box.border_color = Color("8e744e")
 	box.set_border_width_all(1)
 	box.set_corner_radius_all(radius)
 	box.content_margin_left = 20
@@ -77,12 +84,12 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
 	var context := active_context
 	var generation := ui_generation
 	node.allowed = func() -> bool: return context==active_context and generation==ui_generation
-	node.add_theme_stylebox_override("normal",style(GOLD if primary else Color("273e45")))
-	node.add_theme_stylebox_override("hover",style(Color("3c5960")))
-	node.add_theme_stylebox_override("pressed",style(Color("6b8d87")))
-	node.add_theme_stylebox_override("hover_pressed",style(Color("6b8d87")))
+	node.add_theme_stylebox_override("normal",style(Color("241e2b") if primary else Color("211d28")))
+	node.add_theme_stylebox_override("hover",style(Color("403044")))
+	node.add_theme_stylebox_override("pressed",style(Color("685057")))
+	node.add_theme_stylebox_override("hover_pressed",style(Color("685057")))
 	node.add_theme_stylebox_override("disabled",style(Color("1a2d34")))
-	node.add_theme_color_override("font_color",INK if primary else Color("e8e1cc"))
+	node.add_theme_color_override("font_color",Color("f4d99d") if primary else Color("e8e1cc"))
 	node.add_theme_color_override("font_pressed_color",Color("fff4cd"))
 	node.observed.connect(func(event: InputEvent) -> void:
 		if is_instance_valid(touch_debug): touch_debug.observe(event,screen_name,ui))
@@ -90,6 +97,10 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
 		if action_pending: return
 		action_pending = true
 		perform_action.call_deferred(weakref(node),callback))
+	var ornament := Ornament.new()
+	ornament.primary = primary
+	ornament.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	node.add_child(ornament)
 	return node
 
 func perform_action(source: WeakRef, callback: Callable) -> void:
@@ -128,73 +139,53 @@ func show_menu(save_before: bool = true) -> void:
 	screen_name = "menu"
 	active_context = "menu"
 	new_ui()
-	var bg := ColorRect.new()
-	bg.color = INK
+	var bg := TextureRect.new()
+	bg.texture = preload("res://assets/woo/hd/title.png")
+	bg.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	bg.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
 	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.add_child(bg)
-	var margin := MarginContainer.new()
-	margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	for side in ["left","right"]: margin.add_theme_constant_override("margin_"+side,52)
-	for side in ["top","bottom"]: margin.add_theme_constant_override("margin_"+side,30)
-	ui.add_child(margin)
-	var stack := VBoxContainer.new()
-	margin.add_child(stack)
-	stack.add_child(text("WOOCHI   /   THE TAOIST",17,Color("96b5ae")))
-	var row := HBoxContainer.new()
-	row.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	stack.add_child(row)
-	var left := VBoxContainer.new()
-	left.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	left.size_flags_stretch_ratio = 1.2
-	row.add_child(left)
-	left.add_spacer(false)
-	left.add_child(text("달빛에 숨고, 도술로 길을 열다",20,GOLD))
-	left.add_child(text("도사: 전우치",64))
-	left.add_child(text("계월촌에 내려앉은 기묘한 밤.\n검은 갓 아래, 새로운 이야기가 시작됩니다.",21,Color("aabdb7")))
-	left.add_spacer(false)
-	left.add_child(button("게임 시작",start_game.bind(false),true))
-	var resume := button("이어하기",start_game.bind(true))
-	resume.disabled = Save.load_game().is_empty()
-	left.add_child(resume)
-	var bottom := HBoxContainer.new()
-	left.add_child(bottom)
-	var settings_button := button("설정",show_settings)
-	settings_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bottom.add_child(settings_button)
-	var exit_button := button("종료",quit_game)
-	exit_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	bottom.add_child(exit_button)
-	left.add_spacer(false)
-	var portrait := PanelContainer.new()
-	portrait.custom_minimum_size.x = 420
-	portrait.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	portrait.add_theme_stylebox_override("panel",style(Color("1c343b"),10))
-	row.add_child(portrait)
-	var stage := Control.new()
-	stage.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	portrait.add_child(stage)
-	var moon := Control.new()
-	moon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stage.add_child(moon)
-	moon.draw.connect(func() -> void:
-		var center := Vector2(stage.size.x/2,stage.size.y*0.36)
-		moon.draw_circle(center,84,Color("b4b99d"))
-		moon.draw_circle(center+Vector2(18,-13),77,Color("1c343b"))
-		moon.draw_line(Vector2(28,stage.size.y*0.78),Vector2(stage.size.x-28,stage.size.y*0.78),Color("637f77"),2))
-	var hero := Actor.new()
-	hero.enabled = false
-	hero.scale = Vector2.ONE*4
-	stage.add_child(hero)
-	stage.resized.connect(func() -> void:
-		hero.position = Vector2(stage.size.x/2,stage.size.y*0.78)
-		moon.queue_redraw())
-	var caption := text("第一章  ·  계월촌",19,GOLD)
-	caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	caption.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE)
-	caption.offset_top = -54
-	stage.add_child(caption)
-	stack.add_child(text("V0.1   ·   싱글플레이   ·   오프라인 저장",16,Color("849d99")))
+	var shade := ColorRect.new()
+	shade.color = Color(0.04,0.025,0.07,0.14)
+	shade.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	ui.add_child(shade)
+	var title := text("도사",106,Color("f5e5c7"))
+	title.add_theme_font_override("font",TitleFont)
+	title.add_theme_color_override("font_outline_color",Color("3a2432"))
+	title.add_theme_constant_override("outline_size",7)
+	title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	title.position=Vector2(790,78)
+	title.size=Vector2(390,170)
+	ui.add_child(title)
+	var subtitle:=text("전우치",36,GOLD)
+	subtitle.add_theme_font_override("font",TitleFont)
+	subtitle.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.position=Vector2(790,228);subtitle.size.x=390
+	ui.add_child(subtitle)
+	var motto:=text("달빛에 숨고, 도술로 길을 열다",17,Color("ddd0bb"))
+	motto.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	motto.position=Vector2(790,291);motto.size.x=390
+	ui.add_child(motto)
+	var menu:=VBoxContainer.new()
+	menu.position=Vector2(795,342)
+	menu.size=Vector2(380,284)
+	ui.add_child(menu)
+	menu.add_child(button("게임 시작",start_game.bind(false),true))
+	var resume:=button("이어하기",start_game.bind(true))
+	resume.disabled=Save.load_game().is_empty()
+	menu.add_child(resume)
+	menu.add_child(button("설정",show_settings))
+	menu.add_child(button("종료",quit_game))
+	var chapter:=text("第一章  ·  계월촌",16,GOLD)
+	chapter.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	chapter.position=Vector2(790,656);chapter.size.x=390
+	ui.add_child(chapter)
+	var version:=text("V0.1.1   ·   싱글플레이 / 오프라인 저장",14,Color("c3b7bc"))
+	version.position=Vector2(30,676)
+	ui.add_child(version)
 
 func start_game(continue_existing: bool = false) -> void:
 	if screen_name=="playing": return
@@ -212,6 +203,7 @@ func start_game(continue_existing: bool = false) -> void:
 	player.position = Vector2(saved.position[0],saved.position[1]) if not saved.is_empty() else Layout.SPAWN
 	player.jar = bool(saved.get("jar",false))
 	unlocked = saved.get("unlocked",["jar"])
+	talked_to_elder = bool(saved.get("talked_to_elder",false))
 	world.add_child(player)
 	actors.append(player)
 	for data in Layout.NPCS:
@@ -219,11 +211,13 @@ func start_game(continue_existing: bool = false) -> void:
 		npc.npc = true
 		npc.npc_name = data.name
 		npc.position = data.position
-		npc.tint = data.tint
+		npc.tint = Color.WHITE
+		npc.npc_variant = actors.size()-1
 		world.add_child(npc)
 		actors.append(npc)
 	camera = Camera2D.new()
 	camera.zoom = Vector2(2,2)
+	camera.offset = Vector2(0,-60)
 	camera.position_smoothing_enabled = settings.smooth_camera
 	camera.position_smoothing_speed = 5
 	camera.limit_left = 0
@@ -238,60 +232,83 @@ func start_game(continue_existing: bool = false) -> void:
 
 func build_hud() -> void:
 	new_ui()
-	var header := PanelContainer.new()
-	header.position = Vector2(34,24)
-	header.add_theme_stylebox_override("panel",style(Color(0.05,0.12,0.15,0.88)))
+	var header:=PanelContainer.new()
+	header.position=Vector2(26,16)
+	header.add_theme_stylebox_override("panel",style(Color(0.10,0.07,0.13,0.92),8))
 	ui.add_child(header)
-	var lines := VBoxContainer.new()
-	header.add_child(lines)
-	lines.add_child(text("도사: 전우치   ·   V0.1",16,GOLD))
-	place_label = text("계월촌",25)
+	var row:=HBoxContainer.new();header.add_child(row)
+	var portrait:=TextureRect.new()
+	var atlas:=AtlasTexture.new()
+	atlas.atlas=preload("res://assets/woo/hd/hero.png")
+	var frame: Array=ArtFrames.HERO[34]
+	atlas.region=Rect2(frame[0],frame[1],frame[2],frame[3])
+	portrait.texture=atlas
+	portrait.custom_minimum_size=Vector2(65,76)
+	portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	row.add_child(portrait)
+	var lines:=VBoxContainer.new();row.add_child(lines)
+	lines.add_child(text("전우치",23,GOLD))
+	place_label=text("계월촌 · 밤",15)
 	lines.add_child(place_label)
-	var settings_button := button("메뉴  ☰",show_settings)
+	var quest:=PanelContainer.new()
+	quest.position=Vector2(26,133)
+	quest.add_theme_stylebox_override("panel",style(Color(0.10,0.065,0.12,0.9),6))
+	ui.add_child(quest)
+	var quest_lines:=VBoxContainer.new();quest.add_child(quest_lines)
+	quest_lines.add_child(text("첫걸음",19,GOLD))
+	quest_label=text("",16)
+	quest_lines.add_child(quest_label)
+	var settings_button:=button("메뉴  ☰",show_settings)
 	settings_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
-	settings_button.offset_left = -168
-	settings_button.offset_right = -34
-	settings_button.offset_top = 26
-	settings_button.offset_bottom = 90
+	settings_button.offset_left=-280;settings_button.offset_right=-162
+	settings_button.offset_top=24;settings_button.offset_bottom=88
+	settings_button.add_theme_font_size_override("font_size",16)
 	ui.add_child(settings_button)
-	hint = text("주민에게 다가가 대화해 보세요",18,Color("d5d2b4"))
-	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	hud_map=MiniMap.new()
+	hud_map.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+	hud_map.offset_left=-150;hud_map.offset_right=-18
+	hud_map.offset_top=10;hud_map.offset_bottom=142
+	ui.add_child(hud_map)
+	hint=text("주민에게 다가가 대화해 보세요",16,Color("e0cfbe"))
+	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	hint.set_anchors_and_offsets_preset(Control.PRESET_TOP_WIDE)
-	hint.offset_left = 350
-	hint.offset_right = -220
-	hint.offset_top = 30
+	hint.offset_left=350;hint.offset_right=-320;hint.offset_top=30
+	hint.add_theme_color_override("font_outline_color",Color("211722"))
+	hint.add_theme_constant_override("outline_size",4)
 	ui.add_child(hint)
-	joystick = Joystick.new()
+	joystick=Joystick.new()
 	joystick.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
-	joystick.position = Vector2(44,-210)
-	joystick.size = Vector2(174,174)
+	joystick.position=Vector2(44,-210)
+	joystick.size=Vector2(174,174)
 	ui.add_child(joystick)
-	run_button = button("달리기",func() -> void: pass)
-	run_button.name = "RunButton"
-	run_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	run_button.offset_left = -350
-	run_button.offset_right = -210
-	run_button.offset_top = -130
-	run_button.offset_bottom = -48
-	run_button.button_down.connect(func() -> void: if is_instance_valid(player): player.running = true)
-	run_button.button_up.connect(func() -> void: if is_instance_valid(player): player.running = false)
-	ui.add_child(run_button)
-	spell_button = button("둔갑술",cast_spell,true)
-	spell_button.name = "SpellButton"
-	spell_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	spell_button.offset_left = -190
-	spell_button.offset_right = -34
-	spell_button.offset_top = -130
-	spell_button.offset_bottom = -48
-	ui.add_child(spell_button)
-	interact_button = button("대화",interact)
-	interact_button.name = "InteractButton"
-	interact_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
-	interact_button.offset_left = -190
-	interact_button.offset_right = -34
-	interact_button.offset_top = -226
-	interact_button.offset_bottom = -146
-	ui.add_child(interact_button)
+	run_button=button("달리기",func() -> void: pass)
+	run_button.name="RunButton"
+	place_action(run_button,-396,"run")
+	run_button.button_down.connect(func() -> void: if is_instance_valid(player): player.running=true)
+	run_button.button_up.connect(func() -> void: if is_instance_valid(player): player.running=false)
+	spell_button=button("둔갑술",cast_spell,true)
+	spell_button.name="SpellButton"
+	place_action(spell_button,-148,"spell")
+	interact_button=button("대화",interact)
+	interact_button.name="InteractButton"
+	place_action(interact_button,-272,"talk")
+
+func place_action(node: WooMobileButton, top: int, icon: String) -> void:
+	node.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+	node.offset_left=-146;node.offset_right=-34
+	node.offset_top=top;node.offset_bottom=top+112
+	node.add_theme_font_size_override("font_size",18)
+	for mode in ["normal","hover","pressed","hover_pressed","disabled"]:
+		var box:=style(Color(0.12,0.08,0.13,0.92) if mode!="pressed" and mode!="hover_pressed" else Color("695056"),56)
+		box.content_margin_left=8;box.content_margin_right=8
+		box.content_margin_top=54;box.content_margin_bottom=8
+		box.set_border_width_all(0)
+		node.add_theme_stylebox_override(mode,box)
+	for child in node.get_children():
+		if child is WooOrnament: child.circular=true;child.icon=icon
+	ui.add_child(node)
 
 func set_paused(value: bool) -> void:
 	paused = value
@@ -364,6 +381,9 @@ func interact() -> void:
 	if screen_name!="playing" or paused: return
 	if nearest_npc>=0:
 		var data: Dictionary = Layout.NPCS[nearest_npc]
+		if nearest_npc==2:
+			talked_to_elder=true
+			save_progress()
 		dialogue_lines = data.lines
 		dialogue_name = data.name
 	elif near_well:
@@ -395,7 +415,7 @@ func next_dialogue() -> void:
 
 func save_progress() -> void:
 	if screen_name!="playing" or not is_instance_valid(player): return
-	var data := {"schema":1,"map":Layout.MAP_ID,"position":[player.position.x,player.position.y],"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day}
+	var data := {"schema":1,"map":Layout.MAP_ID,"position":[player.position.x,player.position.y],"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day,"talked_to_elder":talked_to_elder}
 	last_save_error = Save.save_game(data)
 	saved_indicator = 2
 	save_elapsed = 0
@@ -405,10 +425,16 @@ func quit_game() -> void:
 	Save.save_settings(settings)
 	get_tree().quit()
 
+func _physics_process(_delta: float) -> void:
+	# Sample touch on every movement tick, including frames delayed by HD texture upload.
+	if screen_name=="playing" and is_instance_valid(player) and is_instance_valid(joystick):
+		player.intent=joystick.vector if not paused else Vector2.ZERO
+		player.enabled=not paused
+
 func _process(delta: float) -> void:
 	if screen_name!="playing" or not is_instance_valid(player): return
-	player.intent = joystick.vector if not paused else Vector2.ZERO
-	player.enabled = not paused
+	if is_instance_valid(hud_map): hud_map.update_local(player.position,talked_to_elder)
+	if is_instance_valid(quest_label): quest_label.text="마을 어른과 대화하기 (%d/1)" % (1 if talked_to_elder else 0)
 	spell_button.disabled = paused or player.cooldown>0 or player.transforming>0 or not unlocked.has("jar")
 	spell_button.text = ("둔갑 %.1f" % player.cooldown) if player.cooldown>0 else ("인간 복귀" if player.jar else "둔갑술")
 	run_button.disabled = player.jar or paused

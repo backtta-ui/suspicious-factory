@@ -21,6 +21,9 @@ func _initialize() -> void:
 	check(Save.save_game(state)==OK,"new save after recovery")
 	var backup:=Save.read_valid(Save.PATH+".bak")
 	check(not backup.is_empty() and Vector2(backup.position[0],backup.position[1])==Vector2(900,610),"corrupt primary cannot overwrite valid backup")
+	check(Save.valid(state),"older saves without objective field remain compatible")
+	state.talked_to_elder=true
+	check(Save.save_game(state)==OK and Save.load_game().talked_to_elder,"new optional objective state roundtrips")
 	state.time_of_day={"bad":1}
 	check(not Save.valid(state),"malformed atmosphere data rejected")
 	state.time_of_day=0.22;state.unlocked=[{"bad":1}]
