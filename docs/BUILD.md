@@ -28,6 +28,8 @@ bash tools/checkpoint.sh
 
 기존 `.github/workflows/android-apk.yml`을 유지·갱신했습니다. 원격 실행에는 같은 서명키의 `ANDROID_DEBUG_KEYSTORE_BASE64` secret이 필요합니다. 성공 시 Actions Artifacts에 `woo-apk-실행번호-시도번호` APK·체크섬·보고서를 보관합니다. 실패 시 진단 로그를 보관합니다.
 
-원격 Actions를 실행했다고 주장하지 않습니다. 이번에 검증하는 실제 빌드 시스템은 Cloud checkpoint이며 기존 `apk-downloads` 브랜치의 공개 HTTPS 파일로 전달합니다. 키 설정과 계정 무료 실행량·결제 한도를 확인한 뒤 원격 실행해야 합니다. 새 유료 호스팅이나 게임 서버를 만들지 않습니다.
+게임 자체의 빌드는 Cloud checkpoint에서 수행했습니다. 별도 `deliver-apk.yml`은 Cloud에서 빌드한 정확한 APK를 고정 커밋에서 받아 SHA256을 검사하고 Actions Artifacts로 보관합니다. [파일 전달 실행 기록](https://github.com/backtta-ui/suspicious-factory/actions/runs/43703375678)이 성공했으며 아티팩트 ZIP을 다시 받아 내부 APK의 체크섬도 확인했습니다. 이는 원격 게임 재컴파일 성공을 뜻하지 않습니다. 원격 빌드 workflow에는 여전히 기존 서명키 secret과 계정 한도 확인이 필요합니다. 새 유료 호스팅이나 게임 서버는 만들지 않았습니다.
 
 APK는 개발용 디버그 서명이며 AAB·출시 서명·Google Play 업로드는 이번 범위에 포함하지 않습니다.
+
+아티팩트 이름은 `jeon-woochi-v0.1-verified-apk`이며 보관 기간은 14일입니다. GitHub 로그인 후 실행 페이지의 Artifacts에서 ZIP을 받습니다. 휴대폰에서는 압축을 푼 뒤 APK를 설치합니다. 직접 APK 다운로드 주소는 별도로 유지됩니다.
