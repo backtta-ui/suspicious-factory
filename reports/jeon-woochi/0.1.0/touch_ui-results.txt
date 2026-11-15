@@ -1,0 +1,659 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+[TOUCH 0001] READY V0.1.0 touch→mouse=true
+[TOUCH 0002] SCREEN menu
+PASS: (1280, 720) 게임 시작 touch bounds visible
+PASS: (1280, 720) 이어하기 touch bounds visible
+PASS: (1280, 720) 설정 touch bounds visible
+PASS: (1280, 720) 종료 touch bounds visible
+[TOUCH 0003] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0004] DOWN id=0 xy=(205.0, 574.0) window=(205.0, 574.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0005] DOWN id=0 xy=(205.0, 574.0) window=(205.0, 574.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (1280, 720) pressed feedback without premature activation
+[TOUCH 0006] MOUSE pressed=false xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0007] UP id=0 xy=(205.0, 574.0) window=(205.0, 574.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0008] UP id=0 xy=(205.0, 574.0) window=(205.0, 574.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (1280, 720) release opens settings
+[TOUCH 0009] MOUSE pressed=true xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0010] DOWN id=0 xy=(640.0, 294.0) window=(640.0, 294.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0011] DOWN id=0 xy=(640.0, 294.0) window=(640.0, 294.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0012] MOUSE pressed=false xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0013] UP id=0 xy=(640.0, 294.0) window=(640.0, 294.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0014] UP id=0 xy=(640.0, 294.0) window=(640.0, 294.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+PASS: (1280, 720) camera preference changes through touch
+[TOUCH 0015] MOUSE pressed=true xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0016] DOWN id=0 xy=(640.0, 370.0) window=(640.0, 370.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0017] DOWN id=0 xy=(640.0, 370.0) window=(640.0, 370.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0018] MOUSE pressed=false xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0019] UP id=0 xy=(640.0, 370.0) window=(640.0, 370.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0020] UP id=0 xy=(640.0, 370.0) window=(640.0, 370.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+PASS: (1280, 720) day/night preference changes through touch
+[TOUCH 0021] MOUSE pressed=true xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0022] DOWN id=0 xy=(640.0, 446.0) window=(640.0, 446.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0023] DOWN id=0 xy=(640.0, 446.0) window=(640.0, 446.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0024] MOUSE pressed=false xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0025] UP id=0 xy=(640.0, 446.0) window=(640.0, 446.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0026] UP id=0 xy=(640.0, 446.0) window=(640.0, 446.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+PASS: (1280, 720) settings touch close works
+[TOUCH 0027] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0028] DOWN id=0 xy=(205.0, 574.0) window=(205.0, 574.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0029] DOWN id=0 xy=(205.0, 574.0) window=(205.0, 574.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0030] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0031] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0032] UP id=0 xy=(10.0, 10.0) window=(10.0, 10.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0033] UP id=0 xy=(10.0, 10.0) window=(10.0, 10.0) view=(1280.0, 720.0) screen=menu buttons=
+PASS: (1280, 720) release outside cancels settings
+[TOUCH 0034] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0035] DOWN id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0036] DOWN id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0037] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0038] UP id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0039] UP id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0040] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0041] DOWN id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0042] DOWN id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0043] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0044] UP id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0045] UP id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0046] SCREEN playing
+PASS: (1280, 720) rapid touch starts exactly one world
+[TOUCH 0047] MOUSE pressed=true xy=(166.0, 597.0) emulated=true screen=playing
+[TOUCH 0048] DOWN id=0 xy=(166.0, 597.0) window=(166.0, 597.0) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0049] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (1280, 720) native joystick moves player
+[TOUCH 0050] DOWN id=1 xy=(1000.0, 631.0) window=(1000.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0051] DOWN id=1 xy=(1000.0, 631.0) window=(1000.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (1280, 720) two-finger running while steering
+[TOUCH 0052] UP id=1 xy=(1000.0, 631.0) window=(1000.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0053] UP id=1 xy=(1000.0, 631.0) window=(1000.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (1280, 720) run release does not steal joystick finger
+[TOUCH 0054] DOWN id=1 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0055] DOWN id=1 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0056] UP id=1 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0057] UP id=1 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+PASS: (1280, 720) second-finger spell while steering
+[TOUCH 0058] MOUSE pressed=false xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0059] UP id=0 xy=(199.0, 597.0) window=(199.0, 597.0) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (1280, 720) release stops steering and completes jar transformation
+[TOUCH 0060] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0061] DOWN id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0062] DOWN id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0063] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0064] UP id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0065] UP id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0066] MOUSE pressed=true xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0067] DOWN id=0 xy=(199.0, 597.0) window=(199.0, 597.0) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0068] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (1280, 720) modal blocks underlying controls
+[TOUCH 0069] MOUSE pressed=false xy=(131.0, 597.0) emulated=true screen=playing
+[TOUCH 0070] UP id=0 xy=(131.0, 597.0) window=(131.0, 597.0) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (1280, 720) Android back resumes gameplay
+[TOUCH 0071] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0072] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0073] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0074] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0075] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0076] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: (1280, 720) NPC interaction opens dialogue
+[TOUCH 0077] MOUSE pressed=true xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0078] DOWN id=0 xy=(575.0, 451.0) window=(575.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0079] DOWN id=0 xy=(575.0, 451.0) window=(575.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0080] MOUSE pressed=false xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0081] UP id=0 xy=(575.0, 451.0) window=(575.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0082] UP id=0 xy=(575.0, 451.0) window=(575.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+PASS: (1280, 720) dialogue next works
+[TOUCH 0083] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0084] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0085] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0086] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0087] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0088] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: (1280, 720) dialogue close restores movement
+[TOUCH 0089] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0090] DOWN id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0091] DOWN id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0092] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0093] UP id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0094] UP id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0095] MOUSE pressed=true xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0096] DOWN id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0097] DOWN id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0098] MOUSE pressed=false xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0099] UP id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0100] UP id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0101] SCREEN menu
+PASS: (1280, 720) save/menu return enables continue
+[TOUCH 0102] MOUSE pressed=true xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0103] DOWN id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0104] DOWN id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0105] MOUSE pressed=false xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0106] UP id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0107] UP id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0108] SCREEN playing
+PASS: (1280, 720) continue restores saved map and form
+[TOUCH 0109] SCREEN menu
+[TOUCH 0110] SCREEN menu
+PASS: (2400, 1080) 게임 시작 touch bounds visible
+PASS: (2400, 1080) 이어하기 touch bounds visible
+PASS: (2400, 1080) 설정 touch bounds visible
+PASS: (2400, 1080) 종료 touch bounds visible
+[TOUCH 0111] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0112] DOWN id=0 xy=(205.0, 574.0) window=(547.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0113] DOWN id=0 xy=(205.0, 574.0) window=(547.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (2400, 1080) pressed feedback without premature activation
+[TOUCH 0114] MOUSE pressed=false xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0115] UP id=0 xy=(205.0, 574.0) window=(547.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0116] UP id=0 xy=(205.0, 574.0) window=(547.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (2400, 1080) release opens settings
+[TOUCH 0117] MOUSE pressed=true xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0118] DOWN id=0 xy=(640.0, 294.0) window=(1200.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+[TOUCH 0119] DOWN id=0 xy=(640.0, 294.0) window=(1200.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+[TOUCH 0120] MOUSE pressed=false xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0121] UP id=0 xy=(640.0, 294.0) window=(1200.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+[TOUCH 0122] UP id=0 xy=(640.0, 294.0) window=(1200.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+PASS: (2400, 1080) camera preference changes through touch
+[TOUCH 0123] MOUSE pressed=true xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0124] DOWN id=0 xy=(640.0, 370.0) window=(1200.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+[TOUCH 0125] DOWN id=0 xy=(640.0, 370.0) window=(1200.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+[TOUCH 0126] MOUSE pressed=false xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0127] UP id=0 xy=(640.0, 370.0) window=(1200.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+[TOUCH 0128] UP id=0 xy=(640.0, 370.0) window=(1200.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+PASS: (2400, 1080) day/night preference changes through touch
+[TOUCH 0129] MOUSE pressed=true xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0130] DOWN id=0 xy=(640.0, 446.0) window=(1200.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0131] DOWN id=0 xy=(640.0, 446.0) window=(1200.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0132] MOUSE pressed=false xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0133] UP id=0 xy=(640.0, 446.0) window=(1200.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0134] UP id=0 xy=(640.0, 446.0) window=(1200.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+PASS: (2400, 1080) settings touch close works
+[TOUCH 0135] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0136] DOWN id=0 xy=(205.0, 574.0) window=(547.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0137] DOWN id=0 xy=(205.0, 574.0) window=(547.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0138] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0139] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0140] UP id=0 xy=(10.0, 10.0) window=(255.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0141] UP id=0 xy=(10.0, 10.0) window=(255.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+PASS: (2400, 1080) release outside cancels settings
+[TOUCH 0142] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0143] DOWN id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0144] DOWN id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0145] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0146] UP id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0147] UP id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0148] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0149] DOWN id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0150] DOWN id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0151] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0152] UP id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0153] UP id=0 xy=(367.5, 422.0) window=(791.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0154] SCREEN playing
+PASS: (2400, 1080) rapid touch starts exactly one world
+[TOUCH 0155] MOUSE pressed=true xy=(166.0, 597.0) emulated=true screen=playing
+[TOUCH 0156] DOWN id=0 xy=(166.0, 597.0) window=(489.0, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0157] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (2400, 1080) native joystick moves player
+[TOUCH 0158] DOWN id=1 xy=(1000.0, 631.0) window=(1740.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0159] DOWN id=1 xy=(1000.0, 631.0) window=(1740.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (2400, 1080) two-finger running while steering
+[TOUCH 0160] UP id=1 xy=(1000.0, 631.0) window=(1740.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0161] UP id=1 xy=(1000.0, 631.0) window=(1740.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (2400, 1080) run release does not steal joystick finger
+[TOUCH 0162] DOWN id=1 xy=(1168.0, 631.0) window=(1992.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0163] DOWN id=1 xy=(1168.0, 631.0) window=(1992.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0164] UP id=1 xy=(1168.0, 631.0) window=(1992.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0165] UP id=1 xy=(1168.0, 631.0) window=(1992.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+PASS: (2400, 1080) second-finger spell while steering
+[TOUCH 0166] MOUSE pressed=false xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0167] UP id=0 xy=(199.0, 597.0) window=(538.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (2400, 1080) release stops steering and completes jar transformation
+[TOUCH 0168] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0169] DOWN id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0170] DOWN id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0171] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0172] UP id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0173] UP id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0174] MOUSE pressed=true xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0175] DOWN id=0 xy=(199.0, 597.0) window=(538.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0176] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (2400, 1080) modal blocks underlying controls
+[TOUCH 0177] MOUSE pressed=false xy=(131.0, 597.0) emulated=true screen=playing
+[TOUCH 0178] UP id=0 xy=(131.0, 597.0) window=(436.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (2400, 1080) Android back resumes gameplay
+[TOUCH 0179] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0180] DOWN id=0 xy=(1168.0, 534.0) window=(1992.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0181] DOWN id=0 xy=(1168.0, 534.0) window=(1992.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0182] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0183] UP id=0 xy=(1168.0, 534.0) window=(1992.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0184] UP id=0 xy=(1168.0, 534.0) window=(1992.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: (2400, 1080) NPC interaction opens dialogue
+[TOUCH 0185] MOUSE pressed=true xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0186] DOWN id=0 xy=(575.0, 451.0) window=(1102.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0187] DOWN id=0 xy=(575.0, 451.0) window=(1102.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0188] MOUSE pressed=false xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0189] UP id=0 xy=(575.0, 451.0) window=(1102.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0190] UP id=0 xy=(575.0, 451.0) window=(1102.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+PASS: (2400, 1080) dialogue next works
+[TOUCH 0191] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0192] DOWN id=0 xy=(914.0, 451.0) window=(1611.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0193] DOWN id=0 xy=(914.0, 451.0) window=(1611.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0194] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0195] UP id=0 xy=(914.0, 451.0) window=(1611.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0196] UP id=0 xy=(914.0, 451.0) window=(1611.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: (2400, 1080) dialogue close restores movement
+[TOUCH 0197] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0198] DOWN id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0199] DOWN id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0200] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0201] UP id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0202] UP id=0 xy=(1179.0, 58.0) window=(2008.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0203] MOUSE pressed=true xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0204] DOWN id=0 xy=(640.0, 484.0) window=(1200.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0205] DOWN id=0 xy=(640.0, 484.0) window=(1200.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0206] MOUSE pressed=false xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0207] UP id=0 xy=(640.0, 484.0) window=(1200.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0208] UP id=0 xy=(640.0, 484.0) window=(1200.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0209] SCREEN menu
+PASS: (2400, 1080) save/menu return enables continue
+[TOUCH 0210] MOUSE pressed=true xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0211] DOWN id=0 xy=(367.5, 498.0) window=(791.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0212] DOWN id=0 xy=(367.5, 498.0) window=(791.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0213] MOUSE pressed=false xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0214] UP id=0 xy=(367.5, 498.0) window=(791.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0215] UP id=0 xy=(367.5, 498.0) window=(791.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0216] SCREEN playing
+PASS: (2400, 1080) continue restores saved map and form
+[TOUCH 0217] SCREEN menu
+[TOUCH 0218] SCREEN menu
+PASS: (2340, 1080) 게임 시작 touch bounds visible
+PASS: (2340, 1080) 이어하기 touch bounds visible
+PASS: (2340, 1080) 설정 touch bounds visible
+PASS: (2340, 1080) 종료 touch bounds visible
+[TOUCH 0219] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0220] DOWN id=0 xy=(205.0, 574.0) window=(517.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0221] DOWN id=0 xy=(205.0, 574.0) window=(517.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (2340, 1080) pressed feedback without premature activation
+[TOUCH 0222] MOUSE pressed=false xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0223] UP id=0 xy=(205.0, 574.0) window=(517.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0224] UP id=0 xy=(205.0, 574.0) window=(517.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (2340, 1080) release opens settings
+[TOUCH 0225] MOUSE pressed=true xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0226] DOWN id=0 xy=(640.0, 294.0) window=(1170.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0227] DOWN id=0 xy=(640.0, 294.0) window=(1170.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0228] MOUSE pressed=false xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0229] UP id=0 xy=(640.0, 294.0) window=(1170.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0230] UP id=0 xy=(640.0, 294.0) window=(1170.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+PASS: (2340, 1080) camera preference changes through touch
+[TOUCH 0231] MOUSE pressed=true xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0232] DOWN id=0 xy=(640.0, 370.0) window=(1170.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0233] DOWN id=0 xy=(640.0, 370.0) window=(1170.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0234] MOUSE pressed=false xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0235] UP id=0 xy=(640.0, 370.0) window=(1170.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0236] UP id=0 xy=(640.0, 370.0) window=(1170.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+PASS: (2340, 1080) day/night preference changes through touch
+[TOUCH 0237] MOUSE pressed=true xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0238] DOWN id=0 xy=(640.0, 446.0) window=(1170.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0239] DOWN id=0 xy=(640.0, 446.0) window=(1170.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0240] MOUSE pressed=false xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0241] UP id=0 xy=(640.0, 446.0) window=(1170.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0242] UP id=0 xy=(640.0, 446.0) window=(1170.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+PASS: (2340, 1080) settings touch close works
+[TOUCH 0243] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0244] DOWN id=0 xy=(205.0, 574.0) window=(517.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0245] DOWN id=0 xy=(205.0, 574.0) window=(517.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0246] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0247] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0248] UP id=0 xy=(10.0, 10.0) window=(225.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0249] UP id=0 xy=(10.0, 10.0) window=(225.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+PASS: (2340, 1080) release outside cancels settings
+[TOUCH 0250] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0251] DOWN id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0252] DOWN id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0253] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0254] UP id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0255] UP id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0256] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0257] DOWN id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0258] DOWN id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0259] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0260] UP id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0261] UP id=0 xy=(367.5, 422.0) window=(761.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0262] SCREEN playing
+PASS: (2340, 1080) rapid touch starts exactly one world
+[TOUCH 0263] MOUSE pressed=true xy=(166.0, 597.0) emulated=true screen=playing
+[TOUCH 0264] DOWN id=0 xy=(166.0, 597.0) window=(459.0, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0265] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (2340, 1080) native joystick moves player
+[TOUCH 0266] DOWN id=1 xy=(1000.0, 631.0) window=(1710.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0267] DOWN id=1 xy=(1000.0, 631.0) window=(1710.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (2340, 1080) two-finger running while steering
+[TOUCH 0268] UP id=1 xy=(1000.0, 631.0) window=(1710.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0269] UP id=1 xy=(1000.0, 631.0) window=(1710.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (2340, 1080) run release does not steal joystick finger
+[TOUCH 0270] DOWN id=1 xy=(1168.0, 631.0) window=(1962.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0271] DOWN id=1 xy=(1168.0, 631.0) window=(1962.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0272] UP id=1 xy=(1168.0, 631.0) window=(1962.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0273] UP id=1 xy=(1168.0, 631.0) window=(1962.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+PASS: (2340, 1080) second-finger spell while steering
+[TOUCH 0274] MOUSE pressed=false xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0275] UP id=0 xy=(199.0, 597.0) window=(508.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (2340, 1080) release stops steering and completes jar transformation
+[TOUCH 0276] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0277] DOWN id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0278] DOWN id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0279] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0280] UP id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0281] UP id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0282] MOUSE pressed=true xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0283] DOWN id=0 xy=(199.0, 597.0) window=(508.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0284] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (2340, 1080) modal blocks underlying controls
+[TOUCH 0285] MOUSE pressed=false xy=(131.0, 597.0) emulated=true screen=playing
+[TOUCH 0286] UP id=0 xy=(131.0, 597.0) window=(406.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (2340, 1080) Android back resumes gameplay
+[TOUCH 0287] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0288] DOWN id=0 xy=(1168.0, 534.0) window=(1962.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0289] DOWN id=0 xy=(1168.0, 534.0) window=(1962.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0290] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0291] UP id=0 xy=(1168.0, 534.0) window=(1962.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0292] UP id=0 xy=(1168.0, 534.0) window=(1962.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: (2340, 1080) NPC interaction opens dialogue
+[TOUCH 0293] MOUSE pressed=true xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0294] DOWN id=0 xy=(575.0, 451.0) window=(1072.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0295] DOWN id=0 xy=(575.0, 451.0) window=(1072.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0296] MOUSE pressed=false xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0297] UP id=0 xy=(575.0, 451.0) window=(1072.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0298] UP id=0 xy=(575.0, 451.0) window=(1072.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+PASS: (2340, 1080) dialogue next works
+[TOUCH 0299] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0300] DOWN id=0 xy=(914.0, 451.0) window=(1581.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0301] DOWN id=0 xy=(914.0, 451.0) window=(1581.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0302] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0303] UP id=0 xy=(914.0, 451.0) window=(1581.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0304] UP id=0 xy=(914.0, 451.0) window=(1581.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: (2340, 1080) dialogue close restores movement
+[TOUCH 0305] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0306] DOWN id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0307] DOWN id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0308] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0309] UP id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0310] UP id=0 xy=(1179.0, 58.0) window=(1978.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0311] MOUSE pressed=true xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0312] DOWN id=0 xy=(640.0, 484.0) window=(1170.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0313] DOWN id=0 xy=(640.0, 484.0) window=(1170.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0314] MOUSE pressed=false xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0315] UP id=0 xy=(640.0, 484.0) window=(1170.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0316] UP id=0 xy=(640.0, 484.0) window=(1170.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0317] SCREEN menu
+PASS: (2340, 1080) save/menu return enables continue
+[TOUCH 0318] MOUSE pressed=true xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0319] DOWN id=0 xy=(367.5, 498.0) window=(761.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0320] DOWN id=0 xy=(367.5, 498.0) window=(761.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0321] MOUSE pressed=false xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0322] UP id=0 xy=(367.5, 498.0) window=(761.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0323] UP id=0 xy=(367.5, 498.0) window=(761.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0324] SCREEN playing
+PASS: (2340, 1080) continue restores saved map and form
+[TOUCH 0325] SCREEN menu
+[TOUCH 0326] SCREEN menu
+PASS: (2280, 1080) 게임 시작 touch bounds visible
+PASS: (2280, 1080) 이어하기 touch bounds visible
+PASS: (2280, 1080) 설정 touch bounds visible
+PASS: (2280, 1080) 종료 touch bounds visible
+[TOUCH 0327] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0328] DOWN id=0 xy=(205.0, 574.0) window=(487.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0329] DOWN id=0 xy=(205.0, 574.0) window=(487.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (2280, 1080) pressed feedback without premature activation
+[TOUCH 0330] MOUSE pressed=false xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0331] UP id=0 xy=(205.0, 574.0) window=(487.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0332] UP id=0 xy=(205.0, 574.0) window=(487.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (2280, 1080) release opens settings
+[TOUCH 0333] MOUSE pressed=true xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0334] DOWN id=0 xy=(640.0, 294.0) window=(1140.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+[TOUCH 0335] DOWN id=0 xy=(640.0, 294.0) window=(1140.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+[TOUCH 0336] MOUSE pressed=false xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0337] UP id=0 xy=(640.0, 294.0) window=(1140.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+[TOUCH 0338] UP id=0 xy=(640.0, 294.0) window=(1140.0, 441.0) view=(1280.0, 720.0) screen=menu buttons=카메라: 부드럽게:enabled
+PASS: (2280, 1080) camera preference changes through touch
+[TOUCH 0339] MOUSE pressed=true xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0340] DOWN id=0 xy=(640.0, 370.0) window=(1140.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+[TOUCH 0341] DOWN id=0 xy=(640.0, 370.0) window=(1140.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+[TOUCH 0342] MOUSE pressed=false xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0343] UP id=0 xy=(640.0, 370.0) window=(1140.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+[TOUCH 0344] UP id=0 xy=(640.0, 370.0) window=(1140.0, 555.0) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 켜짐:enabled
+PASS: (2280, 1080) day/night preference changes through touch
+[TOUCH 0345] MOUSE pressed=true xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0346] DOWN id=0 xy=(640.0, 446.0) window=(1140.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0347] DOWN id=0 xy=(640.0, 446.0) window=(1140.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0348] MOUSE pressed=false xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0349] UP id=0 xy=(640.0, 446.0) window=(1140.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0350] UP id=0 xy=(640.0, 446.0) window=(1140.0, 669.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+PASS: (2280, 1080) settings touch close works
+[TOUCH 0351] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0352] DOWN id=0 xy=(205.0, 574.0) window=(487.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0353] DOWN id=0 xy=(205.0, 574.0) window=(487.5, 861.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0354] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0355] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0356] UP id=0 xy=(10.0, 10.0) window=(195.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0357] UP id=0 xy=(10.0, 10.0) window=(195.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+PASS: (2280, 1080) release outside cancels settings
+[TOUCH 0358] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0359] DOWN id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0360] DOWN id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0361] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0362] UP id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0363] UP id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0364] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0365] DOWN id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0366] DOWN id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0367] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0368] UP id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0369] UP id=0 xy=(367.5, 422.0) window=(731.25, 633.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0370] SCREEN playing
+PASS: (2280, 1080) rapid touch starts exactly one world
+[TOUCH 0371] MOUSE pressed=true xy=(166.0, 597.0) emulated=true screen=playing
+[TOUCH 0372] DOWN id=0 xy=(166.0, 597.0) window=(429.0, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0373] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (2280, 1080) native joystick moves player
+[TOUCH 0374] DOWN id=1 xy=(1000.0, 631.0) window=(1680.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0375] DOWN id=1 xy=(1000.0, 631.0) window=(1680.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (2280, 1080) two-finger running while steering
+[TOUCH 0376] UP id=1 xy=(1000.0, 631.0) window=(1680.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0377] UP id=1 xy=(1000.0, 631.0) window=(1680.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (2280, 1080) run release does not steal joystick finger
+[TOUCH 0378] DOWN id=1 xy=(1168.0, 631.0) window=(1932.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0379] DOWN id=1 xy=(1168.0, 631.0) window=(1932.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0380] UP id=1 xy=(1168.0, 631.0) window=(1932.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0381] UP id=1 xy=(1168.0, 631.0) window=(1932.0, 946.5) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+PASS: (2280, 1080) second-finger spell while steering
+[TOUCH 0382] MOUSE pressed=false xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0383] UP id=0 xy=(199.0, 597.0) window=(478.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (2280, 1080) release stops steering and completes jar transformation
+[TOUCH 0384] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0385] DOWN id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0386] DOWN id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0387] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0388] UP id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0389] UP id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0390] MOUSE pressed=true xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0391] DOWN id=0 xy=(199.0, 597.0) window=(478.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0392] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (2280, 1080) modal blocks underlying controls
+[TOUCH 0393] MOUSE pressed=false xy=(131.0, 597.0) emulated=true screen=playing
+[TOUCH 0394] UP id=0 xy=(131.0, 597.0) window=(376.5, 895.5) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (2280, 1080) Android back resumes gameplay
+[TOUCH 0395] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0396] DOWN id=0 xy=(1168.0, 534.0) window=(1932.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0397] DOWN id=0 xy=(1168.0, 534.0) window=(1932.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0398] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0399] UP id=0 xy=(1168.0, 534.0) window=(1932.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0400] UP id=0 xy=(1168.0, 534.0) window=(1932.0, 801.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: (2280, 1080) NPC interaction opens dialogue
+[TOUCH 0401] MOUSE pressed=true xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0402] DOWN id=0 xy=(575.0, 451.0) window=(1042.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0403] DOWN id=0 xy=(575.0, 451.0) window=(1042.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0404] MOUSE pressed=false xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0405] UP id=0 xy=(575.0, 451.0) window=(1042.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0406] UP id=0 xy=(575.0, 451.0) window=(1042.5, 676.5) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+PASS: (2280, 1080) dialogue next works
+[TOUCH 0407] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0408] DOWN id=0 xy=(914.0, 451.0) window=(1551.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0409] DOWN id=0 xy=(914.0, 451.0) window=(1551.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0410] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0411] UP id=0 xy=(914.0, 451.0) window=(1551.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0412] UP id=0 xy=(914.0, 451.0) window=(1551.0, 676.5) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: (2280, 1080) dialogue close restores movement
+[TOUCH 0413] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0414] DOWN id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0415] DOWN id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0416] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0417] UP id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0418] UP id=0 xy=(1179.0, 58.0) window=(1948.5, 87.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0419] MOUSE pressed=true xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0420] DOWN id=0 xy=(640.0, 484.0) window=(1140.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0421] DOWN id=0 xy=(640.0, 484.0) window=(1140.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0422] MOUSE pressed=false xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0423] UP id=0 xy=(640.0, 484.0) window=(1140.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0424] UP id=0 xy=(640.0, 484.0) window=(1140.0, 726.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0425] SCREEN menu
+PASS: (2280, 1080) save/menu return enables continue
+[TOUCH 0426] MOUSE pressed=true xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0427] DOWN id=0 xy=(367.5, 498.0) window=(731.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0428] DOWN id=0 xy=(367.5, 498.0) window=(731.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0429] MOUSE pressed=false xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0430] UP id=0 xy=(367.5, 498.0) window=(731.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0431] UP id=0 xy=(367.5, 498.0) window=(731.25, 747.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0432] SCREEN playing
+PASS: (2280, 1080) continue restores saved map and form
+[TOUCH 0433] SCREEN menu
+[TOUCH 0434] SCREEN menu
+PASS: (960, 540) 게임 시작 touch bounds visible
+PASS: (960, 540) 이어하기 touch bounds visible
+PASS: (960, 540) 설정 touch bounds visible
+PASS: (960, 540) 종료 touch bounds visible
+[TOUCH 0435] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0436] DOWN id=0 xy=(205.0, 574.0) window=(153.75, 430.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0437] DOWN id=0 xy=(205.0, 574.0) window=(153.75, 430.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (960, 540) pressed feedback without premature activation
+[TOUCH 0438] MOUSE pressed=false xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0439] UP id=0 xy=(205.0, 574.0) window=(153.75, 430.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0440] UP id=0 xy=(205.0, 574.0) window=(153.75, 430.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+PASS: (960, 540) release opens settings
+[TOUCH 0441] MOUSE pressed=true xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0442] DOWN id=0 xy=(640.0, 294.0) window=(480.0, 220.5) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0443] DOWN id=0 xy=(640.0, 294.0) window=(480.0, 220.5) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0444] MOUSE pressed=false xy=(640.0, 294.0) emulated=true screen=menu
+[TOUCH 0445] UP id=0 xy=(640.0, 294.0) window=(480.0, 220.5) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+[TOUCH 0446] UP id=0 xy=(640.0, 294.0) window=(480.0, 220.5) view=(1280.0, 720.0) screen=menu buttons=카메라: 즉시 추적:enabled
+PASS: (960, 540) camera preference changes through touch
+[TOUCH 0447] MOUSE pressed=true xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0448] DOWN id=0 xy=(640.0, 370.0) window=(480.0, 277.5) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0449] DOWN id=0 xy=(640.0, 370.0) window=(480.0, 277.5) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0450] MOUSE pressed=false xy=(640.0, 370.0) emulated=true screen=menu
+[TOUCH 0451] UP id=0 xy=(640.0, 370.0) window=(480.0, 277.5) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+[TOUCH 0452] UP id=0 xy=(640.0, 370.0) window=(480.0, 277.5) view=(1280.0, 720.0) screen=menu buttons=낮과 밤 변화: 꺼짐:enabled
+PASS: (960, 540) day/night preference changes through touch
+[TOUCH 0453] MOUSE pressed=true xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0454] DOWN id=0 xy=(640.0, 446.0) window=(480.0, 334.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0455] DOWN id=0 xy=(640.0, 446.0) window=(480.0, 334.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0456] MOUSE pressed=false xy=(640.0, 446.0) emulated=true screen=menu
+[TOUCH 0457] UP id=0 xy=(640.0, 446.0) window=(480.0, 334.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+[TOUCH 0458] UP id=0 xy=(640.0, 446.0) window=(480.0, 334.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled,돌아가기:enabled
+PASS: (960, 540) settings touch close works
+[TOUCH 0459] MOUSE pressed=true xy=(205.0, 574.0) emulated=true screen=menu
+[TOUCH 0460] DOWN id=0 xy=(205.0, 574.0) window=(153.75, 430.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0461] DOWN id=0 xy=(205.0, 574.0) window=(153.75, 430.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0462] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0463] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0464] UP id=0 xy=(10.0, 10.0) window=(7.5, 7.5) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0465] UP id=0 xy=(10.0, 10.0) window=(7.5, 7.5) view=(1280.0, 720.0) screen=menu buttons=
+PASS: (960, 540) release outside cancels settings
+[TOUCH 0466] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0467] DOWN id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0468] DOWN id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0469] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0470] UP id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0471] UP id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0472] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0473] DOWN id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0474] DOWN id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0475] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0476] UP id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0477] UP id=0 xy=(367.5, 422.0) window=(275.625, 316.5) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0478] SCREEN playing
+PASS: (960, 540) rapid touch starts exactly one world
+[TOUCH 0479] MOUSE pressed=true xy=(166.0, 597.0) emulated=true screen=playing
+[TOUCH 0480] DOWN id=0 xy=(166.0, 597.0) window=(124.5, 447.75) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0481] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (960, 540) native joystick moves player
+[TOUCH 0482] DOWN id=1 xy=(1000.0, 631.0) window=(750.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0483] DOWN id=1 xy=(1000.0, 631.0) window=(750.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (960, 540) two-finger running while steering
+[TOUCH 0484] UP id=1 xy=(1000.0, 631.0) window=(750.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+[TOUCH 0485] UP id=1 xy=(1000.0, 631.0) window=(750.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=달리기:enabled
+PASS: (960, 540) run release does not steal joystick finger
+[TOUCH 0486] DOWN id=1 xy=(1168.0, 631.0) window=(876.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0487] DOWN id=1 xy=(1168.0, 631.0) window=(876.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0488] UP id=1 xy=(1168.0, 631.0) window=(876.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0489] UP id=1 xy=(1168.0, 631.0) window=(876.0, 473.25) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+PASS: (960, 540) second-finger spell while steering
+[TOUCH 0490] MOUSE pressed=false xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0491] UP id=0 xy=(199.0, 597.0) window=(149.25, 447.75) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (960, 540) release stops steering and completes jar transformation
+[TOUCH 0492] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0493] DOWN id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0494] DOWN id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0495] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0496] UP id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0497] UP id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0498] MOUSE pressed=true xy=(199.0, 597.0) emulated=true screen=playing
+[TOUCH 0499] DOWN id=0 xy=(199.0, 597.0) window=(149.25, 447.75) view=(1280.0, 720.0) screen=playing buttons=
+[TOUCH 0500] DRAG id=0 xy=(199.0, 597.0) screen=playing
+PASS: (960, 540) modal blocks underlying controls
+[TOUCH 0501] MOUSE pressed=false xy=(131.0, 597.0) emulated=true screen=playing
+[TOUCH 0502] UP id=0 xy=(131.0, 597.0) window=(98.25, 447.75) view=(1280.0, 720.0) screen=playing buttons=
+PASS: (960, 540) Android back resumes gameplay
+[TOUCH 0503] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0504] DOWN id=0 xy=(1168.0, 534.0) window=(876.0, 400.5) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0505] DOWN id=0 xy=(1168.0, 534.0) window=(876.0, 400.5) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0506] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0507] UP id=0 xy=(1168.0, 534.0) window=(876.0, 400.5) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0508] UP id=0 xy=(1168.0, 534.0) window=(876.0, 400.5) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: (960, 540) NPC interaction opens dialogue
+[TOUCH 0509] MOUSE pressed=true xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0510] DOWN id=0 xy=(575.0, 451.0) window=(431.25, 338.25) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0511] DOWN id=0 xy=(575.0, 451.0) window=(431.25, 338.25) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0512] MOUSE pressed=false xy=(575.0, 451.0) emulated=true screen=playing
+[TOUCH 0513] UP id=0 xy=(575.0, 451.0) window=(431.25, 338.25) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+[TOUCH 0514] UP id=0 xy=(575.0, 451.0) window=(431.25, 338.25) view=(1280.0, 720.0) screen=playing buttons=다음:enabled
+PASS: (960, 540) dialogue next works
+[TOUCH 0515] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0516] DOWN id=0 xy=(914.0, 451.0) window=(685.5, 338.25) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0517] DOWN id=0 xy=(914.0, 451.0) window=(685.5, 338.25) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0518] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0519] UP id=0 xy=(914.0, 451.0) window=(685.5, 338.25) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0520] UP id=0 xy=(914.0, 451.0) window=(685.5, 338.25) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: (960, 540) dialogue close restores movement
+[TOUCH 0521] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0522] DOWN id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0523] DOWN id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0524] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0525] UP id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0526] UP id=0 xy=(1179.0, 58.0) window=(884.25, 43.5) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0527] MOUSE pressed=true xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0528] DOWN id=0 xy=(640.0, 484.0) window=(480.0, 363.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0529] DOWN id=0 xy=(640.0, 484.0) window=(480.0, 363.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0530] MOUSE pressed=false xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0531] UP id=0 xy=(640.0, 484.0) window=(480.0, 363.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0532] UP id=0 xy=(640.0, 484.0) window=(480.0, 363.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0533] SCREEN menu
+PASS: (960, 540) save/menu return enables continue
+[TOUCH 0534] MOUSE pressed=true xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0535] DOWN id=0 xy=(367.5, 498.0) window=(275.625, 373.5) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0536] DOWN id=0 xy=(367.5, 498.0) window=(275.625, 373.5) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0537] MOUSE pressed=false xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0538] UP id=0 xy=(367.5, 498.0) window=(275.625, 373.5) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0539] UP id=0 xy=(367.5, 498.0) window=(275.625, 373.5) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0540] SCREEN playing
+PASS: (960, 540) continue restores saved map and form
+[TOUCH 0541] SCREEN menu
+WOO TOUCH: 115 checks, 0 failures

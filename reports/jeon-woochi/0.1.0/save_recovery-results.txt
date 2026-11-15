@@ -1,0 +1,13 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: first atomic save
+PASS: second save keeps backup
+Recovered position: [900.0, 610.0]
+PASS: corrupt primary recovers previous valid save
+PASS: new save after recovery
+PASS: corrupt primary cannot overwrite valid backup
+PASS: malformed atmosphere data rejected
+PASS: malformed spell state rejected
+PASS: invalid position does not overwrite good save
+PASS: good save preserved after invalid write request
+SAVE RECOVERY: 9 checks, 0 failures

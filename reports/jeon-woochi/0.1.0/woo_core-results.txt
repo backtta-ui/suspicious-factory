@@ -1,0 +1,126 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+[TOUCH 0001] READY V0.1.0 touch→mouse=true
+PASS: new game application title
+PASS: touch emulation kept enabled
+PASS: main menu button: 게임 시작
+PASS: main menu button: 이어하기
+PASS: main menu button: 설정
+PASS: main menu button: 종료
+[TOUCH 0002] MOUSE pressed=true xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0003] DOWN id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0004] DOWN id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0005] MOUSE pressed=false xy=(367.5, 422.0) emulated=true screen=menu
+[TOUCH 0006] UP id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0007] UP id=0 xy=(367.5, 422.0) window=(367.5, 422.0) view=(1280.0, 720.0) screen=menu buttons=게임 시작:enabled
+[TOUCH 0008] SCREEN playing
+PASS: native touch starts playable game
+PASS: one taoist and three villagers
+PASS: four hanok buildings
+PASS: pixel character texture loaded
+PASS: quarter-view follow camera active
+PASS: world depth sorts props and characters
+PASS: movement direction (1.0, 0.0)
+PASS: movement direction (1.0, 1.0)
+PASS: movement direction (0.0, 1.0)
+PASS: movement direction (-1.0, 1.0)
+PASS: movement direction (-1.0, 0.0)
+PASS: movement direction (-1.0, -1.0)
+PASS: movement direction (0.0, -1.0)
+PASS: movement direction (1.0, -1.0)
+PASS: running is faster than walking
+PASS: well collision blocks movement
+PASS: hanok footprint blocks movement
+[TOUCH 0009] MOUSE pressed=true xy=(1168.0, 631.0) emulated=true screen=playing
+[TOUCH 0010] DOWN id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0011] DOWN id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0012] MOUSE pressed=false xy=(1168.0, 631.0) emulated=true screen=playing
+[TOUCH 0013] UP id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+[TOUCH 0014] UP id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=둔갑술:enabled
+PASS: spell starts visible transformation animation
+PASS: transformed into jar with cooldown
+PASS: cooldown rejects repeated spell
+PASS: jar movement slower than human
+[TOUCH 0015] MOUSE pressed=true xy=(1168.0, 631.0) emulated=true screen=playing
+[TOUCH 0016] DOWN id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=인간 복귀:enabled
+[TOUCH 0017] DOWN id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=인간 복귀:enabled
+[TOUCH 0018] MOUSE pressed=false xy=(1168.0, 631.0) emulated=true screen=playing
+[TOUCH 0019] UP id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=인간 복귀:enabled
+[TOUCH 0020] UP id=0 xy=(1168.0, 631.0) window=(1168.0, 631.0) view=(1280.0, 720.0) screen=playing buttons=인간 복귀:enabled
+PASS: spell returns jar to human
+PASS: proximity dialogue available for NPC 0
+[TOUCH 0021] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0022] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0023] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0024] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0025] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0026] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: NPC dialogue opens and stops movement
+[TOUCH 0027] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0028] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0029] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0030] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0031] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0032] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: dialogue closes cleanly
+PASS: proximity dialogue available for NPC 1
+[TOUCH 0033] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0034] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0035] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0036] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0037] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0038] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: NPC dialogue opens and stops movement
+[TOUCH 0039] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0040] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0041] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0042] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0043] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0044] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: dialogue closes cleanly
+PASS: proximity dialogue available for NPC 2
+[TOUCH 0045] MOUSE pressed=true xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0046] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0047] DOWN id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0048] MOUSE pressed=false xy=(1168.0, 534.0) emulated=true screen=playing
+[TOUCH 0049] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+[TOUCH 0050] UP id=0 xy=(1168.0, 534.0) window=(1168.0, 534.0) view=(1280.0, 720.0) screen=playing buttons=대화:enabled
+PASS: NPC dialogue opens and stops movement
+[TOUCH 0051] MOUSE pressed=true xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0052] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0053] DOWN id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0054] MOUSE pressed=false xy=(914.0, 451.0) emulated=true screen=playing
+[TOUCH 0055] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+[TOUCH 0056] UP id=0 xy=(914.0, 451.0) window=(914.0, 451.0) view=(1280.0, 720.0) screen=playing buttons=닫기:enabled
+PASS: dialogue closes cleanly
+PASS: atomic local save contains valid map and position
+PASS: save stores spell unlock and settings
+[TOUCH 0057] MOUSE pressed=true xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0058] DOWN id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0059] DOWN id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0060] MOUSE pressed=false xy=(1179.0, 58.0) emulated=true screen=playing
+[TOUCH 0061] UP id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0062] UP id=0 xy=(1179.0, 58.0) window=(1179.0, 58.0) view=(1280.0, 720.0) screen=playing buttons=메뉴  ☰:enabled
+[TOUCH 0063] MOUSE pressed=true xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0064] DOWN id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0065] DOWN id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0066] MOUSE pressed=false xy=(640.0, 484.0) emulated=true screen=playing
+[TOUCH 0067] UP id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0068] UP id=0 xy=(640.0, 484.0) window=(640.0, 484.0) view=(1280.0, 720.0) screen=playing buttons=저장하고 메인으로:enabled
+[TOUCH 0069] SCREEN menu
+PASS: saved game enables continue
+[TOUCH 0070] MOUSE pressed=true xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0071] DOWN id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0072] DOWN id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0073] MOUSE pressed=false xy=(367.5, 498.0) emulated=true screen=menu
+[TOUCH 0074] UP id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0075] UP id=0 xy=(367.5, 498.0) window=(367.5, 498.0) view=(1280.0, 720.0) screen=menu buttons=이어하기:enabled
+[TOUCH 0076] SCREEN playing
+PASS: continue restores position
+PASS: background saves and cancels movement
+PASS: Android back closes pause menu
+PASS: save rejects unknown map
+PASS: save rejects nonfinite/outside coordinates
+PASS: five lantern lights created
+PASS: day-night atmosphere advances
+WOO CORE: 47 checks, 0 failures
