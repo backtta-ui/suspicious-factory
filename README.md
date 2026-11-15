@@ -58,6 +58,6 @@ bash tools/test.sh
 
 ## PC 없는 휴대폰 테스트 전달
 
-현재 APK는 Cloud 내부에 있습니다. 실제 외부 다운로드는 계정 연동 후 업로드와 링크 검증이 끝나야 가능합니다. [모바일 전달 상태 및 연결 후 작업](docs/MOBILE-DELIVERY.md)을 참고하세요.
+[갤럭시 테스트 APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/suspicious-factory-0.1.0.apk) — 공개 HTTPS 재다운로드 및 SHA256 일치 검증을 완료했습니다. 삼성 내 파일 → 다운로드에서 APK를 열어 설치하세요. [전달 방식과 자동 검증 상태](docs/MOBILE-DELIVERY.md)를 참고하세요.
 
 이후 주요 기능 변경의 필수 검증 명령은 `bash tools/checkpoint.sh`입니다. 자동으로 게임 테스트와 APK 빌드·서명·설정·정렬 검증을 실행하고 `builds/apk-verification.json`에 결과를 기록합니다. `.github/workflows/android-apk.yml`은 GitHub 연결 후 사용할 자동 빌드·테스트 APK 전달 준비 파일이며 아직 원격 실행되지 않았습니다.

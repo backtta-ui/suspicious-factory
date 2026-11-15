@@ -1,49 +1,33 @@
 # PC 없이 APK를 받는 개발 흐름
 
-## 현재 확인된 상태
+## 현재 사용 가능한 실제 다운로드
 
-APK는 실제로 생성되어 있으며 경로는 `/workspace/suspicious-factory/builds/suspicious-factory-0.1.0.apk`입니다. 이 경로는 Cloud 내부 경로이며 휴대폰용 다운로드 주소가 아닙니다. `sandbox:` 링크도 이 사용자의 ChatGPT Android 앱에서 동작하지 않았습니다. 일반 바이너리 파일을 채팅 첨부로 발행하는 도구는 현재 제공되지 않습니다.
+- APK: https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/suspicious-factory-0.1.0.apk
+- 다운로드 페이지: https://github.com/backtta-ui/suspicious-factory/tree/apk-downloads
+- 소스: https://github.com/backtta-ui/suspicious-factory/tree/main
 
-검색으로 GitHub, Google Drive, Dropbox, Box 연동을 확인했으나 확인 당시 모두 미설치·미연결 상태였습니다. 아직 외부 업로드나 HTTPS 다운로드 주소 발급은 수행하지 않았습니다. 연결이 되어도 해당 도구가 APK 업로드를 지원하는지 확인해야 합니다. 문서 검색 전용 Drive 연결만으로 APK 업로드가 가능하다고 가정하지 않습니다.
+공개 저장소의 `apk-downloads` 브랜치에 APK를 업로드했습니다. 인증 없는 HTTPS GET으로 실제 파일 44,054,383바이트를 다시 내려받아 원본 SHA256과 일치함을 확인했습니다.
 
-## 권장: GitHub Releases로 테스트 APK 전달
+SHA256: `1e418c033302ba5ad0b2492e5ffe6ac8c09636611a92c27f0eea8bf430da1e49`
 
-사용자가 휴대폰에서 GitHub 플러그인을 설치하고 계정을 연결하면, Codex가 제공된 권한을 확인하고 저장소를 설정합니다. 설치·연결은 사용자의 계정 인증이 필요하므로 Codex가 대신 승인할 수 없습니다. PC는 필요하지 않습니다. ChatGPT 앱에서 설정의 앱/연결 메뉴에 해당 항목이 보이지 않으면 삼성 인터넷이나 Chrome에서 ChatGPT에 로그인해 앱 설정에서 연결할 수 있는지 확인합니다. UI 명칭과 제공 여부는 계정·앱 버전에 따라 다릅니다.
+이 주소는 Cloud 내부 경로나 sandbox 링크가 아닙니다. ChatGPT 앱에서 열리지 않으면 삼성 인터넷이나 Chrome 주소창에 전체 HTTPS 주소를 붙여넣습니다. 내려받은 APK는 삼성 내 파일 → 다운로드에서 눌러 설치합니다. 현재 0.1.0은 Android 10 이상 ARM64 가로 화면용 오프라인 이동 테스트이며, 실제 갤럭시 실행은 사용자의 확인이 필요합니다.
 
-계정 연결 후 이어서 할 작업:
+## 전달 방식과 권한
 
-1. 사용자의 기존 저장소 또는 새 비공개 저장소를 확정합니다. 공개 저장소나 유료 서비스를 임의로 만들지 않습니다.
-2. 소스를 보존해 업로드하고, 테스트 서명키를 저장소의 암호화된 Actions secret `ANDROID_DEBUG_KEYSTORE_BASE64`로 전달합니다. 키 내용은 채팅·소스·로그에 표시하지 않습니다. 같은 키를 유지해야 기존 앱 위에 업데이트할 수 있습니다.
-3. GitHub Actions의 실행 가능 여부와 요금·사용량 제한을 확인합니다. 자동화 파일을 올렸다는 이유만으로 원격 CI가 실행되었다고 주장하지 않습니다.
-4. 지금 생성된 APK를 Releases에 올린 뒤, GitHub에서 돌려준 실제 HTTPS 주소를 확인합니다. 다시 내려받아 SHA256이 원본과 같은지 검증합니다.
-5. 사용자에게 실제 Release 주소를 제공합니다. 비공개 저장소라면 휴대폰 브라우저에서 같은 GitHub 계정 로그인이 필요합니다.
-6. 이후 주요 기능 변경마다 빌드와 검증을 실행하고 새 APK를 같은 흐름으로 제공합니다.
+GitHub 계정 인증만으로는 업로드되지 않았고, 사용자가 공식 ChatGPT Codex Connector 앱을 `backtta-ui/suspicious-factory` 저장소에 설치한 후 쓰기 권한과 소스 push가 정상 작동했습니다. 저장소는 사용자가 생성한 공개 상태를 유지했습니다.
 
-ChatGPT 앱의 링크가 동작하지 않아도 실제 HTTPS 주소는 삼성 인터넷 주소창에 붙여넣어 사용할 수 있습니다. 내부 `/workspace/...` 경로를 붙여넣는 것으로 대체할 수 없습니다.
+GitHub Releases 첨부 업로드는 uploads.github.com에서 HTTP 401 인증 오류가 발생했습니다. 성공한 릴리스가 있다고 주장하지 않습니다. 이번에는 GitHub 일반 Git 파일 크기 제한 이내의 APK를 별도 브랜치로 전달했습니다. 이후 APK가 100MB를 넘거나 배포 이력이 커지면 Releases 첨부 인증 또는 다른 바이너리 저장소를 해결해야 합니다.
 
-## 휴대폰 설치
+서명키·토큰은 공개 저장소에 올리지 않았습니다. `apk-downloads` 브랜치를 main에 합칠 필요는 없습니다.
 
-Release 페이지에서 Assets → `.apk` 파일을 내려받고 삼성 내 파일 → 다운로드에서 엽니다. 해당 브라우저/내 파일의 출처 설치 권한을 요청받으면 허용합니다. 보안 경고가 나오면 출처·파일명과 전달받은 버전을 확인합니다. 기기의 관리 정책이 설치를 금지하는 경우 이를 우회하지 않습니다.
+## 주요 기능 개발 후 필수 검증
 
-## 자동 검증 설정
+`bash tools/checkpoint.sh`로 게임 테스트 33개, APK 빌드, 서명·Manifest·ARM64·가로 화면·오프라인 권한·백업 정책·ZIP 및 16KiB 네이티브 라이브러리 정렬·폰트 고지와 시작 이미지·SHA256을 검사합니다. 결과는 `builds/apk-verification.json`, `builds/test-results.txt`, `builds/android-build.log`에 남습니다. 실패하면 이전 정상 APK를 보존하고 완료로 보고하지 않습니다.
 
-`bash tools/checkpoint.sh` 한 번으로 다음을 수행합니다.
+다음 테스트 APK 전달 시에는 같은 서명키로 빌드하고, `apk-downloads` 브랜치에 새 버전 APK와 체크섬·검증 결과를 추가한 뒤 실제 공개 URL로 재다운로드해 SHA256 일치를 확인합니다. 기존 정상 APK와 기능을 임의로 지우지 않습니다.
 
-- 게임 씬·이동·충돌·터치 관련 33개 검사
-- Godot 4.6.3 Android APK 빌드
-- APK ZIP 무결성, Godot ARM64 엔진과 실행 코드, 폰트 고지·시작 이미지 존재
-- 실제 APK 암호학적 서명, 패키지 ID, 최소 Android 10, target API, 가로 화면, 백업 비활성, 현재 오프라인 권한 정책
-- ZIP 4바이트 및 네이티브 라이브러리 16 KiB 정렬
-- SHA256, 서명 인증서 지문, JSON 검증 보고서 기록
+## GitHub Actions 상태와 비용
 
-성공해야 최종 APK를 교체합니다. 실패하면 이전 정상 APK는 보존하고 이번 작업은 실패로 보고합니다. 버전은 `project.godot`와 `export_presets.cfg`를 함께 올려야 합니다. JSON 보고서는 APK의 정확한 경로와 검증 시간을 포함하며 실제 휴대폰 실행을 검증한 것으로 표시하지 않습니다.
+main의 `.github/workflows/android-apk.yml`은 원격 자동화 준비 파일입니다. 이번 소스와 배포 push에는 `[skip ci]`를 사용했으며 GitHub Actions를 실행하지 않았습니다. 실제 CI 성공을 주장하지 않습니다. 원격 실행 전 동일 테스트 서명키를 Actions secret에 구성하고, 계정 실행 한도·결제 정책을 확인해야 합니다.
 
-`.github/workflows/android-apk.yml`은 원격 자동화를 위한 준비 파일입니다. 저장소 연결 전에는 이 파일이 실행되지 않습니다. 연결 후 코드 push 시 APK artifact를 만들고, 수동 실행에서 `publish_release`를 켜면 검증한 APK만 Release로 전달합니다. PR에서는 서명키를 사용하지 않습니다. GitHub의 artifact는 14일 후 만료되며 Release 첨부는 삭제 전까지 보관됩니다. 저장소를 공개로 바꾸지 않습니다.
-
-## 비용
-
-현재 Cloud 내 로컬 빌드·검증 외에 새 호스팅·유료 저장소·유료 실행을 구성하지 않았습니다. GitHub Actions와 저장 공간은 계정별 무료 제공량과 요금 정책을 따릅니다. 무료 제공량을 넘으면 비용이 생길 수 있으므로 계정 연결 후 실행 전 한도와 결제 정책을 확인해야 합니다. APK만으로는 게임 서버 비용이 발생하지 않습니다.
-
-## GitHub 연결 후 실제 권한 확인
-
-`backtta-ui` 계정 연결과 GitHub CLI 인증을 확인했습니다. 연결 당시 접근 가능한 저장소는 없었습니다. 비공개 `suspicious-factory` 저장소 생성을 시도했으나 GraphQL은 CreateRepository 권한 오류, REST API는 HTTP 403 `Resource not accessible by integration`을 반환했습니다. 저장소 생성이나 APK 업로드는 성공하지 않았습니다. 사용자가 휴대폰 GitHub 웹에서 비공개 저장소를 만든 후, ChatGPT GitHub 연결의 저장소 접근 범위에 포함해야 다음 업로드를 진행할 수 있습니다. CI 실행은 아직 없습니다.
+이번 전달에는 새 유료 호스팅이나 게임 서버를 만들지 않았습니다. 이후 GitHub Actions와 저장 공간은 계정의 무료 제공량·요금 정책을 따릅니다. GitHub 계정 연결만으로 과금 승인을 받은 것으로 간주하지 않습니다.
