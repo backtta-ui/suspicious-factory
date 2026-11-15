@@ -1,0 +1,50 @@
+{
+  "status": "passed",
+  "device_listening_test": "not_performed",
+  "sampled_effects": [
+    {
+      "file": "button.wav",
+      "seconds": 0.18,
+      "rms": 0.05622295124291969,
+      "peak": 0.4417724609375
+    },
+    {
+      "file": "dialogue.wav",
+      "seconds": 0.32,
+      "rms": 0.03221593444580036,
+      "peak": 0.849945068359375
+    },
+    {
+      "file": "jar_step.wav",
+      "seconds": 0.22,
+      "rms": 0.05622279250547684,
+      "peak": 0.339874267578125
+    },
+    {
+      "file": "spell.wav",
+      "seconds": 0.85,
+      "rms": 0.05170286424306737,
+      "peak": 0.849945068359375
+    },
+    {
+      "file": "step.wav",
+      "seconds": 0.24,
+      "rms": 0.07078653022924224,
+      "peak": 0.71112060546875
+    },
+    {
+      "file": "step2.wav",
+      "seconds": 0.24,
+      "rms": 0.07078603800219063,
+      "peak": 0.774566650390625
+    },
+    {
+      "file": "step3.wav",
+      "seconds": 0.24,
+      "rms": 0.07078585655795243,
+      "peak": 0.689666748046875
+    }
+  ],
+  "source_provenance_matches": true,
+  "bgm_loop_seconds": 69.168
+}

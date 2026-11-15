@@ -1,0 +1,128 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: (1280, 720) 게임 시작 touch bounds visible
+PASS: (1280, 720) 이어하기 touch bounds visible
+PASS: (1280, 720) 설정 touch bounds visible
+PASS: (1280, 720) 종료 touch bounds visible
+PASS: (1280, 720) pressed feedback without premature activation
+PASS: (1280, 720) release opens settings
+PASS: (1280, 720) camera preference changes through touch
+PASS: (1280, 720) day/night preference changes through touch
+PASS: (1280, 720) sound control fits viewport
+PASS: (1280, 720) native touch changes sound preference
+PASS: (1280, 720) settings touch close works
+PASS: (1280, 720) release outside cancels settings
+PASS: (1280, 720) rapid touch starts exactly one world
+PASS: (1280, 720) native joystick moves player
+PASS: (1280, 720) two-finger running while steering
+PASS: (1280, 720) run release does not steal joystick finger
+PASS: (1280, 720) second-finger spell while steering
+PASS: (1280, 720) release stops steering and completes jar transformation
+PASS: (1280, 720) modal blocks underlying controls
+PASS: (1280, 720) Android back resumes gameplay
+PASS: (1280, 720) NPC interaction opens dialogue
+PASS: (1280, 720) dialogue next works
+PASS: (1280, 720) dialogue close restores movement
+PASS: (1280, 720) save/menu return enables continue
+PASS: (1280, 720) continue restores saved map and form
+PASS: (2400, 1080) 게임 시작 touch bounds visible
+PASS: (2400, 1080) 이어하기 touch bounds visible
+PASS: (2400, 1080) 설정 touch bounds visible
+PASS: (2400, 1080) 종료 touch bounds visible
+PASS: (2400, 1080) pressed feedback without premature activation
+PASS: (2400, 1080) release opens settings
+PASS: (2400, 1080) camera preference changes through touch
+PASS: (2400, 1080) day/night preference changes through touch
+PASS: (2400, 1080) sound control fits viewport
+PASS: (2400, 1080) native touch changes sound preference
+PASS: (2400, 1080) settings touch close works
+PASS: (2400, 1080) release outside cancels settings
+PASS: (2400, 1080) rapid touch starts exactly one world
+PASS: (2400, 1080) native joystick moves player
+PASS: (2400, 1080) two-finger running while steering
+PASS: (2400, 1080) run release does not steal joystick finger
+PASS: (2400, 1080) second-finger spell while steering
+PASS: (2400, 1080) release stops steering and completes jar transformation
+PASS: (2400, 1080) modal blocks underlying controls
+PASS: (2400, 1080) Android back resumes gameplay
+PASS: (2400, 1080) NPC interaction opens dialogue
+PASS: (2400, 1080) dialogue next works
+PASS: (2400, 1080) dialogue close restores movement
+PASS: (2400, 1080) save/menu return enables continue
+PASS: (2400, 1080) continue restores saved map and form
+PASS: (2340, 1080) 게임 시작 touch bounds visible
+PASS: (2340, 1080) 이어하기 touch bounds visible
+PASS: (2340, 1080) 설정 touch bounds visible
+PASS: (2340, 1080) 종료 touch bounds visible
+PASS: (2340, 1080) pressed feedback without premature activation
+PASS: (2340, 1080) release opens settings
+PASS: (2340, 1080) camera preference changes through touch
+PASS: (2340, 1080) day/night preference changes through touch
+PASS: (2340, 1080) sound control fits viewport
+PASS: (2340, 1080) native touch changes sound preference
+PASS: (2340, 1080) settings touch close works
+PASS: (2340, 1080) release outside cancels settings
+PASS: (2340, 1080) rapid touch starts exactly one world
+PASS: (2340, 1080) native joystick moves player
+PASS: (2340, 1080) two-finger running while steering
+PASS: (2340, 1080) run release does not steal joystick finger
+PASS: (2340, 1080) second-finger spell while steering
+PASS: (2340, 1080) release stops steering and completes jar transformation
+PASS: (2340, 1080) modal blocks underlying controls
+PASS: (2340, 1080) Android back resumes gameplay
+PASS: (2340, 1080) NPC interaction opens dialogue
+PASS: (2340, 1080) dialogue next works
+PASS: (2340, 1080) dialogue close restores movement
+PASS: (2340, 1080) save/menu return enables continue
+PASS: (2340, 1080) continue restores saved map and form
+PASS: (2280, 1080) 게임 시작 touch bounds visible
+PASS: (2280, 1080) 이어하기 touch bounds visible
+PASS: (2280, 1080) 설정 touch bounds visible
+PASS: (2280, 1080) 종료 touch bounds visible
+PASS: (2280, 1080) pressed feedback without premature activation
+PASS: (2280, 1080) release opens settings
+PASS: (2280, 1080) camera preference changes through touch
+PASS: (2280, 1080) day/night preference changes through touch
+PASS: (2280, 1080) sound control fits viewport
+PASS: (2280, 1080) native touch changes sound preference
+PASS: (2280, 1080) settings touch close works
+PASS: (2280, 1080) release outside cancels settings
+PASS: (2280, 1080) rapid touch starts exactly one world
+PASS: (2280, 1080) native joystick moves player
+PASS: (2280, 1080) two-finger running while steering
+PASS: (2280, 1080) run release does not steal joystick finger
+PASS: (2280, 1080) second-finger spell while steering
+PASS: (2280, 1080) release stops steering and completes jar transformation
+PASS: (2280, 1080) modal blocks underlying controls
+PASS: (2280, 1080) Android back resumes gameplay
+PASS: (2280, 1080) NPC interaction opens dialogue
+PASS: (2280, 1080) dialogue next works
+PASS: (2280, 1080) dialogue close restores movement
+PASS: (2280, 1080) save/menu return enables continue
+PASS: (2280, 1080) continue restores saved map and form
+PASS: (960, 540) 게임 시작 touch bounds visible
+PASS: (960, 540) 이어하기 touch bounds visible
+PASS: (960, 540) 설정 touch bounds visible
+PASS: (960, 540) 종료 touch bounds visible
+PASS: (960, 540) pressed feedback without premature activation
+PASS: (960, 540) release opens settings
+PASS: (960, 540) camera preference changes through touch
+PASS: (960, 540) day/night preference changes through touch
+PASS: (960, 540) sound control fits viewport
+PASS: (960, 540) native touch changes sound preference
+PASS: (960, 540) settings touch close works
+PASS: (960, 540) release outside cancels settings
+PASS: (960, 540) rapid touch starts exactly one world
+PASS: (960, 540) native joystick moves player
+PASS: (960, 540) two-finger running while steering
+PASS: (960, 540) run release does not steal joystick finger
+PASS: (960, 540) second-finger spell while steering
+PASS: (960, 540) release stops steering and completes jar transformation
+PASS: (960, 540) modal blocks underlying controls
+PASS: (960, 540) Android back resumes gameplay
+PASS: (960, 540) NPC interaction opens dialogue
+PASS: (960, 540) dialogue next works
+PASS: (960, 540) dialogue close restores movement
+PASS: (960, 540) save/menu return enables continue
+PASS: (960, 540) continue restores saved map and form
+WOO TOUCH: 125 checks, 0 failures

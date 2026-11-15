@@ -1,17 +1,17 @@
-# 도사: 전우치 V0.1.2 — 성능·효과음 업데이트
+# 《도사》 V1.1 — 신비로운 조선 판타지 광장
 
-[APK 직접 다운로드 — 약 51MB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-0.1.2.apk)
+[Android APK 직접 다운로드 — 약 63MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.1.0.apk)
 
-삼성 내 파일 → 다운로드에서 APK를 열어 기존 앱 위에 업데이트 설치하세요. Android 10 이상 ARM64, 가로 화면. 패키지·서명·저장 호환성을 유지합니다.
+삼성 내 파일 → 다운로드에서 APK를 열어 기존 앱 위에 업데이트 설치하세요. Android 10 이상 ARM64, 가로 화면. 기존 패키지·서명·저장 호환성을 유지합니다.
 
-돌길 사전 렌더링, 가벼운 등불, 꽃잎 절감, 720p 내부 렌더링, 자동 저장 스레드와 터치 로그 기본 해제로 부하를 줄였습니다. 개발 소프트웨어 렌더러의 같은 장면에서 그리기 호출 10,902→151회. 갤럭시 FPS 측정은 아닙니다.
+실제 이동 면적 약 5.59배. 중앙 벚꽃 광장, 그림 장터, 조선 상점 거리, 연못 정원, 도술 수련소를 걸어서 탐험합니다. 새 한옥·정자·천년 벚꽃나무·장식·주민 8명·돌다리·물결을 추가했습니다.
 
-버튼·발걸음·항아리 이동·둔갑·대화 효과음 5종을 추가했습니다. 설정에서 효과음을 끌 수 있습니다. 네트워크 없이 재생합니다.
+메인 메뉴에 느린 패닝·줌과 벚꽃잎을 적용하고, 샘플 기반 효과음과 국악 배경음악을 포함했습니다. 설정에서 음악·효과음·환경 효과를 각각 조정합니다. 인터넷 없이 플레이합니다.
 
-게임 53, 네이티브 터치 125, 저장 복구 11, 효과음·비동기 저장 20개 검사, 재실행 검사, APK 검사 23개 통과. 최종 패키지 리소스 실행·성능 비교 통과. 실기기 FPS와 스피커 청취는 아직 검증하지 않았습니다.
+그림 3개는 접근·소개창만 제공하며 그림 속 임무는 준비 중입니다. 기존 이동·둔갑·대화·저장·이어하기를 유지합니다.
 
-[변경·검증 보고서](reports/jeon-woochi/0.1.2/PERFORMANCE-V0.1.2.md) / [성능 비교 JSON](reports/jeon-woochi/0.1.2/performance-comparison.json) / [실제 실행 화면](reports/jeon-woochi/0.1.2/screenshots/village.png)
+게임·터치·저장·광장 검사 259개, 재실행 검사, APK 검사 25개 통과. 최종 APK 리소스 광장 50개 및 렌더링 터치 125개 재검사 통과. 실제 갤럭시 FPS·발열·스피커 청취는 아직 검증하지 않았습니다.
 
-기존 APK와 공장 백업을 보존했습니다. SHA256SUMS.txt에서 파일별 무결성을 확인할 수 있습니다.
+[전체 구현·검증·변경 파일 보고서](reports/jeon-woochi/1.1.0/PLAZA-V1.1.md) / [광장 화면](reports/jeon-woochi/1.1.0/screenshots/v11-plaza.png) / [그림 장터](reports/jeon-woochi/1.1.0/screenshots/v11-paintings.png) / [정원](reports/jeon-woochi/1.1.0/screenshots/v11-garden.png)
 
-[Actions APK Artifacts](https://github.com/backtta-ui/suspicious-factory/actions/runs/43713439068) → `jeon-woochi-verified-apk` ZIP을 받아 압축을 풀고 APK를 설치할 수도 있습니다. 14일 보관. 공개 다운로드 및 아티팩트 재다운로드 SHA256 확인 완료.
+이전 APK와 공장·전우치 백업은 보존합니다. SHA256SUMS.txt에서 파일별 해시를 확인할 수 있습니다.

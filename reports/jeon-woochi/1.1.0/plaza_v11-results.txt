@@ -1,0 +1,55 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: animated entry artwork does not intercept touch
+PASS: entry scene motion advances
+PASS: bundled Korean BGM has a valid looping stream
+PASS: native touch toggles BGM independently
+PASS: quality setting reduces entry motion
+PASS: map expansion retains character/camera scale
+WALKABLE AREA: old=668800 new=3739200 ratio=5.59090909090909
+PASS: walkable area is approximately four to six times larger
+PASS: connected walkable route to 중앙 벚꽃 광장
+PASS: connected walkable route to 신비로운 그림 장터
+PASS: connected walkable route to 조선 상점 거리
+PASS: connected walkable route to 벚꽃 정원과 연못
+PASS: connected walkable route to 도술 수련소
+PASS: walkable approach to 여우의 숲
+PASS: walkable approach to 탐관오리의 관아
+PASS: walkable approach to 도깨비의 밤
+PASS: actual character walks to 중앙 벚꽃 광장
+PASS: actual character walks to 신비로운 그림 장터
+PASS: actual character walks to 조선 상점 거리
+PASS: actual character walks to 벚꽃 정원과 연못
+PASS: actual character walks to 도술 수련소
+PASS: pond rejects walking on water
+PASS: stone bridge deck crosses the pond
+PASS: physical character crosses the entire bridge
+PASS: pond collision stops the physical character
+PASS: painting proximity detected 0
+PASS: painting intro is honest about unavailable stage 0
+PASS: painting close restores movement without teleport 0
+PASS: future return anchor restores entry position 0
+PASS: painting proximity detected 1
+PASS: painting intro is honest about unavailable stage 1
+PASS: painting close restores movement without teleport 1
+PASS: future return anchor restores entry position 1
+PASS: painting proximity detected 2
+PASS: painting intro is honest about unavailable stage 2
+PASS: painting close restores movement without teleport 2
+PASS: future return anchor restores entry position 2
+PASS: original V0.1.2 save accepted before migration
+MIGRATED {"jar":true,"legacy_position":[940.0,520.0],"map":"gyewol_village","map_revision":2,"position":[988.0,520.0],"schema":1.0,"settings":{"smooth_camera":false},"talked_to_elder":true,"time_of_day":0.4,"unlocked":["jar"]}
+PASS: migration preserves role-free character state and original occupied position
+PASS: migrated position is nearby, safe and can be saved again
+PASS: future painting completion data persists
+PASS: tree growth reflects completion data without inventing a mission
+PASS: duplicate completion data rejected
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PLAZA V1.1: 50 checks, 0 failures
