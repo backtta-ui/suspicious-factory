@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "run_id": 43703375678,
+  "run_url": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43703375678",
+  "artifact_id": 14157159066,
+  "artifact_name": "jeon-woochi-v0.1-verified-apk",
+  "sha256": "4a91772d997ad7d28417c058af79de73503002f707035f1c25194037f46f8d7a",
+  "purpose": "Cloud-built APK verified and delivered through Actions Artifacts; not a remote game compile"
+}

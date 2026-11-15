@@ -11,3 +11,5 @@ Android 10 이상 ARM64, 가로 화면. 삼성 내 파일 → 다운로드에서
 [검증 보고서](reports/jeon-woochi/0.1.0/CONVERSION-V0.1.md) / [게임 화면](reports/jeon-woochi/0.1.0/screenshots/village.png) / [소스](https://github.com/backtta-ui/suspicious-factory/tree/main) / [기존 공장 백업](https://github.com/backtta-ui/suspicious-factory/tree/backup/suspicious-factory)
 
 기존 공장 APK와 보고서는 삭제하지 않고 보존했습니다. SHA256SUMS.txt에서 파일별 무결성을 확인할 수 있습니다. 키·토큰은 포함하지 않습니다.
+
+[Actions APK 아티팩트](https://github.com/backtta-ui/suspicious-factory/actions/runs/43703375678) — GitHub 로그인 후 Artifacts의 `jeon-woochi-v0.1-verified-apk` ZIP을 받습니다. 압축을 풀고 APK를 설치하세요. 보관 기간은 14일이며 위의 직접 APK 주소는 계속 유지합니다.
