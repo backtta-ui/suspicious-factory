@@ -1,0 +1,1333 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+[TOUCH 0001] READY V0.1.1 touch→mouse=true
+PASS: shipped configuration enables touch-to-mouse
+PASS: runtime touch-to-mouse enabled
+[TOUCH 0002] DOWN id=0 xy=(371.5, 493.0) window=(371.5, 493.0) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0003] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0004] UP id=0 xy=(371.5, 493.0) window=(371.5, 493.0) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0005] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+PASS: V0.1.0 negative control: no pressed signal for 공장 들어가기   →
+[TOUCH 0006] DOWN id=0 xy=(312.5, 571.0) window=(312.5, 571.0) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0007] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0008] UP id=0 xy=(312.5, 571.0) window=(312.5, 571.0) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0009] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+PASS: V0.1.0 negative control: no pressed signal for 캐릭터 꾸미기
+[TOUCH 0010] DOWN id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0011] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0012] UP id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0013] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: V0.1.0 negative control: no pressed signal for 설정
+[TOUCH 0014] SCREEN menu
+GEOMETRY window=(1280, 720) logical=[P: (0.0, 0.0), S: (1280.0, 720.0)] transform=[X: (1.0, 0.0), Y: (0.0, 1.0), O: (0.0, 0.0)]
+PASS: (1280, 720) 공장 들어가기   → enabled and touch-sized
+PASS: (1280, 720) 공장 들어가기   → lies inside drawable viewport
+PASS: (1280, 720) 공장 들어가기   → pressed color differs from normal
+PASS: (1280, 720) 캐릭터 꾸미기 enabled and touch-sized
+PASS: (1280, 720) 캐릭터 꾸미기 lies inside drawable viewport
+PASS: (1280, 720) 캐릭터 꾸미기 pressed color differs from normal
+PASS: (1280, 720) 설정 enabled and touch-sized
+PASS: (1280, 720) 설정 lies inside drawable viewport
+PASS: (1280, 720) 설정 pressed color differs from normal
+[TOUCH 0015] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0016] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0017] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0018] DOWN id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0019] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (1280, 720) settings press signal and visible pressed style
+PASS: (1280, 720) press alone does not activate
+PASS: (1280, 720) native pixel -> logical touch matches actual button center
+[TOUCH 0020] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0021] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0022] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0023] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0024] UP id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0025] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0026] MODAL open settings
+PASS: (1280, 720) release activates settings exactly once
+[TOUCH 0027] MOUSE pressed=true xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0028] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0029] BUTTON_DOWN button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0030] DOWN id=0 xy=(640.0, 430.0) window=(640.0, 430.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0031] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0032] MOUSE pressed=false xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0033] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0034] PRESSED button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0035] BUTTON_UP button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0036] UP id=0 xy=(640.0, 430.0) window=(640.0, 430.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0037] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0038] MODAL close settings
+PASS: (1280, 720) settings continue returns to menu
+[TOUCH 0039] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0040] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0041] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0042] DOWN id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0043] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0044] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0045] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0046] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0047] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0048] UP id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0049] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0050] MODAL open settings
+[TOUCH 0051] MODAL close settings
+PASS: (1280, 720) Android back closes settings
+[TOUCH 0052] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0053] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0054] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0055] DOWN id=0 xy=(645.0, 571.0) window=(645.0, 571.0) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0056] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0057] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0058] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0059] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0060] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0061] UP id=0 xy=(10.0, 10.0) window=(10.0, 10.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0062] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (1280, 720) release outside button cancels activation
+[TOUCH 0063] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0064] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0065] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0066] DOWN id=0 xy=(312.5, 571.0) window=(312.5, 571.0) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0067] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0068] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0069] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0070] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0071] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0072] UP id=0 xy=(312.5, 571.0) window=(312.5, 571.0) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0073] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0074] SCREEN customize
+PASS: (1280, 720) customization opens by touch
+PASS: (1280, 720) independent hat and vest choices exist
+[TOUCH 0075] MOUSE pressed=true xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0076] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0077] BUTTON_DOWN button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0078] DOWN id=0 xy=(1140.5, 364.0) window=(1140.5, 364.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0079] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0080] MOUSE pressed=false xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0081] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0082] PRESSED button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0083] BUTTON_UP button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0084] UP id=0 xy=(1140.5, 364.0) window=(1140.5, 364.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0085] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0086] MOUSE pressed=true xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0087] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0088] BUTTON_DOWN button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0089] DOWN id=0 xy=(940.0, 489.0) window=(940.0, 489.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0090] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0091] MOUSE pressed=false xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0092] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0093] PRESSED button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0094] BUTTON_UP button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0095] UP id=0 xy=(940.0, 489.0) window=(940.0, 489.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0096] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+PASS: (1280, 720) green cap and blue vest selected through GUI
+[TOUCH 0097] MOUSE pressed=true xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0098] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0099] BUTTON_DOWN button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0100] DOWN id=0 xy=(940.0, 364.0) window=(940.0, 364.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0101] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0102] MOUSE pressed=false xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0103] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0104] PRESSED button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0105] BUTTON_UP button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0106] UP id=0 xy=(940.0, 364.0) window=(940.0, 364.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0107] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0108] MOUSE pressed=true xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0109] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0110] BUTTON_DOWN button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0111] DOWN id=0 xy=(1140.5, 489.0) window=(1140.5, 489.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0112] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0113] MOUSE pressed=false xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0114] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0115] PRESSED button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0116] BUTTON_UP button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0117] UP id=0 xy=(1140.5, 489.0) window=(1140.5, 489.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0118] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+PASS: (1280, 720) blue cap and green vest selected through GUI
+[TOUCH 0119] MOUSE pressed=true xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0120] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0121] BUTTON_DOWN button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0122] DOWN id=0 xy=(640.0, 58.0) window=(640.0, 58.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0123] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0124] MOUSE pressed=false xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0125] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0126] PRESSED button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0127] BUTTON_UP button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0128] UP id=0 xy=(640.0, 58.0) window=(640.0, 58.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0129] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0130] SCREEN menu
+PASS: (1280, 720) customization back button returns to menu
+[TOUCH 0131] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0132] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0133] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0134] DOWN id=0 xy=(312.5, 571.0) window=(312.5, 571.0) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0135] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0136] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0137] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0138] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0139] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0140] UP id=0 xy=(312.5, 571.0) window=(312.5, 571.0) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0141] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0142] SCREEN customize
+[TOUCH 0143] SCREEN menu
+PASS: (1280, 720) Android back returns from customization
+[TOUCH 0144] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0145] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0146] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0147] DOWN id=0 xy=(371.5, 493.0) window=(371.5, 493.0) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0148] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0149] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0150] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0151] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0152] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0153] UP id=0 xy=(371.5, 493.0) window=(371.5, 493.0) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0154] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0155] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0156] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0157] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0158] DOWN id=0 xy=(371.5, 493.0) window=(371.5, 493.0) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0159] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0160] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0161] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0162] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0163] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0164] UP id=0 xy=(371.5, 493.0) window=(371.5, 493.0) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0165] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0166] SCREEN factory
+PASS: (1280, 720) rapid touches create exactly one factory world
+PASS: (1280, 720) worker spawned with tracking camera
+[TOUCH 0167] MOUSE pressed=true xy=(155.0, 599.0) emulated=true screen=factory
+[TOUCH 0168] DOWN id=0 xy=(155.0, 599.0) window=(155.0, 599.0) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0169] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (1280, 720) native drag owns joystick; emulated mouse ignored
+PASS: (1280, 720) touch joystick moves worker
+[TOUCH 0170] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0171] UP id=0 xy=(200.0, 599.0) window=(200.0, 599.0) view=(1280.0, 720.0) screen=factory buttons=
+PASS: (1280, 720) touch release clears joystick
+[TOUCH 0172] MOUSE pressed=true xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0173] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0174] BUTTON_DOWN button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0175] DOWN id=0 xy=(1188.0, 74.5) window=(1188.0, 74.5) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0176] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0177] MOUSE pressed=false xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0178] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0179] PRESSED button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0180] BUTTON_UP button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0181] UP id=0 xy=(1188.0, 74.5) window=(1188.0, 74.5) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0182] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0183] MODAL open settings
+[TOUCH 0184] MOUSE pressed=true xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0185] DOWN id=0 xy=(200.0, 599.0) window=(200.0, 599.0) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0186] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (1280, 720) settings shade blocks joystick movement
+[TOUCH 0187] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0188] UP id=0 xy=(200.0, 599.0) window=(200.0, 599.0) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0189] MOUSE pressed=true xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0190] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0191] BUTTON_DOWN button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0192] DOWN id=0 xy=(640.0, 469.0) window=(640.0, 469.0) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0193] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0194] MOUSE pressed=false xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0195] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0196] PRESSED button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0197] BUTTON_UP button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0198] UP id=0 xy=(640.0, 469.0) window=(640.0, 469.0) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0199] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0200] MODAL close settings
+[TOUCH 0201] SCREEN menu
+PASS: (1280, 720) settings menu return destroys old world
+[TOUCH 0202] SCREEN menu
+GEOMETRY window=(2400, 1080) logical=[P: (0.0, 0.0), S: (1280.0, 720.0)] transform=[X: (1.5, 0.0), Y: (0.0, 1.5), O: (240.0, 0.0)]
+PASS: (2400, 1080) 공장 들어가기   → enabled and touch-sized
+PASS: (2400, 1080) 공장 들어가기   → lies inside drawable viewport
+PASS: (2400, 1080) 공장 들어가기   → pressed color differs from normal
+PASS: (2400, 1080) 캐릭터 꾸미기 enabled and touch-sized
+PASS: (2400, 1080) 캐릭터 꾸미기 lies inside drawable viewport
+PASS: (2400, 1080) 캐릭터 꾸미기 pressed color differs from normal
+PASS: (2400, 1080) 설정 enabled and touch-sized
+PASS: (2400, 1080) 설정 lies inside drawable viewport
+PASS: (2400, 1080) 설정 pressed color differs from normal
+[TOUCH 0203] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0204] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0205] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0206] DOWN id=0 xy=(645.0, 571.0) window=(1207.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0207] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (2400, 1080) settings press signal and visible pressed style
+PASS: (2400, 1080) press alone does not activate
+PASS: (2400, 1080) native pixel -> logical touch matches actual button center
+[TOUCH 0208] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0209] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0210] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0211] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0212] UP id=0 xy=(645.0, 571.0) window=(1207.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0213] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0214] MODAL open settings
+PASS: (2400, 1080) release activates settings exactly once
+[TOUCH 0215] MOUSE pressed=true xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0216] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0217] BUTTON_DOWN button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0218] DOWN id=0 xy=(640.0, 430.0) window=(1200.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0219] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0220] MOUSE pressed=false xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0221] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0222] PRESSED button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0223] BUTTON_UP button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0224] UP id=0 xy=(640.0, 430.0) window=(1200.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0225] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0226] MODAL close settings
+PASS: (2400, 1080) settings continue returns to menu
+[TOUCH 0227] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0228] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0229] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0230] DOWN id=0 xy=(645.0, 571.0) window=(1207.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0231] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0232] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0233] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0234] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0235] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0236] UP id=0 xy=(645.0, 571.0) window=(1207.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0237] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0238] MODAL open settings
+[TOUCH 0239] MODAL close settings
+PASS: (2400, 1080) Android back closes settings
+[TOUCH 0240] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0241] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0242] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0243] DOWN id=0 xy=(645.0, 571.0) window=(1207.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0244] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0245] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0246] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0247] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0248] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0249] UP id=0 xy=(10.0, 10.0) window=(255.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0250] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (2400, 1080) release outside button cancels activation
+[TOUCH 0251] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0252] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0253] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0254] DOWN id=0 xy=(312.5, 571.0) window=(708.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0255] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0256] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0257] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0258] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0259] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0260] UP id=0 xy=(312.5, 571.0) window=(708.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0261] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0262] SCREEN customize
+PASS: (2400, 1080) customization opens by touch
+PASS: (2400, 1080) independent hat and vest choices exist
+[TOUCH 0263] MOUSE pressed=true xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0264] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0265] BUTTON_DOWN button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0266] DOWN id=0 xy=(1140.5, 364.0) window=(1950.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0267] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0268] MOUSE pressed=false xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0269] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0270] PRESSED button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0271] BUTTON_UP button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0272] UP id=0 xy=(1140.5, 364.0) window=(1950.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0273] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0274] MOUSE pressed=true xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0275] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0276] BUTTON_DOWN button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0277] DOWN id=0 xy=(940.0, 489.0) window=(1650.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0278] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0279] MOUSE pressed=false xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0280] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0281] PRESSED button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0282] BUTTON_UP button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0283] UP id=0 xy=(940.0, 489.0) window=(1650.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0284] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+PASS: (2400, 1080) green cap and blue vest selected through GUI
+[TOUCH 0285] MOUSE pressed=true xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0286] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0287] BUTTON_DOWN button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0288] DOWN id=0 xy=(940.0, 364.0) window=(1650.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0289] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0290] MOUSE pressed=false xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0291] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0292] PRESSED button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0293] BUTTON_UP button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0294] UP id=0 xy=(940.0, 364.0) window=(1650.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0295] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0296] MOUSE pressed=true xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0297] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0298] BUTTON_DOWN button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0299] DOWN id=0 xy=(1140.5, 489.0) window=(1950.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0300] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0301] MOUSE pressed=false xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0302] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0303] PRESSED button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0304] BUTTON_UP button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0305] UP id=0 xy=(1140.5, 489.0) window=(1950.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0306] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+PASS: (2400, 1080) blue cap and green vest selected through GUI
+[TOUCH 0307] MOUSE pressed=true xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0308] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0309] BUTTON_DOWN button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0310] DOWN id=0 xy=(640.0, 58.0) window=(1200.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0311] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0312] MOUSE pressed=false xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0313] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0314] PRESSED button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0315] BUTTON_UP button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0316] UP id=0 xy=(640.0, 58.0) window=(1200.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0317] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0318] SCREEN menu
+PASS: (2400, 1080) customization back button returns to menu
+[TOUCH 0319] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0320] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0321] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0322] DOWN id=0 xy=(312.5, 571.0) window=(708.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0323] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0324] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0325] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0326] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0327] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0328] UP id=0 xy=(312.5, 571.0) window=(708.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0329] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0330] SCREEN customize
+[TOUCH 0331] SCREEN menu
+PASS: (2400, 1080) Android back returns from customization
+[TOUCH 0332] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0333] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0334] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0335] DOWN id=0 xy=(371.5, 493.0) window=(797.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0336] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0337] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0338] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0339] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0340] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0341] UP id=0 xy=(371.5, 493.0) window=(797.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0342] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0343] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0344] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0345] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0346] DOWN id=0 xy=(371.5, 493.0) window=(797.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0347] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0348] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0349] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0350] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0351] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0352] UP id=0 xy=(371.5, 493.0) window=(797.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0353] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0354] SCREEN factory
+PASS: (2400, 1080) rapid touches create exactly one factory world
+PASS: (2400, 1080) worker spawned with tracking camera
+[TOUCH 0355] MOUSE pressed=true xy=(155.0, 599.0) emulated=true screen=factory
+[TOUCH 0356] DOWN id=0 xy=(155.0, 599.0) window=(472.5, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0357] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (2400, 1080) native drag owns joystick; emulated mouse ignored
+PASS: (2400, 1080) touch joystick moves worker
+[TOUCH 0358] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0359] UP id=0 xy=(200.0, 599.0) window=(540.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+PASS: (2400, 1080) touch release clears joystick
+[TOUCH 0360] MOUSE pressed=true xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0361] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0362] BUTTON_DOWN button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0363] DOWN id=0 xy=(1188.0, 74.5) window=(2022.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0364] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0365] MOUSE pressed=false xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0366] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0367] PRESSED button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0368] BUTTON_UP button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0369] UP id=0 xy=(1188.0, 74.5) window=(2022.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0370] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0371] MODAL open settings
+[TOUCH 0372] MOUSE pressed=true xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0373] DOWN id=0 xy=(200.0, 599.0) window=(540.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0374] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (2400, 1080) settings shade blocks joystick movement
+[TOUCH 0375] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0376] UP id=0 xy=(200.0, 599.0) window=(540.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0377] MOUSE pressed=true xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0378] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0379] BUTTON_DOWN button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0380] DOWN id=0 xy=(640.0, 469.0) window=(1200.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0381] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0382] MOUSE pressed=false xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0383] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0384] PRESSED button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0385] BUTTON_UP button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0386] UP id=0 xy=(640.0, 469.0) window=(1200.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0387] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0388] MODAL close settings
+[TOUCH 0389] SCREEN menu
+PASS: (2400, 1080) settings menu return destroys old world
+[TOUCH 0390] SCREEN menu
+GEOMETRY window=(2340, 1080) logical=[P: (0.0, 0.0), S: (1280.0, 720.0)] transform=[X: (1.5, 0.0), Y: (0.0, 1.5), O: (210.0, 0.0)]
+PASS: (2340, 1080) 공장 들어가기   → enabled and touch-sized
+PASS: (2340, 1080) 공장 들어가기   → lies inside drawable viewport
+PASS: (2340, 1080) 공장 들어가기   → pressed color differs from normal
+PASS: (2340, 1080) 캐릭터 꾸미기 enabled and touch-sized
+PASS: (2340, 1080) 캐릭터 꾸미기 lies inside drawable viewport
+PASS: (2340, 1080) 캐릭터 꾸미기 pressed color differs from normal
+PASS: (2340, 1080) 설정 enabled and touch-sized
+PASS: (2340, 1080) 설정 lies inside drawable viewport
+PASS: (2340, 1080) 설정 pressed color differs from normal
+[TOUCH 0391] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0392] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0393] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0394] DOWN id=0 xy=(645.0, 571.0) window=(1177.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0395] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (2340, 1080) settings press signal and visible pressed style
+PASS: (2340, 1080) press alone does not activate
+PASS: (2340, 1080) native pixel -> logical touch matches actual button center
+[TOUCH 0396] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0397] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0398] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0399] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0400] UP id=0 xy=(645.0, 571.0) window=(1177.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0401] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0402] MODAL open settings
+PASS: (2340, 1080) release activates settings exactly once
+[TOUCH 0403] MOUSE pressed=true xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0404] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0405] BUTTON_DOWN button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0406] DOWN id=0 xy=(640.0, 430.0) window=(1170.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0407] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0408] MOUSE pressed=false xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0409] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0410] PRESSED button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0411] BUTTON_UP button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0412] UP id=0 xy=(640.0, 430.0) window=(1170.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0413] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0414] MODAL close settings
+PASS: (2340, 1080) settings continue returns to menu
+[TOUCH 0415] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0416] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0417] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0418] DOWN id=0 xy=(645.0, 571.0) window=(1177.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0419] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0420] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0421] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0422] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0423] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0424] UP id=0 xy=(645.0, 571.0) window=(1177.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0425] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0426] MODAL open settings
+[TOUCH 0427] MODAL close settings
+PASS: (2340, 1080) Android back closes settings
+[TOUCH 0428] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0429] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0430] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0431] DOWN id=0 xy=(645.0, 571.0) window=(1177.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0432] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0433] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0434] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0435] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0436] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0437] UP id=0 xy=(10.0, 10.0) window=(225.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0438] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (2340, 1080) release outside button cancels activation
+[TOUCH 0439] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0440] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0441] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0442] DOWN id=0 xy=(312.5, 571.0) window=(678.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0443] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0444] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0445] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0446] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0447] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0448] UP id=0 xy=(312.5, 571.0) window=(678.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0449] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0450] SCREEN customize
+PASS: (2340, 1080) customization opens by touch
+PASS: (2340, 1080) independent hat and vest choices exist
+[TOUCH 0451] MOUSE pressed=true xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0452] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0453] BUTTON_DOWN button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0454] DOWN id=0 xy=(1140.5, 364.0) window=(1920.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0455] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0456] MOUSE pressed=false xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0457] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0458] PRESSED button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0459] BUTTON_UP button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0460] UP id=0 xy=(1140.5, 364.0) window=(1920.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0461] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0462] MOUSE pressed=true xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0463] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0464] BUTTON_DOWN button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0465] DOWN id=0 xy=(940.0, 489.0) window=(1620.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0466] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0467] MOUSE pressed=false xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0468] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0469] PRESSED button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0470] BUTTON_UP button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0471] UP id=0 xy=(940.0, 489.0) window=(1620.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0472] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+PASS: (2340, 1080) green cap and blue vest selected through GUI
+[TOUCH 0473] MOUSE pressed=true xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0474] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0475] BUTTON_DOWN button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0476] DOWN id=0 xy=(940.0, 364.0) window=(1620.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0477] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0478] MOUSE pressed=false xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0479] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0480] PRESSED button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0481] BUTTON_UP button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0482] UP id=0 xy=(940.0, 364.0) window=(1620.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0483] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0484] MOUSE pressed=true xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0485] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0486] BUTTON_DOWN button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0487] DOWN id=0 xy=(1140.5, 489.0) window=(1920.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0488] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0489] MOUSE pressed=false xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0490] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0491] PRESSED button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0492] BUTTON_UP button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0493] UP id=0 xy=(1140.5, 489.0) window=(1920.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0494] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+PASS: (2340, 1080) blue cap and green vest selected through GUI
+[TOUCH 0495] MOUSE pressed=true xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0496] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0497] BUTTON_DOWN button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0498] DOWN id=0 xy=(640.0, 58.0) window=(1170.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0499] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0500] MOUSE pressed=false xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0501] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0502] PRESSED button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0503] BUTTON_UP button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0504] UP id=0 xy=(640.0, 58.0) window=(1170.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0505] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0506] SCREEN menu
+PASS: (2340, 1080) customization back button returns to menu
+[TOUCH 0507] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0508] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0509] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0510] DOWN id=0 xy=(312.5, 571.0) window=(678.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0511] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0512] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0513] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0514] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0515] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0516] UP id=0 xy=(312.5, 571.0) window=(678.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0517] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0518] SCREEN customize
+[TOUCH 0519] SCREEN menu
+PASS: (2340, 1080) Android back returns from customization
+[TOUCH 0520] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0521] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0522] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0523] DOWN id=0 xy=(371.5, 493.0) window=(767.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0524] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0525] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0526] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0527] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0528] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0529] UP id=0 xy=(371.5, 493.0) window=(767.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0530] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0531] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0532] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0533] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0534] DOWN id=0 xy=(371.5, 493.0) window=(767.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0535] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0536] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0537] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0538] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0539] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0540] UP id=0 xy=(371.5, 493.0) window=(767.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0541] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0542] SCREEN factory
+PASS: (2340, 1080) rapid touches create exactly one factory world
+PASS: (2340, 1080) worker spawned with tracking camera
+[TOUCH 0543] MOUSE pressed=true xy=(155.0, 599.0) emulated=true screen=factory
+[TOUCH 0544] DOWN id=0 xy=(155.0, 599.0) window=(442.5, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0545] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (2340, 1080) native drag owns joystick; emulated mouse ignored
+PASS: (2340, 1080) touch joystick moves worker
+[TOUCH 0546] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0547] UP id=0 xy=(200.0, 599.0) window=(510.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+PASS: (2340, 1080) touch release clears joystick
+[TOUCH 0548] MOUSE pressed=true xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0549] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0550] BUTTON_DOWN button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0551] DOWN id=0 xy=(1188.0, 74.5) window=(1992.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0552] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0553] MOUSE pressed=false xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0554] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0555] PRESSED button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0556] BUTTON_UP button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0557] UP id=0 xy=(1188.0, 74.5) window=(1992.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0558] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0559] MODAL open settings
+[TOUCH 0560] MOUSE pressed=true xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0561] DOWN id=0 xy=(200.0, 599.0) window=(510.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0562] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (2340, 1080) settings shade blocks joystick movement
+[TOUCH 0563] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0564] UP id=0 xy=(200.0, 599.0) window=(510.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0565] MOUSE pressed=true xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0566] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0567] BUTTON_DOWN button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0568] DOWN id=0 xy=(640.0, 469.0) window=(1170.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0569] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0570] MOUSE pressed=false xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0571] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0572] PRESSED button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0573] BUTTON_UP button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0574] UP id=0 xy=(640.0, 469.0) window=(1170.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0575] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0576] MODAL close settings
+[TOUCH 0577] SCREEN menu
+PASS: (2340, 1080) settings menu return destroys old world
+[TOUCH 0578] SCREEN menu
+GEOMETRY window=(2280, 1080) logical=[P: (0.0, 0.0), S: (1280.0, 720.0)] transform=[X: (1.5, 0.0), Y: (0.0, 1.5), O: (180.0, 0.0)]
+PASS: (2280, 1080) 공장 들어가기   → enabled and touch-sized
+PASS: (2280, 1080) 공장 들어가기   → lies inside drawable viewport
+PASS: (2280, 1080) 공장 들어가기   → pressed color differs from normal
+PASS: (2280, 1080) 캐릭터 꾸미기 enabled and touch-sized
+PASS: (2280, 1080) 캐릭터 꾸미기 lies inside drawable viewport
+PASS: (2280, 1080) 캐릭터 꾸미기 pressed color differs from normal
+PASS: (2280, 1080) 설정 enabled and touch-sized
+PASS: (2280, 1080) 설정 lies inside drawable viewport
+PASS: (2280, 1080) 설정 pressed color differs from normal
+[TOUCH 0579] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0580] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0581] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0582] DOWN id=0 xy=(645.0, 571.0) window=(1147.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0583] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (2280, 1080) settings press signal and visible pressed style
+PASS: (2280, 1080) press alone does not activate
+PASS: (2280, 1080) native pixel -> logical touch matches actual button center
+[TOUCH 0584] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0585] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0586] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0587] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0588] UP id=0 xy=(645.0, 571.0) window=(1147.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0589] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0590] MODAL open settings
+PASS: (2280, 1080) release activates settings exactly once
+[TOUCH 0591] MOUSE pressed=true xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0592] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0593] BUTTON_DOWN button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0594] DOWN id=0 xy=(640.0, 430.0) window=(1140.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0595] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0596] MOUSE pressed=false xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0597] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0598] PRESSED button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0599] BUTTON_UP button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0600] UP id=0 xy=(640.0, 430.0) window=(1140.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0601] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0602] MODAL close settings
+PASS: (2280, 1080) settings continue returns to menu
+[TOUCH 0603] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0604] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0605] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0606] DOWN id=0 xy=(645.0, 571.0) window=(1147.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0607] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0608] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0609] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0610] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0611] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0612] UP id=0 xy=(645.0, 571.0) window=(1147.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0613] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0614] MODAL open settings
+[TOUCH 0615] MODAL close settings
+PASS: (2280, 1080) Android back closes settings
+[TOUCH 0616] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0617] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0618] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0619] DOWN id=0 xy=(645.0, 571.0) window=(1147.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0620] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0621] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0622] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0623] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0624] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0625] UP id=0 xy=(10.0, 10.0) window=(195.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0626] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (2280, 1080) release outside button cancels activation
+[TOUCH 0627] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0628] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0629] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0630] DOWN id=0 xy=(312.5, 571.0) window=(648.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0631] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0632] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0633] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0634] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0635] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0636] UP id=0 xy=(312.5, 571.0) window=(648.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0637] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0638] SCREEN customize
+PASS: (2280, 1080) customization opens by touch
+PASS: (2280, 1080) independent hat and vest choices exist
+[TOUCH 0639] MOUSE pressed=true xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0640] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0641] BUTTON_DOWN button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0642] DOWN id=0 xy=(1140.5, 364.0) window=(1890.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0643] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0644] MOUSE pressed=false xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0645] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0646] PRESSED button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0647] BUTTON_UP button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0648] UP id=0 xy=(1140.5, 364.0) window=(1890.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0649] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0650] MOUSE pressed=true xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0651] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0652] BUTTON_DOWN button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0653] DOWN id=0 xy=(940.0, 489.0) window=(1590.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0654] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0655] MOUSE pressed=false xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0656] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0657] PRESSED button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0658] BUTTON_UP button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0659] UP id=0 xy=(940.0, 489.0) window=(1590.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0660] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+PASS: (2280, 1080) green cap and blue vest selected through GUI
+[TOUCH 0661] MOUSE pressed=true xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0662] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0663] BUTTON_DOWN button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0664] DOWN id=0 xy=(940.0, 364.0) window=(1590.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0665] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0666] MOUSE pressed=false xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0667] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0668] PRESSED button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0669] BUTTON_UP button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0670] UP id=0 xy=(940.0, 364.0) window=(1590.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0671] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0672] MOUSE pressed=true xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0673] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0674] BUTTON_DOWN button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0675] DOWN id=0 xy=(1140.5, 489.0) window=(1890.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0676] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0677] MOUSE pressed=false xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0678] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0679] PRESSED button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0680] BUTTON_UP button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0681] UP id=0 xy=(1140.5, 489.0) window=(1890.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0682] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+PASS: (2280, 1080) blue cap and green vest selected through GUI
+[TOUCH 0683] MOUSE pressed=true xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0684] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0685] BUTTON_DOWN button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0686] DOWN id=0 xy=(640.0, 58.0) window=(1140.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0687] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0688] MOUSE pressed=false xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0689] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0690] PRESSED button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0691] BUTTON_UP button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0692] UP id=0 xy=(640.0, 58.0) window=(1140.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0693] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0694] SCREEN menu
+PASS: (2280, 1080) customization back button returns to menu
+[TOUCH 0695] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0696] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0697] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0698] DOWN id=0 xy=(312.5, 571.0) window=(648.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0699] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0700] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0701] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0702] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0703] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0704] UP id=0 xy=(312.5, 571.0) window=(648.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0705] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0706] SCREEN customize
+[TOUCH 0707] SCREEN menu
+PASS: (2280, 1080) Android back returns from customization
+[TOUCH 0708] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0709] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0710] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0711] DOWN id=0 xy=(371.5, 493.0) window=(737.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0712] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0713] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0714] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0715] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0716] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0717] UP id=0 xy=(371.5, 493.0) window=(737.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0718] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0719] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0720] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0721] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0722] DOWN id=0 xy=(371.5, 493.0) window=(737.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0723] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0724] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0725] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0726] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0727] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0728] UP id=0 xy=(371.5, 493.0) window=(737.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0729] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0730] SCREEN factory
+PASS: (2280, 1080) rapid touches create exactly one factory world
+PASS: (2280, 1080) worker spawned with tracking camera
+[TOUCH 0731] MOUSE pressed=true xy=(155.0, 599.0) emulated=true screen=factory
+[TOUCH 0732] DOWN id=0 xy=(155.0, 599.0) window=(412.5, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0733] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (2280, 1080) native drag owns joystick; emulated mouse ignored
+PASS: (2280, 1080) touch joystick moves worker
+[TOUCH 0734] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0735] UP id=0 xy=(200.0, 599.0) window=(480.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+PASS: (2280, 1080) touch release clears joystick
+[TOUCH 0736] MOUSE pressed=true xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0737] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0738] BUTTON_DOWN button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0739] DOWN id=0 xy=(1188.0, 74.5) window=(1962.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0740] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0741] MOUSE pressed=false xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0742] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0743] PRESSED button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0744] BUTTON_UP button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0745] UP id=0 xy=(1188.0, 74.5) window=(1962.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0746] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0747] MODAL open settings
+[TOUCH 0748] MOUSE pressed=true xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0749] DOWN id=0 xy=(200.0, 599.0) window=(480.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0750] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (2280, 1080) settings shade blocks joystick movement
+[TOUCH 0751] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0752] UP id=0 xy=(200.0, 599.0) window=(480.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0753] MOUSE pressed=true xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0754] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0755] BUTTON_DOWN button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0756] DOWN id=0 xy=(640.0, 469.0) window=(1140.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0757] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0758] MOUSE pressed=false xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0759] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0760] PRESSED button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0761] BUTTON_UP button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0762] UP id=0 xy=(640.0, 469.0) window=(1140.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0763] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0764] MODAL close settings
+[TOUCH 0765] SCREEN menu
+PASS: (2280, 1080) settings menu return destroys old world
+[TOUCH 0766] SCREEN menu
+GEOMETRY window=(1920, 1080) logical=[P: (0.0, 0.0), S: (1280.0, 720.0)] transform=[X: (1.5, 0.0), Y: (0.0, 1.5), O: (0.0, 0.0)]
+PASS: (1920, 1080) 공장 들어가기   → enabled and touch-sized
+PASS: (1920, 1080) 공장 들어가기   → lies inside drawable viewport
+PASS: (1920, 1080) 공장 들어가기   → pressed color differs from normal
+PASS: (1920, 1080) 캐릭터 꾸미기 enabled and touch-sized
+PASS: (1920, 1080) 캐릭터 꾸미기 lies inside drawable viewport
+PASS: (1920, 1080) 캐릭터 꾸미기 pressed color differs from normal
+PASS: (1920, 1080) 설정 enabled and touch-sized
+PASS: (1920, 1080) 설정 lies inside drawable viewport
+PASS: (1920, 1080) 설정 pressed color differs from normal
+[TOUCH 0767] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0768] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0769] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0770] DOWN id=0 xy=(645.0, 571.0) window=(967.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0771] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (1920, 1080) settings press signal and visible pressed style
+PASS: (1920, 1080) press alone does not activate
+PASS: (1920, 1080) native pixel -> logical touch matches actual button center
+[TOUCH 0772] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0773] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0774] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0775] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0776] UP id=0 xy=(645.0, 571.0) window=(967.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0777] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0778] MODAL open settings
+PASS: (1920, 1080) release activates settings exactly once
+[TOUCH 0779] MOUSE pressed=true xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0780] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0781] BUTTON_DOWN button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0782] DOWN id=0 xy=(640.0, 430.0) window=(960.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0783] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0784] MOUSE pressed=false xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0785] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0786] PRESSED button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0787] BUTTON_UP button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0788] UP id=0 xy=(640.0, 430.0) window=(960.0, 645.0) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0789] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0790] MODAL close settings
+PASS: (1920, 1080) settings continue returns to menu
+[TOUCH 0791] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0792] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0793] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0794] DOWN id=0 xy=(645.0, 571.0) window=(967.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0795] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0796] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0797] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0798] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0799] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0800] UP id=0 xy=(645.0, 571.0) window=(967.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0801] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0802] MODAL open settings
+[TOUCH 0803] MODAL close settings
+PASS: (1920, 1080) Android back closes settings
+[TOUCH 0804] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0805] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0806] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0807] DOWN id=0 xy=(645.0, 571.0) window=(967.5, 856.5) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0808] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0809] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0810] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0811] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0812] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0813] UP id=0 xy=(10.0, 10.0) window=(15.0, 15.0) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 0814] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (1920, 1080) release outside button cancels activation
+[TOUCH 0815] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0816] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0817] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0818] DOWN id=0 xy=(312.5, 571.0) window=(468.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0819] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0820] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0821] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0822] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0823] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0824] UP id=0 xy=(312.5, 571.0) window=(468.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0825] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0826] SCREEN customize
+PASS: (1920, 1080) customization opens by touch
+PASS: (1920, 1080) independent hat and vest choices exist
+[TOUCH 0827] MOUSE pressed=true xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0828] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0829] BUTTON_DOWN button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0830] DOWN id=0 xy=(1140.5, 364.0) window=(1710.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0831] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0832] MOUSE pressed=false xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 0833] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0834] PRESSED button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0835] BUTTON_UP button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0836] UP id=0 xy=(1140.5, 364.0) window=(1710.75, 546.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0837] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0838] MOUSE pressed=true xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0839] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0840] BUTTON_DOWN button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0841] DOWN id=0 xy=(940.0, 489.0) window=(1410.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0842] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0843] MOUSE pressed=false xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 0844] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0845] PRESSED button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0846] BUTTON_UP button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0847] UP id=0 xy=(940.0, 489.0) window=(1410.0, 733.5) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0848] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+PASS: (1920, 1080) green cap and blue vest selected through GUI
+[TOUCH 0849] MOUSE pressed=true xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0850] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0851] BUTTON_DOWN button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0852] DOWN id=0 xy=(940.0, 364.0) window=(1410.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0853] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0854] MOUSE pressed=false xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 0855] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0856] PRESSED button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0857] BUTTON_UP button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0858] UP id=0 xy=(940.0, 364.0) window=(1410.0, 546.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 0859] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 0860] MOUSE pressed=true xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0861] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0862] BUTTON_DOWN button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0863] DOWN id=0 xy=(1140.5, 489.0) window=(1710.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0864] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0865] MOUSE pressed=false xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 0866] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0867] PRESSED button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0868] BUTTON_UP button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 0869] UP id=0 xy=(1140.5, 489.0) window=(1710.75, 733.5) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 0870] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+PASS: (1920, 1080) blue cap and green vest selected through GUI
+[TOUCH 0871] MOUSE pressed=true xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0872] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0873] BUTTON_DOWN button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0874] DOWN id=0 xy=(640.0, 58.0) window=(960.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0875] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0876] MOUSE pressed=false xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 0877] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0878] PRESSED button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0879] BUTTON_UP button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0880] UP id=0 xy=(640.0, 58.0) window=(960.0, 87.0) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 0881] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 0882] SCREEN menu
+PASS: (1920, 1080) customization back button returns to menu
+[TOUCH 0883] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0884] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0885] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0886] DOWN id=0 xy=(312.5, 571.0) window=(468.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0887] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0888] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 0889] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0890] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0891] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0892] UP id=0 xy=(312.5, 571.0) window=(468.75, 856.5) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 0893] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 0894] SCREEN customize
+[TOUCH 0895] SCREEN menu
+PASS: (1920, 1080) Android back returns from customization
+[TOUCH 0896] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0897] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0898] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0899] DOWN id=0 xy=(371.5, 493.0) window=(557.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0900] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0901] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0902] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0903] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0904] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0905] UP id=0 xy=(371.5, 493.0) window=(557.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0906] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0907] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0908] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0909] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0910] DOWN id=0 xy=(371.5, 493.0) window=(557.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0911] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0912] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 0913] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0914] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0915] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0916] UP id=0 xy=(371.5, 493.0) window=(557.25, 739.5) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 0917] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 0918] SCREEN factory
+PASS: (1920, 1080) rapid touches create exactly one factory world
+PASS: (1920, 1080) worker spawned with tracking camera
+[TOUCH 0919] MOUSE pressed=true xy=(155.0, 599.0) emulated=true screen=factory
+[TOUCH 0920] DOWN id=0 xy=(155.0, 599.0) window=(232.5, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0921] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (1920, 1080) native drag owns joystick; emulated mouse ignored
+PASS: (1920, 1080) touch joystick moves worker
+[TOUCH 0922] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0923] UP id=0 xy=(200.0, 599.0) window=(300.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+PASS: (1920, 1080) touch release clears joystick
+[TOUCH 0924] MOUSE pressed=true xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0925] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0926] BUTTON_DOWN button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0927] DOWN id=0 xy=(1188.0, 74.5) window=(1782.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0928] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0929] MOUSE pressed=false xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 0930] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0931] PRESSED button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0932] BUTTON_UP button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0933] UP id=0 xy=(1188.0, 74.5) window=(1782.0, 111.75) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 0934] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 0935] MODAL open settings
+[TOUCH 0936] MOUSE pressed=true xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0937] DOWN id=0 xy=(200.0, 599.0) window=(300.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0938] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (1920, 1080) settings shade blocks joystick movement
+[TOUCH 0939] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 0940] UP id=0 xy=(200.0, 599.0) window=(300.0, 898.5) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 0941] MOUSE pressed=true xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0942] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0943] BUTTON_DOWN button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0944] DOWN id=0 xy=(640.0, 469.0) window=(960.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0945] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0946] MOUSE pressed=false xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 0947] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0948] PRESSED button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0949] BUTTON_UP button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0950] UP id=0 xy=(640.0, 469.0) window=(960.0, 703.5) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 0951] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 0952] MODAL close settings
+[TOUCH 0953] SCREEN menu
+PASS: (1920, 1080) settings menu return destroys old world
+[TOUCH 0954] SCREEN menu
+GEOMETRY window=(960, 540) logical=[P: (0.0, 0.0), S: (1280.0, 720.0)] transform=[X: (0.75, 0.0), Y: (0.0, 0.75), O: (0.0, 0.0)]
+PASS: (960, 540) 공장 들어가기   → enabled and touch-sized
+PASS: (960, 540) 공장 들어가기   → lies inside drawable viewport
+PASS: (960, 540) 공장 들어가기   → pressed color differs from normal
+PASS: (960, 540) 캐릭터 꾸미기 enabled and touch-sized
+PASS: (960, 540) 캐릭터 꾸미기 lies inside drawable viewport
+PASS: (960, 540) 캐릭터 꾸미기 pressed color differs from normal
+PASS: (960, 540) 설정 enabled and touch-sized
+PASS: (960, 540) 설정 lies inside drawable viewport
+PASS: (960, 540) 설정 pressed color differs from normal
+[TOUCH 0955] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0956] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0957] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0958] DOWN id=0 xy=(645.0, 571.0) window=(483.75, 428.25) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0959] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (960, 540) settings press signal and visible pressed style
+PASS: (960, 540) press alone does not activate
+PASS: (960, 540) native pixel -> logical touch matches actual button center
+[TOUCH 0960] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0961] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0962] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0963] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0964] UP id=0 xy=(645.0, 571.0) window=(483.75, 428.25) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0965] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0966] MODAL open settings
+PASS: (960, 540) release activates settings exactly once
+[TOUCH 0967] MOUSE pressed=true xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0968] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0969] BUTTON_DOWN button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0970] DOWN id=0 xy=(640.0, 430.0) window=(480.0, 322.5) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0971] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0972] MOUSE pressed=false xy=(640.0, 430.0) emulated=true screen=menu
+[TOUCH 0973] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0974] PRESSED button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0975] BUTTON_UP button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0976] UP id=0 xy=(640.0, 430.0) window=(480.0, 322.5) view=(1280.0, 720.0) screen=menu buttons=계속하기:enabled
+[TOUCH 0977] GUI button=계속하기 rect=[P: (397.0, 398.0), S: (486.0, 64.0)] screen=menu
+[TOUCH 0978] MODAL close settings
+PASS: (960, 540) settings continue returns to menu
+[TOUCH 0979] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0980] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0981] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0982] DOWN id=0 xy=(645.0, 571.0) window=(483.75, 428.25) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0983] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0984] MOUSE pressed=false xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0985] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0986] PRESSED button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0987] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0988] UP id=0 xy=(645.0, 571.0) window=(483.75, 428.25) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0989] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0990] MODAL open settings
+[TOUCH 0991] MODAL close settings
+PASS: (960, 540) Android back closes settings
+[TOUCH 0992] MOUSE pressed=true xy=(645.0, 571.0) emulated=true screen=menu
+[TOUCH 0993] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0994] BUTTON_DOWN button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0995] DOWN id=0 xy=(645.0, 571.0) window=(483.75, 428.25) view=(1280.0, 720.0) screen=menu buttons=설정:enabled
+[TOUCH 0996] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 0997] DRAG id=0 xy=(10.0, 10.0) screen=menu
+[TOUCH 0998] MOUSE pressed=false xy=(10.0, 10.0) emulated=true screen=menu
+[TOUCH 0999] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 1000] BUTTON_UP button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+[TOUCH 1001] UP id=0 xy=(10.0, 10.0) window=(7.5, 7.5) view=(1280.0, 720.0) screen=menu buttons=
+[TOUCH 1002] GUI button=설정 rect=[P: (595.0, 539.0), S: (100.0, 64.0)] screen=menu
+PASS: (960, 540) release outside button cancels activation
+[TOUCH 1003] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 1004] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1005] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1006] DOWN id=0 xy=(312.5, 571.0) window=(234.375, 428.25) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 1007] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1008] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 1009] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1010] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1011] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1012] UP id=0 xy=(312.5, 571.0) window=(234.375, 428.25) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 1013] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1014] SCREEN customize
+PASS: (960, 540) customization opens by touch
+PASS: (960, 540) independent hat and vest choices exist
+[TOUCH 1015] MOUSE pressed=true xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 1016] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1017] BUTTON_DOWN button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1018] DOWN id=0 xy=(1140.5, 364.0) window=(855.375, 273.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 1019] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1020] MOUSE pressed=false xy=(1140.5, 364.0) emulated=true screen=customize
+[TOUCH 1021] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1022] PRESSED button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1023] BUTTON_UP button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1024] UP id=0 xy=(1140.5, 364.0) window=(855.375, 273.0) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 1025] GUI button=초록 rect=[P: (1049.0, 332.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1026] MOUSE pressed=true xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 1027] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1028] BUTTON_DOWN button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1029] DOWN id=0 xy=(940.0, 489.0) window=(705.0, 366.75) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 1030] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1031] MOUSE pressed=false xy=(940.0, 489.0) emulated=true screen=customize
+[TOUCH 1032] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1033] PRESSED button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1034] BUTTON_UP button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1035] UP id=0 xy=(940.0, 489.0) window=(705.0, 366.75) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 1036] GUI button=파랑 rect=[P: (849.0, 457.0), S: (182.0, 64.0)] screen=customize
+PASS: (960, 540) green cap and blue vest selected through GUI
+[TOUCH 1037] MOUSE pressed=true xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 1038] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1039] BUTTON_DOWN button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1040] DOWN id=0 xy=(940.0, 364.0) window=(705.0, 273.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 1041] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1042] MOUSE pressed=false xy=(940.0, 364.0) emulated=true screen=customize
+[TOUCH 1043] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1044] PRESSED button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1045] BUTTON_UP button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1046] UP id=0 xy=(940.0, 364.0) window=(705.0, 273.0) view=(1280.0, 720.0) screen=customize buttons=파랑:enabled
+[TOUCH 1047] GUI button=파랑 rect=[P: (849.0, 332.0), S: (182.0, 64.0)] screen=customize
+[TOUCH 1048] MOUSE pressed=true xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 1049] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1050] BUTTON_DOWN button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1051] DOWN id=0 xy=(1140.5, 489.0) window=(855.375, 366.75) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 1052] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1053] MOUSE pressed=false xy=(1140.5, 489.0) emulated=true screen=customize
+[TOUCH 1054] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1055] PRESSED button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1056] BUTTON_UP button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+[TOUCH 1057] UP id=0 xy=(1140.5, 489.0) window=(855.375, 366.75) view=(1280.0, 720.0) screen=customize buttons=초록:enabled
+[TOUCH 1058] GUI button=초록 rect=[P: (1049.0, 457.0), S: (183.0, 64.0)] screen=customize
+PASS: (960, 540) blue cap and green vest selected through GUI
+[TOUCH 1059] MOUSE pressed=true xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 1060] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1061] BUTTON_DOWN button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1062] DOWN id=0 xy=(640.0, 58.0) window=(480.0, 43.5) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 1063] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1064] MOUSE pressed=false xy=(640.0, 58.0) emulated=true screen=customize
+[TOUCH 1065] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1066] PRESSED button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1067] BUTTON_UP button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1068] UP id=0 xy=(640.0, 58.0) window=(480.0, 43.5) view=(1280.0, 720.0) screen=customize buttons=← 메인 메뉴:enabled
+[TOUCH 1069] GUI button=← 메인 메뉴 rect=[P: (48.0, 26.0), S: (1184.0, 64.0)] screen=customize
+[TOUCH 1070] SCREEN menu
+PASS: (960, 540) customization back button returns to menu
+[TOUCH 1071] MOUSE pressed=true xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 1072] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1073] BUTTON_DOWN button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1074] DOWN id=0 xy=(312.5, 571.0) window=(234.375, 428.25) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 1075] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1076] MOUSE pressed=false xy=(312.5, 571.0) emulated=true screen=menu
+[TOUCH 1077] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1078] PRESSED button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1079] BUTTON_UP button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1080] UP id=0 xy=(312.5, 571.0) window=(234.375, 428.25) view=(1280.0, 720.0) screen=menu buttons=캐릭터 꾸미기:enabled
+[TOUCH 1081] GUI button=캐릭터 꾸미기 rect=[P: (48.0, 539.0), S: (529.0, 64.0)] screen=menu
+[TOUCH 1082] SCREEN customize
+[TOUCH 1083] SCREEN menu
+PASS: (960, 540) Android back returns from customization
+[TOUCH 1084] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 1085] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1086] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1087] DOWN id=0 xy=(371.5, 493.0) window=(278.625, 369.75) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 1088] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1089] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 1090] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1091] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1092] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1093] UP id=0 xy=(371.5, 493.0) window=(278.625, 369.75) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 1094] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1095] MOUSE pressed=true xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 1096] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1097] BUTTON_DOWN button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1098] DOWN id=0 xy=(371.5, 493.0) window=(278.625, 369.75) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 1099] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1100] MOUSE pressed=false xy=(371.5, 493.0) emulated=true screen=menu
+[TOUCH 1101] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1102] PRESSED button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1103] BUTTON_UP button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1104] UP id=0 xy=(371.5, 493.0) window=(278.625, 369.75) view=(1280.0, 720.0) screen=menu buttons=공장 들어가기   →:enabled
+[TOUCH 1105] GUI button=공장 들어가기   → rect=[P: (48.0, 461.0), S: (647.0, 64.0)] screen=menu
+[TOUCH 1106] SCREEN factory
+PASS: (960, 540) rapid touches create exactly one factory world
+PASS: (960, 540) worker spawned with tracking camera
+[TOUCH 1107] MOUSE pressed=true xy=(155.0, 599.0) emulated=true screen=factory
+[TOUCH 1108] DOWN id=0 xy=(155.0, 599.0) window=(116.25, 449.25) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 1109] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (960, 540) native drag owns joystick; emulated mouse ignored
+PASS: (960, 540) touch joystick moves worker
+[TOUCH 1110] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 1111] UP id=0 xy=(200.0, 599.0) window=(150.0, 449.25) view=(1280.0, 720.0) screen=factory buttons=
+PASS: (960, 540) touch release clears joystick
+[TOUCH 1112] MOUSE pressed=true xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 1113] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1114] BUTTON_DOWN button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1115] DOWN id=0 xy=(1188.0, 74.5) window=(891.0, 55.875) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 1116] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1117] MOUSE pressed=false xy=(1188.0, 74.5) emulated=true screen=factory
+[TOUCH 1118] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1119] PRESSED button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1120] BUTTON_UP button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1121] UP id=0 xy=(1188.0, 74.5) window=(891.0, 55.875) view=(1280.0, 720.0) screen=factory buttons=설정  ☰:enabled
+[TOUCH 1122] GUI button=설정  ☰ rect=[P: (1132.0, 22.0), S: (112.0, 105.0)] screen=factory
+[TOUCH 1123] MODAL open settings
+[TOUCH 1124] MOUSE pressed=true xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 1125] DOWN id=0 xy=(200.0, 599.0) window=(150.0, 449.25) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 1126] DRAG id=0 xy=(200.0, 599.0) screen=factory
+PASS: (960, 540) settings shade blocks joystick movement
+[TOUCH 1127] MOUSE pressed=false xy=(200.0, 599.0) emulated=true screen=factory
+[TOUCH 1128] UP id=0 xy=(200.0, 599.0) window=(150.0, 449.25) view=(1280.0, 720.0) screen=factory buttons=
+[TOUCH 1129] MOUSE pressed=true xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 1130] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1131] BUTTON_DOWN button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1132] DOWN id=0 xy=(640.0, 469.0) window=(480.0, 351.75) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 1133] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1134] MOUSE pressed=false xy=(640.0, 469.0) emulated=true screen=factory
+[TOUCH 1135] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1136] PRESSED button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1137] BUTTON_UP button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1138] UP id=0 xy=(640.0, 469.0) window=(480.0, 351.75) view=(1280.0, 720.0) screen=factory buttons=메인 메뉴로:enabled
+[TOUCH 1139] GUI button=메인 메뉴로 rect=[P: (397.0, 437.0), S: (486.0, 64.0)] screen=factory
+[TOUCH 1140] MODAL close settings
+[TOUCH 1141] SCREEN menu
+PASS: (960, 540) settings menu return destroys old world
+PASS: touch diagnostics record coordinates, GUI, signals and screen transitions
+TOUCH UI: 180 checks, 0 failures

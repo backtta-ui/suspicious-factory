@@ -1,0 +1,274 @@
+$ apksigner verify --verbose --print-certs /workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk
+Verifies
+Verified using v1 scheme (JAR signing): false
+Verified using v2 scheme (APK Signature Scheme v2): false
+Verified using v3 scheme (APK Signature Scheme v3): true
+Verified using v3.1 scheme (APK Signature Scheme v3.1): false
+Verified using v4 scheme (APK Signature Scheme v4): false
+Verified for SourceStamp: false
+Number of signers: 1
+Signer #1 certificate DN: CN=Android Debug, O=Android, C=US
+Signer #1 certificate SHA-256 digest: ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39
+Signer #1 certificate SHA-1 digest: 9a52ce379022430c0f9684504cb630b6c5d76eed
+Signer #1 certificate MD5 digest: c3a13ad2c044f0ccc574ecb3833c3906
+Signer #1 key algorithm: RSA
+Signer #1 key size (bits): 2048
+Signer #1 public key SHA-256 digest: 412b7683d8b1bdff1ad06588aef49f0ea6a3d4bb9883ad655b2ba8e8f0242a0f
+Signer #1 public key SHA-1 digest: 8ff8318203ca5661db8946565724877ffb8ba69f
+Signer #1 public key MD5 digest: 843774d12330be251f408a8e93bfe318
+$ aapt dump badging /workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk
+package: name='com.suspiciousfactory.game' versionCode='2' versionName='0.1.1' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'
+install-location:'auto'
+sdkVersion:'29'
+targetSdkVersion:'36'
+application-label:'수상한 공장'
+application-label-af:'수상한 공장'
+application-label-am:'수상한 공장'
+application-label-ar:'수상한 공장'
+application-label-as:'수상한 공장'
+application-label-az:'수상한 공장'
+application-label-be:'수상한 공장'
+application-label-bg:'수상한 공장'
+application-label-bn:'수상한 공장'
+application-label-bs:'수상한 공장'
+application-label-ca:'수상한 공장'
+application-label-cs:'수상한 공장'
+application-label-da:'수상한 공장'
+application-label-de:'수상한 공장'
+application-label-el:'수상한 공장'
+application-label-en:'수상한 공장'
+application-label-en-AU:'수상한 공장'
+application-label-en-CA:'수상한 공장'
+application-label-en-GB:'수상한 공장'
+application-label-en-IN:'수상한 공장'
+application-label-en-XC:'수상한 공장'
+application-label-es:'수상한 공장'
+application-label-es-ES:'수상한 공장'
+application-label-es-US:'수상한 공장'
+application-label-et:'수상한 공장'
+application-label-eu:'수상한 공장'
+application-label-fa:'수상한 공장'
+application-label-fi:'수상한 공장'
+application-label-fr:'수상한 공장'
+application-label-fr-CA:'수상한 공장'
+application-label-gl:'수상한 공장'
+application-label-gu:'수상한 공장'
+application-label-hi:'수상한 공장'
+application-label-hr:'수상한 공장'
+application-label-hu:'수상한 공장'
+application-label-hy:'수상한 공장'
+application-label-in:'수상한 공장'
+application-label-is:'수상한 공장'
+application-label-it:'수상한 공장'
+application-label-iw:'수상한 공장'
+application-label-ja:'수상한 공장'
+application-label-ka:'수상한 공장'
+application-label-kk:'수상한 공장'
+application-label-km:'수상한 공장'
+application-label-kn:'수상한 공장'
+application-label-ko:'수상한 공장'
+application-label-ky:'수상한 공장'
+application-label-lo:'수상한 공장'
+application-label-lt:'수상한 공장'
+application-label-lv:'수상한 공장'
+application-label-mk:'수상한 공장'
+application-label-ml:'수상한 공장'
+application-label-mn:'수상한 공장'
+application-label-mr:'수상한 공장'
+application-label-ms:'수상한 공장'
+application-label-my:'수상한 공장'
+application-label-nb:'수상한 공장'
+application-label-ne:'수상한 공장'
+application-label-nl:'수상한 공장'
+application-label-or:'수상한 공장'
+application-label-pa:'수상한 공장'
+application-label-pl:'수상한 공장'
+application-label-pt:'수상한 공장'
+application-label-pt-BR:'수상한 공장'
+application-label-pt-PT:'수상한 공장'
+application-label-ro:'수상한 공장'
+application-label-ru:'수상한 공장'
+application-label-si:'수상한 공장'
+application-label-sk:'수상한 공장'
+application-label-sl:'수상한 공장'
+application-label-sq:'수상한 공장'
+application-label-sr:'수상한 공장'
+application-label-sr-Latn:'수상한 공장'
+application-label-sv:'수상한 공장'
+application-label-sw:'수상한 공장'
+application-label-ta:'수상한 공장'
+application-label-te:'수상한 공장'
+application-label-th:'수상한 공장'
+application-label-tl:'수상한 공장'
+application-label-tr:'수상한 공장'
+application-label-uk:'수상한 공장'
+application-label-ur:'수상한 공장'
+application-label-uz:'수상한 공장'
+application-label-vi:'수상한 공장'
+application-label-zh:'수상한 공장'
+application-label-zh-CN:'수상한 공장'
+application-label-zh-HK:'수상한 공장'
+application-label-zh-TW:'수상한 공장'
+application-label-zu:'수상한 공장'
+application-icon-160:'res/mipmap-anydpi-v26/icon.xml'
+application-icon-240:'res/mipmap-anydpi-v26/icon.xml'
+application-icon-320:'res/mipmap-anydpi-v26/icon.xml'
+application-icon-480:'res/mipmap-anydpi-v26/icon.xml'
+application-icon-640:'res/mipmap-anydpi-v26/icon.xml'
+application-icon-65534:'res/mipmap-anydpi-v26/icon.xml'
+application: label='수상한 공장' icon='res/mipmap-anydpi-v26/icon.xml'
+application-debuggable
+feature-group: label=''
+  uses-gl-es: '0x30000'
+  uses-feature: name='android.hardware.faketouch'
+  uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'
+  uses-feature: name='android.hardware.screen.landscape'
+  uses-implied-feature: name='android.hardware.screen.landscape' reason='one or more activities have specified a landscape orientation'
+other-activities
+other-receivers
+other-services
+supports-screens: 'small' 'normal' 'large' 'xlarge'
+supports-any-density: 'true'
+locales: '--_--' 'af' 'am' 'ar' 'as' 'az' 'be' 'bg' 'bn' 'bs' 'ca' 'cs' 'da' 'de' 'el' 'en' 'en-AU' 'en-CA' 'en-GB' 'en-IN' 'en-XC' 'es' 'es-ES' 'es-US' 'et' 'eu' 'fa' 'fi' 'fr' 'fr-CA' 'gl' 'gu' 'hi' 'hr' 'hu' 'hy' 'in' 'is' 'it' 'iw' 'ja' 'ka' 'kk' 'km' 'kn' 'ko' 'ky' 'lo' 'lt' 'lv' 'mk' 'ml' 'mn' 'mr' 'ms' 'my' 'nb' 'ne' 'nl' 'or' 'pa' 'pl' 'pt' 'pt-BR' 'pt-PT' 'ro' 'ru' 'si' 'sk' 'sl' 'sq' 'sr' 'sr-Latn' 'sv' 'sw' 'ta' 'te' 'th' 'tl' 'tr' 'uk' 'ur' 'uz' 'vi' 'zh' 'zh-CN' 'zh-HK' 'zh-TW' 'zu'
+densities: '160' '240' '320' '480' '640' '65534'
+native-code: 'arm64-v8a'
+$ aapt dump xmltree /workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk AndroidManifest.xml
+N: android=http://schemas.android.com/apk/res/android
+  E: manifest (line=2)
+    A: android:versionCode(0x0101021b)=(type 0x10)0x2
+    A: android:versionName(0x0101021c)="0.1.1" (Raw: "0.1.1")
+    A: android:installLocation(0x010102b7)=(type 0x10)0x0
+    A: android:compileSdkVersion(0x01010572)=(type 0x10)0x24
+    A: android:compileSdkVersionCodename(0x01010573)="16" (Raw: "16")
+    A: package="com.suspiciousfactory.game" (Raw: "com.suspiciousfactory.game")
+    A: platformBuildVersionCode=(type 0x10)0x24
+    A: platformBuildVersionName=(type 0x10)0x10
+    E: uses-sdk (line=8)
+      A: android:minSdkVersion(0x0101020c)=(type 0x10)0x1d
+      A: android:targetSdkVersion(0x01010270)=(type 0x10)0x24
+    E: supports-screens (line=12)
+      A: android:smallScreens(0x01010284)=(type 0x12)0xffffffff
+      A: android:normalScreens(0x01010285)=(type 0x12)0xffffffff
+      A: android:largeScreens(0x01010286)=(type 0x12)0xffffffff
+      A: android:xlargeScreens(0x010102bf)=(type 0x12)0xffffffff
+    E: uses-feature (line=18)
+      A: android:glEsVersion(0x01010281)=(type 0x11)0x30000
+      A: android:required(0x0101028e)=(type 0x12)0xffffffff
+    E: application (line=22)
+      A: android:label(0x01010001)=@0x7f0b0004
+      A: android:icon(0x01010002)=@0x7f0a0000
+      A: android:debuggable(0x0101000f)=(type 0x12)0xffffffff
+      A: android:allowBackup(0x01010280)=(type 0x12)0x0
+      A: android:isGame(0x010103f4)=(type 0x12)0x0
+      A: android:extractNativeLibs(0x010104ea)=(type 0x12)0xffffffff
+      A: android:appCategory(0x01010545)=(type 0x10)0x8
+      A: android:appComponentFactory(0x0101057a)="androidx.core.app.CoreComponentFactory" (Raw: "androidx.core.app.CoreComponentFactory")
+      A: android:hasFragileUserData(0x0101059a)=(type 0x12)0x0
+      A: android:requestLegacyExternalStorage(0x01010603)=(type 0x12)0x0
+      E: profileable (line=33)
+        A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+        A: android:shell(0x01010594)=(type 0x12)0xffffffff
+      E: activity (line=37)
+        A: android:theme(0x01010000)=@0x7f0c0009
+        A: android:name(0x01010003)="com.godot.game.GodotApp" (Raw: "com.godot.game.GodotApp")
+        A: android:exported(0x01010010)=(type 0x12)0x0
+        A: android:excludeFromRecents(0x01010017)=(type 0x12)0x0
+        A: android:launchMode(0x0101001d)=(type 0x10)0x4
+        A: android:screenOrientation(0x0101001e)=(type 0x10)0x0
+        A: android:configChanges(0x0101001f)=(type 0x11)0x3ff4
+        A: android:windowSoftInputMode(0x0101022b)=(type 0x11)0x10
+        A: android:resizeableActivity(0x010104f6)=(type 0x12)0x1
+      E: activity-alias (line=48)
+        A: android:name(0x01010003)="com.godot.game.GodotAppLauncher" (Raw: "com.godot.game.GodotAppLauncher")
+        A: android:exported(0x01010010)=(type 0x12)0xffffffff
+        A: android:targetActivity(0x01010202)="com.godot.game.GodotApp" (Raw: "com.godot.game.GodotApp")
+        E: intent-filter (line=52)
+          E: action (line=53)
+            A: android:name(0x01010003)="android.intent.action.MAIN" (Raw: "android.intent.action.MAIN")
+          E: category (line=55)
+            A: android:name(0x01010003)="android.intent.category.DEFAULT" (Raw: "android.intent.category.DEFAULT")
+          E: category (line=56)
+            A: android:name(0x01010003)="android.intent.category.LAUNCHER" (Raw: "android.intent.category.LAUNCHER")
+      E: meta-data (line=61)
+        A: android:name(0x01010003)="org.godotengine.library.version" (Raw: "org.godotengine.library.version")
+        A: android:value(0x01010024)="4.6.3.stable" (Raw: "4.6.3.stable")
+      E: service (line=65)
+        A: android:name(0x01010003)="org.godotengine.godot.GodotDownloaderService" (Raw: "org.godotengine.godot.GodotDownloaderService")
+      E: activity (line=67)
+        A: android:theme(0x01010000)=@0x01030010
+        A: android:name(0x01010003)="org.godotengine.godot.utils.ProcessPhoenix" (Raw: "org.godotengine.godot.utils.ProcessPhoenix")
+        A: android:exported(0x01010010)=(type 0x12)0x0
+        A: android:process(0x01010011)=":phoenix" (Raw: ":phoenix")
+      E: provider (line=73)
+        A: android:name(0x01010003)="androidx.core.content.FileProvider" (Raw: "androidx.core.content.FileProvider")
+        A: android:exported(0x01010010)=(type 0x12)0x0
+        A: android:authorities(0x01010018)="com.suspiciousfactory.game.fileprovider" (Raw: "com.suspiciousfactory.game.fileprovider")
+        A: android:grantUriPermissions(0x0101001b)=(type 0x12)0xffffffff
+        E: meta-data (line=78)
+          A: android:name(0x01010003)="android.support.FILE_PROVIDER_PATHS" (Raw: "android.support.FILE_PROVIDER_PATHS")
+          A: android:resource(0x01010025)=@0x7f0e0000
+      E: provider (line=82)
+        A: android:name(0x01010003)="androidx.startup.InitializationProvider" (Raw: "androidx.startup.InitializationProvider")
+        A: android:exported(0x01010010)=(type 0x12)0x0
+        A: android:authorities(0x01010018)="com.suspiciousfactory.game.fileprovider" (Raw: "com.suspiciousfactory.game.fileprovider")
+        E: meta-data (line=86)
+          A: android:name(0x01010003)="androidx.profileinstaller.ProfileInstallerInitializer" (Raw: "androidx.profileinstaller.ProfileInstallerInitializer")
+          A: android:value(0x01010024)="androidx.startup" (Raw: "androidx.startup")
+      E: receiver (line=91)
+        A: android:name(0x01010003)="androidx.profileinstaller.ProfileInstallReceiver" (Raw: "androidx.profileinstaller.ProfileInstallReceiver")
+        A: android:permission(0x01010006)="android.permission.DUMP" (Raw: "android.permission.DUMP")
+        A: android:enabled(0x0101000e)=(type 0x12)0xffffffff
+        A: android:exported(0x01010010)=(type 0x12)0xffffffff
+        A: android:directBootAware(0x01010505)=(type 0x12)0x0
+        E: intent-filter (line=97)
+          E: action (line=98)
+            A: android:name(0x01010003)="androidx.profileinstaller.action.INSTALL_PROFILE" (Raw: "androidx.profileinstaller.action.INSTALL_PROFILE")
+        E: intent-filter (line=100)
+          E: action (line=101)
+            A: android:name(0x01010003)="androidx.profileinstaller.action.SKIP_FILE" (Raw: "androidx.profileinstaller.action.SKIP_FILE")
+        E: intent-filter (line=103)
+          E: action (line=104)
+            A: android:name(0x01010003)="androidx.profileinstaller.action.SAVE_PROFILE" (Raw: "androidx.profileinstaller.action.SAVE_PROFILE")
+        E: intent-filter (line=106)
+          E: action (line=107)
+            A: android:name(0x01010003)="androidx.profileinstaller.action.BENCHMARK_OPERATION" (Raw: "androidx.profileinstaller.action.BENCHMARK_OPERATION")
+      E: meta-data (line=0)
+        A: android:name(0x01010003)="org.godotengine.rendering.method" (Raw: "org.godotengine.rendering.method")
+        A: android:value(0x01010024)="gl_compatibility" (Raw: "gl_compatibility")
+      E: meta-data (line=0)
+        A: android:name(0x01010003)="org.godotengine.editor.version" (Raw: "org.godotengine.editor.version")
+        A: android:value(0x01010024)="4.6.3.stable" (Raw: "4.6.3.stable")
+$ zipalign -c -P 16 4 /workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk
+
+
+{
+  "status": "passed",
+  "apk": "/workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk",
+  "checked_at": "2026-11-15T07:22:42.789758+00:00",
+  "device_test": "not_performed",
+  "checks": [
+    "APK exists and is nonempty",
+    "ZIP integrity",
+    "Android manifest and executable bytecode present",
+    "Godot ARM64 engine present",
+    "Bundled font license present",
+    "Splash image present",
+    "Development files excluded",
+    "APK cryptographic signature valid",
+    "Signing certificate fingerprint readable",
+    "Expected package ID",
+    "Minimum Android 10 / API 29",
+    "Target API at least 35",
+    "ARM64-only build",
+    "Landscape orientation",
+    "Android automatic data backup disabled",
+    "Offline stage 1 has no Android permissions",
+    "4-byte ZIP / 16 KiB native library alignment",
+    "Version name readable"
+  ],
+  "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+  "version": "0.1.1",
+  "target_api": 36,
+  "bytes": 44062732,
+  "sha256": "d91c278f17c3bd3540c05394b23eafaf2cb4b3d1587060b6342696729671c0c8"
+}

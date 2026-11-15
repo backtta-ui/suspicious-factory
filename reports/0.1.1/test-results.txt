@@ -1,0 +1,45 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+[TOUCH 0001] READY V0.1.1 touch→mouse=true
+PASS: main menu loads
+[TOUCH 0002] SCREEN customize
+PASS: outfit 0 / 0
+PASS: outfit 0 / 1
+PASS: outfit 0 / 2
+PASS: outfit 1 / 0
+PASS: outfit 1 / 1
+PASS: outfit 1 / 2
+PASS: outfit 2 / 0
+PASS: outfit 2 / 1
+PASS: outfit 2 / 2
+[TOUCH 0003] SCREEN factory
+PASS: spawn in clear corridor
+PASS: seven factory rooms plus corridor
+PASS: player follow camera active
+PASS: joystick moves worker
+PASS: outer wall blocks player
+PASS: room wall blocks player
+PASS: door admits player into production
+PASS: conveyor collision blocks player
+[TOUCH 0004] MODAL open settings
+PASS: settings freeze movement
+[TOUCH 0005] MODAL close settings
+PASS: resume restores movement
+[TOUCH 0006] MODAL open settings
+PASS: background resets touch and pauses
+[TOUCH 0007] MODAL close settings
+PASS: touch acquires joystick
+PASS: unrelated finger release ignored
+PASS: release clears movement
+PASS: door traversable at (700.0, 1030.0)
+PASS: door traversable at (1900.0, 1030.0)
+PASS: door traversable at (2700.0, 1030.0)
+PASS: door traversable at (450.0, 1170.0)
+PASS: door traversable at (1200.0, 1170.0)
+PASS: door traversable at (1950.0, 1170.0)
+PASS: door traversable at (2700.0, 1170.0)
+[TOUCH 0008] SCREEN menu
+PASS: return to main menu
+[TOUCH 0009] SCREEN factory
+PASS: fresh game respawns
+STAGE 1: 33 checks, 0 failures

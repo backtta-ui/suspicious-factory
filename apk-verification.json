@@ -1,7 +1,7 @@
 {
   "status": "passed",
-  "apk": "/workspace/suspicious-factory/builds/suspicious-factory-0.1.0.apk",
-  "checked_at": "2026-11-15T06:09:02.155147+00:00",
+  "apk": "/workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk",
+  "checked_at": "2026-11-15T07:22:42.789758+00:00",
   "device_test": "not_performed",
   "checks": [
     "APK exists and is nonempty",
@@ -24,8 +24,8 @@
     "Version name readable"
   ],
   "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "target_api": 36,
-  "bytes": 44054383,
-  "sha256": "1e418c033302ba5ad0b2492e5ffe6ac8c09636611a92c27f0eea8bf430da1e49"
+  "bytes": 44062732,
+  "sha256": "d91c278f17c3bd3540c05394b23eafaf2cb4b3d1587060b6342696729671c0c8"
 }

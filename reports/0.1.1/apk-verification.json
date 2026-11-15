@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "apk": "/workspace/suspicious-factory/builds/suspicious-factory-0.1.1.apk",
+  "checked_at": "2026-11-15T07:22:42.789758+00:00",
+  "device_test": "not_performed",
+  "checks": [
+    "APK exists and is nonempty",
+    "ZIP integrity",
+    "Android manifest and executable bytecode present",
+    "Godot ARM64 engine present",
+    "Bundled font license present",
+    "Splash image present",
+    "Development files excluded",
+    "APK cryptographic signature valid",
+    "Signing certificate fingerprint readable",
+    "Expected package ID",
+    "Minimum Android 10 / API 29",
+    "Target API at least 35",
+    "ARM64-only build",
+    "Landscape orientation",
+    "Android automatic data backup disabled",
+    "Offline stage 1 has no Android permissions",
+    "4-byte ZIP / 16 KiB native library alignment",
+    "Version name readable"
+  ],
+  "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+  "version": "0.1.1",
+  "target_api": 36,
+  "bytes": 44062732,
+  "sha256": "d91c278f17c3bd3540c05394b23eafaf2cb4b3d1587060b6342696729671c0c8"
+}
