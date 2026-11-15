@@ -9,7 +9,29 @@ static func valid(data: Variant) -> bool:
 	var p = data.get("position",null)
 	if not p is Array or p.size()!=2: return false
 	if not (p[0] is float or p[0] is int) or not (p[1] is float or p[1] is int): return false
-	if not Layout.can_stand(Vector2(float(p[0]),float(p[1]))): return false
+	var point:=Vector2(float(p[0]),float(p[1]))
+	if not is_finite(point.x) or not is_finite(point.y): return false
+	var revision=data.get("map_revision",1)
+	if not (revision is int or revision is float) or not is_finite(float(revision)) or float(revision)!=floorf(float(revision)) or revision<1 or revision>Layout.REVISION:return false
+	if not Layout.can_stand(point):
+		var legacy:=PackedVector2Array([Vector2(68,480),Vector2(900,64),Vector2(1732,480),Vector2(900,896)])
+		if revision>=2 or not Geometry2D.is_point_in_polygon(point,legacy):return false
+	var completed=data.get("completed_paintings",[])
+	if not completed is Array:return false
+	var known: Array=Layout.PAINTINGS.map(func(v: Dictionary)->String:return v.id)
+	var seen:=[]
+	for id in completed:
+		if not id is String or not known.has(id) or seen.has(id):return false
+		seen.append(id)
+	var anchor=data.get("return_anchor",{})
+	if not anchor is Dictionary:return false
+	if not anchor.is_empty():
+		if anchor.get("map","")!=Layout.MAP_ID:return false
+		var q=anchor.get("position",[])
+		if not q is Array or q.size()!=2:return false
+		for n in q:
+			if not (n is int or n is float) or not is_finite(float(n)):return false
+		if not Geometry2D.is_point_in_polygon(Vector2(q[0],q[1]),Layout.BOUNDS):return false
 	if not data.get("unlocked",null) is Array: return false
 	for spell in data.unlocked:
 		if not spell is String or spell!="jar": return false
@@ -27,7 +49,14 @@ static func read_valid(path: String) -> Dictionary:
 static func load_game() -> Dictionary:
 	for path in [PATH,PATH+".bak"]:
 		var data := read_valid(path)
-		if not data.is_empty(): return data
+		if not data.is_empty():
+			var point:=Vector2(data.position[0],data.position[1])
+			if int(data.get("map_revision",1))<2 and not Layout.can_stand(point):
+				data.legacy_position=data.position.duplicate()
+				var safe:=Layout.safe_position(point)
+				data.position=[safe.x,safe.y]
+			data.map_revision=Layout.REVISION
+			return data
 	return {}
 static func save_game(data: Dictionary) -> Error:
 	if not valid(data): return ERR_INVALID_DATA
@@ -46,8 +75,8 @@ static func save_game(data: Dictionary) -> Error:
 static func settings() -> Dictionary:
 	var config := ConfigFile.new()
 	config.load(SETTINGS)
-	return {"smooth_camera":bool(config.get_value("view","smooth_camera",true)),"day_cycle":bool(config.get_value("view","day_cycle",true)),"sound":bool(config.get_value("view","sound",true))}
+	return {"smooth_camera":bool(config.get_value("view","smooth_camera",true)),"day_cycle":bool(config.get_value("view","day_cycle",true)),"sound":bool(config.get_value("view","sound",true)),"music":bool(config.get_value("view","music",true)),"low_effects":bool(config.get_value("view","low_effects",false))}
 static func save_settings(data: Dictionary) -> Error:
 	var config := ConfigFile.new()
-	for key in ["smooth_camera","day_cycle","sound"]: config.set_value("view",key,bool(data.get(key,true)))
+	for key in ["smooth_camera","day_cycle","sound","music","low_effects"]: config.set_value("view",key,bool(data.get(key,key!="low_effects")))
 	return config.save(SETTINGS)

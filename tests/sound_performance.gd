@@ -24,7 +24,7 @@ func run() -> void:
  game.sound.set_enabled(true)
  game.start_game(false)
  check(game.world.get_child(0) is Sprite2D,"terrain uses a single pre-baked sprite")
- check(game.world.lanterns.size()==5 and game.world.lanterns.all(func(v: Sprite2D)->bool:return v.material is CanvasItemMaterial),"five additive lanterns without real-time light passes")
+ check(game.world.lanterns.size()>=13 and game.world.lanterns.all(func(v: Sprite2D)->bool:return v.material is CanvasItemMaterial),"expanded additive lanterns without real-time light passes")
  count=game.sound.played
  game.cast_spell()
  check(game.sound.played==count+1,"successful transformation emits effect")

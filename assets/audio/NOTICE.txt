@@ -1,1 +1,26 @@
-Original procedurally synthesized sound effects created for Jeon Woochi. No external samples. Mono PCM 22050 Hz.
+도사 V1.1 AUDIO CREDITS / LICENSES
+
+MUSIC: 국악 배경음악 #131 — 공유마당 (source: 한국저작권위원회)
+https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200020&wrtSn=13379714
+License: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Modified for this game: resampled to stereo 32 kHz, volume reduced,
+3-second overlap crossfade made into a loop, encoded as Ogg Vorbis.
+
+BELL in transformation sound: 많은 방울(리버브) — 김용배
+Source: 한국저작권위원회 공유마당
+https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?wrtSn=13253314&menuNo=200026
+License: Creative Commons Attribution 4.0 International
+https://creativecommons.org/licenses/by/4.0/
+Modified: short excerpt, silence trim, EQ, fade, mixed with cloth swish.
+
+FOLEY: RPG sounds — Kenney Vleugels (www.kenney.nl)
+https://kenney.nl/assets/rpg-audio
+Mirror used: https://opengameart.org/content/50-rpg-sound-effects
+License: CC0 1.0 Universal
+https://creativecommons.org/publicdomain/zero/1.0/
+Sources: cloth4, cloth1, bookFlip2, footstep01/02/03, metalPot2.
+Modified: excerpt, silence trim, EQ, gain, fades, resampling and mixing.
+
+No external samples are downloaded by the app. Audio is bundled offline.
+The original synthesized V0.1.2 effects are preserved on the backup branch.

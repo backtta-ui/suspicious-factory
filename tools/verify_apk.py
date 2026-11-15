@@ -50,6 +50,8 @@ def main():
             check(any('hero.png' in entry for entry in entries) and any('environment.png' in entry for entry in entries) and any('title.png' in entry for entry in entries), 'HD hero, environment atlas and title art packaged')
             check(any('ground_baked.png' in entry for entry in entries), 'Baked low-draw-call terrain packaged')
             check(all(any(f'{clip}.wav' in entry for entry in entries) for clip in ['button','step','jar_step','spell','dialogue']), 'All five offline sound effects packaged')
+            check(any('moonlit_plaza.ogg' in entry for entry in entries) and 'assets/assets/audio/NOTICE.txt' in entries, 'Licensed Korean music and attribution bundled')
+            check(all(any(asset in entry for entry in entries) for asset in ['village_atlas.png','decor_atlas.png','stone_bridge.png']), 'Expanded plaza art atlases bundled')
             check(not any('factory_session' in entry or 'factory_v2' in entry for entry in entries), 'Factory/network game resources removed')
             check(not any(entry.startswith(('assets/tests/', 'assets/tools/', 'assets/builds/'))
                           for entry in entries), 'Development files excluded')

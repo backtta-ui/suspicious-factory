@@ -9,7 +9,7 @@ func update_local(p: Vector2, done: bool) -> void:
 	if p!=local_position or elder_done!=done:
 		local_position=p;elder_done=done;queue_redraw()
 func point(p: Vector2) -> Vector2:
-	return size/2+(p-Vector2(900,480))*(minf(size.x,size.y)-20)/1800
+	return size/2+(p-Layout.SIZE/2)*(minf(size.x,size.y)-16)/Layout.SIZE.x
 func _draw() -> void:
 	var center:=size/2;var radius:=minf(size.x,size.y)/2-3
 	draw_circle(center,radius,Color("1a1929"))
@@ -21,6 +21,8 @@ func _draw() -> void:
 		if prop.kind=="hanok": draw_rect(Rect2(p-Vector2(4,2),Vector2(8,4)),Color("aa9778"))
 		elif prop.kind=="tree": draw_circle(p,2,Color("a66e94"))
 		elif prop.kind=="lantern": draw_circle(p,1.4,Color("eeb365"))
+	for painting in Layout.PAINTINGS:draw_circle(point(painting.position),2,Color("c7a0f0"))
+	for zone in Layout.ZONES:draw_circle(point(zone.center),2.5,Color(zone.color,0.8))
 	if not elder_done: draw_circle(point(Layout.NPCS[2].position),3,Color("f7d474"))
 	var p:=point(local_position)
 	draw_circle(p,4,Color("151b2d"));draw_circle(p,2.8,Color("8ac9ff"))

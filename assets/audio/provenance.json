@@ -1,0 +1,34 @@
+{
+  "dialogue.wav": {
+    "sha256": "b0c8c002339294eb8a028b4f29ddaeea57632bd2c1c9797f8f49d96768108fb3",
+    "bytes": 20524
+  },
+  "moonlit_plaza.ogg": {
+    "sha256": "4a464fef9b6b5be067bc011b27696eb586bdf55324ac06acd4ffff74fd02448b",
+    "bytes": 949156
+  },
+  "jar_step.wav": {
+    "sha256": "ba7cd73435e8f25dcaf7ed51ac74153c16998e775c72fff1cc467e9cdbb442bf",
+    "bytes": 14124
+  },
+  "step2.wav": {
+    "sha256": "be303fa6568866a060474620c2e981ea5d63a69228c5e18e3910028c917a5d26",
+    "bytes": 15404
+  },
+  "step3.wav": {
+    "sha256": "9a316e2851db648f6732159a69b0c3853a3770cfda75a71e39a1d63cf97edc4b",
+    "bytes": 15404
+  },
+  "spell.wav": {
+    "sha256": "c1cff27b8c47cb507b853abf7fd0b9783512dfee3a9bc7195dcfe110e5d09d36",
+    "bytes": 54444
+  },
+  "step.wav": {
+    "sha256": "b5c2d77b7673faebb1706629af587b4fd230821314073fcdb30615246b4debd2",
+    "bytes": 15404
+  },
+  "button.wav": {
+    "sha256": "fb20b8734334ad82d4476389b715d5ef5e17c79928aa56be7fbd8e5bb6c6b059",
+    "bytes": 11564
+  }
+}

@@ -1,21 +1,11 @@
 class_name WooScenery
 extends Node2D
-## Non-colliding far scenery, fading before any foreground prop's ground contact.
-var sprite: Sprite2D
-const PANORAMA = preload("res://assets/woo/hd/panorama.png")
-func _ready() -> void:
-	z_index=-90
-	sprite=Sprite2D.new()
-	sprite.texture=PANORAMA
-	sprite.centered=false
-	var shader:=Shader.new()
-	shader.code="shader_type canvas_item; render_mode unshaded; uniform float opacity=1.0; void fragment(){vec4 t=texture(TEXTURE,UV);COLOR=vec4(t.rgb,t.a*(1.0-smoothstep(0.01,0.16,UV.y))*opacity);}"
-	var material:=ShaderMaterial.new();material.shader=shader;sprite.material=material
-	add_child(sprite)
-func _process(_delta: float) -> void:
-	var camera:=get_viewport().get_camera_2d()
-	if not camera: return
-	var view_size:=get_viewport_rect().size/camera.zoom
-	position=camera.get_screen_center_position()-view_size/2
-	sprite.scale=Vector2.ONE*view_size.x/PANORAMA.get_width()
-	sprite.material.set_shader_parameter("opacity",smoothstep(90,250,position.y))
+## Fixed northern mountain/forest silhouettes, never a panorama painted over walkways.
+func _ready() -> void:z_index=-95
+func _draw() -> void:
+ for layer in range(3):
+  var points:=PackedVector2Array([Vector2(0,0)])
+  for i in range(35):
+   points.append(Vector2(i*100,22+layer*24+absf(sin(i*0.72+layer))*46))
+  points.append(Vector2(3400,0))
+  draw_colored_polygon(points,[Color("667385"),Color("495d6b"),Color("374f58")][layer])

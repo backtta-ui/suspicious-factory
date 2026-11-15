@@ -1,5 +1,7 @@
 class_name WooPetals
 extends Node2D
+var low_effects := false
+var night := 0.0
 var time := 0.0
 var redraw_elapsed := 0.0
 const PANORAMA = preload("res://assets/woo/hd/panorama.png")
@@ -16,9 +18,16 @@ func _draw() -> void:
 	if not camera: return
 	var view:=get_viewport_rect().size/camera.zoom
 	var corner:=camera.get_screen_center_position()-view/2
-	for i in range(18):
+	for i in range(6 if low_effects else 18):
 		var x:=fposmod(i*0.618+time*(0.012+(i%4)*0.003),1)
 		var y:=fposmod(i*0.417+time*(0.016+(i%5)*0.003),1)
 		var p:=corner+Vector2(x*view.x+sin(time+i)*4,y*view.y)
 		var scale:=1.0+(i%4)*0.45
 		draw_colored_polygon(PackedVector2Array([p+Vector2(-2,-1)*scale,p+Vector2(1,-2)*scale,p+Vector2(3,1)*scale,p+Vector2(-1,2)*scale]),Color(0.96,0.61,0.78,0.3+(i%3)*0.2))
+
+	if not low_effects and night>0.3:
+		for i in range(10):
+			var p:=Vector2(1650+sin(time*0.3+i*4)*280,1340+cos(time*0.4+i*3)*170)
+			if Rect2(corner,view).grow(10).has_point(p):
+				draw_circle(p,4,Color(0.5,0.9,0.6,0.12))
+				draw_circle(p,1,Color(0.7,1.0,0.7,0.6))
