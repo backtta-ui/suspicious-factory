@@ -5,3 +5,5 @@ PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 export XDG_DATA_HOME="${TMPDIR:-/tmp}/suspicious-factory-tests"
 "${GODOT_BIN:-godot}" --headless --editor --path "$PROJECT_DIR" --import --quit
 "${GODOT_BIN:-godot}" --headless --path "$PROJECT_DIR" --script res://tests/stage1.gd
+
+"${GODOT_BIN:-godot}" --headless --path "$PROJECT_DIR" --script res://tests/touch_ui.gd

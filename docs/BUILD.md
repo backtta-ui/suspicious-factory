@@ -32,12 +32,12 @@ export ANDROID_HOME="/내/Android/SDK"
 bash tools/build_android.sh
 ```
 
-`builds/suspicious-factory-0.1.0.apk`가 생성됩니다. Windows에서는 Python 스크립트를 먼저 실행하고 Godot의 Project → Export → Android Test → Export Project에서 Export With Debug를 선택할 수 있습니다.
+`builds/suspicious-factory-0.1.1.apk`가 생성됩니다. Windows에서는 Python 스크립트를 먼저 실행하고 Godot의 Project → Export → Android Test → Export Project에서 Export With Debug를 선택할 수 있습니다.
 
 ```bash
 python3 tools/prepare_android_template.py /공식/템플릿/android_debug.apk
 godot --headless --editor --path . --import --quit
-godot --headless --path . --export-debug 'Android Test' builds/suspicious-factory-0.1.0.apk
+godot --headless --path . --export-debug 'Android Test' builds/suspicious-factory-0.1.1.apk
 ```
 
 공식 템플릿의 최소 지원 버전은 Android 7(API 24)입니다. 비 Gradle 내보내기는 Min SDK를 직접 변경하지 못하므로 `prepare_android_template.py`가 바이너리 Manifest에서 **minSdkVersion 정수 하나만 29로 변경**한 사용자 템플릿을 생성합니다. 이후 Godot 자체 exporter가 패키지명·아이콘·권한·리소스를 적용하고 zipalign 및 서명을 수행합니다. 엔진 코드는 변경하지 않습니다. 생성된 템플릿은 Git 및 게임 리소스에서 제외합니다.
@@ -45,10 +45,10 @@ godot --headless --path . --export-debug 'Android Test' builds/suspicious-factor
 ## 결과 확인 / USB 설치
 
 ```bash
-"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose builds/suspicious-factory-0.1.0.apk
-"$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 builds/suspicious-factory-0.1.0.apk
-"$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging builds/suspicious-factory-0.1.0.apk
-adb install -r builds/suspicious-factory-0.1.0.apk
+"$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose builds/suspicious-factory-0.1.1.apk
+"$ANDROID_HOME/build-tools/36.0.0/zipalign" -c -P 16 4 builds/suspicious-factory-0.1.1.apk
+"$ANDROID_HOME/build-tools/36.0.0/aapt" dump badging builds/suspicious-factory-0.1.1.apk
+adb install -r builds/suspicious-factory-0.1.1.apk
 adb shell am start -n com.suspiciousfactory.game/com.godot.game.GodotApp
 ```
 

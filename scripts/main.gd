@@ -3,6 +3,7 @@ extends Node
 const Worker = preload("res://scripts/worker.gd")
 const Map = preload("res://scripts/factory.gd")
 const Joystick = preload("res://scripts/joystick.gd")
+const DebugInput = preload("res://scripts/touch_debug.gd")
 const INK := Color("0e1c29")
 const GOLD := Color("f3ca59")
 var hat := 1
@@ -29,6 +30,10 @@ var walk_distance := 0.0
 var previous_position := Vector2.ZERO
 var smooth_camera := true
 var in_game := false
+var screen_name := "menu"
+var ui_action_pending := false
+var touch_debug: TouchDebug
+var app_version: String = ProjectSettings.get_setting("application/config/version", "0.1.1")
 
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
@@ -37,6 +42,9 @@ func _ready() -> void:
 	layer = CanvasLayer.new()
 	add_child(layer)
 	show_menu()
+	touch_debug = DebugInput.new()
+	touch_debug.target = self
+	add_child(touch_debug)
 
 func setup_theme() -> void:
 	var theme := Theme.new()
@@ -75,11 +83,13 @@ func new_ui() -> void:
 	if is_instance_valid(ui):
 		layer.remove_child(ui)
 		ui.queue_free()
+	modal = null
 	ui = Control.new()
 	ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.theme = get_viewport().get_meta("game_theme")
 	ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(ui)
+	if is_instance_valid(touch_debug): touch_debug.record("SCREEN",screen_name)
 
 func label(text: String, font_size: int = 22, color: Color = Color("edf1e5")) -> Label:
 	var node := Label.new()
@@ -91,8 +101,16 @@ func label(text: String, font_size: int = 22, color: Color = Color("edf1e5")) ->
 func button(text: String, callback: Callable, primary: bool = false) -> Button:
 	var node := Button.new()
 	node.text = text
-	node.custom_minimum_size.y = 60
-	node.pressed.connect(callback)
+	node.name = "Action_" + str(text.hash())
+	node.custom_minimum_size = Vector2(100,64)
+	node.mouse_filter = Control.MOUSE_FILTER_STOP
+	node.action_mode = BaseButton.ACTION_MODE_BUTTON_RELEASE
+	node.button_down.connect(func() -> void: trace_button("BUTTON_DOWN",node))
+	node.button_up.connect(func() -> void: trace_button("BUTTON_UP",node))
+	node.gui_input.connect(func(event: InputEvent) -> void:
+		if event is InputEventScreenTouch or event is InputEventMouseButton:
+			trace_button("GUI",node))
+	node.pressed.connect(func() -> void: activate_button(node,callback))
 	if primary:
 		node.add_theme_stylebox_override("normal",box(GOLD,14))
 		node.add_theme_stylebox_override("hover",box(GOLD.lightened(0.12),14))
@@ -121,10 +139,12 @@ func screen_stack() -> VBoxContainer:
 	return stack
 
 func show_menu() -> void:
+	screen_name = "menu"
 	in_game = false
 	paused = false
 	if is_instance_valid(world):
 		world.queue_free()
+		world = null
 	new_ui()
 	var bg := ColorRect.new()
 	bg.color = INK
@@ -137,7 +157,7 @@ func show_menu() -> void:
 	var tag := label("SF  /  SUSPICIOUS FACTORY",18,Color("86b6b5"))
 	tag.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(tag)
-	header.add_child(label("개발 테스트 01   •   0.1.0",18,Color("92a6b2")))
+	header.add_child(label("터치 수정 테스트   •   " + app_version,18,Color("92a6b2")))
 	var body := HBoxContainer.new()
 	body.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	stack.add_child(body)
@@ -193,6 +213,7 @@ func add_preview(parent: Control, zoom: float) -> void:
 	place.call_deferred()
 
 func show_customize() -> void:
+	screen_name = "customize"
 	new_ui()
 	var stack := screen_stack()
 	stack.add_child(button("← 메인 메뉴",show_menu))
@@ -247,6 +268,8 @@ func update_outfit() -> void:
 	save_profile()
 
 func start_game() -> void:
+	if in_game: return
+	screen_name = "factory"
 	if nickname.is_empty(): nickname = "신입사원"
 	save_profile()
 	in_game = true
@@ -355,11 +378,13 @@ func show_settings() -> void:
 	paused = true
 	if in_game:
 		joystick.reset()
+		joystick.input_enabled = false
 		player.input_vector = Vector2.ZERO
 		player.enabled = false
 	modal = Control.new()
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	ui.add_child(modal)
+	if is_instance_valid(touch_debug): touch_debug.record("MODAL","open settings")
 	var shade := ColorRect.new()
 	shade.color = Color(0.015,0.025,0.04,0.88)
 	shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -384,20 +409,42 @@ func show_settings() -> void:
 	stack.add_child(toggle)
 	stack.add_child(button("계속하기",close_settings,true))
 	if in_game: stack.add_child(button("메인 메뉴로",func() -> void: close_settings(); show_menu()))
-	stack.add_child(label("0.1.0 • 로컬 테스트 • 네트워크 연결 없음",16,Color("90a8b4")))
+	stack.add_child(label(app_version + " • 로컬 테스트 • 네트워크 연결 없음",16,Color("90a8b4")))
 
 func close_settings() -> void:
+	if is_instance_valid(touch_debug): touch_debug.record("MODAL","close settings")
 	if is_instance_valid(modal):
 		modal.queue_free()
 	modal = null
 	paused = false
 	if is_instance_valid(player): player.enabled = true
+	if in_game and is_instance_valid(joystick): joystick.input_enabled = true
+
+func trace_button(kind: String, node: Button) -> void:
+	if is_instance_valid(touch_debug):
+		touch_debug.record(kind,"button=%s rect=%s screen=%s" % [node.text,node.get_global_rect(),screen_name])
+
+func activate_button(node: Button, callback: Callable) -> void:
+	trace_button("PRESSED",node)
+	if ui_action_pending: return
+	ui_action_pending = true
+	run_ui_action.call_deferred(weakref(node),callback)
+
+func run_ui_action(source: WeakRef, callback: Callable) -> void:
+	var node = source.get_ref()
+	if is_instance_valid(node) and node.is_inside_tree() and node.is_visible_in_tree():
+		callback.call()
+	ui_action_pending = false
+
+func navigate_back() -> void:
+	if is_instance_valid(modal): close_settings()
+	elif screen_name == "customize": show_menu()
+	else: show_settings()
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:
 		if event.keycode == KEY_ESCAPE:
-			if is_instance_valid(modal): close_settings()
-			else: show_settings()
+			navigate_back()
 		elif event.keycode == KEY_E and in_game:
 			inspect_station()
 
@@ -405,8 +452,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_APPLICATION_FOCUS_OUT or what == NOTIFICATION_APPLICATION_PAUSED:
 		if in_game and not paused: show_settings()
 	elif what == NOTIFICATION_WM_GO_BACK_REQUEST:
-		if is_instance_valid(modal): close_settings()
-		else: show_settings()
+		navigate_back()
 	elif what == NOTIFICATION_WM_CLOSE_REQUEST:
 		save_profile()
 		get_tree().quit()

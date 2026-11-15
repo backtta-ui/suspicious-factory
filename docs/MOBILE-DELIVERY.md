@@ -2,15 +2,15 @@
 
 ## 현재 사용 가능한 실제 다운로드
 
-- APK: https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/suspicious-factory-0.1.0.apk
+- APK: https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/suspicious-factory-0.1.1.apk
 - 다운로드 페이지: https://github.com/backtta-ui/suspicious-factory/tree/apk-downloads
 - 소스: https://github.com/backtta-ui/suspicious-factory/tree/main
 
-공개 저장소의 `apk-downloads` 브랜치에 APK를 업로드했습니다. 인증 없는 HTTPS GET으로 실제 파일 44,054,383바이트를 다시 내려받아 원본 SHA256과 일치함을 확인했습니다.
+V0.1.0은 공개 저장소의 `apk-downloads` 브랜치로 전달했으며, V0.1.1도 같은 경로를 사용합니다. 버전별 업로드와 재다운로드 결과는 `builds/public-download-verification.json`에 기록합니다. 최신 터치 수정 근거는 [V0.1.1 보고서](TOUCH-FIX-0.1.1.md)를 참고하세요.
 
-SHA256: `1e418c033302ba5ad0b2492e5ffe6ac8c09636611a92c27f0eea8bf430da1e49`
+SHA256은 배포 브랜치의 `SHA256SUMS.txt` 및 버전별 검증 보고서에서 확인합니다.
 
-이 주소는 Cloud 내부 경로나 sandbox 링크가 아닙니다. ChatGPT 앱에서 열리지 않으면 삼성 인터넷이나 Chrome 주소창에 전체 HTTPS 주소를 붙여넣습니다. 내려받은 APK는 삼성 내 파일 → 다운로드에서 눌러 설치합니다. 현재 0.1.0은 Android 10 이상 ARM64 가로 화면용 오프라인 이동 테스트이며, 실제 갤럭시 실행은 사용자의 확인이 필요합니다.
+이 주소는 Cloud 내부 경로나 sandbox 링크가 아닙니다. ChatGPT 앱에서 열리지 않으면 삼성 인터넷이나 Chrome 주소창에 전체 HTTPS 주소를 붙여넣습니다. 내려받은 APK는 삼성 내 파일 → 다운로드에서 눌러 설치합니다. 현재 0.1.1은 Android 10 이상 ARM64 가로 화면용 오프라인 이동 테스트이며, 실제 갤럭시 실행은 사용자의 확인이 필요합니다.
 
 ## 전달 방식과 권한
 

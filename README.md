@@ -1,10 +1,12 @@
 # 수상한 공장 — 1차 플레이 테스트
 
-실제 Godot 4.6.3 / GDScript 2D 게임 프로젝트입니다. 버전 **0.1.0**은 V1.0으로 가는 첫 이동 테스트이며, 멀티플레이와 추리 규칙은 아직 없습니다.
+실제 Godot 4.6.3 / GDScript 2D 게임 프로젝트입니다. 버전 **0.1.1**은 V1.0으로 가는 첫 이동 테스트이며, 멀티플레이와 추리 규칙은 아직 없습니다.
+
+V0.1.1은 Android 버튼 터치 오류 수정 버전입니다. [재현 근거·수정·실기기 확인 순서](docs/TOUCH-FIX-0.1.1.md)를 참고하세요. 기존 앱 위에 업데이트 설치할 수 있습니다.
 
 ## 갤럭시에서 실행
 
-1. `builds/suspicious-factory-0.1.0.apk`를 휴대폰에 내려받습니다.
+1. `builds/suspicious-factory-0.1.1.apk`를 휴대폰에 내려받습니다.
 2. 내 파일 → 다운로드에서 APK를 엽니다. 요청이 나오면 해당 브라우저 또는 내 파일의 ‘이 출처 허용’을 켭니다. 기기 정책에 따라 ‘보안 및 개인정보 보호 → 보안 위험 자동 차단’이 설치를 제한할 수 있습니다.
 3. 설치한 **수상한 공장**을 실행합니다. Android 10 이상, ARM64 기기가 필요합니다.
 4. ‘캐릭터 꾸미기’에서 닉네임·모자·조끼를 고른 뒤 ‘출근하기’를 누릅니다.
@@ -58,6 +60,6 @@ bash tools/test.sh
 
 ## PC 없는 휴대폰 테스트 전달
 
-[갤럭시 테스트 APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/suspicious-factory-0.1.0.apk) — 공개 HTTPS 재다운로드 및 SHA256 일치 검증을 완료했습니다. 삼성 내 파일 → 다운로드에서 APK를 열어 설치하세요. [전달 방식과 자동 검증 상태](docs/MOBILE-DELIVERY.md)를 참고하세요.
+[갤럭시 테스트 APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/suspicious-factory-0.1.1.apk) — 공개 HTTPS 재다운로드 및 SHA256 일치 검증을 완료했습니다. 삼성 내 파일 → 다운로드에서 APK를 열어 설치하세요. [전달 방식과 자동 검증 상태](docs/MOBILE-DELIVERY.md)를 참고하세요.
 
 이후 주요 기능 변경의 필수 검증 명령은 `bash tools/checkpoint.sh`입니다. 자동으로 게임 테스트와 APK 빌드·서명·설정·정렬 검증을 실행하고 `builds/apk-verification.json`에 결과를 기록합니다. `.github/workflows/android-apk.yml`은 GitHub 연결 후 사용할 자동 빌드·테스트 APK 전달 준비 파일이며 아직 원격 실행되지 않았습니다.

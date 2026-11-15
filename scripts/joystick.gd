@@ -2,6 +2,7 @@ class_name TouchJoystick
 extends Control
 
 var vector := Vector2.ZERO
+var input_enabled := true
 var finger := -1
 var mouse_active := false
 const RADIUS := 73.0
@@ -11,6 +12,10 @@ func _ready() -> void:
 	resized.connect(queue_redraw)
 
 func _input(event: InputEvent) -> void:
+	if not input_enabled or not is_visible_in_tree(): return
+	# UI receives Godot's emulated mouse; joystick owns only the native touch.
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == InputEvent.DEVICE_ID_EMULATION:
+		return
 	var center := global_position + size / 2
 	if event is InputEventScreenTouch:
 		if event.pressed and finger == -1 and event.position.distance_to(center) < RADIUS + 30:

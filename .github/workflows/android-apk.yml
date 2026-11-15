@@ -100,6 +100,7 @@ jobs:
             builds/apk-verification.txt
             builds/SHA256SUMS.txt
             builds/test-results.txt
+            builds/touch-test-results.txt
       - name: Save failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4
@@ -110,6 +111,7 @@ jobs:
           path: |
             builds/android-build.log
             builds/test-results.txt
+            builds/touch-test-results.txt
             builds/apk-verification.json
 
   release:
@@ -143,4 +145,4 @@ jobs:
             --target "$GITHUB_SHA" --prerelease \
             --title "수상한 공장 테스트 APK ${GITHUB_RUN_NUMBER}" \
             --notes-file release-notes.md \
-            ./*.apk SHA256SUMS.txt apk-verification.json apk-verification.txt test-results.txt
+            ./*.apk SHA256SUMS.txt apk-verification.json apk-verification.txt test-results.txt touch-test-results.txt

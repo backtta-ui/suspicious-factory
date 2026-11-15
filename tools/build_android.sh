@@ -25,6 +25,11 @@ XDG_DATA_HOME="${TMPDIR:-/tmp}/suspicious-factory-tests" \
   "$GODOT_BIN" --headless --path "$PROJECT_DIR" --script res://tests/stage1.gd \
   > "$PROJECT_DIR/builds/test-results.txt" 2>&1
 cat "$PROJECT_DIR/builds/test-results.txt"
+# Exercise native ScreenTouch -> GUI -> released button -> scene transitions.
+XDG_DATA_HOME="${TMPDIR:-/tmp}/suspicious-factory-touch-tests" \
+  "$GODOT_BIN" --headless --path "$PROJECT_DIR" --script res://tests/touch_ui.gd \
+  > "$PROJECT_DIR/builds/touch-test-results.txt" 2>&1
+cat "$PROJECT_DIR/builds/touch-test-results.txt"
 # Export to a temporary directory; preserve the last working APK on failure.
 STAGING_DIR="$(mktemp -d "$PROJECT_DIR/builds/.android-export.XXXXXX")"
 trap 'rm -rf "$STAGING_DIR"' EXIT
