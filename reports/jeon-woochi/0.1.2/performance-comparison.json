@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "device_test": "not_performed",
+  "baseline_apk_sha256": "da75e990863cf469ad8171e782707214d05d17fdb9304afe1555c6ddce650cf8",
+  "candidate_apk_sha256": "89e374d095469f60d8050bbd8988c9a89bafe094882f101736d4ffb89d9ac0fa",
+  "method": "same stationary village scene; 60 warmup frames; 180 measured; llvmpipe software OpenGL; not Galaxy FPS",
+  "before": {
+    "draw_calls_mean": 10902.0,
+    "frames": 180,
+    "median_ms": 117.727,
+    "p95_ms": 151.49,
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "resolution": "(1280, 720)"
+  },
+  "after": {
+    "draw_calls_mean": 151.0,
+    "frames": 180,
+    "median_ms": 16.286,
+    "p95_ms": 43.985,
+    "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+    "resolution": "(1280, 720)"
+  },
+  "draw_call_reduction_percent": 98.61
+}

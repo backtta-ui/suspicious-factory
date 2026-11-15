@@ -1,0 +1,23 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: bounded six-voice audio pool
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: button effect starts a voice
+PASS: mute stops voices and prevents new effects
+PASS: terrain uses a single pre-baked sprite
+PASS: five additive lanterns without real-time light passes
+PASS: successful transformation emits effect
+PASS: cooldown prevents repeated spell sound
+PASS: footstep follows actual travel distance
+PASS: stationary or blocked movement makes no footstep
+PASS: teleport does not emit footstep
+PASS: sound toggle applies and persists
+PASS: sound can be re-enabled
+PASS: manual save joins pending async autosave
+PASS: exit drains asynchronous save without losing position
+PASS: phone rendering uses bounded logical viewport
+SOUND/PERFORMANCE: 20 checks, 0 failures

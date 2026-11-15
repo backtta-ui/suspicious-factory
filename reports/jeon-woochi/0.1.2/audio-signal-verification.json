@@ -1,0 +1,41 @@
+{
+  "status": "passed",
+  "audible_device_test": "not_performed",
+  "clips": [
+    {
+      "name": "button.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.08997732426303855,
+      "rms": 0.06741166140246782
+    },
+    {
+      "name": "dialogue.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.22,
+      "rms": 0.05769337192155341
+    },
+    {
+      "name": "jar_step.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.12997732426303854,
+      "rms": 0.05632758848912106
+    },
+    {
+      "name": "spell.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.6499773242630386,
+      "rms": 0.15329710912866631
+    },
+    {
+      "name": "step.wav",
+      "rate": 22050,
+      "channels": 1,
+      "seconds": 0.1,
+      "rms": 0.040176280552824586
+    }
+  ]
+}
