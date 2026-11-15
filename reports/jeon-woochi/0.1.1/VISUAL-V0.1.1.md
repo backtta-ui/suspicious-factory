@@ -28,3 +28,10 @@ versionName 0.1.1 / versionCode 5, 패키지 `com.suspiciousfactory.game`, 기�
 **V0.1.1을 실제 갤럭시나 Android 에뮬레이터에서 실행하지 않았습니다.** 실제 FPS·발열·제조사 화면 대응은 휴대폰 확인이 필요합니다.
 
 기존 APK를 보존하고 `jeon-woochi-0.1.1.apk`로 배포합니다. 공개 파일 재다운로드와 Actions Artifacts 전달 상태는 버전별 검증 JSON을 기준으로 합니다. 게임 빌드는 Cloud에서 수행하며 Actions의 파일 전달 성공을 원격 게임 재컴파일 성공으로 보고하지 않습니다.
+
+## 배포 확인
+
+- [APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-0.1.1.apk): 53,475,742바이트. 공개 주소 재다운로드 SHA256 일치.
+- SHA256: `da75e990863cf469ad8171e782707214d05d17fdb9304afe1555c6ddce650cf8`.
+- [Actions 전달 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/43709630653): 성공. `jeon-woochi-verified-apk` 아티팩트 ZIP을 다시 내려받아 내부 APK 해시까지 확인했습니다. 보관 기간 14일.
+- 최종 APK 리소스로 메뉴·조이스틱 이동·두 손가락 둔갑·항아리·주민 대화·목표 갱신 실행 검사를 통과했습니다.
