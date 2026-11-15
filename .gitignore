@@ -1,0 +1,10 @@
+.godot/
+.android-template/
+.build-state/
+builds/*
+!builds/.gdignore
+*.keystore
+*.jks
+.ci/
+__pycache__/
+*.pyc

@@ -1,0 +1,146 @@
+name: Android APK checkpoint
+
+on:
+  push:
+    paths:
+      - 'project.godot'
+      - 'export_presets.cfg'
+      - 'scripts/**'
+      - 'scenes/**'
+      - 'assets/**'
+      - 'tests/**'
+      - 'tools/**'
+      - '.github/workflows/android-apk.yml'
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: 'Also publish the verified APK to this repository Releases (preserves repository visibility)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      XDG_DATA_HOME: ${{ runner.temp }}/factory-data
+      XDG_CONFIG_HOME: ${{ runner.temp }}/factory-config
+      XDG_CACHE_HOME: ${{ runner.temp }}/factory-cache
+      GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
+      GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: android-actions/setup-android@v3
+      - name: Android build tools
+        run: sdkmanager 'platform-tools' 'build-tools;36.0.0' 'platforms;android-36'
+      - uses: actions/cache@v4
+        id: godot-cache
+        with:
+          path: .ci/godot
+          key: godot-linux-4.6.3-official-android-v1
+      - name: Official stable Godot engine and template
+        if: steps.godot-cache.outputs.cache-hit != 'true'
+        run: |
+          set -euo pipefail
+          mkdir -p .ci/godot
+          curl -fL --retry 3 https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_linux.x86_64.zip -o "$RUNNER_TEMP/godot.zip"
+          unzip -q "$RUNNER_TEMP/godot.zip" -d .ci/godot
+          curl -fL --retry 3 https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz -o "$RUNNER_TEMP/templates.tpz"
+          unzip -j -q "$RUNNER_TEMP/templates.tpz" templates/android_debug.apk -d .ci/godot
+      - name: Configure isolated build environment and persistent test signing key
+        env:
+          TEST_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p .ci "$XDG_CONFIG_HOME/godot"
+          touch .ci/.gdignore
+          python3 - <<'PY'
+          import base64, json, os
+          from pathlib import Path
+          key = os.environ.get('TEST_KEYSTORE_BASE64', '')
+          if not key:
+              raise SystemExit('Missing ANDROID_DEBUG_KEYSTORE_BASE64 repository secret. Provision the existing Cloud test signing key first; do not generate a different key on every run.')
+          key_path = Path('.ci/test-debug.keystore')
+          key_path.write_bytes(base64.b64decode(key, validate=True))
+          key_path.chmod(0o600)
+          settings = Path(os.environ['XDG_CONFIG_HOME']) / 'godot/editor_settings-4.6.tres'
+          values = {
+              'export/android/android_sdk_path': os.environ['ANDROID_HOME'],
+              'export/android/java_sdk_path': os.environ['JAVA_HOME'],
+              'export/android/shutdown_adb_on_exit': False,
+          }
+          settings.write_text('[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' + ''.join(f'{k} = {json.dumps(v)}\n' for k, v in values.items()))
+          with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write(f'GODOT_BIN={Path(".ci/godot/Godot_v4.6.3-stable_linux.x86_64").resolve()}\n')
+              env.write(f'GODOT_ANDROID_TEMPLATE={Path(".ci/godot/android_debug.apk").resolve()}\n')
+              env.write(f'GODOT_ANDROID_KEYSTORE_DEBUG_PATH={key_path.resolve()}\n')
+          PY
+      - name: Test, build, and validate actual APK
+        run: bash tools/checkpoint.sh
+      - name: Save verified APK and reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: factory-apk-${{ github.run_number }}-${{ github.run_attempt }}
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            builds/*.apk
+            builds/apk-verification.json
+            builds/apk-verification.txt
+            builds/SHA256SUMS.txt
+            builds/test-results.txt
+      - name: Save failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: factory-failure-${{ github.run_number }}-${{ github.run_attempt }}
+          retention-days: 7
+          if-no-files-found: ignore
+          path: |
+            builds/android-build.log
+            builds/test-results.txt
+            builds/apk-verification.json
+
+  release:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: factory-apk-${{ github.run_number }}-${{ github.run_attempt }}
+          path: verified
+      - name: Verify transfer and publish test download
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          cd verified
+          sha256sum -c SHA256SUMS.txt
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          r = json.loads(Path('apk-verification.json').read_text())
+          if r['status'] != 'passed':
+              raise SystemExit('Refusing to publish a failed build')
+          Path('release-notes.md').write_text('삼성 갤럭시용 개발 테스트 APK입니다. Android 10 이상 ARM64, 가로 화면.\n\n자동 테스트 및 APK 서명·Manifest·정렬 검증 통과. 실제 기기 검증은 별도입니다.\n\nSHA256: ' + r['sha256'] + '\n')
+          PY
+          gh release create "test-apk-${GITHUB_RUN_NUMBER}-${GITHUB_RUN_ATTEMPT}" \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "수상한 공장 테스트 APK ${GITHUB_RUN_NUMBER}" \
+            --notes-file release-notes.md \
+            ./*.apk SHA256SUMS.txt apk-verification.json apk-verification.txt test-results.txt
