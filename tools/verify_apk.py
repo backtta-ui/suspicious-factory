@@ -48,6 +48,8 @@ def main():
             check('assets/assets/fonts/NOTICE.txt' in entries, 'Bundled font license present')
             check(any('splash' in entry for entry in entries), 'Splash image present')
             check(any('hero.png' in entry for entry in entries) and any('environment.png' in entry for entry in entries) and any('title.png' in entry for entry in entries), 'HD hero, environment atlas and title art packaged')
+            check(any('ground_baked.png' in entry for entry in entries), 'Baked low-draw-call terrain packaged')
+            check(all(any(f'{clip}.wav' in entry for entry in entries) for clip in ['button','step','jar_step','spell','dialogue']), 'All five offline sound effects packaged')
             check(not any('factory_session' in entry or 'factory_v2' in entry for entry in entries), 'Factory/network game resources removed')
             check(not any(entry.startswith(('assets/tests/', 'assets/tools/', 'assets/builds/'))
                           for entry in entries), 'Development files excluded')

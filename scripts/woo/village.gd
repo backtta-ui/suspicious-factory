@@ -3,15 +3,16 @@ extends Node2D
 const Layout = preload("res://scripts/woo/village_layout.gd")
 const Prop = preload("res://scripts/woo/village_prop.gd")
 var ambience: CanvasModulate
-var lanterns: Array[PointLight2D] = []
+var lanterns: Array[Sprite2D] = []
 var time_of_day := 0.4
 var cycle_enabled := true
 func _ready() -> void:
 	y_sort_enabled = true
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var ground := Node2D.new()
+	var ground := Sprite2D.new()
+	ground.texture = preload("res://assets/woo/ground_baked.png")
+	ground.centered = false
 	ground.z_index = -100
-	ground.draw.connect(draw_ground.bind(ground))
 	add_child(ground)
 	add_child(preload("res://scripts/woo/scenery.gd").new())
 	add_child(preload("res://scripts/woo/petals.gd").new())
@@ -38,7 +39,7 @@ func _process(delta: float) -> void:
 	if cycle_enabled: time_of_day = fposmod(time_of_day+delta/150.0,1.0)
 	var night := (sin(time_of_day*TAU-PI/2)+1)/2
 	ambience.color = Color("f2dfdf").lerp(Color("8094c6"),night*0.55)
-	for light in lanterns: light.energy = 0.2+night*1.5
+	for light in lanterns: light.modulate.a = 0.12+night*0.3
 func draw_ground(canvas: Node2D) -> void:
 	for u in range(26):
 		for v in range(26):

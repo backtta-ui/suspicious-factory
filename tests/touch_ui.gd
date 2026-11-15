@@ -71,6 +71,11 @@ func run() -> void:
 		var old_day: bool=game.settings.day_cycle
 		await tap(find_button("낮과 밤 변화: "+("켜짐" if old_day else "꺼짐")))
 		check(game.settings.day_cycle!=old_day,prefix+"day/night preference changes through touch")
+		var old_sound: bool=game.settings.sound
+		var sound_button:=find_button("효과음: "+("켜짐" if old_sound else "꺼짐"))
+		check(root.get_visible_rect().encloses(sound_button.get_global_rect()),prefix+"sound control fits viewport")
+		await tap(sound_button)
+		check(game.settings.sound!=old_sound and game.sound.enabled==game.settings.sound,prefix+"native touch changes sound preference")
 		await tap(find_button("돌아가기"))
 		check(not is_instance_valid(game.modal),prefix+"settings touch close works")
 		# Releasing outside cancels. Emulated mouse may not cause a second callback.

@@ -46,8 +46,8 @@ static func save_game(data: Dictionary) -> Error:
 static func settings() -> Dictionary:
 	var config := ConfigFile.new()
 	config.load(SETTINGS)
-	return {"smooth_camera":bool(config.get_value("view","smooth_camera",true)),"day_cycle":bool(config.get_value("view","day_cycle",true))}
+	return {"smooth_camera":bool(config.get_value("view","smooth_camera",true)),"day_cycle":bool(config.get_value("view","day_cycle",true)),"sound":bool(config.get_value("view","sound",true))}
 static func save_settings(data: Dictionary) -> Error:
 	var config := ConfigFile.new()
-	for key in ["smooth_camera","day_cycle"]: config.set_value("view",key,bool(data[key]))
+	for key in ["smooth_camera","day_cycle","sound"]: config.set_value("view",key,bool(data.get(key,true)))
 	return config.save(SETTINGS)

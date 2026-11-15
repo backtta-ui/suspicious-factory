@@ -1,6 +1,6 @@
 # Android 빌드와 전달
 
-Godot **4.6.3 stable**, GDScript, GL Compatibility, OpenJDK 21, Android Build Tools 36.0.0을 사용합니다. 최소 API 29, target API 36, ARM64, 가로 화면, immersive 설정, 패키지 `com.suspiciousfactory.game`, 기존 테스트 서명키와 `Android Test` preset을 유지했습니다. versionCode는 5, 새 표시 이름은 도사: 전우치입니다. 오프라인 싱글플레이이므로 Internet 권한을 제거했습니다.
+Godot **4.6.3 stable**, GDScript, GL Compatibility, OpenJDK 21, Android Build Tools 36.0.0을 사용합니다. 최소 API 29, target API 36, ARM64, 가로 화면, immersive 설정, 패키지 `com.suspiciousfactory.game`, 기존 테스트 서명키와 `Android Test` preset을 유지했습니다. versionCode는 6, 새 표시 이름은 도사: 전우치입니다. 오프라인 싱글플레이이므로 Internet 권한을 제거했습니다.
 
 공식 비 Gradle 템플릿의 minSdk를 29로 제한하는 기존 `tools/prepare_android_template.py`와 APK 서명·정렬 절차를 사용합니다.
 
@@ -10,7 +10,7 @@ Godot **4.6.3 stable**, GDScript, GL Compatibility, OpenJDK 21, Android Build To
 bash tools/checkpoint.sh
 ```
 
-`/workspace/toolchain`의 기존 도구·템플릿·에디터 설정을 사용하며 서명키를 소스에 넣지 않습니다. 결과는 `builds/jeon-woochi-0.1.1.apk`입니다. `builds/android-build.log`, `builds/apk-verification.json`, 게임·터치·저장·재실행 로그를 확인합니다.
+`/workspace/toolchain`의 기존 도구·템플릿·에디터 설정을 사용하며 서명키를 소스에 넣지 않습니다. 결과는 `builds/jeon-woochi-0.1.2.apk`입니다. `builds/android-build.log`, `builds/apk-verification.json`, 게임·터치·저장·재실행 로그를 확인합니다.
 
 ## 다른 개발 환경
 
@@ -35,3 +35,5 @@ APK는 개발용 디버그 서명이며 AAB·출시 서명·Google Play 업로�
 아티팩트 이름은 `jeon-woochi-v0.1-verified-apk`이며 보관 기간은 14일입니다. GitHub 로그인 후 실행 페이지의 Artifacts에서 ZIP을 받습니다. 휴대폰에서는 압축을 푼 뒤 APK를 설치합니다. 직접 APK 다운로드 주소는 별도로 유지됩니다.
 
 V0.1.1은 입력을 물리 틱마다 읽어 HD 리소스 첫 업로드로 렌더 프레임이 지연될 때도 이동 입력이 누락되지 않도록 했습니다. `tests/visual_smoke.gd`는 실제 APK 리소스를 렌더링하며 이동·둔갑·대화를 점검합니다.
+
+V0.1.2: 효과음은 `assets/audio/`에 포함하며 Dummy 드라이버 검사는 실제 청취 검증이 아닙니다. `tests/sound_performance.gd`는 음소거·발소리 거리·도술 쿨타임·비동기 저장 합류를 검사합니다. `tests/render_benchmark.gd`로 실제 렌더러에서 그리기 호출과 프레임 시간을 비교합니다. 지형 변경 시 `tools/bake_ground.gd`로 지형 PNG를 다시 생성합니다.

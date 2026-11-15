@@ -2,7 +2,7 @@ class_name WooVillageProp
 extends StaticBody2D
 const Layout = preload("res://scripts/woo/village_layout.gd")
 var kind := "tree"
-var light: PointLight2D
+var light: Sprite2D
 func _ready() -> void:
 	collision_layer = 1
 	collision_mask = 2
@@ -37,13 +37,15 @@ func _ready() -> void:
 	sprite.position.y=(256-460)*width/512+8
 	add_child(sprite)
 	if kind=="lantern":
-		light = PointLight2D.new()
+		light = Sprite2D.new()
 		light.texture = preload("res://assets/woo/light.png")
-		light.texture_scale = 3.4
+		light.scale = Vector2.ONE*3.4
 		light.position.y = -50
-		light.color = Color("ffc987")
-		light.energy = 1.25
-		light.shadow_enabled = false
+		light.modulate = Color(1.0,0.72,0.35,0.3)
+		var glow_material := CanvasItemMaterial.new()
+		glow_material.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+		glow_material.light_mode = CanvasItemMaterial.LIGHT_MODE_UNSHADED
+		light.material = glow_material
 		add_child(light)
 func _draw() -> void:
 	var width := 72.0 if kind=="hanok" else (40.0 if kind=="market" else 17.0)

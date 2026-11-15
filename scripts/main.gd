@@ -32,7 +32,8 @@ var spell_button: WooMobileButton
 var hint: Label
 var place_label: Label
 var touch_debug: TouchDebug
-var settings := {"smooth_camera":true,"day_cycle":true}
+var sound: WooSound
+var settings := {"smooth_camera":true,"day_cycle":true,"sound":true}
 var unlocked: Array = ["jar"]
 var talked_to_elder := false
 var quest_label: Label
@@ -46,10 +47,15 @@ var paused := false
 var save_elapsed := 0.0
 var saved_indicator := 0.0
 var last_save_error := OK
+var save_thread: Thread
+var quitting := false
 
 func _ready() -> void:
 	get_tree().auto_accept_quit = false
 	settings = Save.settings()
+	sound = preload("res://scripts/woo/sound.gd").new()
+	add_child(sound)
+	sound.set_enabled(settings.sound)
 	layer = CanvasLayer.new()
 	layer.layer = 1
 	add_child(layer)
@@ -94,7 +100,7 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
 	node.observed.connect(func(event: InputEvent) -> void:
 		if is_instance_valid(touch_debug): touch_debug.observe(event,screen_name,ui))
 	node.pressed.connect(func() -> void:
-		if action_pending: return
+		if action_pending or quitting: return
 		action_pending = true
 		perform_action.call_deferred(weakref(node),callback))
 	var ornament := Ornament.new()
@@ -105,7 +111,9 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
 
 func perform_action(source: WeakRef, callback: Callable) -> void:
 	var node = source.get_ref()
-	if is_instance_valid(node) and node.is_inside_tree() and node.usable(): callback.call()
+	if is_instance_valid(node) and node.is_inside_tree() and node.usable():
+		sound.play_clip("button")
+		callback.call()
 	action_pending = false
 
 func new_ui() -> void:
@@ -183,7 +191,7 @@ func show_menu(save_before: bool = true) -> void:
 	chapter.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	chapter.position=Vector2(790,656);chapter.size.x=390
 	ui.add_child(chapter)
-	var version:=text("V0.1.1   ·   싱글플레이 / 오프라인 저장",14,Color("c3b7bc"))
+	var version:=text("V%s   ·   싱글플레이 / 오프라인 저장" % ProjectSettings.get_setting("application/config/version"),14,Color("c3b7bc"))
 	version.position=Vector2(30,676)
 	ui.add_child(version)
 
@@ -360,6 +368,7 @@ func show_settings() -> void:
 	stack.add_child(text("잠시 쉬어가기",30,GOLD))
 	stack.add_child(button("카메라: "+("부드럽게" if settings.smooth_camera else "즉시 추적"),toggle_setting.bind("smooth_camera")))
 	stack.add_child(button("낮과 밤 변화: "+("켜짐" if settings.day_cycle else "꺼짐"),toggle_setting.bind("day_cycle")))
+	stack.add_child(button("효과음: "+("켜짐" if settings.sound else "꺼짐"),toggle_setting.bind("sound")))
 	stack.add_child(button("돌아가기",close_modal,true))
 	if screen_name=="playing":
 		stack.add_child(button("저장하고 메인으로",func() -> void: close_modal(); show_menu()))
@@ -368,6 +377,7 @@ func show_settings() -> void:
 func toggle_setting(key: String) -> void:
 	settings[key] = not settings[key]
 	Save.save_settings(settings)
+	sound.set_enabled(settings.sound)
 	if is_instance_valid(camera): camera.position_smoothing_enabled = settings.smooth_camera
 	if is_instance_valid(world): world.cycle_enabled = settings.day_cycle
 	close_modal()
@@ -375,7 +385,7 @@ func toggle_setting(key: String) -> void:
 
 func cast_spell() -> void:
 	if screen_name!="playing" or paused or not unlocked.has("jar"): return
-	player.begin_transform()
+	if player.begin_transform(): sound.play_clip("spell")
 
 func interact() -> void:
 	if screen_name!="playing" or paused: return
@@ -394,6 +404,7 @@ func interact() -> void:
 	show_dialogue()
 
 func show_dialogue() -> void:
+	sound.play_clip("dialogue")
 	var stack := open_modal("dialogue")
 	if not stack: return
 	stack.add_child(text(dialogue_name,26,GOLD))
@@ -413,16 +424,38 @@ func next_dialogue() -> void:
 	dialogue_index += 1
 	if dialogue_index<dialogue_lines.size(): show_dialogue()
 
-func save_progress() -> void:
+func finish_save() -> void:
+	if save_thread != null:
+		last_save_error = save_thread.wait_to_finish()
+		save_thread = null
+
+func _exit_tree() -> void:
+	finish_save()
+
+func save_progress(background: bool = false) -> void:
 	if screen_name!="playing" or not is_instance_valid(player): return
 	var data := {"schema":1,"map":Layout.MAP_ID,"position":[player.position.x,player.position.y],"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day,"talked_to_elder":talked_to_elder}
-	last_save_error = Save.save_game(data)
+	# Serialize all writes. Exit/background/manual saves join any pending auto-save.
+	finish_save()
+	if background:
+		save_thread = Thread.new()
+		var error := save_thread.start(func() -> Error: return Save.save_game(data))
+		if error != OK:
+			save_thread = null
+			last_save_error = error
+	else:
+		last_save_error = Save.save_game(data)
 	saved_indicator = 2
 	save_elapsed = 0
 
 func quit_game() -> void:
+	if quitting: return
+	quitting=true
 	save_progress()
 	Save.save_settings(settings)
+	sound.shutdown()
+	# Let the audio server release a just-played button voice before engine shutdown.
+	await get_tree().create_timer(0.08).timeout
 	get_tree().quit()
 
 func _physics_process(_delta: float) -> void:
@@ -430,8 +463,10 @@ func _physics_process(_delta: float) -> void:
 	if screen_name=="playing" and is_instance_valid(player) and is_instance_valid(joystick):
 		player.intent=joystick.vector if not paused else Vector2.ZERO
 		player.enabled=not paused
+		sound.update_steps(player.position,not paused and player.velocity.length()>2 and player.transforming<=0,player.jar)
 
 func _process(delta: float) -> void:
+	if save_thread != null and not save_thread.is_alive(): finish_save()
 	if screen_name!="playing" or not is_instance_valid(player): return
 	if is_instance_valid(hud_map): hud_map.update_local(player.position,talked_to_elder)
 	if is_instance_valid(quest_label): quest_label.text="마을 어른과 대화하기 (%d/1)" % (1 if talked_to_elder else 0)
@@ -458,7 +493,7 @@ func _process(delta: float) -> void:
 		saved_indicator -= delta
 		if last_save_error != OK: hint.text = "저장 실패: 기기 저장 공간을 확인하세요"
 	save_elapsed += delta
-	if save_elapsed>=8: save_progress()
+	if save_elapsed>=8: save_progress(true)
 
 func go_back() -> void:
 	if is_instance_valid(modal): close_modal()

@@ -1,9 +1,9 @@
 class_name TouchDebug
 extends CanvasLayer
-## Temporary V0.1.1 diagnostics. Observes only: never consumes input.
+## Opt-in diagnostics. No touch-time file IO in normal APK sessions. Observes only: never consumes input.
 ## Bounded local log; contains coordinates/UI state only, never nickname/chat/keys.
 
-var enabled := OS.is_debug_build()
+var enabled := OS.is_debug_build() and (OS.get_environment("WOO_TOUCH_LOG")=="1" or OS.get_environment("WOO_TOUCH_OVERLAY")=="1")
 var target: Node
 var last_drag_msec := -1000
 var status: Label
@@ -15,7 +15,9 @@ const MAX_LOG_BYTES := 262144
 
 func _ready() -> void:
 	layer = 20
-	if not enabled: return
+	if not enabled:
+		set_process_input(false)
+		return
 	var overlay := Control.new()
 	overlay.name = "NonBlockingTouchDiagnostics"
 	overlay.visible = OS.get_environment("WOO_TOUCH_OVERLAY")=="1"
