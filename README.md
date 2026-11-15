@@ -15,3 +15,5 @@
 [전체 구현·검증·변경 파일 보고서](reports/jeon-woochi/1.1.0/PLAZA-V1.1.md) / [광장 화면](reports/jeon-woochi/1.1.0/screenshots/v11-plaza.png) / [그림 장터](reports/jeon-woochi/1.1.0/screenshots/v11-paintings.png) / [정원](reports/jeon-woochi/1.1.0/screenshots/v11-garden.png)
 
 이전 APK와 공장·전우치 백업은 보존합니다. SHA256SUMS.txt에서 파일별 해시를 확인할 수 있습니다.
+
+[Actions APK Artifacts](https://github.com/backtta-ui/suspicious-factory/actions/runs/43718722083) → `jeon-woochi-verified-apk` ZIP을 받아 압축을 풀고 설치할 수도 있습니다. 14일 보관. 공개 APK와 Actions 아티팩트 재다운로드 SHA256 확인 완료.

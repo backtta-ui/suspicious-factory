@@ -75,7 +75,7 @@ godot --path . --script res://tests/plaza_render_budget.gd
 godot --path . --script res://tools/bake_ground.gd
 ```
 
-결과 APK: `builds/jeon-woochi-1.1.0.apk`. 기존 Actions 파일 전달 워크플로를 사용하고, 공개 HTTPS 주소와 Actions 아티팩트를 다시 다운로드해 SHA256을 확인한 뒤 제공할 예정입니다. 게임 재컴파일은 Cloud checkpoint가 수행하며, Actions의 파일 검증·전달 성공과 구분합니다. 공개 저장소의 기존 표준 호스팅 러너를 사용하며 유료 게임 서버나 새 서비스는 추가하지 않았습니다.
+결과 APK: `builds/jeon-woochi-1.1.0.apk`. 기존 Actions 파일 전달 워크플로를 사용하고, 공개 HTTPS 주소와 Actions 아티팩트를 다시 다운로드해 SHA256 일치를 확인했습니다. 게임 재컴파일은 Cloud checkpoint가 수행하며, Actions의 파일 검증·전달 성공과 구분합니다. 공개 저장소의 기존 표준 호스팅 러너를 사용하며 유료 게임 서버나 새 서비스는 추가하지 않았습니다.
 
 ## 최종 APK 검증 수치
 
@@ -150,3 +150,10 @@ tools/verify_apk.py
 ```
 
 최종 APK 리소스의 다섯 화면 크기 렌더링·네이티브 터치 검사 125개도 통과했습니다. 효과음 PCM 비무음·피크 제한 및 원본 출처 해시 검사도 통과했습니다.
+
+## 다운로드 확인
+
+- [V1.1 APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.1.0.apk) — 65,497,063바이트(62.46MiB).
+- [Actions 전달 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/43718722083) 성공. 아티팩트 `jeon-woochi-verified-apk`, ID 14163183399, 14일 보관. ZIP 압축을 풀고 APK를 설치합니다. 직접 APK 주소와 이전 파일은 계속 유지합니다.
+- 공개 주소의 APK와 Actions ZIP 내부 APK를 모두 다시 다운로드해 위 최종 SHA256 일치를 확인했습니다.
+- 게임은 기존 Cloud Android 환경에서 빌드했고 Actions는 그 파일을 검증·보관했습니다. 이 성공을 Actions에서 게임을 재컴파일한 결과로 보고하지 않습니다.
