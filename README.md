@@ -2,7 +2,7 @@
 
 Godot 4.6.3 / GDScript로 만든 Android 도술 어드벤처와 서버 권한 6~8인 추리·추격 게임입니다. 계월촌의 다섯 구역을 탐험하고 그림 속 ‘여우의 숲’에서 도깨비 세 마리와 전투한 뒤 보상을 얻어 돌아옵니다. 기존 GitHub 저장소와 Android 패키지·서명·내보내기 기반을 유지하고 게임을 전면 개편했습니다.
 
-[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.3.apk)
+[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/255dacc5634be1882a492c7f8ba575621c444034/jeon-woochi-2.0.3.apk)
 
 Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.3, versionCode는 14입니다.
 

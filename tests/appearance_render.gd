@@ -10,14 +10,20 @@ func label(value: String,p: Vector2) -> void:
  var text:=Label.new();text.text=value;text.position=p;text.add_theme_font_override("font",FONT);text.add_theme_font_size_override("font_size",15);root.add_child(text)
 func run() -> void:
  root.size=Vector2i(1280,720)
- var bg:=ColorRect.new();bg.size=Vector2(1280,720);bg.color=Color("172132");root.add_child(bg)
+ var bg:=ColorRect.new();bg.size=Vector2(1280,720);bg.color=Color("172132");bg.z_index=-4096;root.add_child(bg)
  var phase:="before"
  for arg in OS.get_cmdline_user_args():
   if arg.begins_with("--phase="):phase=arg.trim_prefix("--phase=")
- if phase=="game":
+ if phase in ["game","game-jump","plaza","forest"]:
   var game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await frames();game.start_game(false);await frames()
   var look:=Catalog.DEFAULT.duplicate();look.character="yeonhwa";look.hair="silver";look.hat="hood";look.color="purple"
-  game.wardrobe.equip(look);game.player.cosmetic=look;game.show_wardrobe();await frames()
+  game.wardrobe.equip(look);game.player.cosmetic=look
+  if phase in ["game","game-jump"]:
+   game.show_wardrobe();await frames()
+   if phase=="game-jump":
+    for child in game.get_children():
+     if child is WooWardrobeScreen:child.set_process(false);child.preview.jump_height=30;child.preview.jump_phase="apex";child.preview.update_sprite()
+  elif phase=="forest":game.adventure.load_forest(false);await frames()
  elif phase=="gallery":
   var combinations: Array=[]
   for character in Catalog.CHARACTERS:

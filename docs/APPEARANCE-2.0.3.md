@@ -28,7 +28,7 @@
 |---|---|
 | ![수정 전](appearance-2.0.3/before.png) | ![수정 후](appearance-2.0.3/after.png) |
 
-[모자 없는 헤어](appearance-2.0.3/uncovered.png) · [방향·걷기·점프·공격](appearance-2.0.3/poses.png) · [실제 꾸미기 화면](appearance-2.0.3/game.png)
+[모자 없는 헤어](appearance-2.0.3/uncovered.png) · [방향·걷기·점프·공격](appearance-2.0.3/poses.png) · [실제 꾸미기 화면](appearance-2.0.3/game.png) · [최고점 점프](appearance-2.0.3/game-jump.png) · [광장](appearance-2.0.3/plaza.png) · [여우의 숲](appearance-2.0.3/forest.png)
 
 ## 검증
 
@@ -47,3 +47,35 @@ bash tools/checkpoint.sh
 ## 휴대폰 확인
 
 기존 앱을 삭제하지 말고 업데이트 설치한 후 **이어하기**를 사용하세요. 도사 꾸미기 → 연화/은백색/두건 → 방향·걷기·점프·공격 → 저장 → 광장/그림 속 모험 확인 → 앱 종료·재실행 → 이어하기로 점검합니다. 미보유 캐릭터/의상은 미리보기만 가능하고 기존 조건을 충족해야 저장됩니다.
+
+
+## 최종 결과
+
+- 캐릭터별 전우치/연화/무영/홍련 각각 **336개 기본 조합**의 등록 좌표·레이어·8방향/점프/공격 검사 통과. 4캐릭터×9장신구(없음 포함)×6색상도 검사했습니다. 합계 **외형 21,848개 항목, 실패 0**입니다.
+- **기존 기능 786개 검사, 실패 0**. 정지/걷기/점프/공격, 저장 및 취소, 별도 프로세스 재실행, 광장/모험 일치와 기존 터치/전투/인벤토리/NPC/타이틀을 검사했습니다. 최종 APK에서 추출한 컴파일 게임 코드로도 외형 21,848개 검사를 다시 통과했습니다. 검사 드라이버만 테스트 소스를 사용하고 게임 코드는 APK의 GDC/리소스를 사용했습니다.
+- 서버 회귀 검사는 Linux의 실제 WebSocket 서버와 자동화한 6명/8명 클라이언트로 수행했습니다. 외형 동기화/경기 중 변경 금지/재접속 검사 통과. **6~8대 Android 실기기 검사와 공개 서버 배포는 수행하지 않았습니다.**
+- 실제 그래픽 드라이버로 1,344개 조합 전체를 렌더링했습니다. [11페이지 전체 이미지](appearance-2.0.3/)는 카탈로그 순서(캐릭터→헤어→모자→의상), 각 페이지 16열×8행입니다. 모든 픽셀에 대한 자동 미술 품질 보증이라는 뜻은 아닙니다.
+- Android 정적 검사 **33개 통과**: 동일 서명, 동일 패키지, ARM64, 최소 API29, 타깃36, 가로 화면, 리소스·ZIP·네이티브 정렬 포함. 실제 Galaxy 설치/멀티터치/FPS는 미검증입니다.
+- 로컬 최종 `bash tools/checkpoint.sh` 종료 코드 0. [컴파일·전체 테스트 Actions 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43872229770). 앱 코드 기준 커밋 `04f5f39d794c35a0642e5ffe3ad532de1d03d8bd`. CI의 미서명 APK는 기존 Cloud 키로 최종 서명했습니다. 설치할 때는 아래 서명된 배포본을 사용하세요.
+
+변경 파일 및 APK 체크섬/다운로드 검증 기록은 [APPEARANCE-2.0.3-VERIFICATION.json](APPEARANCE-2.0.3-VERIFICATION.json)에 있습니다. 수정된 게임 파일은 다음과 같습니다.
+
+- `scripts/wardrobe/art.gd`, `compatibility.gd`, `hair_mask.gdshader`, `visual.gd`, `screen.gd`
+- `assets/woo/wardrobe/head_parts.png` 및 Godot import/UID 파일
+- `scripts/woo/actor.gd`, `scripts/woo/hero_rig.gd`
+- `project.godot`, `export_presets.cfg`
+- `tests/appearance_combinations.gd`, `appearance_restart.gd`, `appearance_render.gd`
+- `tools/test.sh`, `tools/verify_apk.py`, `README.md`, 이 보고서와 비교 이미지
+
+기존 `profile.gd`, 카탈로그/해금 조건, RPG 저장 스키마, 서버 프로토콜을 변경하지 않았습니다. 기존 보유 기록을 삭제하지 않았고, 예전 APK/배포 커밋도 보존했습니다.
+
+
+## 서명된 APK 받기
+
+[휴대폰 APK 바로 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/255dacc5634be1882a492c7f8ba575621c444034/jeon-woochi-2.0.3.apk) · [설치용 ZIP Actions 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43873837830)
+
+PC 없이 삼성 인터넷에서 APK 링크를 열고 **내 파일 → 다운로드 → APK**로 설치합니다. 기존 앱을 삭제하지 말고 업데이트 설치한 후 **이어하기**를 누르세요. ChatGPT 내부에서 다운로드가 안 되면 링크를 길게 눌러 브라우저에서 여세요.
+
+Actions를 이용하면 로그인 → 위 실행 화면 아래 **Artifacts → jeon-woochi-verified-apk** → ZIP 다운로드 → 내 파일에서 **압축 풀기** → 안의 APK 설치 순서입니다. 원본 컴파일 실행의 unsigned APK는 설치용이 아닙니다. Artifacts는 14일 보존되며, 직접 APK 주소는 별도 커밋에 보존됩니다.
+
+최종 배포본은 85,088,825바이트(약 81.1 MiB), SHA256 `2750b5abad20a9b619841e97d984d699958bf35f2c4cd8be4967f12ca7a7c74b`입니다. 공개 HTTPS로 다시 받은 파일과 Actions ZIP 내부 APK 모두 동일 체크섬을 확인했습니다. 로컬 파일은 `/workspace/suspicious-factory/builds/jeon-woochi-2.0.3.apk`입니다.
