@@ -1,6 +1,6 @@
 class_name WooHeroRig
 extends Node2D
-## Canonical original pixels at a single scale. Face/hat never come from a second atlas.
+## Canonical default Woochi at one scale; wardrobe replaces only explicitly selected parts.
 const SHEET=preload("res://assets/woo/hd/hero.png")
 const FRAMES=preload("res://scripts/woo/art_frames.gd")
 const SCALE=.34
@@ -21,7 +21,7 @@ func section(frame: Array,x: float,y: float,w: float,h: float,pivot: Vector2=Vec
 func _draw() -> void:
  if not is_instance_valid(actor):return
  var frame: Array=FRAMES.HERO[32+actor.facing]
- var head:=98.0;var hips:=127.0
+ var head:=78.0;var hips:=127.0
  # Rigid head and common foot pivot preserve identity and apparent size.
  var center: float=frame[4]
  var custom_body: bool=is_instance_valid(actor.wardrobe_visual) and actor.wardrobe_visual.custom_body()
@@ -43,7 +43,7 @@ func _draw() -> void:
   var spread:=.45 if actor.jump_phase=="apex" else (.25 if actor.jump_phase=="rising" else .1)
   left-=spread;right+=spread
  if actor.landing_left>0:left=-.3*actor.landing_left/.18;right=.3*actor.landing_left/.18
- var shoulder_l:=Vector2(-6,-16);var shoulder_r:=Vector2(6,-16)
+ var shoulder_l:=Vector2(-6,-22);var shoulder_r:=Vector2(6,-22)
  if not custom_body:section(frame,0,head,center-17,hips-head,shoulder_l,left)
  if not custom_body:section(frame,center+17,head,frame[2]-center-17,hips-head,shoulder_r,right)
  section(frame,0,hips,center,frame[3]-hips,Vector2(-3,-5),sin(phase*PI)*.13 if actor.action_left>0 else stride*.2)

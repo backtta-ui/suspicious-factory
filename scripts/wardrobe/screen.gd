@@ -62,11 +62,7 @@ func refresh() -> void:
  save_button.disabled=not wardrobe.valid_selection(draft)
 func select(id: String) -> void:
  draft[slot]=id
- if slot=="character":
-  var defaults: Dictionary={"woochi":["black","navy"],"yeonhwa":["flower","purple"],"muyeong":["silver","black_gold"],"hongryeon":["long","red"]}
-  draft.hair=defaults[id][0];draft.outfit="basic";draft.color=defaults[id][1]
-  draft.hat="gat" if id=="woochi" else "none"
-  if id=="hongryeon" and wardrobe.owned("accessory","ribbon"):draft.accessory="ribbon"
+ # Character identity is independent of the five equipment choices.
  draft=C.normalize(draft);refresh()
 func save_selection() -> void:
  var err:=wardrobe.equip(draft)

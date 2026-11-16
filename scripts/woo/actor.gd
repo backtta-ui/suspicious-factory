@@ -17,6 +17,7 @@ var defeat_elapsed:=0.0
 var cosmetic: Dictionary=preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate()
 var wardrobe_visual: WooWardrobeVisual
 var hero_rig: WooHeroRig
+var appearance_back: Node2D
 var pose_duration:=.3
 var jump_preparation:=0.0
 var jump_phase:="ground"
@@ -90,6 +91,7 @@ func _ready() -> void:
 		npc_right_foot=Sprite2D.new();npc_visual.add_child(npc_right_foot)
 	else:
 		add_child(sprite)
+		appearance_back=Node2D.new();add_child(appearance_back)
 		hero_rig=preload("res://scripts/woo/hero_rig.gd").new();hero_rig.actor=self;add_child(hero_rig)
 		wardrobe_visual=preload("res://scripts/wardrobe/visual.gd").new();wardrobe_visual.actor=self;add_child(wardrobe_visual)
 		extracted_visual=preload("res://scripts/seal/environment_asset.gd").new();extracted_visual.hide();add_child(extracted_visual)
