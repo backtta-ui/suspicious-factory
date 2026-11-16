@@ -5,7 +5,7 @@ const Prop=preload("res://scripts/woo/village_prop.gd")
 func _ready() -> void:
  y_sort_enabled=true;texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
  var ground:=Sprite2D.new();ground.texture=load("res://assets/woo/practice_ground.png");ground.centered=false;ground.z_index=-100;add_child(ground)
- for data in [["hanok",Vector2(640,190)],["tree",Vector2(150,220)],["tree",Vector2(1100,240)],["tree",Vector2(150,790)],["tree",Vector2(1150,830)],["lantern",Vector2(450,270)],["lantern",Vector2(850,270)],["lantern",Vector2(1080,680)]]:
+ for data in L.PROPS:
   var prop:=Prop.new();prop.kind=data[0];prop.position=data[1];add_child(prop)
  var nameplate:=Label.new();nameplate.text="도술 익히기 · 자유 수련";nameplate.position=Vector2(510,230);nameplate.add_theme_font_override("font",preload("res://assets/fonts/NotoSansCJK-Regular.ttc"));nameplate.add_theme_font_size_override("font_size",16);add_child(nameplate)
 func draw_ground(c: Node2D) -> void:

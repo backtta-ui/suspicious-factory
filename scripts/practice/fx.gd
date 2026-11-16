@@ -20,6 +20,7 @@ func _draw() -> void:
  draw_rect(Rect2(jail-Vector2(45,30),Vector2(90,60)),Color(.2,.3,.45,.15))
  for x in range(-40,41,16):draw_line(jail+Vector2(x,-40),jail+Vector2(x,20),Color(.55,.72,1,.6),2)
  for id in session.stats:
+  if not rules.can_observe("student",id):continue
   var q: Dictionary=rules.players[id];var stat: Dictionary=session.stats[id]
   if q.buff.get("shield",0)>rules.elapsed:draw_arc(q.position-Vector2(0,17),21,0,TAU,30,Color("f4d18a"),2,true)
   if stat.windup>0:draw_arc(q.position,34,0,TAU,32,Color("ed8f80"),2,true)

@@ -16,6 +16,7 @@ func _initialize() -> void:run.call_deferred()
 func run() -> void:
  var look:=Appearance.DEFAULT.duplicate();look.character="yeonhwa";look.hair="silver";look.hat="hood";look.color="purple"
  var s:=Session.new(look)
+ for prop in preload("res://scripts/practice/layout.gd").PROPS:check(not s.rules.arena.can_stand(prop[1]),"shared movement collision includes solid practice "+prop[0]+str(prop[1]))
  check(C.all().size()==14,"registered eight common + five role skills + adventure talisman, jar alias only")
  for id in C.all():check(s.select(id) and s.selected==id,"select actual registered skill "+id)
  s.reset();s.npc_mode="idle";s.select("transform")
