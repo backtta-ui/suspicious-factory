@@ -1,0 +1,56 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: new game application title
+PASS: touch emulation kept enabled
+PASS: main menu button: 게임 시작
+PASS: main menu button: 이어하기
+PASS: main menu button: 설정
+PASS: main menu button: 종료
+PASS: native touch starts playable game
+PASS: one taoist and all village residents
+PASS: original hanok buildings retained
+PASS: pixel character texture loaded
+PASS: quarter-view follow camera active
+PASS: world depth sorts props and characters
+PASS: live local minimap visible
+PASS: minimap reflects actual local position
+PASS: first-step objective starts incomplete
+PASS: HD hero has eight directions and six animation phases
+PASS: movement direction (1.0, 0.0)
+PASS: movement direction (1.0, 1.0)
+PASS: movement direction (0.0, 1.0)
+PASS: movement direction (-1.0, 1.0)
+PASS: movement direction (-1.0, 0.0)
+PASS: movement direction (-1.0, -1.0)
+PASS: movement direction (0.0, -1.0)
+PASS: movement direction (1.0, -1.0)
+PASS: running is faster than walking
+PASS: well collision blocks movement
+PASS: hanok footprint blocks movement
+PASS: spell starts visible transformation animation
+PASS: transformed into jar with cooldown
+PASS: cooldown rejects repeated spell
+PASS: jar movement slower than human
+PASS: spell returns jar to human
+PASS: proximity dialogue available for NPC 0
+PASS: NPC dialogue opens and stops movement
+PASS: dialogue closes cleanly
+PASS: proximity dialogue available for NPC 1
+PASS: NPC dialogue opens and stops movement
+PASS: dialogue closes cleanly
+PASS: proximity dialogue available for NPC 2
+PASS: NPC dialogue opens and stops movement
+PASS: dialogue closes cleanly
+PASS: elder dialogue completes actual first-step objective
+PASS: atomic local save contains valid map and position
+PASS: save stores spell unlock and settings
+PASS: objective completion persisted
+PASS: saved game enables continue
+PASS: continue restores position
+PASS: background saves and cancels movement
+PASS: Android back closes pause menu
+PASS: save rejects unknown map
+PASS: save rejects nonfinite/outside coordinates
+PASS: expanded lantern network created
+PASS: day-night atmosphere advances
+WOO CORE: 53 checks, 0 failures

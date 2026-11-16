@@ -1,0 +1,44 @@
+{
+  "device_test": "not_performed",
+  "max_mean_draw_calls": 500,
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "resolution": "(1280, 720)",
+  "status": "passed",
+  "zones": [
+    {
+      "frames": 180,
+      "mean_draw_calls": 301.0,
+      "median_ms": 15.351,
+      "p95_ms": 33.32,
+      "zone": "plaza"
+    },
+    {
+      "frames": 180,
+      "mean_draw_calls": 292.0,
+      "median_ms": 13.129,
+      "p95_ms": 31.056,
+      "zone": "paintings"
+    },
+    {
+      "frames": 180,
+      "mean_draw_calls": 264.066666666667,
+      "median_ms": 11.829,
+      "p95_ms": 30.577,
+      "zone": "shops"
+    },
+    {
+      "frames": 180,
+      "mean_draw_calls": 265.588888888889,
+      "median_ms": 15.067,
+      "p95_ms": 34.25,
+      "zone": "garden"
+    },
+    {
+      "frames": 180,
+      "mean_draw_calls": 261.0,
+      "median_ms": 11.972,
+      "p95_ms": 28.527,
+      "zone": "training"
+    }
+  ]
+}

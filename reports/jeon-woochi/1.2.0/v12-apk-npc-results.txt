@@ -1,0 +1,49 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: native press raises the gold-border glow
+PASS: release opens settings once and border glow fades
+PASS: 약초꾼 서연 head/torso origin stays fixed across gait frames
+PASS: 약초꾼 서연 uses four distinct foot/leg art frames
+PASS: 약초꾼 서연 left/right contact and swing phases alternate
+PASS: 약초꾼 서연 idle foot positions do not accumulate drift
+PASS: 장돌뱅이 만복 head/torso origin stays fixed across gait frames
+PASS: 장돌뱅이 만복 uses four distinct foot/leg art frames
+PASS: 장돌뱅이 만복 left/right contact and swing phases alternate
+PASS: 장돌뱅이 만복 idle foot positions do not accumulate drift
+PASS: 마을 어른 head/torso origin stays fixed across gait frames
+PASS: 마을 어른 uses four distinct foot/leg art frames
+PASS: 마을 어른 left/right contact and swing phases alternate
+PASS: 마을 어른 idle foot positions do not accumulate drift
+PASS: idle NPC root remains exactly still instead of chasing a moving target
+PATROL {"extent":250.310165405273,"name":"약초꾼 서연","travelled":526.399654150009}
+PASS: 약초꾼 서연 actually patrols beyond the former tiny ellipse
+PASS: 약초꾼 서연 stays out of static obstacles and water
+PATROL {"extent":89.8692474365234,"name":"장돌뱅이 만복","travelled":393.595546960831}
+PASS: 장돌뱅이 만복 actually patrols beyond the former tiny ellipse
+PASS: 장돌뱅이 만복 stays out of static obstacles and water
+PATROL {"extent":273.647125244141,"name":"마을 어른","travelled":294.399339437485}
+PASS: 마을 어른 actually patrols beyond the former tiny ellipse
+PASS: 마을 어른 stays out of static obstacles and water
+PATROL {"extent":148.410751342773,"name":"그림지기 연화","travelled":476.797631263733}
+PASS: 그림지기 연화 actually patrols beyond the former tiny ellipse
+PASS: 그림지기 연화 stays out of static obstacles and water
+PATROL {"extent":114.553253173828,"name":"주모 단이","travelled":339.198746681213}
+PASS: 주모 단이 actually patrols beyond the former tiny ellipse
+PASS: 주모 단이 stays out of static obstacles and water
+PATROL {"extent":96.6912689208984,"name":"부적 상인","travelled":399.997409105301}
+PASS: 부적 상인 actually patrols beyond the former tiny ellipse
+PASS: 부적 상인 stays out of static obstacles and water
+PATROL {"extent":364.597869873047,"name":"정원지기","travelled":556.266396045685}
+PASS: 정원지기 actually patrols beyond the former tiny ellipse
+PASS: 정원지기 stays out of static obstacles and water
+PATROL {"extent":114.399444580078,"name":"도술 스승","travelled":351.99896979332}
+PASS: 도술 스승 actually patrols beyond the former tiny ellipse
+PASS: 도술 스승 stays out of static obstacles and water
+PASS: cached route queries are event-driven, not run for every NPC every frame
+PASS: blocked NPC stops and waits instead of vibrating against a wall
+PASS: blocked fallback preserves a stationary root
+PASS: distant NPC does not animate, move or replan
+PASS: V1.1 revision-2 save is accepted without wiping progress
+PASS: V1.1 position migration retains spell, quest, painting and return-anchor state
+PASS: occupied old position is relocated nearby with original coordinates retained
+NPC/TITLE V1.2: 38 checks, 0 failures; route queries=83

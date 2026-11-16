@@ -1,0 +1,36 @@
+{
+  "status": "passed",
+  "original_title_file_unchanged": true,
+  "whole_image_motion": false,
+  "regions": {
+    "face": {
+      "mean_delta": 0.0,
+      "changed_fraction": 0.0
+    },
+    "buttons": {
+      "mean_delta": 0.0,
+      "changed_fraction": 0.0
+    },
+    "hand": {
+      "mean_delta": 0.766797385620915,
+      "changed_fraction": 0.056358543417366944
+    },
+    "fall_a": {
+      "mean_delta": 1.5775862068965518,
+      "changed_fraction": 0.27351097178683387
+    },
+    "fall_b": {
+      "mean_delta": 13.167100694444445,
+      "changed_fraction": 0.6282552083333334
+    },
+    "fall_c": {
+      "mean_delta": 4.154859437751004,
+      "changed_fraction": 0.2987951807228916
+    },
+    "river": {
+      "mean_delta": 8.784753052164262,
+      "changed_fraction": 0.7162874583795783
+    }
+  },
+  "device_test": "not_performed"
+}
