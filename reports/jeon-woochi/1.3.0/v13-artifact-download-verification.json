@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "delivery_run_id": 43806556594,
+  "artifact_id": 14199145175,
+  "artifact_name": "jeon-woochi-verified-apk",
+  "internal_apk": "jeon-woochi-1.3.0.apk",
+  "bytes": 71806211,
+  "sha256": "a0672b8252c7919ffd2b6cbd22256328935e126145ff693df40b1caa8a35526f",
+  "matches_public_apk": true,
+  "retention_days": 14
+}

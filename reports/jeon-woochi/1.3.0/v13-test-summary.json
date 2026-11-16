@@ -58,6 +58,8 @@
   "apk_checks": 28,
   "final_apk_resource_suites": {
     "rpg_v13": 58,
-    "v13_touch": 40
+    "v13_touch": 40,
+    "v13_ai": 15,
+    "v13_restart": "passed"
   }
 }
