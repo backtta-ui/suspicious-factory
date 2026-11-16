@@ -1,0 +1,59 @@
+{
+  "version": "2.0.2",
+  "protocol": 3,
+  "source_commit": "7e7c070a730707d15d512763221d1621aae45dbd",
+  "backup_branch": "backup/dosa-2.0.1-multiplayer",
+  "source_actions": {
+    "run": 43857903371,
+    "conclusion": "success",
+    "artifact_id": 14222091721
+  },
+  "installable_artifact_actions": {
+    "run": 43861041187,
+    "conclusion": "success",
+    "artifact_id": 14223865046
+  },
+  "apk": {
+    "path": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.2.apk",
+    "public_url": "https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.2.apk",
+    "sha256": "66b6e46e09115e0365fb640510700d90b712cfb9569989dee78e5f4e7039bac4",
+    "bytes": 83806295,
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "checks": 32
+  },
+  "tests": {
+    "named_ci_checks": 786,
+    "failures": 0,
+    "rules_and_loadout_map_checks": 59,
+    "ticket_checks": 8,
+    "real_socket_checks": 34,
+    "real_socket_acquisition_and_6_player_shape_flow_checks": 33,
+    "connected_native_ui_checks": 15,
+    "compiled_apk_resource_rechecks": {
+      "rules": 59,
+      "tickets": 8,
+      "connected_ui": 15
+    }
+  },
+  "maps": [
+    "village",
+    "forest"
+  ],
+  "common_spells_require_verified_adventure_acquisition": true,
+  "free_loadout": "role-filtered draw once during preparation, two active slots",
+  "yokai_object_transformation": "forbidden and excluded from candidate list",
+  "paid_vip_billing": "not_implemented; production accounts free, server test configuration only",
+  "vip_in_game_swap": "disabled",
+  "network": {
+    "transport": "WebSocket native binary gzip",
+    "mean_wire_snapshot_bytes": 1867.49620253165,
+    "estimated_8_player_480s_state_MB": 71.71185417721536,
+    "estimate_excludes": "TLS, lobby, discovery adventure and other control traffic"
+  },
+  "public_https_redownload": "sha256_matches",
+  "signed_artifact_redownload": "sha256_matches",
+  "real_android_devices": "not_tested",
+  "human_6_to_8_player_internet_play": "not_tested",
+  "render_deployment": "not_performed",
+  "existing_game_saves_and_previous_published_apks": "preserved"
+}

@@ -13,9 +13,11 @@
     "tickets": 8,
     "connected_ui": 15
   },
-  "public_redownload": "pending",
-  "signed_artifact": "pending",
+  "public_redownload": "sha256_matches",
+  "signed_artifact": "sha256_matches",
   "real_android_devices": "not_tested",
   "render_public_deployment": "not_performed",
-  "paid_billing": "not_implemented"
+  "paid_billing": "not_implemented",
+  "signed_artifact_run": 43861041187,
+  "signed_artifact_id": 14223865046
 }

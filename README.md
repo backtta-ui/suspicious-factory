@@ -12,6 +12,8 @@
 
 SHA256: `66b6e46e09115e0365fb640510700d90b712cfb9569989dee78e5f4e7039bac4`
 
+[설치용 Actions ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43861041187) → Artifacts → `jeon-woochi-verified-apk` 다운로드 후 압축을 풀어 설치하세요. 공개 APK와 Actions ZIP을 실제 재다운로드하여 내부 APK의 SHA256 일치를 검증했습니다.
+
 ---
 
 ## 이전 버전 《도사》 꾸미기 후속 업데이트 2.0.1

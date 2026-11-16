@@ -4,8 +4,10 @@ README.md
 assets/woo/seal/NOTICE.txt
 assets/woo/seal/animals.png
 assets/woo/seal/animals.png.import
+docs/MULTIPLAYER-2.0.2-VERIFICATION.json
 docs/MULTIPLAYER-2.0.2.md
 docs/PRIVACY.md
+docs/V2.0-SERVER.md
 export_presets.cfg
 project.godot
 render.yaml
