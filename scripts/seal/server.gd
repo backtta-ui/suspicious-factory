@@ -167,7 +167,9 @@ func dispatch(socket_id: int,conn: Dictionary,data: Dictionary) -> void:
   send(conn,{"op":"study","study":studies[conn.uid].view()});return
  if op=="study_end":studies.erase(conn.uid);send_account(conn);send(conn,{"op":"study_ended"});return
  if op in ["study_move","study_open","study_answer"]:
-  if not studies.has(conn.uid):send(conn,{"op":"error","error":"그림 수련에 먼저 입장하세요"});return
+  if not studies.has(conn.uid):
+   if op!="study_move":send(conn,{"op":"error","error":"그림 수련에 먼저 입장하세요"})
+   return
   var reply: Dictionary=studies[conn.uid].command(data)
   if reply.has("learned"):
    identities[conn.identity].owned_spells=studies[conn.uid].owned.duplicate();save_careers();send_account(conn)
