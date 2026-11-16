@@ -66,3 +66,37 @@
 도술·맵·NPC·저장 보호·배경 복귀·실제 복제 렌더러 검사 및 네 화면 크기(1280×720, 2400×1080, 2340×1080, 960×540)의 네이티브 터치 이벤트 검사를 자동화했습니다. 터치 시험은 Linux Godot에 Android 형식 이벤트를 주입하는 방식이며 Galaxy 실기기 시험은 아닙니다.
 
 최종 테스트 결과·소스 커밋·APK 체크섬과 Actions 다운로드는 최종 검증 기록에 덧붙입니다. 공개 멀티 서버/Android 기기 간 시험을 오프라인 수련 성공으로 대체하여 주장하지 않습니다.
+
+
+## 최종 검사·APK·GitHub
+
+- 수련장 기능 **74개**, 네 가지 화면 크기의 네이티브 터치 **28개**, 모험 복귀 **5개** = 신규 **107개 검사, 실패 0**.
+- 네트워크 접근이 차단된 Cloud 환경에서도 수련장 74개 검사 통과.
+- 기존 기능 786개, 기존 외형 21,848개 검사 및 프로세스 재실행 검사 통과. 실제 6/8 WebSocket 클라이언트의 기존 온라인 회귀 검사도 통과했지만 Android 기기 간 검증은 아닙니다.
+- **최종 서명 APK에서 추출한 실제 컴파일 게임 코드/리소스**로 신규 107개 검사를 다시 통과했습니다. 실행 엔진은 Linux Godot이며 Android OS 실행 시험은 아닙니다.
+- `bash tools/checkpoint.sh` 최종 종료 코드 0, APK 정렬·Manifest·서명·리소스 검사 **34개 통과**.
+- [기존 Android Actions 컴파일·전체 테스트 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43896461967). 앱 코드 기준 `0dedd41e8ac8be0533635c7b0c3c7952b3b528b1`. 미서명 CI 산출물은 기존 Cloud 서명키로 마무리했습니다.
+
+[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/3b71279a41569ea665e6213e588214b3f9e904af/jeon-woochi-2.0.4.apk) · [설치용 Actions ZIP 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43898800359)
+
+휴대폰에서 APK 링크를 열고 **내 파일 → 다운로드 → APK**로 업데이트 설치하세요. ChatGPT 안에서 다운로드가 안 되면 링크를 길게 눌러 삼성 인터넷에서 여세요. 기존 앱을 삭제하지 말고 **이어하기**를 사용하세요.
+
+Actions로 받는 경우 로그인 → 실행 화면 하단 **Artifacts → jeon-woochi-verified-apk** → ZIP 다운로드 → 내 파일에서 **압축 풀기** → 내부 APK 설치 순서입니다. Artifacts 보존은 14일이며 직접 APK는 별도 배포 커밋에 보존됩니다.
+
+APK: 86,261,968바이트(약 82.3 MiB), SHA256 `18765723d17c8301d44b9eb60bce17af7e0812b33b7497d95a98451dab1d4ae3`. 공개 HTTPS 재다운로드와 Actions ZIP 내부 APK의 체크섬이 모두 일치했습니다. 로컬 경로는 `/workspace/suspicious-factory/builds/jeon-woochi-2.0.4.apk`입니다.
+
+### 수정 파일
+
+- `scripts/practice/`: 공통 카탈로그, 격리된 로컬 규칙/세션, 맵/배치, 입구, 효과, UI.
+- `scripts/main.gd`: 광장 입장/복귀, 수련 중 저장 차단, Android 뒤로가기/백그라운드.
+- `scripts/woo/adventure.gd`: 기존 장착을 유지하며 같은 도감 목록과 체험 버튼 연결.
+- `scripts/seal/arena.gd`, `map.gd`, `rules.gd`, `client_ui.gd`: 공유 충돌 수정, 방어/시야 쿼리 추출, 실제 분신 이동/동기화.
+- `scripts/woo/action_config.gd`, `action_controller.gd`, `goblin.gd`: 실제 모험과 공유하는 부적 판정/수치.
+- `scripts/woo/village.gd`, `village_layout.gd`: 기존 배치 유지 + 작은 입구와 revision4 이전.
+- `assets/woo/practice_ground.png`, `tools/bake_practice.gd`: 기존 마을 질감을 재사용한 베이크 바닥.
+- `tests/practice.gd`, `practice_touch.gd`, `practice_return.gd`, `practice_render.gd`, `npc_title_v12.gd`, `tools/test.sh`, `tools/verify_apk.py`.
+- `project.godot`, `export_presets.cfg`, README와 본 문서/캡처/검증 JSON.
+
+전체 파일 목록·체크섬·실행 기록은 [PRACTICE-2.0.4-VERIFICATION.json](PRACTICE-2.0.4-VERIFICATION.json)에 있습니다. 기존 APK와 백업 커밋은 보존했습니다.
+
+**남은 검증:** 삼성 갤럭시 실제 설치/멀티터치/백그라운드 복귀/FPS, 공개 멀티 서버와 Android 기기 간 시험은 이 Cloud 환경에서 수행하지 않았습니다. 현재 등록 14개 도술은 체험 기능을 구현했으며, 아직 등록하지 않은 미래 도술을 구현 완료로 취급하지 않습니다.
