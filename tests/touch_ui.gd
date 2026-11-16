@@ -91,7 +91,7 @@ func run() -> void:
 		await frames(8)
 		var worlds:=0
 		for child in game.get_children():
-			if child is WooVillage: worlds+=1
+			if child is WooStoryPlaza: worlds+=1
 		check(game.screen_name=="playing" and worlds==1,prefix+"rapid touch starts exactly one world")
 		await capture("village-%dx%d" % [dimensions.x,dimensions.y])
 		var stick: Control=game.joystick
