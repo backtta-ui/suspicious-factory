@@ -273,13 +273,14 @@ func enemy_died(enemy_id: int,p: Vector2) -> void:
  game.save_progress()
 func hurt_player(amount: int) -> void:
  if not can_fight() or player_hurt_cd>0:return
- player_hurt_cd=.8;game.rpg.data.hp=maxi(0,int(game.rpg.data.hp)-amount);combat.burst(game.player.position,amount,false,false)
+ player_hurt_cd=.8;game.rpg.data.hp=maxi(0,int(game.rpg.data.hp)-amount)
+ if game.rpg.data.effects.particles:combat.burst(game.player.position,amount,false,false)
  game.sound.play_clip("hit")
  if game.rpg.data.hp<=0:
   game.set_paused(true)
   var stack: VBoxContainer=game.open_modal("defeat")
   if stack:
-   stack.add_child(game.text("도술의 기운이 다했습니다",27,game.GOLD));stack.add_child(game.text("획득한 처치 기록은 보존됩니다. 광장에서 회복합니다.",19));stack.add_child(game.button("광장으로",func()->void:game.rpg.data.hp=game.rpg.max_hp();game.rpg.data.mp=game.rpg.max_mp();return_to_plaza(),true))
+   stack.add_child(game.text("도술의 기운이 다했습니다",27,game.GOLD));stack.add_child(game.text("광장에서 회복합니다. 미완료 임무는 다시 시작합니다.",19));stack.add_child(game.button("광장으로",func()->void:game.rpg.data.hp=game.rpg.max_hp();game.rpg.data.mp=game.rpg.max_mp();return_to_plaza(),true))
   game.save_progress()
 func mission_interact() -> void:
  if game.player.position.distance_to(ForestLayout.EXIT)>=95:return
