@@ -1,0 +1,9 @@
+.git
+builds
+.android-template
+.godot
+.ci
+*.keystore
+*.jks
+*.apk
+*.aab

@@ -53,7 +53,7 @@ func begin(kind: String) -> void:
  active=true;elapsed=0;struck.clear();pulses=0;last_attack_hit=false;reset_left=C.COMBO_RESET
  adventure.attack_cd=duration
  player.action_pose=5 if mode=="air" else (1 if mode=="talisman" else stage-1)
- player.action_left=duration
+ player.action_left=duration;player.pose_duration=duration
  player.push_left=.10;player.push_direction=aim
  adventure.game.sound.play_clip("spell" if mode=="talisman" else "attack")
 func tick(delta: float) -> void:
@@ -67,7 +67,6 @@ func tick(delta: float) -> void:
  var impact: float=.12 if mode!="ground" else C.IMPACT[stage-1]
  if elapsed>=impact and pulses==0:
   impact_hit(0);pulses=1
- if mode=="ground" and stage==3 and elapsed>=.23 and pulses==1:impact_hit(1);pulses=2
  if elapsed>=duration:
   active=false
   if not last_attack_hit:hits=0;hit_left=0;stage=0;reset_left=0
@@ -78,7 +77,8 @@ func impact_hit(pulse: int) -> void:
  var player: WooActor=adventure.game.player
  var range_value: float=145 if mode=="talisman" else (120 if mode=="air" else C.RANGES[stage-1])
  var damage: int=32 if mode=="talisman" else (26 if mode=="air" else C.DAMAGE[stage-1])
- if mode=="ground" and stage==3:damage=13
+ if mode=="air":
+  var bolt:=preload("res://scripts/woo/air_talisman.gd").new();bolt.adventure=adventure;bolt.direction=aim;bolt.position=player.position;bolt.height=player.jump_height;adventure.forest.add_child(bolt);return
  adventure.combat.swing(player.position,aim,stage,mode,range_value)
  for enemy in enemies():
   var id: String="%d:%d" % [enemy.get_instance_id(),pulse]

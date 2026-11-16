@@ -16,9 +16,10 @@ const RANKS=["견습 도사","하급 도사","중급 도사","상급 도사","�
 const REWARD={"xp":120,"coins":50,"items":{"potion":2,"leaf":3}}
 var data: Dictionary
 func _init(saved: Dictionary={}) -> void:
- data={"rarities":DEFAULT_RARITY.duplicate(),"loot_claims":[],"seen_items":[],"discoveries":[],"visited":[],"version":VERSION,"level":1,"xp":0,"hp":100,"mp":50,"coins":0,"inventory":{"potion":3,"mana_potion":2,"seal":1,"leaf":1,"key":1},"slots":["talisman","jar",""],"completed":[],"claims":[],"session":{},"effects":{"hit_stop":true,"flash":true,"shake":true,"particles":true}}
+ data={"adventure_unlocks":[],"rarities":DEFAULT_RARITY.duplicate(),"loot_claims":[],"seen_items":[],"discoveries":[],"visited":[],"version":VERSION,"level":1,"xp":0,"hp":100,"mp":50,"coins":0,"inventory":{"potion":3,"mana_potion":2,"seal":1,"leaf":1,"key":1},"slots":["talisman","jar",""],"completed":[],"claims":[],"session":{},"effects":{"hit_stop":true,"flash":true,"shake":true,"particles":true}}
  for k in data:
   if saved.has(k):data[k]=saved[k].duplicate(true) if saved[k] is Array or saved[k] is Dictionary else saved[k]
+ if data.completed.has("fox_forest") and not data.adventure_unlocks.has("forest_cat"):data.adventure_unlocks.append("forest_cat")
  data.version=VERSION
  if not saved.has("discoveries"):data.discoveries=data.inventory.keys()
  # JSON numbers are floats in Godot; canonicalize IDs before Array.has/comparisons.
@@ -37,7 +38,7 @@ static func valid(value: Variant) -> bool:
   if not value.rarities is Dictionary:return false
   for id in value.rarities:
    if not ITEMS.has(id) or not RARITIES.has(value.rarities[id]):return false
- for field in ["loot_claims","discoveries","visited","seen_items"]:
+ for field in ["loot_claims","discoveries","visited","seen_items","adventure_unlocks"]:
   if value.has(field):
    if not value[field] is Array:return false
    for id in value[field]:
@@ -119,6 +120,7 @@ func claim_fox_reward() -> bool:
   if count(id)+REWARD.items[id]>9999 or (count(id)==0 and data.inventory.size()>=CAPACITY):return false
  grant_xp(REWARD.xp);data.coins+=REWARD.coins
  for id in REWARD.items:add_item(id,REWARD.items[id])
+ if not data.adventure_unlocks.has("forest_cat"):data.adventure_unlocks.append("forest_cat")
  data.claims.append("fox_forest")
  if not data.completed.has("fox_forest"):data.completed.append("fox_forest")
  return true
@@ -127,4 +129,10 @@ func equip(slot: int,id: String) -> bool:
  var old:int=data.slots.find(id)
  if old>=0:data.slots[old]=""
  data.slots[slot]=id
+ return true
+
+func discard_item(id: String,amount: int=1) -> bool:
+ if not ITEMS.has(id) or ITEMS[id].kind=="귀중품" or amount<=0 or count(id)<amount:return false
+ data.inventory[id]=count(id)-amount
+ if data.inventory[id]==0:data.inventory.erase(id)
  return true

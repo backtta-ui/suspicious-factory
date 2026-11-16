@@ -14,7 +14,13 @@ var hurt_stun:=0.0
 var hurt_knock:=Vector2.ZERO
 var defeated:=false
 var defeat_elapsed:=0.0
-const ACTION_ART=preload("res://assets/woo/v14/hero_actions.png")
+var hero_rig: WooHeroRig
+var pose_duration:=.3
+var jump_preparation:=0.0
+var jump_phase:="ground"
+var network_remote:=false
+var appearance_form:="human"
+const SKILL_SHEET=preload("res://assets/woo/v20/skills.png")
 var dash_left:=0.0
 var dash_direction:=Vector2.ZERO
 var combat_frozen:=false
@@ -76,13 +82,15 @@ func _ready() -> void:
 		npc_knees=Sprite2D.new();npc_visual.add_child(npc_knees)
 		npc_left_foot=Sprite2D.new();npc_visual.add_child(npc_left_foot)
 		npc_right_foot=Sprite2D.new();npc_visual.add_child(npc_right_foot)
-	else:add_child(sprite)
+	else:
+		add_child(sprite)
+		hero_rig=preload("res://scripts/woo/hero_rig.gd").new();hero_rig.actor=self;add_child(hero_rig)
 	npc_origin = position
 func jump() -> bool:
-	if npc or not enabled or defeated or jump_height>0 or jump_velocity>0 or transforming>0:return false
-	jump_velocity=215.0;return true
+	if npc or not enabled or defeated or jump_height>0 or jump_velocity>0 or jump_preparation>0 or transforming>0:return false
+	jump_preparation=.07;jump_phase="preparation";return true
 func reset_action() -> void:
-	jump_height=0;jump_velocity=0;action_left=0;action_pose=-1;hurt_stun=0;hurt_left=0;hurt_knock=Vector2.ZERO;defeated=false;defeat_elapsed=0.0;air_chain=false;push_left=0;dash_left=0;combat_frozen=false
+	jump_height=0;jump_velocity=0;jump_preparation=0;jump_phase="ground";action_left=0;action_pose=-1;hurt_stun=0;hurt_left=0;hurt_knock=Vector2.ZERO;defeated=false;defeat_elapsed=0.0;air_chain=false;push_left=0;dash_left=0;combat_frozen=false
 func direction() -> Vector2:
 	if not enabled or transforming>0 or hurt_stun>0 or defeated: return Vector2.ZERO
 	if npc: return intent.limit_length()
@@ -95,14 +103,20 @@ func begin_transform() -> bool:
 	velocity = Vector2.ZERO
 	return true
 func _physics_process(delta: float) -> void:
+	if network_remote:
+		transforming=maxf(0,transforming-delta);update_sprite();queue_redraw();return
 	if defeated:defeat_elapsed+=delta
 	if combat_frozen and not npc:
 		velocity=Vector2.ZERO;return
 	if not npc and enabled:
 		action_left=maxf(0,action_left-delta);hurt_left=maxf(0,hurt_left-delta);hurt_stun=maxf(0,hurt_stun-delta);landing_left=maxf(0,landing_left-delta)
+		if jump_preparation>0:
+			jump_preparation=maxf(0,jump_preparation-delta)
+			if jump_preparation==0:jump_velocity=215.0
 		if jump_velocity!=0 or jump_height>0:
 			jump_height=maxf(0,jump_height+jump_velocity*delta);jump_velocity-=590*delta
-			if jump_height==0 and jump_velocity<0:jump_velocity=0;landing_left=.18;landed.emit()
+			jump_phase="apex" if absf(jump_velocity)<35 else ("rising" if jump_velocity>0 else "falling")
+			if jump_height==0 and jump_velocity<0:jump_velocity=0;landing_left=.18;jump_phase="landing";landed.emit()
 	cooldown = maxf(0,cooldown-delta)
 	if transforming>0:
 		var before := transforming
@@ -122,6 +136,7 @@ func _physics_process(delta: float) -> void:
 	if dash_left>0 and enabled and not npc:
 		dash_left=maxf(0,dash_left-delta);velocity=dash_direction*360.0
 	if not npc and enabled:
+		if action_left>0:velocity*=.35
 		if push_left>0:push_left=maxf(0,push_left-delta);velocity+=push_direction*70
 		velocity+=hurt_knock;hurt_knock=hurt_knock.move_toward(Vector2.ZERO,delta*350)
 	if defeated:velocity=Vector2.ZERO
@@ -145,14 +160,18 @@ func update_sprite() -> void:
 		return
 	var region: Array
 	var ratio: float
-	if jar:
+	if jar or appearance_form=="jar":
 		sprite.texture=NPC_SHEET
 		var view:=2 if facing in [5,6,7] else (0 if facing==2 else 1)
 		region=FRAMES.VILLAGERS_JARS[6+view]
 		ratio=0.13
+	elif appearance_form=="cat":
+		sprite.texture=SKILL_SHEET
+		var cell:=SKILL_SHEET.get_width()/4.0
+		region=[0,cell,cell,cell,cell/2,cell*.92];ratio=.15
 	else:
 		sprite.texture=SHEET
-		var frame:=int(animation_time)%4 if velocity.length()>2 else (5 if fmod(animation_time,4)>3.8 else 4)
+		var frame:=4
 		region=FRAMES.HERO[frame*8+facing]
 		ratio=0.34
 	sprite.region_enabled=true
@@ -160,13 +179,7 @@ func update_sprite() -> void:
 	sprite.scale=Vector2.ONE*ratio
 	sprite.offset=Vector2(region[2]/2.0-region[4],region[3]/2.0-region[5])
 	sprite.flip_h=false
-	if not jar and (action_left>0 or jump_height>0 or landing_left>0 or hurt_left>0 or defeated):
-		var pose: int=action_pose if action_left>0 else (7 if hurt_left>0 or defeated else (6 if landing_left>0 else 4))
-		sprite.texture=ACTION_ART
-		var cell:=Vector2(ACTION_ART.get_width()/4.0,ACTION_ART.get_height()/2.0)
-		sprite.region_rect=Rect2(Vector2(pose%4,floori(pose/4.0))*cell,cell)
-		sprite.scale=Vector2.ONE*.13;sprite.offset=Vector2(0,cell.y/2-410)
-		sprite.flip_h=facing in [3,4,5]
+	sprite.visible=jar or appearance_form!="human"
 	sprite.position=Vector2(0,-jump_height)
 	sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
 

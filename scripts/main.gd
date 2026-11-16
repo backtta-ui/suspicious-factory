@@ -17,6 +17,7 @@ const DebugInput = preload("res://scripts/touch_debug.gd")
 const FONT = preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const INK := Color("191825")
 const GOLD := Color("d8b87e")
+var seal_client: SealClientUI
 var screen_name := "menu"
 var active_context := "menu"
 var ui_generation := 0
@@ -197,14 +198,21 @@ func show_menu(save_before: bool = true) -> void:
  menu.add_child(resume)
  menu.add_child(button("설정",show_settings))
  menu.add_child(button("종료",quit_game))
+ var multiplayer_button:=button("봉인의 밤 · 멀티플레이",show_seal,true)
+ multiplayer_button.position=Vector2(30,594);multiplayer_button.custom_minimum_size=Vector2(360,64);ui.add_child(multiplayer_button)
  var chapter:=text("第一章  ·  계월촌",16,GOLD)
  chapter.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  chapter.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  chapter.offset_left=-490;chapter.offset_right=-100;chapter.offset_top=656;chapter.offset_bottom=676
  ui.add_child(chapter)
- var version:=text("V%s   ·   싱글플레이 / 오프라인 저장" % ProjectSettings.get_setting("application/config/version"),14,Color("c3b7bc"))
+ var version:=text("V%s   ·   그림 속 모험 · 봉인의 밤" % ProjectSettings.get_setting("application/config/version"),14,Color("c3b7bc"))
  version.position=Vector2(30,676)
  ui.add_child(version)
+
+func show_seal() -> void:
+ if is_instance_valid(seal_client):return
+ screen_name="seal";active_context="seal";new_ui()
+ seal_client=preload("res://scripts/seal/client_ui.gd").new();seal_client.game=self;add_child(seal_client)
 
 func start_game(continue_existing: bool = false) -> void:
  if screen_name=="playing": return
@@ -532,6 +540,7 @@ func quit_game() -> void:
  quitting=true
  save_progress()
  Save.save_settings(settings)
+ if is_instance_valid(seal_client):seal_client.connection.stop()
  sound.shutdown()
  # Let the audio server release a just-played button voice before engine shutdown.
  await get_tree().create_timer(0.08).timeout
@@ -598,6 +607,7 @@ func _process(delta: float) -> void:
  if save_elapsed>=8: save_progress(true)
 
 func go_back() -> void:
+ if screen_name=="seal" and is_instance_valid(seal_client):seal_client.back();return
  if is_instance_valid(adventure) and adventure.transitioning:return
  if is_instance_valid(modal):
   if modal_kind=="inventory":

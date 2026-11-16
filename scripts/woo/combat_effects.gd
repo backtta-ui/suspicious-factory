@@ -42,6 +42,7 @@ func _draw() -> void:
   c.a=v.life/.24*.75
   var radius: float=v.radius*(1-v.life/.24*.4)
   draw_arc(v.p+Vector2(0,-14),radius,v.angle-1.05,v.angle+1.05,24,c,3 if v.stage<4 else 6,true)
+  if v.stage==3:draw_line(v.p-Vector2.from_angle(v.angle)*20,v.p+Vector2.from_angle(v.angle)*radius,Color("dfca92"),4,true)
   if v.stage==3:draw_arc(v.p+Vector2(0,-16),radius-8,v.angle-.9,v.angle+.9,16,Color(.75,.45,1,c.a),2,true)
   if v.stage==4:draw_arc(v.p+Vector2(0,-20),radius*.65,v.angle-1.4,v.angle+1.4,24,c,2,true)
   if v.mode=="air" or v.mode=="landing":draw_arc(v.p,radius*.5,0,TAU,24,c,3,true)

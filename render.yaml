@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: dosa-seal-night-v20
+    runtime: docker
+    plan: free
+    region: singapore
+    dockerfilePath: ./server/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: false
+    envVars:
+      - key: PORT
+        value: '10000'
+      - key: MAX_ROOMS
+        value: '1'

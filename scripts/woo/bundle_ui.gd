@@ -75,7 +75,8 @@ func show_detail() -> void:
  var effect: Label=adventure.game.text("효과: "+item.description+"\n보유 %d개 · 획득: %s" % [adventure.game.rpg.count(selected),STORIES[selected][0]],16);effect.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail.add_child(effect)
  var use: Button=adventure.game.button("사용" if item.has("hp") or item.has("mp") else "보관용 · 사용 불가",use_selected,true)
  use.disabled=not (item.has("hp") or item.has("mp")) or (item.has("hp") and adventure.game.rpg.data.hp>=adventure.game.rpg.max_hp()) or (item.has("mp") and adventure.game.rpg.data.mp>=adventure.game.rpg.max_mp())
- detail.add_child(use)
+ var action_row:=HBoxContainer.new();detail.add_child(action_row);action_row.add_child(use)
+ var discard: Button=adventure.game.button("1개 버리기",confirm_discard);discard.add_theme_font_size_override("font_size",15);discard.disabled=item.kind=="귀중품" or adventure.game.rpg.count(selected)<=0;action_row.add_child(discard)
  var inspect: Button=adventure.game.button("확대 감상 · 길게 눌러도 열림",inspect_item.bind(selected));inspect.add_theme_font_size_override("font_size",16);detail.add_child(inspect)
 func use_selected() -> void:
  var before: Dictionary=adventure.game.rpg.data.duplicate(true)
@@ -97,3 +98,14 @@ func close_inspector() -> void:
   if b.has_meta("prior_disabled"):b.disabled=b.get_meta("prior_disabled");b.remove_meta("prior_disabled")
  if is_instance_valid(inspector):inspector.hide();inspector.queue_free()
  inspector=null
+
+func confirm_discard() -> void:
+ inspect_item(selected)
+ if not is_instance_valid(inspector):return
+ var column:=inspector.get_child(0)
+ column.add_child(adventure.game.button("1개 버리기 확정",func()->void:
+  var before: Dictionary=adventure.game.rpg.data.duplicate(true)
+  if adventure.game.rpg.discard_item(selected):
+   adventure.game.save_progress()
+   if adventure.game.last_save_error!=OK:adventure.game.rpg.data=before
+  close_inspector();rebuild()))

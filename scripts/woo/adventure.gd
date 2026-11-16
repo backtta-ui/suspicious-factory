@@ -110,6 +110,9 @@ func build_controls() -> void:
   var b: Button=game.button(spec[1],spec[4],true);b.name=spec[0];b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=spec[2];b.size=spec[3];b.add_theme_font_size_override("font_size",17);game.ui.add_child(b);combat_buttons.append(b)
   for connection in b.pressed.get_connections():b.pressed.disconnect(connection.callable)
   b.pressed.connect(spec[4])
+ for i in range(combat_buttons.size()):decorate_skill(combat_buttons[i],["attack","dodge","talisman","jar","locked"][i])
+ decorate_skill(jump_button,"jump")
+ decorate_skill(game.spell_button,"jar")
  update_controls()
  # Mini-map remains visible; an independent touch button overlays its exact area.
  var expand: Button=game.button("",show_map)
@@ -117,6 +120,12 @@ func build_controls() -> void:
  for mode in ["normal","hover","pressed","hover_pressed","disabled"]:expand.add_theme_stylebox_override(mode,StyleBoxEmpty.new())
  for child in expand.get_children():child.hide()
  game.ui.add_child(expand)
+func decorate_skill(b: Button,skill: String) -> void:
+ for child in b.get_children():
+  if child is WooOrnament:child.hide()
+ for mode in ["normal","hover","pressed","hover_pressed","disabled"]:b.add_theme_stylebox_override(mode,StyleBoxEmpty.new())
+ for mode in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:b.add_theme_color_override(mode,Color(0,0,0,0))
+ var badge:=preload("res://scripts/woo/skill_badge.gd").new();badge.name="SkillBadge";badge.skill=skill;badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);b.add_child(badge)
 func update_controls() -> void:
  for b in combat_buttons:b.visible=in_mission
  game.spell_button.visible=not in_mission
@@ -236,6 +245,11 @@ func update_mission_ui(delta: float) -> void:
  for i in range(combat_buttons.size()):
   var b:=combat_buttons[i]
   b.disabled=game.paused or transitioning or game.rpg.data.hp<=0
+  var badge: WooSkillBadge=b.get_node("SkillBadge")
+  badge.skill="attack" if i==0 else ("dodge" if i==1 else (game.rpg.data.slots[i-2] if game.rpg.data.slots[i-2]!="" else "locked"))
+  badge.locked=badge.skill=="locked"
+  badge.remaining=(maxf(0,actions.duration-actions.elapsed) if actions.active else 0) if i==0 else (dodge_cd if i==1 else (talisman_cd if badge.skill=="talisman" else (game.player.cooldown if badge.skill=="jar" else 0)))
+  badge.maximum=actions.duration if i==0 else (1.6 if i==1 else (2.2 if badge.skill=="talisman" else 2.5))
   if i==0:b.text="공격 · %d타" % actions.stage if actions.active else "공격";b.disabled=b.disabled or game.player.jar
   elif i==1:b.text="회피" if dodge_cd<=0 else "회피 %.1f" % dodge_cd;b.disabled=b.disabled or dodge_cd>0
   else:
@@ -335,7 +349,10 @@ func acquire_loot(loot: Dictionary) -> bool:
  return true
 func mission_interact() -> void:
  var loot:=nearby_loot()
- if not loot.is_empty():acquire_loot(loot);return
+ if not loot.is_empty():
+  if loot.id=="shrine_seal" and not game.rpg.data.adventure_unlocks.has("forest_cat"):show_forest_trial(loot)
+  else:acquire_loot(loot)
+  return
  if game.player.position.distance_to(ForestLayout.EXIT)>=95:return
  var stack: VBoxContainer=game.open_modal("exit")
  if stack:
@@ -357,3 +374,24 @@ func show_completion() -> void:
   stack.add_child(game.text("여우의 숲 · 임무 완료",30,game.GOLD))
   stack.add_child(game.text("경험치 +120 · 엽전 +50\n회복약 ×2 · 신비한 잎 ×3" if granted else "첫 완료 보상은 이미 수령했습니다.\n광장의 벚꽃나무에 금빛이 피어납니다.",23))
   stack.add_child(game.button("광장으로 돌아가기",return_to_plaza,true))
+
+func show_forest_trial(loot: Dictionary,step: int=0) -> void:
+ if is_instance_valid(game.modal):game.close_modal()
+ var stack: VBoxContainer=game.open_modal("forest_trial")
+ if stack==null:return
+ var glyphs: Array[String]=["山","水","火","風"]
+ var pattern: Array=[2,0,3]
+ stack.add_child(game.text("사당의 도술 봉인 · %d/3"%step,28,game.GOLD))
+ stack.add_child(game.text("火 → 山 → 風 문양을 순서대로 눌러 고양이 둔갑 외형을 깨우세요.
+봉인의 밤에서 기본 항아리와 같은 능력의 외형 선택지로 추가됩니다.",19))
+ var row:=HBoxContainer.new();stack.add_child(row)
+ for i in range(4):
+  row.add_child(game.button(glyphs[i],func()->void:
+   if i!=pattern[step]:game.close_modal();show_forest_trial(loot,0);return
+   if step<2:show_forest_trial(loot,step+1);return
+   game.close_modal()
+   var before: Dictionary=game.rpg.data.duplicate(true)
+   if not game.rpg.data.adventure_unlocks.has("forest_cat"):game.rpg.data.adventure_unlocks.append("forest_cat")
+   if not acquire_loot(loot):game.rpg.data=before
+   else:game.hint.text="여우의 숲 도술 해금 · 멀티플레이 고양이 둔갑 외형"))
+ stack.add_child(game.button("닫기",game.close_modal))

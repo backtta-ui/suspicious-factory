@@ -55,7 +55,7 @@ func run() -> void:
  adv.basic_attack();adv.basic_attack();adv.basic_attack();adv.basic_attack()
  check(adv.actions.queue.size()==3,"rapid taps buffer next three attacks")
  await create_timer(2.1).timeout
- check(adv.actions.stage==4 and enemy.hp==898,"four stages deal 100/110/130/170 percent with intentional double-hit third stage")
+ check(adv.actions.stage==4 and enemy.hp==898,"four stages deal 100/110/130/170 percent with single staff impact third stage")
  check(adv.actions.hits>=4,"real contacts drive visible hit counter")
  enemy.set_physics_process(true);await create_timer(.18).timeout
  check(enemy.jump_height>0 or enemy.jump_velocity>0,"fourth rising strike launches monster independently of world position")
@@ -64,7 +64,7 @@ func run() -> void:
  adv.basic_attack();check(adv.actions.stage==1,"combo resets after no input timeout")
  await create_timer(.5).timeout
  adv.actions.cancel();adv.hit_stop=0;game.player.jump_height=0;game.player.jump_velocity=0;game.player.position=Vector2(600,650);enemy.position=Vector2(660,650);enemy.hp=1000
- adv.jump();await create_timer(.15).timeout;adv.basic_attack();await create_timer(.25).timeout
+ adv.jump();await create_timer(.15).timeout;adv.basic_attack();await create_timer(.4).timeout
  check(enemy.hp<1000 and game.player.air_chain,"airborne attack hits airborne-capable foot-space targets")
  var after_air:int=enemy.hp
  await create_timer(.5).timeout

@@ -31,7 +31,7 @@ func run() -> void:
   var center: Vector2=game.joystick.get_global_rect().get_center();touch(center+Vector2(60,0),true,0);await frames()
   for i in range(4):quick(adv.combat_buttons[0],1)
   check(adv.actions.active and adv.actions.queue.size()==3 and game.joystick.finger==0,prefix+"four same-frame native taps reserve combo while steering")
-  adv.actions.cancel();quick(adv.jump_button,1);await frames(4)
+  adv.actions.cancel();quick(adv.jump_button,1);await create_timer(.14).timeout;await frames(2)
   check(game.player.jump_height>0 and game.joystick.finger==0,prefix+"native moving jump keeps joystick ownership")
   quick(adv.combat_buttons[0],1);await frames()
   check(adv.actions.mode=="air",prefix+"native jump then attack enters aerial combat")
