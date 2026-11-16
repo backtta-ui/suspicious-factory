@@ -5,7 +5,7 @@ on:
       apk_name:
         description: "Cloud-built APK filename"
         required: true
-        default: "jeon-woochi-1.3.0.apk"
+        default: "jeon-woochi-1.4.0.apk"
         type: string
       download_ref:
         description: 'Immutable apk-downloads commit SHA'

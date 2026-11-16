@@ -30,3 +30,7 @@ V1.3: grass (cloth2), dirt (footstep04), wood (footstep08), attack
 Filters, excerpts, fades and gain adapted for this game. water.wav is an
 original deterministic filtered-noise splash authored for this project;
 no paid sound service or API used.
+
+V1.4 forest_wind.ogg: original deterministic pink-noise wind ambience,
+filtered and softly modulated with FFmpeg (seed 1401), no external source
+or paid service. Existing licensed music and samples remain unchanged.

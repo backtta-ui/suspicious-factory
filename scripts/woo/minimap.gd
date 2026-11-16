@@ -10,15 +10,17 @@ func update_local(p: Vector2, done: bool) -> void:
 	if p!=local_position or elder_done!=done:
 		local_position=p;elder_done=done;queue_redraw()
 func point(p: Vector2) -> Vector2:
-	var bounds:=Vector2(1500,1080) if mission else Layout.SIZE
+	var bounds:=Vector2(3000,2160) if mission else Layout.SIZE
 	return size/2+(p-bounds/2)*(minf(size.x,size.y)-16)/bounds.x
 func _draw() -> void:
 	var center:=size/2;var radius:=minf(size.x,size.y)/2-3
 	draw_circle(center,radius,Color("1a1929"))
 	if mission:
 		var forest=preload("res://scripts/woo/forest_layout.gd")
-		draw_rect(Rect2(point(Vector2(110,170)),point(Vector2(1390,910))-point(Vector2(110,170))),Color("355155"))
+		draw_rect(Rect2(point(Vector2(110,170)),point(Vector2(2890,1990))-point(Vector2(110,170))),Color("355155"))
 		draw_rect(Rect2(point(forest.POND.position),point(forest.POND.end)-point(forest.POND.position)),Color("527ca0"))
+		draw_rect(Rect2(point(forest.NEW_POND.position),point(forest.NEW_POND.end)-point(forest.NEW_POND.position)),Color("527ca0"))
+		for z in forest.ZONES:draw_circle(point(z.center),2,Color("8dada0"))
 		for p in forest.GOBLINS:draw_circle(point(p),2,Color("f1d480"))
 		draw_circle(point(forest.EXIT),3,Color("d5b8ff"));draw_circle(point(local_position),3,Color("8ac9ff"))
 		draw_arc(center,radius,0,TAU,72,Color("c8ad7d"),2,true)

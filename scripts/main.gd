@@ -373,7 +373,7 @@ func open_modal(kind: String) -> VBoxContainer:
  modal.add_child(center)
  var card := PanelContainer.new()
  card.custom_minimum_size.x = 620
- card.add_theme_stylebox_override("panel",style(Color("1b343b"),10))
+ card.add_theme_stylebox_override("panel",style(Color("171d2c"),10))
  center.add_child(card)
  var stack := VBoxContainer.new()
  card.add_child(stack)
@@ -599,7 +599,11 @@ func _process(delta: float) -> void:
 
 func go_back() -> void:
  if is_instance_valid(adventure) and adventure.transitioning:return
- if is_instance_valid(modal): close_modal()
+ if is_instance_valid(modal):
+  if modal_kind=="inventory":
+   var bundle=modal.get_child(modal.get_child_count()-1)
+   if bundle is WooBundleUI and is_instance_valid(bundle.inspector):bundle.close_inspector();return
+  close_modal()
  elif screen_name=="playing": show_settings()
  else: show_settings()
 

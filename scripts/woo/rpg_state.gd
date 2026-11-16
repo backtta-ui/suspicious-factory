@@ -1,7 +1,9 @@
 class_name WooRpgState
 extends RefCounted
 ## Save-compatible, deterministic gameplay state. No scene or UI dependencies.
-const VERSION=1
+const VERSION=2
+const RARITIES={"일반":Color("9399a4"),"희귀":Color("6da9ee"),"영웅":Color("b081e3"),"전설":Color("e5bd6e")}
+const DEFAULT_RARITY={"potion":"일반","mana_potion":"희귀","seal":"희귀","leaf":"일반","key":"영웅"}
 const CAPACITY=30
 const ITEMS={
  "potion":{"name":"회복약","icon":"약","kind":"소모품","description":"체력을 45 회복합니다.","hp":45},
@@ -14,9 +16,11 @@ const RANKS=["견습 도사","하급 도사","중급 도사","상급 도사","�
 const REWARD={"xp":120,"coins":50,"items":{"potion":2,"leaf":3}}
 var data: Dictionary
 func _init(saved: Dictionary={}) -> void:
- data={"version":VERSION,"level":1,"xp":0,"hp":100,"mp":50,"coins":0,"inventory":{"potion":3,"mana_potion":2,"seal":1,"leaf":1,"key":1},"slots":["talisman","jar",""],"completed":[],"claims":[],"session":{},"effects":{"hit_stop":true,"flash":true,"shake":true,"particles":true}}
+ data={"rarities":DEFAULT_RARITY.duplicate(),"loot_claims":[],"seen_items":[],"discoveries":[],"visited":[],"version":VERSION,"level":1,"xp":0,"hp":100,"mp":50,"coins":0,"inventory":{"potion":3,"mana_potion":2,"seal":1,"leaf":1,"key":1},"slots":["talisman","jar",""],"completed":[],"claims":[],"session":{},"effects":{"hit_stop":true,"flash":true,"shake":true,"particles":true}}
  for k in data:
   if saved.has(k):data[k]=saved[k].duplicate(true) if saved[k] is Array or saved[k] is Dictionary else saved[k]
+ data.version=VERSION
+ if not saved.has("discoveries"):data.discoveries=data.inventory.keys()
  # JSON numbers are floats in Godot; canonicalize IDs before Array.has/comparisons.
  for k in ["level","xp","hp","mp","coins"]:data[k]=int(data[k])
  for id in data.inventory:data.inventory[id]=int(data.inventory[id])
@@ -28,7 +32,16 @@ static func integer(value: Variant,low: int,high: int) -> bool:
 static func valid(value: Variant) -> bool:
  if not value is Dictionary:return false
  if value.is_empty():return true
- if value.get("version",0)!=VERSION:return false
+ if value.get("version",0)!=1 and value.get("version",0)!=VERSION:return false
+ if value.has("rarities"):
+  if not value.rarities is Dictionary:return false
+  for id in value.rarities:
+   if not ITEMS.has(id) or not RARITIES.has(value.rarities[id]):return false
+ for field in ["loot_claims","discoveries","visited","seen_items"]:
+  if value.has(field):
+   if not value[field] is Array:return false
+   for id in value[field]:
+    if not id is String or id.length()>80:return false
  for k in ["level","xp","hp","mp","coins"]:
   if not integer(value.get(k,-1),1 if k=="level" else 0,99 if k=="level" else 1000000):return false
  if value.hp>100+(int(value.level)-1)*12 or value.mp>50+(int(value.level)-1)*5:return false
@@ -58,7 +71,7 @@ static func valid(value: Variant) -> bool:
   var p=session.get("position",null)
   if not p is Array or p.size()!=2:return false
   for n in p:
-   if not (n is float or n is int) or not is_finite(float(n)) or n<0 or n>1600:return false
+   if not (n is float or n is int) or not is_finite(float(n)) or n<0 or n>3400:return false
   if not integer(session.get("facing",-1),0,7):return false
   var defeated=session.get("defeated",null)
   if not defeated is Array or defeated.size()>3:return false
@@ -79,6 +92,7 @@ func count(id: String) -> int:return int(data.inventory.get(id,0))
 func add_item(id: String,amount: int) -> bool:
  if not ITEMS.has(id) or amount<=0 or amount>9999 or count(id)+amount>9999:return false
  if count(id)==0 and data.inventory.size()>=CAPACITY:return false
+ if not data.discoveries.has(id):data.discoveries.append(id)
  data.inventory[id]=count(id)+amount
  return true
 func use_item(id: String) -> bool:

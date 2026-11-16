@@ -18,6 +18,8 @@ var terrain_stream: AudioStream
 var last_surface:="stone"
 var nearby_trackers: Dictionary={}
 var map_id:="gyewol_village"
+var ambience: AudioStreamPlayer
+const WIND=preload("res://assets/audio/forest_wind.ogg")
 var music: AudioStreamPlayer
 var music_enabled:=true
 var music_requested:=false
@@ -32,6 +34,7 @@ var step_distance := 0.0
 var previous_position := Vector2.ZERO
 var tracking := false
 func _ready() -> void:
+ ambience=AudioStreamPlayer.new();ambience.stream=WIND;ambience.stream.loop=true;ambience.volume_db=-25;add_child(ambience)
  music=AudioStreamPlayer.new();music.stream=MUSIC;music.stream.loop=true;music.volume_db=-60;add_child(music)
  set_music_enabled(true)
  for i in range(6):
@@ -49,6 +52,11 @@ func set_backgrounded(value: bool) -> void:
  if value:
   for voice in voices:voice.stop()
 func _process(delta: float) -> void:
+ var wind_on: bool=enabled and not backgrounded and map_id=="fox_forest"
+ if is_instance_valid(ambience):
+  if not wind_on:ambience.stop()
+  elif not ambience.playing and AudioServer.get_driver_name()!="Dummy":ambience.play()
+  ambience.volume_db=-32 if ducked else -25
  if is_instance_valid(music):
   var target: float=-20.0 if ducked else (-10.0 if context=="menu" else -15.0)
   music.volume_db=move_toward(music.volume_db,target,delta*16)
@@ -59,6 +67,7 @@ func set_enabled(value: bool) -> void:
 func shutdown() -> void:
  enabled=false
  music_requested=false
+ if is_instance_valid(ambience):ambience.stop();ambience.stream=null
  if is_instance_valid(music):music.stop();music.stream=null
  for voice in voices:
   voice.stop()

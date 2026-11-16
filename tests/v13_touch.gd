@@ -33,7 +33,7 @@ func run() -> void:
   await tap(buttons[0],1)
   check(game.joystick.finger==0 and game.adventure.attack_cd>0,prefix+"native move and attack multitouch")
   game.adventure.talisman_cd=0
-  await tap(buttons[2],1)
+  await tap(buttons[2],1);await create_timer(.55).timeout
   check(game.joystick.finger==0 and game.rpg.data.mp==38,prefix+"native move and skill multitouch")
   await tap(buttons[1],1)
   check(game.joystick.finger==0 and game.adventure.dodge_cd>0,prefix+"native move and dodge multitouch")

@@ -79,7 +79,7 @@ func run() -> void:
  await tap(adv.combat_buttons[0],1)
  check(adv.attack_cd>0 and game.joystick.finger==0,"moving plus second-finger attack works")
  var mana:int=game.rpg.data.mp
- await tap(adv.combat_buttons[2],1)
+ await tap(adv.combat_buttons[2],1);await create_timer(.55).timeout
  check(game.rpg.data.mp==mana-12 and game.joystick.finger==0,"moving plus skill spends real mana once")
  touch(center,false,0);await frames()
  # Collision-respecting dash into deep pond.
@@ -88,7 +88,7 @@ func run() -> void:
  game.player.dash_left=0;game.player.position=Vector2(520,570);game.player.facing=0
  for enemy in enemies():enemy.set_physics_process(false)
  var enemy: WooGoblin=enemies()[0];enemy.position=Vector2(575,570)
- adv.attack_cd=0;adv.basic_attack();await create_timer(.2).timeout
+ adv.actions.cancel();adv.attack_cd=0;adv.basic_attack();await create_timer(.2).timeout
  check(enemy.hp==40,"actual magic projectile deals damage after physics ray hit")
  check(adv.combat.particles.size()==12 and adv.combat.numbers.size()==1,"blue hit emits bounded 12 shards and damage number")
  check(adv.shake_left>0 and game.camera.offset.length()>0,"camera shake runs independently of HUD")
@@ -112,7 +112,8 @@ func run() -> void:
  var before_hp:int=game.rpg.data.hp;adv.player_hurt_cd=0;adv.hurt_player(12)
  check(game.rpg.data.hp==before_hp-12,"enemy attack applies bounded player damage")
  adv.hurt_player(12);check(game.rpg.data.hp==before_hp-12,"damage cooldown prevents repeated contact loss")
- for n in enemies():adv.enemy_hit(n,100,Vector2.RIGHT,true)
+ await create_timer(.2).timeout
+ for n in enemies():adv.enemy_hit(n,1000,Vector2.RIGHT,true)
  await frames(5)
  check(adv.mission_done and adv.defeated().size()==3 and game.modal_kind=="complete","three actual deaths open completion screen")
  check(game.rpg.data.level==2 and game.rpg.data.xp==20 and game.rpg.data.coins==50,"completion grants XP level and coins")

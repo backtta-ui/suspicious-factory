@@ -10,17 +10,27 @@ var forest: Node2D
 var combat: Node2D
 var combat_buttons: Array[Button]=[]
 var stats_label: Label
+var actions: WooActionController
+var jump_button: Button
+var hp_bar: ProgressBar
+var combo_label: Label
+var loot_left:=0.0
+var loot_icon: WooItemArt
+var loot_label: Label
 var attack_cd:=0.0
 var talisman_cd:=0.0
 var dodge_cd:=0.0
 var player_hurt_cd:=0.0
 var hit_stop:=0.0
 var shake_left:=0.0
+var shake_power:=1.0
 var mission_done:=false
 var completion_opened:=false
 var reward_message:=""
 var selected_slot:=0
 var transition_layer: Control
+func _ready() -> void:
+ actions=preload("res://scripts/woo/action_controller.gd").new();actions.adventure=self;add_child(actions)
 func dispose() -> void:
  if is_instance_valid(transition_layer):transition_layer.queue_free()
  if is_instance_valid(forest):forest.queue_free()
@@ -44,35 +54,19 @@ func footer(stack: VBoxContainer) -> void:
  stack.add_child(game.button("메뉴로",func()->void:game.close_modal();show_menu()))
  stack.add_child(game.button("게임으로",game.close_modal,true))
 func show_inventory() -> void:
- var stack:=page("inventory","가방  %d / 30칸  ·  엽전 %d" % [game.rpg.data.inventory.size(),game.rpg.data.coins])
+ game.close_modal()
+ var stack: VBoxContainer=game.open_modal("inventory")
  if stack==null:return
- var grid:=GridContainer.new();grid.columns=5;stack.add_child(grid)
- for id in State.ITEMS:
-  if game.rpg.count(id)<=0:continue
-  var item: Dictionary=State.ITEMS[id]
-  var b: Button=game.button("%s\n%s ×%d" % [item.icon,item.name,game.rpg.count(id)],show_item.bind(id))
-  b.custom_minimum_size=Vector2(140,108);b.add_theme_font_size_override("font_size",17);grid.add_child(b)
- stack.add_child(game.text("같은 아이템은 중첩 보관됩니다. 아이템을 눌러 확인하세요.",17))
- footer(stack)
+ stack.get_parent().get_parent().hide()
+ var bundle:=preload("res://scripts/woo/bundle_ui.gd").new();bundle.adventure=self;game.modal.add_child(bundle)
 func show_item(id: String) -> void:
- if not State.ITEMS.has(id):return
- var item: Dictionary=State.ITEMS[id]
- var stack:=page("item",item.name)
- stack.add_child(game.text("%s · 보유 %d개" % [item.kind,game.rpg.count(id)],20))
- stack.add_child(game.text(item.description,21))
- var usable: bool=item.has("hp") or item.has("mp")
- var use: Button=game.button("사용" if usable else "사용 불가 · 보관용",func()->void:
-  var before: Dictionary=game.rpg.data.duplicate(true)
-  if game.rpg.use_item(id):
-   game.save_progress()
-   if game.last_save_error!=OK:game.rpg.data=before
-  show_item(id),true)
- use.disabled=not usable or game.rpg.count(id)<=0 or (item.has("hp") and game.rpg.data.hp>=game.rpg.max_hp()) or (item.has("mp") and game.rpg.data.mp>=game.rpg.max_mp())
- stack.add_child(use)
- stack.add_child(game.button("가방으로",show_inventory))
+ show_inventory()
+ var bundle:=game.modal.get_child(game.modal.get_child_count()-1) as WooBundleUI
+ bundle.selected=id;bundle.rebuild()
 func show_character() -> void:
  var stack:=page("character","전우치 · Lv.%d" % game.rpg.data.level)
  stack.add_child(game.text("%s\n경험치 %d / %d\n체력 %d / %d     도력 %d / %d\n배운 도술: 둔갑술 · 부적술" % [game.rpg.rank(),game.rpg.data.xp,game.rpg.xp_needed(),game.rpg.data.hp,game.rpg.max_hp(),game.rpg.data.mp,game.rpg.max_mp()],23))
+ var portrait:=preload("res://scripts/woo/item_art.gd").new();portrait.item_id="seal";portrait.animated=true;portrait.custom_minimum_size=Vector2(90,70);stack.add_child(portrait)
  stack.add_child(game.text("등급 승급은 추후 수련 조건에 연결됩니다.",17))
  footer(stack)
 func show_spells() -> void:
@@ -106,9 +100,16 @@ func show_outfits() -> void:
  footer(stack)
 func build_controls() -> void:
  combat_buttons.clear()
+ hp_bar=ProgressBar.new();hp_bar.position=Vector2(30,235);hp_bar.size=Vector2(242,12);hp_bar.show_percentage=false;hp_bar.add_theme_stylebox_override("fill",game.style(Color("be5467"),3));hp_bar.add_theme_stylebox_override("background",game.style(Color("241b2a"),3));hp_bar.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.ui.add_child(hp_bar)
+ combo_label=game.text("",25,game.GOLD);combo_label.position=Vector2(330,105);game.ui.add_child(combo_label)
+ loot_icon=preload("res://scripts/woo/item_art.gd").new();loot_icon.position=Vector2(305,154);loot_icon.size=Vector2(48,48);loot_icon.hide();game.ui.add_child(loot_icon)
+ loot_label=game.text("",17,game.GOLD);loot_label.position=Vector2(360,168);game.ui.add_child(loot_label)
+ jump_button=game.button("점프",jump);jump_button.name="JumpButton";jump_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);jump_button.offset_left=-415;jump_button.offset_right=-303;jump_button.offset_top=-144;jump_button.offset_bottom=-44;game.ui.add_child(jump_button)
  stats_label=game.text("",15,game.GOLD);stats_label.position=Vector2(30,205);game.ui.add_child(stats_label)
  for spec in [["AttackButton","공격",Vector2(-174,-160),Vector2(138,126),basic_attack],["DodgeButton","회피",Vector2(-292,-144),Vector2(100,100),dodge],["Skill1","",Vector2(-350,-270),Vector2(100,90),cast_slot.bind(0)],["Skill2","",Vector2(-238,-282),Vector2(100,90),cast_slot.bind(1)],["Skill3","",Vector2(-126,-270),Vector2(100,90),cast_slot.bind(2)]]:
   var b: Button=game.button(spec[1],spec[4],true);b.name=spec[0];b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=spec[2];b.size=spec[3];b.add_theme_font_size_override("font_size",17);game.ui.add_child(b);combat_buttons.append(b)
+  for connection in b.pressed.get_connections():b.pressed.disconnect(connection.callable)
+  b.pressed.connect(spec[4])
  update_controls()
  # Mini-map remains visible; an independent touch button overlays its exact area.
  var expand: Button=game.button("",show_map)
@@ -125,6 +126,9 @@ func update_controls() -> void:
   game.hud_map.mission=true;game.hud_map.queue_redraw()
  else:game.run_button.visible=true;game.hud_map.mission=false
 func update_stats() -> void:
+ if is_instance_valid(hp_bar):hp_bar.max_value=game.rpg.max_hp();hp_bar.value=game.rpg.data.hp
+ if is_instance_valid(combo_label) and actions!=null:combo_label.text=("%d HIT%s" % [actions.hits," COMBO!" if actions.hits>=4 else ""]) if actions.hits>1 else ""
+ if is_instance_valid(jump_button):jump_button.disabled=game.paused or transitioning or game.player.defeated
  if is_instance_valid(stats_label):stats_label.text="Lv.%d   HP %d/%d   도력 %d/%d" % [game.rpg.data.level,game.rpg.data.hp,game.rpg.max_hp(),game.rpg.data.mp,game.rpg.max_mp()]
 func show_painting(index: int) -> void:
  if transitioning or in_mission:return
@@ -170,17 +174,22 @@ func load_forest(resume: bool) -> bool:
  if not resume:game.rpg.data.session={"map":"fox_forest","position":[ForestLayout.SPAWN.x,ForestLayout.SPAWN.y],"facing":0,"defeated":[],"completed":false}
  forest=preload("res://scripts/woo/forest.gd").new();game.add_child(forest)
  in_mission=true;mission_done=game.rpg.data.session.completed;completion_opened=false
+ game.player.reset_action()
+ if not game.player.landed.is_connected(actions.landing):game.player.landed.connect(actions.landing)
+ actions.cancel()
  game.player.reparent(forest);game.player.collision_mask=1|4;game.player.combat_frozen=false
  var p: Array=game.rpg.data.session.position;game.player.position=ForestLayout.safe(Vector2(p[0],p[1]));game.player.facing=int(game.rpg.data.session.facing)
  if game.rpg.data.hp<=0:game.rpg.data.hp=game.rpg.max_hp()
  game.player.velocity=Vector2.ZERO;game.player.intent=Vector2.ZERO;game.player.reset_physics_interpolation()
- game.world.hide();game.world.set_process(false)
+ game.world.hide();game.world.process_mode=Node.PROCESS_MODE_DISABLED;game.world.set_process(false)
  for i in range(1,game.actors.size()):game.actors[i].enabled=false
  game.camera.limit_right=int(ForestLayout.SIZE.x);game.camera.limit_bottom=int(ForestLayout.SIZE.y);game.camera.reset_smoothing()
  combat=preload("res://scripts/woo/combat_effects.gd").new();forest.add_child(combat)
+ for loot in ForestLayout.LOOT:
+  var marker:=preload("res://scripts/woo/forest_loot.gd").new();marker.adventure=self;marker.loot=loot;marker.position=loot.position;forest.add_child(marker)
  for i in range(3):
   if defeated().has(i):continue
-  var enemy:=preload("res://scripts/woo/goblin.gd").new();enemy.enemy_id=i;enemy.position=ForestLayout.GOBLINS[i];enemy.adventure=self;forest.add_child(enemy)
+  var enemy:=preload("res://scripts/woo/goblin.gd").new();enemy.enemy_id=i;enemy.hp=[60,120,100][i];enemy.position=ForestLayout.GOBLINS[i];enemy.adventure=self;forest.add_child(enemy)
  game.nearest_npc=-1;game.nearest_painting=-1;game.near_well=false
  game.sound.map_id="fox_forest";game.sound.tracking=false
  attack_cd=0;talisman_cd=0;dodge_cd=0;player_hurt_cd=0
@@ -191,8 +200,8 @@ func return_to_plaza() -> void:
  transitioning=true
  await transition(true)
  game.player.reparent(game.world);game.player.collision_mask=1
- game.world.show();game.world.set_process(true);game.world.set_completed_stories(game.completed_paintings)
- game.player.combat_frozen=false;game.player.dash_left=0
+ game.world.process_mode=Node.PROCESS_MODE_INHERIT;game.world.show();game.world.set_process(true);game.world.set_completed_stories(game.completed_paintings)
+ game.player.reset_action();actions.cancel()
  in_mission=false;game.rpg.data.session={};mission_done=false;completion_opened=false
  if is_instance_valid(forest):forest.queue_free()
  forest=null;combat=null
@@ -212,16 +221,22 @@ func show_effects() -> void:
 func update_mission_ui(delta: float) -> void:
  update_stats()
  game.hud_map.update_local(game.player.position,true)
- game.place_label.text="그림 속 세계 · 여우의 숲"
+ var zone: Dictionary=ForestLayout.zone_at(game.player.position)
+ game.place_label.text=zone.name
+ if not game.rpg.data.visited.has(zone.id):game.rpg.data.visited.append(zone.id)
  game.quest_label.get_parent().get_child(0).text="여우의 숲"
  game.quest_label.text="도깨비를 물리치세요 (%d/3)" % defeated().size()
- game.interact_button.visible=game.player.position.distance_to(ForestLayout.EXIT)<95
- game.interact_button.text="광장 복귀"
+ var loot:=nearby_loot()
+ game.interact_button.visible=not loot.is_empty() or game.player.position.distance_to(ForestLayout.EXIT)<95
+ game.interact_button.text="조사 · 획득" if not loot.is_empty() else "광장 복귀"
+ if loot_left>0:
+  loot_left=maxf(0,loot_left-delta)
+  if loot_left==0:loot_label.text="";loot_icon.hide()
  game.hint.text="항아리 상태에서는 공격할 수 없습니다" if game.player.jar else ("임무 완료 · 광장으로 돌아가세요" if mission_done else "도깨비를 찾아 도술로 물리치세요")
  for i in range(combat_buttons.size()):
   var b:=combat_buttons[i]
   b.disabled=game.paused or transitioning or game.rpg.data.hp<=0
-  if i==0:b.text="공격" if attack_cd<=0 else "공격 %.1f" % attack_cd;b.disabled=b.disabled or attack_cd>0 or game.player.jar
+  if i==0:b.text="공격 · %d타" % actions.stage if actions.active else "공격";b.disabled=b.disabled or game.player.jar
   elif i==1:b.text="회피" if dodge_cd<=0 else "회피 %.1f" % dodge_cd;b.disabled=b.disabled or dodge_cd>0
   else:
    var id: String=game.rpg.data.slots[i-2]
@@ -232,27 +247,32 @@ func _physics_process(delta: float) -> void:
  if not in_mission:return
  if shake_left>0:
   shake_left=maxf(0,shake_left-delta)
-  var strength: float=HitConfig.SHAKE_PIXELS*shake_left/HitConfig.SHAKE_TIME/game.camera.zoom.x
+  var strength: float=HitConfig.SHAKE_PIXELS*shake_power*shake_left/HitConfig.SHAKE_TIME/game.camera.zoom.x
   game.camera.offset=Vector2(sin(shake_left*149),cos(shake_left*173)).limit_length(1.0)*strength
  else:game.camera.offset=Vector2.ZERO
  if game.paused:return
  attack_cd=maxf(0,attack_cd-delta);talisman_cd=maxf(0,talisman_cd-delta);dodge_cd=maxf(0,dodge_cd-delta);player_hurt_cd=maxf(0,player_hurt_cd-delta)
  hit_stop=maxf(0,hit_stop-delta)
+ actions.tick(delta)
  game.player.combat_frozen=hit_stop>0
-func can_fight() -> bool:return in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done and game.player.transforming<=0
+func can_fight() -> bool:return in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done and game.player.transforming<=0 and game.player.hurt_stun<=0 and not game.player.defeated
 func basic_attack() -> void:
- if not can_fight() or game.player.jar or attack_cd>0:return
- attack_cd=.32;launch(false);game.sound.play_clip("attack")
+ actions.request()
+func jump() -> void:
+ if game.screen_name!="playing" or game.paused or transitioning:return
+ game.player.jump()
 func cast_slot(slot: int) -> void:
  if slot<0 or slot>=3:return
  var id: String=game.rpg.data.slots[slot]
- if id=="jar":game.cast_spell();return
- if id!="talisman" or not can_fight() or game.player.jar or talisman_cd>0 or game.rpg.data.mp<12:return
- game.rpg.data.mp-=12;talisman_cd=2.2;launch(true);game.sound.play_clip("spell")
+ if id=="jar":
+  if actions.active:return
+  game.cast_spell();return
+ if id=="talisman":actions.request("talisman")
 func launch(talisman: bool) -> void:
  var shot:=preload("res://scripts/woo/projectile.gd").new();shot.adventure=self;shot.talisman=talisman;shot.direction=Vector2.from_angle(game.player.facing*PI/4);shot.position=game.player.position+shot.direction*14;forest.add_child(shot)
 func dodge() -> void:
  if not can_fight() or dodge_cd>0:return
+ actions.cancel()
  dodge_cd=1.6
  var direction: Vector2=game.player.direction()
  if direction.length()<.1:direction=Vector2.from_angle(game.player.facing*PI/4)
@@ -262,7 +282,7 @@ func enemy_hit(enemy: Node,amount: int,direction: Vector2,talisman: bool) -> voi
  if not can_fight() or enemy.hp<=0:return
  enemy.receive_damage(amount,direction,talisman)
  if game.rpg.data.effects.hit_stop:hit_stop=HitConfig.STOP_TIME
- if game.rpg.data.effects.shake:shake_left=HitConfig.SHAKE_TIME
+ if game.rpg.data.effects.shake:shake_left=HitConfig.SHAKE_TIME;shake_power=1.0 if amount>=30 else .45
  if game.rpg.data.effects.particles:combat.burst(enemy.position,amount,talisman,false)
  game.sound.play_clip("hit")
 func enemy_died(enemy_id: int,p: Vector2) -> void:
@@ -271,18 +291,51 @@ func enemy_died(enemy_id: int,p: Vector2) -> void:
  if game.rpg.data.effects.particles:combat.burst(p,0,true,true)
  if defeated().size()==3:mission_done=true;game.rpg.data.session.completed=true
  game.save_progress()
-func hurt_player(amount: int) -> void:
- if not can_fight() or player_hurt_cd>0:return
- player_hurt_cd=.8;game.rpg.data.hp=maxi(0,int(game.rpg.data.hp)-amount)
+func can_take_damage() -> bool:
+ return in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done
+func hurt_player(amount: int,direction: Vector2=Vector2.ZERO) -> void:
+ if not can_take_damage() or player_hurt_cd>0:return
+ player_hurt_cd=WooActionConfig.INVULNERABILITY;game.player.hurt_left=.22;game.player.hurt_stun=WooActionConfig.HURT_STUN;game.player.hurt_knock=direction*85;actions.cancel();game.rpg.data.hp=maxi(0,int(game.rpg.data.hp)-amount)
  if game.rpg.data.effects.particles:combat.burst(game.player.position,amount,false,false)
  game.sound.play_clip("hit")
+ game.save_progress()
+ update_stats()
  if game.rpg.data.hp<=0:
+  game.player.defeated=true;game.player.velocity=Vector2.ZERO;game.player.update_sprite()
   game.set_paused(true)
   var stack: VBoxContainer=game.open_modal("defeat")
   if stack:
+   stack.add_child(game.button("임무 재시작",retry_mission,true))
    stack.add_child(game.text("도술의 기운이 다했습니다",27,game.GOLD));stack.add_child(game.text("광장에서 회복합니다. 미완료 임무는 다시 시작합니다.",19));stack.add_child(game.button("광장으로",func()->void:game.rpg.data.hp=game.rpg.max_hp();game.rpg.data.mp=game.rpg.max_mp();return_to_plaza(),true))
   game.save_progress()
+func retry_mission() -> void:
+ if transitioning:return
+ game.close_modal();game.set_paused(true)
+ game.player.reparent(game.world)
+ var old:=forest
+ game.rpg.data.hp=game.rpg.max_hp();game.rpg.data.mp=game.rpg.max_mp()
+ in_mission=false
+ old.queue_free()
+ load_forest(false);game.set_paused(false);game.save_progress()
+func nearby_loot() -> Dictionary:
+ if not in_mission:return {}
+ for loot in ForestLayout.LOOT:
+  if not game.rpg.data.loot_claims.has(loot.id) and game.player.position.distance_to(loot.position)<75:return loot
+ return {}
+func acquire_loot(loot: Dictionary) -> bool:
+ if game.rpg.data.loot_claims.has(loot.id):return false
+ var before: Dictionary=game.rpg.data.duplicate(true)
+ var first: bool=not game.rpg.data.discoveries.has(loot.item)
+ if not game.rpg.add_item(loot.item,loot.amount):return false
+ game.rpg.data.loot_claims.append(loot.id);game.save_progress()
+ if game.last_save_error!=OK:game.rpg.data=before;return false
+ loot_left=3.0;loot_label.text=("새로운 발견! " if first else "획득 · ")+State.ITEMS[loot.item].name+" ×%d" % loot.amount
+ loot_icon.item_id=loot.item;loot_icon.show();loot_icon.queue_redraw();game.sound.play_clip("reward")
+ if game.rpg.data.effects.particles:combat.burst(game.player.position,0,true,true)
+ return true
 func mission_interact() -> void:
+ var loot:=nearby_loot()
+ if not loot.is_empty():acquire_loot(loot);return
  if game.player.position.distance_to(ForestLayout.EXIT)>=95:return
  var stack: VBoxContainer=game.open_modal("exit")
  if stack:

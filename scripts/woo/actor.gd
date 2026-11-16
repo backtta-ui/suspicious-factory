@@ -1,5 +1,20 @@
 class_name WooActor
 extends CharacterBody2D
+signal landed
+var jump_height:=0.0
+var jump_velocity:=0.0
+var landing_left:=0.0
+var air_chain:=false
+var action_pose:=-1
+var action_left:=0.0
+var push_left:=0.0
+var push_direction:=Vector2.ZERO
+var hurt_left:=0.0
+var hurt_stun:=0.0
+var hurt_knock:=Vector2.ZERO
+var defeated:=false
+var defeat_elapsed:=0.0
+const ACTION_ART=preload("res://assets/woo/v14/hero_actions.png")
 var dash_left:=0.0
 var dash_direction:=Vector2.ZERO
 var combat_frozen:=false
@@ -63,8 +78,13 @@ func _ready() -> void:
 		npc_right_foot=Sprite2D.new();npc_visual.add_child(npc_right_foot)
 	else:add_child(sprite)
 	npc_origin = position
+func jump() -> bool:
+	if npc or not enabled or defeated or jump_height>0 or jump_velocity>0 or transforming>0:return false
+	jump_velocity=215.0;return true
+func reset_action() -> void:
+	jump_height=0;jump_velocity=0;action_left=0;action_pose=-1;hurt_stun=0;hurt_left=0;hurt_knock=Vector2.ZERO;defeated=false;defeat_elapsed=0.0;air_chain=false;push_left=0;dash_left=0;combat_frozen=false
 func direction() -> Vector2:
-	if not enabled or transforming>0: return Vector2.ZERO
+	if not enabled or transforming>0 or hurt_stun>0 or defeated: return Vector2.ZERO
 	if npc: return intent.limit_length()
 	var keyboard := Vector2(float(Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT))-float(Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT)),float(Input.is_physical_key_pressed(KEY_S) or Input.is_physical_key_pressed(KEY_DOWN))-float(Input.is_physical_key_pressed(KEY_W) or Input.is_physical_key_pressed(KEY_UP)))
 	return (intent if intent.length()>0.05 else keyboard).limit_length()
@@ -75,8 +95,14 @@ func begin_transform() -> bool:
 	velocity = Vector2.ZERO
 	return true
 func _physics_process(delta: float) -> void:
+	if defeated:defeat_elapsed+=delta
 	if combat_frozen and not npc:
 		velocity=Vector2.ZERO;return
+	if not npc and enabled:
+		action_left=maxf(0,action_left-delta);hurt_left=maxf(0,hurt_left-delta);hurt_stun=maxf(0,hurt_stun-delta);landing_left=maxf(0,landing_left-delta)
+		if jump_velocity!=0 or jump_height>0:
+			jump_height=maxf(0,jump_height+jump_velocity*delta);jump_velocity-=590*delta
+			if jump_height==0 and jump_velocity<0:jump_velocity=0;landing_left=.18;landed.emit()
 	cooldown = maxf(0,cooldown-delta)
 	if transforming>0:
 		var before := transforming
@@ -95,6 +121,10 @@ func _physics_process(delta: float) -> void:
 	velocity = move*speed
 	if dash_left>0 and enabled and not npc:
 		dash_left=maxf(0,dash_left-delta);velocity=dash_direction*360.0
+	if not npc and enabled:
+		if push_left>0:push_left=maxf(0,push_left-delta);velocity+=push_direction*70
+		velocity+=hurt_knock;hurt_knock=hurt_knock.move_toward(Vector2.ZERO,delta*350)
+	if defeated:velocity=Vector2.ZERO
 	var previous:=position
 	move_and_slide()
 	var distance:=position.distance_to(previous)
@@ -129,8 +159,20 @@ func update_sprite() -> void:
 	sprite.region_rect=Rect2(region[0],region[1],region[2],region[3])
 	sprite.scale=Vector2.ONE*ratio
 	sprite.offset=Vector2(region[2]/2.0-region[4],region[3]/2.0-region[5])
-	sprite.position=Vector2.ZERO
+	sprite.flip_h=false
+	if not jar and (action_left>0 or jump_height>0 or landing_left>0 or hurt_left>0 or defeated):
+		var pose: int=action_pose if action_left>0 else (7 if hurt_left>0 or defeated else (6 if landing_left>0 else 4))
+		sprite.texture=ACTION_ART
+		var cell:=Vector2(ACTION_ART.get_width()/4.0,ACTION_ART.get_height()/2.0)
+		sprite.region_rect=Rect2(Vector2(pose%4,floori(pose/4.0))*cell,cell)
+		sprite.scale=Vector2.ONE*.13;sprite.offset=Vector2(0,cell.y/2-410)
+		sprite.flip_h=facing in [3,4,5]
+	sprite.position=Vector2(0,-jump_height)
 	sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
+
+	if hurt_left>0:sprite.modulate=Color(1,.36,.38)
+	if defeated:sprite.rotation=-.9*smoothstep(0,.3,defeat_elapsed)
+	else:sprite.rotation=0
 
 func npc_part(node: Sprite2D,row: Array,column: int,top: int,bottom: int,left: int=0,width: int=-1) -> void:
 	var cell_w: int=row[1]
@@ -167,6 +209,8 @@ func update_npc_art() -> void:
 
 func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
+	if landing_left>0:
+		draw_arc(Vector2.ZERO,10+(1-landing_left/.18)*12,0,TAU,16,Color(.8,.75,.65,landing_left/.18*.5),2)
 	if highlighted:
 		draw_colored_polygon(PackedVector2Array([Vector2(-12,0),Vector2(0,-6),Vector2(12,0),Vector2(0,6)]),Color(0.9,0.75,0.4,0.35))
 	if transforming>0:

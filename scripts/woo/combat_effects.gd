@@ -2,6 +2,7 @@ class_name WooCombatEffects
 extends Node2D
 const Config=preload("res://scripts/woo/hit_config.gd")
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
+var swings: Array[Dictionary]=[]
 var particles: Array[Dictionary]=[]
 var numbers: Array[Dictionary]=[]
 var ghosts: Array[Dictionary]=[]
@@ -19,7 +20,12 @@ func burst(p: Vector2,amount: int,gold: bool,death: bool) -> void:
 func afterimage(actor: WooActor) -> void:
  if ghosts.size()>=12:ghosts.pop_front()
  ghosts.append({"p":actor.position,"region":actor.sprite.region_rect,"offset":actor.sprite.offset,"scale":actor.sprite.scale,"texture":actor.sprite.texture,"life":.26})
+func swing(p: Vector2,direction: Vector2,stage: int,mode: String,radius: float) -> void:
+ swings.append({"p":p,"angle":direction.angle(),"stage":stage,"mode":mode,"radius":radius,"life":.24})
 func _process(delta: float) -> void:
+ for i in range(swings.size()-1,-1,-1):
+  swings[i].life-=delta
+  if swings[i].life<=0:swings.remove_at(i)
  for i in range(particles.size()-1,-1,-1):
   var v:=particles[i];v.life-=delta;v.p+=v.v*delta;v.v*=maxf(0,1-delta*3)
   if v.life<=0:particles.remove_at(i)
@@ -31,6 +37,14 @@ func _process(delta: float) -> void:
   if ghosts[i].life<=0:ghosts.remove_at(i)
  queue_redraw()
 func _draw() -> void:
+ for v in swings:
+  var c:=Color("f8ce7b") if v.stage==2 or v.mode=="talisman" else (Color("c29eff") if v.stage==3 else Color("77d7ff"))
+  c.a=v.life/.24*.75
+  var radius: float=v.radius*(1-v.life/.24*.4)
+  draw_arc(v.p+Vector2(0,-14),radius,v.angle-1.05,v.angle+1.05,24,c,3 if v.stage<4 else 6,true)
+  if v.stage==3:draw_arc(v.p+Vector2(0,-16),radius-8,v.angle-.9,v.angle+.9,16,Color(.75,.45,1,c.a),2,true)
+  if v.stage==4:draw_arc(v.p+Vector2(0,-20),radius*.65,v.angle-1.4,v.angle+1.4,24,c,2,true)
+  if v.mode=="air" or v.mode=="landing":draw_arc(v.p,radius*.5,0,TAU,24,c,3,true)
  for v in ghosts:
   var rect: Rect2=Rect2(v.p+(v.offset-v.region.size/2)*v.scale,v.region.size*v.scale)
   draw_texture_rect_region(v.texture,rect,v.region,Color(.55,.7,1,v.life/.26*.38))
