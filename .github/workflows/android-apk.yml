@@ -13,6 +13,10 @@ on:
       - '.github/workflows/android-apk.yml'
   workflow_dispatch:
     inputs:
+      unsigned_only:
+        description: 'Compile unsigned intermediate for final signing with the existing Cloud key'
+        type: boolean
+        default: false
       publish_release:
         description: 'Also publish the verified APK to this repository Releases (preserves repository visibility)'
         type: boolean
@@ -29,6 +33,8 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    outputs:
+      unsigned: ${{ steps.configure.outputs.unsigned }}
     env:
       XDG_DATA_HOME: ${{ runner.temp }}/factory-data
       XDG_CONFIG_HOME: ${{ runner.temp }}/factory-config
@@ -59,20 +65,27 @@ jobs:
           curl -fL --retry 3 https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable/Godot_v4.6.3-stable_export_templates.tpz -o "$RUNNER_TEMP/templates.tpz"
           unzip -j -q "$RUNNER_TEMP/templates.tpz" templates/android_debug.apk -d .ci/godot
       - name: Configure isolated build environment and persistent test signing key
+        id: configure
         env:
           TEST_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+          UNSIGNED_ONLY: ${{ inputs.unsigned_only }}
         run: |
           set -euo pipefail
           mkdir -p .ci "$XDG_CONFIG_HOME/godot"
           touch .ci/.gdignore
           python3 - <<'PY'
-          import base64, json, os
+          import base64, json, os, subprocess
           from pathlib import Path
           key = os.environ.get('TEST_KEYSTORE_BASE64', '')
-          if not key:
-              raise SystemExit('Missing ANDROID_DEBUG_KEYSTORE_BASE64 repository secret. Provision the existing Cloud test signing key first; do not generate a different key on every run.')
           key_path = Path('.ci/test-debug.keystore')
-          key_path.write_bytes(base64.b64decode(key, validate=True))
+          unsigned = os.environ.get('UNSIGNED_ONLY') == 'true' or not key
+          if unsigned:
+              # This disposable signature is stripped before upload. Never an update key.
+              subprocess.run(['keytool','-genkeypair','-keystore',str(key_path),'-storepass','android','-keypass','android','-alias','androiddebugkey','-keyalg','RSA','-keysize','2048','-validity','2','-dname','CN=Unsigned CI staging'],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+          elif key:
+              key_path.write_bytes(base64.b64decode(key, validate=True))
+          else:
+              raise SystemExit('Missing persistent signing secret. Use unsigned_only compilation and sign with the existing Cloud key; never change the installed app key.')
           key_path.chmod(0o600)
           settings = Path(os.environ['XDG_CONFIG_HOME']) / 'godot/editor_settings-4.6.tres'
           values = {
@@ -82,20 +95,30 @@ jobs:
           }
           settings.write_text('[gd_resource type="EditorSettings" format=3]\n\n[resource]\n' + ''.join(f'{k} = {json.dumps(v)}\n' for k, v in values.items()))
           with open(os.environ['GITHUB_ENV'], 'a') as env:
+              env.write(f'WOO_UNSIGNED_BUILD={str(unsigned).lower()}\n')
               env.write(f'GODOT_BIN={Path(".ci/godot/Godot_v4.6.3-stable_linux.x86_64").resolve()}\n')
               env.write(f'GODOT_ANDROID_TEMPLATE={Path(".ci/godot/android_debug.apk").resolve()}\n')
               env.write(f'GODOT_ANDROID_KEYSTORE_DEBUG_PATH={key_path.resolve()}\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              output.write(f'unsigned={str(unsigned).lower()}\n')
           PY
       - name: Test, build, and validate actual APK
         run: bash tools/checkpoint.sh
+      - name: Strip disposable CI signatures for secure final signing
+        if: env.WOO_UNSIGNED_BUILD == 'true'
+        run: python3 tools/unsigned_ci_apk.py
       - name: Save verified APK and reports
         uses: actions/upload-artifact@v4
         with:
-          name: woo-apk-${{ github.run_number }}-${{ github.run_attempt }}
+          name: ${{ env.WOO_UNSIGNED_BUILD == 'true' && 'woo-unsigned' || 'woo-apk' }}-${{ github.run_number }}-${{ github.run_attempt }}
           retention-days: 14
           if-no-files-found: error
           path: |
             builds/*.apk
+            builds/unsigned-build.json
+            builds/ci-staging-verification.json
+            builds/npc_title_v12-results.txt
+            builds/plaza_v11-results.txt
             builds/apk-verification.json
             builds/apk-verification.txt
             builds/SHA256SUMS.txt
@@ -119,7 +142,7 @@ jobs:
             builds/apk-verification.json
 
   release:
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_release
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release && needs.build.outputs.unsigned != 'true'
     needs: build
     runs-on: ubuntu-24.04
     permissions:

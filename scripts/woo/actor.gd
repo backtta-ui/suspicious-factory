@@ -17,6 +17,20 @@ var highlighted := false
 var sprite: Sprite2D
 var npc_origin := Vector2.ZERO
 var npc_phase := 0.0
+var npc_driver: WooNpcDriver
+var npc_attention:=false
+var npc_render_visible:=true
+var npc_walking:=false
+var npc_stride:=0.0
+var npc_visual: Node2D
+var npc_torso: Sprite2D
+var npc_knees: Sprite2D
+var npc_left_foot: Sprite2D
+var npc_right_foot: Sprite2D
+var npc_head_rect:=Rect2()
+var npc_pose_key:=""
+var previous_highlighted:=false
+const NPC_ART=preload("res://scripts/woo/npc_art.gd")
 const WALK_SPEED := 88.0
 const RUN_SPEED := 142.0
 const JAR_SPEED := 46.0
@@ -37,7 +51,14 @@ func _ready() -> void:
 	add_child(collider)
 	sprite = Sprite2D.new()
 	sprite.modulate = tint
-	add_child(sprite)
+	if npc:
+		npc_visual=Node2D.new();add_child(npc_visual)
+		npc_visual.add_child(sprite)
+		npc_torso=Sprite2D.new();npc_visual.add_child(npc_torso)
+		npc_knees=Sprite2D.new();npc_visual.add_child(npc_knees)
+		npc_left_foot=Sprite2D.new();npc_visual.add_child(npc_left_foot)
+		npc_right_foot=Sprite2D.new();npc_visual.add_child(npc_right_foot)
+	else:add_child(sprite)
 	npc_origin = position
 func direction() -> Vector2:
 	if not enabled or transforming>0: return Vector2.ZERO
@@ -57,20 +78,34 @@ func _physics_process(delta: float) -> void:
 		transforming = maxf(0,transforming-delta)
 		if before>TRANSFORM_TIME/2 and transforming<=TRANSFORM_TIME/2: jar = transform_target
 		if transforming==0: cooldown = SPELL_COOLDOWN
-	if npc and enabled:
-		npc_phase += delta
-		var target := npc_origin+Vector2(sin(npc_phase*0.26+float(get_index()))*14,cos(npc_phase*0.22)*8)
-		intent = (target-position).normalized()*0.3 if position.distance_to(target)>3 else Vector2.ZERO
+	if npc:
+		if not enabled:
+			velocity=Vector2.ZERO
+			if npc_walking:npc_walking=false;update_sprite()
+			return
+		intent=npc_driver.step(self,delta,npc_attention) if npc_driver!=null else Vector2.ZERO
 	var move := direction()
 	var speed := JAR_SPEED if jar else (RUN_SPEED if running or Input.is_physical_key_pressed(KEY_SHIFT) else WALK_SPEED)
-	if npc: speed = 24
+	if npc:speed=npc_driver.movement_speed if npc_driver!=null else 24.0
 	velocity = move*speed
+	var previous:=position
 	move_and_slide()
-	if move.length()>0.05: facing = posmod(roundi(move.angle()/(PI/4)),8)
+	var distance:=position.distance_to(previous)
+	if npc:
+		npc_walking=distance>delta*1.0
+		if npc_walking:
+			npc_stride+=distance
+			facing=posmod(roundi((position-previous).angle()/(PI/4)),8)
+		if npc_driver!=null:npc_driver.report_progress(distance,move,delta)
+	elif move.length()>0.05:facing=posmod(roundi(move.angle()/(PI/4)),8)
 	animation_time += delta*(11 if running and not jar else 7) if velocity.length()>2 else delta
-	update_sprite()
-	queue_redraw()
+	if not npc or npc_render_visible:update_sprite()
+	if not npc or highlighted!=previous_highlighted:queue_redraw()
+	previous_highlighted=highlighted
 func update_sprite() -> void:
+	if npc:
+		update_npc_art()
+		return
 	var region: Array
 	var ratio: float
 	if jar:
@@ -78,11 +113,6 @@ func update_sprite() -> void:
 		var view:=2 if facing in [5,6,7] else (0 if facing==2 else 1)
 		region=FRAMES.VILLAGERS_JARS[6+view]
 		ratio=0.13
-	elif npc:
-		sprite.texture=NPC_SHEET
-		var step:=1 if velocity.length()>2 and int(animation_time)%2==1 else 0
-		region=FRAMES.VILLAGERS_JARS[step*3+clampi(npc_variant,0,2)]
-		ratio=0.14
 	else:
 		sprite.texture=SHEET
 		var frame:=int(animation_time)%4 if velocity.length()>2 else (5 if fmod(animation_time,4)>3.8 else 4)
@@ -94,6 +124,39 @@ func update_sprite() -> void:
 	sprite.offset=Vector2(region[2]/2.0-region[4],region[3]/2.0-region[5])
 	sprite.position=Vector2.ZERO
 	sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
+
+func npc_part(node: Sprite2D,row: Array,column: int,top: int,bottom: int,left: int=0,width: int=-1) -> void:
+	var cell_w: int=row[1]
+	var scale_factor: float=row[7]
+	node.texture=NPC_ART.SHEET;node.region_enabled=true;node.centered=false
+	node.region_rect=Rect2(column*cell_w+left,int(row[0])+top,cell_w if width<0 else width,bottom-top)
+	node.scale=Vector2.ONE*scale_factor
+	node.position=Vector2((left-cell_w/2.0)*scale_factor,(top-int(row[3]))*scale_factor)
+
+func update_npc_art() -> void:
+	var back:=facing in [5,6,7]
+	var row_id:=clampi(npc_variant,0,2)*2+(1 if back else 0)
+	var row: Array=NPC_ART.ROWS[row_id]
+	var gait:=posmod(int(npc_stride/6.0),4) if npc_walking else 1
+	var work:=npc_driver!=null and npc_driver.state=="work" and not npc_attention and npc_driver.work_time<2.0
+	var torso:=posmod(int(npc_driver.work_time*2),4) if work else gait
+	var key: String="%s:%d:%d" % [back,gait,torso]
+	if key!=npc_pose_key:
+		npc_pose_key=key
+		npc_part(sprite,row,1,0,row[4])
+		npc_head_rect=sprite.region_rect
+		npc_part(npc_torso,row,torso,row[4],row[5])
+		npc_part(npc_knees,row,gait,row[5],row[6])
+		npc_part(npc_left_foot,row,gait,row[6],row[3],0,int(row[1])/2)
+		npc_part(npc_right_foot,row,gait,row[6],row[3],int(row[1])/2,int(row[1])/2)
+	npc_visual.scale.x=-1.0 if facing in [3,4,5] else 1.0
+	# Only the two feet articulate, with opposite swing/contact phases; no whole-body bob.
+	var scale_factor: float=row[7]
+	npc_left_foot.position=Vector2(-row[1]/2.0*scale_factor,(row[6]-NPC_ART.FOOT_BOTTOMS[row_id][gait][0])*scale_factor)
+	npc_right_foot.position=Vector2(0,(row[6]-NPC_ART.FOOT_BOTTOMS[row_id][gait][1])*scale_factor)
+	var phase:=sin(npc_stride/24.0*TAU) if npc_walking else 0.0
+	npc_left_foot.position+=Vector2(phase*1.0,-maxf(0,phase)*.8)
+	npc_right_foot.position+=Vector2(-phase*1.0,-maxf(0,-phase)*.8)
 
 func _draw() -> void:
 	draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))

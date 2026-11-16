@@ -233,11 +233,13 @@ func start_game(continue_existing: bool = false) -> void:
   npc.position = data.position
   npc.tint = Color.WHITE
   npc.npc_variant = int(data.get("variant",actors.size()-1))
+  npc.npc_driver=preload("res://scripts/woo/npc_driver.gd").new(data,world.navigation)
   world.add_child(npc)
   actors.append(npc)
  camera = Camera2D.new()
  camera.zoom = Vector2(2,2)
  camera.offset = Vector2.ZERO
+ camera.position=Vector2(0,-36)
  camera.position_smoothing_enabled = settings.smooth_camera
  camera.position_smoothing_speed = 5
  camera.limit_left = 0
@@ -263,17 +265,17 @@ func build_hud() -> void:
  var frame: Array=ArtFrames.HERO[34]
  atlas.region=Rect2(frame[0],frame[1],frame[2],frame[3])
  portrait.texture=atlas
- portrait.custom_minimum_size=Vector2(65,76)
+ portrait.custom_minimum_size=Vector2(48,60)
  portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
  portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
  portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
  row.add_child(portrait)
  var lines:=VBoxContainer.new();row.add_child(lines)
- lines.add_child(text("전우치",23,GOLD))
+ lines.add_child(text("전우치",20,GOLD))
  place_label=text("계월촌 · 밤",15)
  lines.add_child(place_label)
  var quest:=PanelContainer.new()
- quest.position=Vector2(26,133)
+ quest.position=Vector2(26,118)
  quest.add_theme_stylebox_override("panel",style(Color(0.10,0.065,0.12,0.9),6))
  ui.add_child(quest)
  var quest_lines:=VBoxContainer.new();quest.add_child(quest_lines)
@@ -521,7 +523,17 @@ func _physics_process(_delta: float) -> void:
  if screen_name=="playing" and is_instance_valid(player) and is_instance_valid(joystick):
   player.intent=joystick.vector if not paused else Vector2.ZERO
   player.enabled=not paused
-  for i in range(1,actors.size()):actors[i].enabled=not paused and actors[i].position.distance_to(player.position)<850
+  var camera_view:=get_viewport().get_visible_rect().size/camera.zoom
+  var animation_rect:=Rect2(camera.get_screen_center_position()-camera_view/2,camera_view).grow(90)
+  for i in range(1,actors.size()):
+   var resident:=actors[i]
+   var distance:=resident.position.distance_to(player.position)
+   resident.enabled=not paused and distance<850
+   resident.npc_render_visible=animation_rect.has_point(resident.position)
+   resident.npc_attention=distance<(70 if resident.npc_attention else 48)
+   if resident.enabled and not resident.npc_attention:
+    for j in range(1,i):
+     if resident.position.distance_squared_to(actors[j].position)<24*24:resident.npc_driver.pause_near_resident();break
   sound.update_steps(player.position,not paused and player.velocity.length()>2 and player.transforming<=0,player.jar)
 
 func _process(delta: float) -> void:

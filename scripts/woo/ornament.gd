@@ -4,18 +4,21 @@ var circular := false
 var icon := ""
 var primary := false
 var previous_mode := -1
+var glow := 0.0
 const FONT = preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(queue_redraw)
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if get_parent() is BaseButton:
 		var mode: int = get_parent().get_draw_mode()
-		if mode!=previous_mode: previous_mode=mode;queue_redraw()
+		var next_glow:=move_toward(glow,1.0 if mode in [BaseButton.DRAW_PRESSED,BaseButton.DRAW_HOVER_PRESSED] else 0.0,delta*8)
+		if mode!=previous_mode or next_glow!=glow:
+			previous_mode=mode;glow=next_glow;queue_redraw()
 func _draw() -> void:
 	var gold := Color("d9b678")
 	if get_parent() is BaseButton and get_parent().disabled: gold=gold.darkened(0.5)
-	if previous_mode in [BaseButton.DRAW_PRESSED,BaseButton.DRAW_HOVER_PRESSED]: gold=Color("ffe4a0")
+	gold=gold.lerp(Color("ffe4a0"),glow)
 	if circular:
 		var center:=size/2
 		var r:=minf(size.x,size.y)/2-4

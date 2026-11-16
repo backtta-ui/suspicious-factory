@@ -9,6 +9,9 @@ var cycle_enabled:=true
 var low_effects:=false
 var petals: Node2D
 var water: Node2D
+var atmosphere: Node2D
+var atmosphere_clock:=0.0
+var navigation:=preload("res://scripts/woo/npc_navigation.gd").new()
 var great_tree: WooVillageProp
 func _ready() -> void:
  y_sort_enabled=true;texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
@@ -16,6 +19,7 @@ func _ready() -> void:
  add_child(preload("res://scripts/woo/scenery.gd").new())
  water=preload("res://scripts/woo/water.gd").new();add_child(water)
  petals=preload("res://scripts/woo/petals.gd").new();add_child(petals)
+ atmosphere=preload("res://scripts/woo/plaza_atmosphere.gd").new();add_child(atmosphere)
  for data in Layout.PROPS:
   var prop:=Prop.new();prop.kind=data.kind;prop.position=data.position;prop.variant=int(data.get("variant",0));prop.display_name=str(data.get("name",""));add_child(prop)
   if is_instance_valid(prop.light):lanterns.append(prop.light)
@@ -32,7 +36,11 @@ func _process(delta: float) -> void:
  if cycle_enabled:time_of_day=fposmod(time_of_day+delta/150.0,1.0)
  var night: float=(sin(time_of_day*TAU-PI/2)+1)/2
  ambience.color=Color("fff0d7").lerp(Color("a2a5dc"),night*0.62)
- for light in lanterns:light.modulate.a=0.1+night*0.28
+ atmosphere_clock+=delta
+ for i in range(lanterns.size()):
+  var light:=lanterns[i]
+  light.modulate.a=(0.1+night*0.28)*(1.0+sin(atmosphere_clock*.8+i*1.7)*.025)
+ if is_instance_valid(atmosphere):atmosphere.low_effects=low_effects;atmosphere.night=night
  if is_instance_valid(petals):petals.low_effects=low_effects;petals.night=night
  if is_instance_valid(water):water.set_process(not low_effects)
 func draw_ground(canvas: Node2D) -> void:

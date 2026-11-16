@@ -1,6 +1,6 @@
 # Android 빌드와 전달
 
-Godot **4.6.3 stable**, GDScript, GL Compatibility, OpenJDK 21, Android Build Tools 36.0.0을 사용합니다. 최소 API 29, target API 36, ARM64, 가로 화면, immersive 설정, 패키지 `com.suspiciousfactory.game`, 기존 테스트 서명키와 `Android Test` preset을 유지했습니다. versionCode는 7, 새 표시 이름은 도사: 전우치입니다. 오프라인 싱글플레이이므로 Internet 권한을 제거했습니다.
+Godot **4.6.3 stable**, GDScript, GL Compatibility, OpenJDK 21, Android Build Tools 36.0.0을 사용합니다. 최소 API 29, target API 36, ARM64, 가로 화면, immersive 설정, 패키지 `com.suspiciousfactory.game`, 기존 테스트 서명키와 `Android Test` preset을 유지했습니다. versionCode는 8, 새 표시 이름은 도사: 전우치입니다. 오프라인 싱글플레이이므로 Internet 권한을 제거했습니다.
 
 공식 비 Gradle 템플릿의 minSdk를 29로 제한하는 기존 `tools/prepare_android_template.py`와 APK 서명·정렬 절차를 사용합니다.
 
@@ -10,7 +10,7 @@ Godot **4.6.3 stable**, GDScript, GL Compatibility, OpenJDK 21, Android Build To
 bash tools/checkpoint.sh
 ```
 
-`/workspace/toolchain`의 기존 도구·템플릿·에디터 설정을 사용하며 서명키를 소스에 넣지 않습니다. 결과는 `builds/jeon-woochi-1.1.0.apk`입니다. `builds/android-build.log`, `builds/apk-verification.json`, 게임·터치·저장·재실행 로그를 확인합니다.
+`/workspace/toolchain`의 기존 도구·템플릿·에디터 설정을 사용하며 서명키를 소스에 넣지 않습니다. 결과는 `builds/jeon-woochi-1.2.0.apk`입니다. `builds/android-build.log`, `builds/apk-verification.json`, 게임·터치·저장·재실행 로그를 확인합니다.
 
 ## 다른 개발 환경
 
@@ -39,3 +39,5 @@ V0.1.1은 입력을 물리 틱마다 읽어 HD 리소스 첫 업로드로 렌더
 V0.1.2: 효과음은 `assets/audio/`에 포함하며 Dummy 드라이버 검사는 실제 청취 검증이 아닙니다. `tests/sound_performance.gd`는 음소거·발소리 거리·도술 쿨타임·비동기 저장 합류를 검사합니다. `tests/render_benchmark.gd`로 실제 렌더러에서 그리기 호출과 프레임 시간을 비교합니다. 지형 변경 시 `tools/bake_ground.gd`로 지형 PNG를 다시 생성합니다.
 
 V1.1은 `plaza_v11`을 필수 검사에 추가합니다. GPU 렌더링 검사는 `tests/plaza_visual.gd`, `tests/plaza_render_budget.gd`를 별도로 실행합니다. Android 실기기 검증을 대신하지 않습니다. 음원 재편집은 FFmpeg와 NumPy가 있는 개발 환경에서 `python3 tools/prepare_audio.py <다운로드한_원본_폴더>`로 수행하며 앱/CI 빌드에는 원본 다운로드가 필요 없습니다. 출처는 assets/audio/NOTICE.txt를 참고하세요.
+
+V1.2: 기존 Actions의 `unsigned_only` 입력으로 비밀값 없이 중간 APK를 컴파일할 수 있습니다. 중간 파일은 설치용이 아닙니다. `tools/unsigned_ci_apk.py`로 임시 서명을 제거한 후 기존 Cloud 키로 최종 서명하고 검증·전달합니다. 개인키를 공개 저장소나 아티팩트에 넣지 않습니다. NPC 배치 변경 뒤에는 `godot --headless --path . --script res://tools/bake_npc_navigation.gd`와 `tools/bake_ground.gd`를 개발 환경에서 실행해 캐시를 갱신합니다.

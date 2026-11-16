@@ -98,11 +98,11 @@ func run() -> void:
   check(game.restore_plaza_anchor() and game.player.position.distance_to(anchor)<1,"future return anchor restores entry position "+str(i))
  # Existing positions remain exact unless a new prop occupies that old location.
  game.set_paused(true);game.finish_save();game.save_elapsed=0
- var legacy: Dictionary={"schema":1,"map":Layout.MAP_ID,"position":[940,520],"settings":{"smooth_camera":false},"unlocked":["jar"],"jar":true,"talked_to_elder":true,"time_of_day":0.4}
+ var legacy: Dictionary={"schema":1,"map":Layout.MAP_ID,"position":[1050,600],"settings":{"smooth_camera":false},"unlocked":["jar"],"jar":true,"talked_to_elder":true,"time_of_day":0.4}
  check(Save.save_game(legacy)==OK,"original V0.1.2 save accepted before migration")
  var migrated:=Save.load_game()
  print("MIGRATED ",JSON.stringify(migrated))
- check(migrated.jar and migrated.talked_to_elder and migrated.unlocked.has("jar") and migrated.get("legacy_position",[]).size()==2 and Vector2(migrated.legacy_position[0],migrated.legacy_position[1])==Vector2(940,520),"migration preserves role-free character state and original occupied position")
+ check(migrated.jar and migrated.talked_to_elder and migrated.unlocked.has("jar") and migrated.get("legacy_position",[]).size()==2 and Vector2(migrated.legacy_position[0],migrated.legacy_position[1])==Vector2(1050,600),"migration preserves role-free character state and original occupied position")
  check(Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])) and Save.save_game(migrated)==OK,"migrated position is nearby, safe and can be saved again")
  migrated.completed_paintings=["fox_forest","goblin_night"]
  check(Save.save_game(migrated)==OK and Save.load_game().completed_paintings.size()==2,"future painting completion data persists")

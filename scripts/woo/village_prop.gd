@@ -32,7 +32,7 @@ func _ready() -> void:
   "tavern","magic_shop","shrine","pavilion","great_tree","bamboo":
    sheet=NEW
    index=["tavern","magic_shop","shrine","pavilion","great_tree","bamboo"].find(kind)
-   width=170 if kind in ["tavern","magic_shop","shrine"] else (260 if kind=="great_tree" else (180 if kind=="pavilion" else 110))
+   width=170 if kind in ["tavern","magic_shop","shrine"] else (220 if kind=="great_tree" else (180 if kind=="pavilion" else 110))
    foot=490
    if variant==1 and kind in ["tavern","magic_shop"]:width=150
    if kind=="hanok" and variant==1:width=140

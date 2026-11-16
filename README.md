@@ -1,10 +1,10 @@
-# 도사: 전우치 — V1.1
+# 도사: 전우치 — V1.2
 
 Godot 4.6.3 / GDScript로 만든 Android 오프라인 싱글플레이 도술 어드벤처입니다. 계월촌의 다섯 구역을 걸으며 탐험합니다. 기존 GitHub 저장소와 Android 패키지·서명·내보내기 기반을 유지하고 게임을 전면 개편했습니다.
 
-[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.1.0.apk)
+[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.2.0.apk)
 
-Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 1.1.0, versionCode는 7입니다.
+Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 1.2.0, versionCode는 8입니다.
 
 ## 플레이
 
@@ -50,3 +50,5 @@ V0.1.1은 참고 이미지에 맞춰 타이틀, 한옥·벚나무·등불, 도�
 V0.1.2는 돌길·조명 렌더링과 자동 저장 부하를 줄이고 효과음 5종 및 음소거 설정을 추가했습니다. [성능·효과음 보고서](docs/PERFORMANCE-V0.1.2.md).
 
 V1.1: 실제 이동 면적 약 5.59배의 다섯 구역 광장, 천년 벚꽃나무·그림 장터·상점 거리·정원·수련소, 움직이는 메인 화면, 샘플 기반 효과음과 국악 배경음악을 추가했습니다. [전체 구현·미구현·검증 보고서](docs/PLAZA-V1.1.md). 그림 속 임무 3개는 소개만 제공하며 준비 중입니다.
+
+V1.2는 돌광장·연결된 상점 거리, 고정 목적지와 실제 4프레임 다리 동작을 쓰는 NPC, 손 도술·폭포·물안개를 국소 애니메이션으로 표시하는 타이틀을 적용했습니다. [원인 분석·수정·검증 보고서](docs/V1.2.md). 기존 음악·게임 기능·그림 잠금 상태를 유지합니다.

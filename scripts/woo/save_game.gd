@@ -15,7 +15,8 @@ static func valid(data: Variant) -> bool:
 	if not (revision is int or revision is float) or not is_finite(float(revision)) or float(revision)!=floorf(float(revision)) or revision<1 or revision>Layout.REVISION:return false
 	if not Layout.can_stand(point):
 		var legacy:=PackedVector2Array([Vector2(68,480),Vector2(900,64),Vector2(1732,480),Vector2(900,896)])
-		if revision>=2 or not Geometry2D.is_point_in_polygon(point,legacy):return false
+		if revision>=Layout.REVISION:return false
+		if not Geometry2D.is_point_in_polygon(point,legacy if revision<2 else Layout.BOUNDS):return false
 	var completed=data.get("completed_paintings",[])
 	if not completed is Array:return false
 	var known: Array=Layout.PAINTINGS.map(func(v: Dictionary)->String:return v.id)
@@ -51,8 +52,9 @@ static func load_game() -> Dictionary:
 		var data := read_valid(path)
 		if not data.is_empty():
 			var point:=Vector2(data.position[0],data.position[1])
-			if int(data.get("map_revision",1))<2 and not Layout.can_stand(point):
-				data.legacy_position=data.position.duplicate()
+			if int(data.get("map_revision",1))<Layout.REVISION and not Layout.can_stand(point):
+				if not data.has("legacy_position"):data.legacy_position=data.position.duplicate()
+				else:data.last_migration_position=data.position.duplicate()
 				var safe:=Layout.safe_position(point)
 				data.position=[safe.x,safe.y]
 			data.map_revision=Layout.REVISION
