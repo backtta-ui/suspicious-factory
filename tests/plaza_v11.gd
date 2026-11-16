@@ -86,13 +86,13 @@ func run() -> void:
  check(game.player.position.x>1940,"physical character crosses the entire bridge")
  game.player.position=Vector2(1700,1160);game.joystick.vector=Vector2.DOWN;await frames(30);game.joystick.reset()
  check(game.player.position.y<1180,"pond collision stops the physical character")
- for i in range(Layout.PAINTINGS.size()):
-  game.player.position=Layout.PAINTINGS[i].position+Vector2(0,55);await frames(5)
+ for i in range(1):
+  game.player.position=preload("res://scripts/worlds/catalog.gd").ENTRY+Vector2(0,55);await frames(5)
   check(game.nearest_painting==i and game.interact_button.visible,"painting proximity detected "+str(i))
   var anchor: Vector2=game.player.position
   await tap(game.interact_button)
-  check(game.modal_kind=="painting" and game.paused and (not button_named("그림 속으로",game.ui).disabled if i==0 else button_named("준비 중",game.ui).disabled),"painting intro matches implemented or locked stage "+str(i))
-  await tap(button_named("돌아가기",game.ui))
+  check(game.modal_kind=="painting" and game.paused and not button_named("그림 속으로",game.ui).disabled,"painting intro matches implemented or locked stage "+str(i))
+  await tap(button_named("닫기",game.ui))
   check(not game.paused and game.player.position.distance_to(anchor)<1,"painting close restores movement without teleport "+str(i))
   game.player.position=Layout.SPAWN
   check(game.restore_plaza_anchor() and game.player.position.distance_to(anchor)<1,"future return anchor restores entry position "+str(i))

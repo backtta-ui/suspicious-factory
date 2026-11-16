@@ -4,7 +4,7 @@ const Layout=preload("res://scripts/woo/village_layout.gd")
 const Prop=preload("res://scripts/woo/village_prop.gd")
 var ambience: CanvasModulate
 var lanterns: Array[Sprite2D]=[]
-var time_of_day:=0.4
+var time_of_day:=0.5
 var cycle_enabled:=true
 var low_effects:=false
 var petals: Node2D

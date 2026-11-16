@@ -488,6 +488,11 @@ func restore_plaza_anchor() -> bool:
  var p: Array=return_anchor.get("position",[])
  if p.size()!=2:return false
  player.position=Layout.safe_position(Vector2(p[0],p[1]));player.reset_physics_interpolation()
+ player.facing=int(return_anchor.get("facing",2))
+ if is_instance_valid(camera):
+  var z: Array=return_anchor.get("camera_zoom",[2,2]);camera.zoom=Vector2(clampf(float(z[0]),1,4),clampf(float(z[1]),1,4))
+  camera.rotation=float(return_anchor.get("camera_rotation",0))
+  var q: Array=return_anchor.get("camera_position",[0,-36]);camera.position=Vector2(q[0],q[1])
  if is_instance_valid(camera):camera.reset_smoothing()
  return true
 
@@ -614,7 +619,7 @@ func _process(delta: float) -> void:
  if spell_button.has_node("SkillBadge"):
   var badge: WooSkillBadge=spell_button.get_node("SkillBadge");badge.maximum=player.SPELL_COOLDOWN;badge.remaining=player.cooldown;badge.locked=not unlocked.has("jar")
  run_button.disabled = player.jar or paused
- place_label.text = Layout.zone_at(player.position)+"  ·  "+("밤" if world.time_of_day>0.3 and world.time_of_day<0.7 else "낮")
+ place_label.text = "신비로운 그림 장터  ·  "+("밤" if world.time_of_day>0.3 and world.time_of_day<0.7 else "낮")
  if paused: return
  nearest_npc = -1
  var nearest_distance := 58.0
@@ -627,15 +632,14 @@ func _process(delta: float) -> void:
    nearest_npc = i
  if nearest_npc>=0: actors[nearest_npc+1].highlighted = true
  nearest_painting=-1
- for i in range(Layout.PAINTINGS.size()):
-  if player.position.distance_to(Layout.PAINTINGS[i].position)<85:nearest_painting=i;break
+ if player.position.distance_to(preload("res://scripts/worlds/catalog.gd").ENTRY)<100:nearest_painting=0
  near_practice=player.position.distance_to(preload("res://scripts/practice/layout.gd").DOOR)<80
  near_well = player.position.distance_to(Layout.WELL)<60
  interact_button.visible = near_practice or nearest_npc>=0 or near_well or nearest_painting>=0
- interact_button.text = "도술 익히기 입장" if near_practice else ("그림 보기" if nearest_painting>=0 else ("대화" if nearest_npc>=0 else "우물 조사"))
+ interact_button.text = "도술 익히기 입장" if near_practice else ("그림 세계" if nearest_painting>=0 else ("대화" if nearest_npc>=0 else "우물 조사"))
  interact_button.add_theme_font_size_override("font_size",13 if near_practice else 18)
  hint.text = (str(Layout.NPCS[nearest_npc].name)+" · 대화 가능") if nearest_npc>=0 else ("항아리 둔갑 중 · 이동 속도 감소" if player.jar else "주민과 대화하거나 마을을 탐험하세요")
- if nearest_painting>=0:hint.text=Layout.PAINTINGS[nearest_painting].name+" · 그림 소개"
+ if nearest_painting>=0:hint.text="그림 세계 · 세 개의 모험"
  if near_practice:hint.text="도술 익히기 · 서버 없이 모든 도술 체험"
  if saved_indicator>0:
   saved_indicator -= delta

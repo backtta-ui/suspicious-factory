@@ -68,7 +68,7 @@ static func valid(value: Variant) -> bool:
  var session=value.get("session",null)
  if not session is Dictionary:return false
  if not session.is_empty():
-  if session.get("map","")!="fox_forest":return false
+  if session.get("map","") not in ["fox_forest","moon_palace","red_sea"]:return false
   var p=session.get("position",null)
   if not p is Array or p.size()!=2:return false
   for n in p:
@@ -82,6 +82,7 @@ static func valid(value: Variant) -> bool:
    seen.append(int(id))
   if not session.get("completed",null) is bool:return false
   if session.completed and defeated.size()!=3:return false
+  if session.map!="fox_forest" and (not defeated.is_empty() or session.completed):return false
  return true
 func max_hp() -> int:return 100+(int(data.level)-1)*12
 func max_mp() -> int:return 50+(int(data.level)-1)*5

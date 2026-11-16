@@ -6,6 +6,8 @@ static func segment_distance(p: Vector2,a: Vector2,b: Vector2) -> float:
 static func ellipse(p: Vector2,c: Vector2,r: Vector2) -> bool:
  return ((p-c)/r).length()<=1.0
 static func at(p: Vector2,map_id: String="gyewol_village") -> String:
+ if map_id=="moon_palace":return "stone"
+ if map_id=="red_sea":return "dirt"
  if map_id=="fox_forest":return preload("res://scripts/woo/forest_layout.gd").surface(p)
  # Match terrain.gd's actual baked paving and water.gd's STONE bridge.
  if Rect2(1480,1274,440,52).has_point(p):return "stone"

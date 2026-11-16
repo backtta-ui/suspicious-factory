@@ -28,6 +28,10 @@ var mission_done:=false
 var completion_opened:=false
 var reward_message:=""
 var selected_slot:=0
+var selected_world:="fox_forest"
+var active_world:="fox_forest"
+const Worlds=preload("res://scripts/worlds/catalog.gd")
+const ExploreLayout=preload("res://scripts/worlds/layout.gd")
 var transition_layer: Control
 func _ready() -> void:
  actions=preload("res://scripts/woo/action_controller.gd").new();actions.adventure=self;add_child(actions)
@@ -98,9 +102,9 @@ func show_journal() -> void:
  stack.add_child(game.text("탐관오리의 관아 · 도깨비의 밤: 준비 중",17))
  footer(stack)
 func show_map() -> void:
- var stack:=page("map", "여우의 숲" if in_mission else "계월촌 전체 지도")
+ var stack:=page("map", Worlds.find(active_world).get("title","여우의 숲") if in_mission else "계월촌 전체 지도")
  var map:=preload("res://scripts/woo/minimap.gd").new()
- map.custom_minimum_size=Vector2(640,310);map.mission=in_mission;map.local_position=game.player.position;map.elder_done=game.talked_to_elder;stack.add_child(map)
+ map.custom_minimum_size=Vector2(640,310);map.mission=in_mission;map.world_id=active_world;map.local_position=game.player.position;map.elder_done=game.talked_to_elder;stack.add_child(map)
  stack.add_child(game.text("파랑: 내 위치 · 노랑: 임무 / 출구 · 보라: 그림 장터",17))
  footer(stack)
 func show_outfits() -> void:
@@ -135,12 +139,12 @@ func decorate_skill(b: Button,skill: String) -> void:
  for mode in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:b.add_theme_color_override(mode,Color(0,0,0,0))
  var badge:=preload("res://scripts/woo/skill_badge.gd").new();badge.name="SkillBadge";badge.skill=skill;badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);b.add_child(badge)
 func update_controls() -> void:
- for b in combat_buttons:b.visible=in_mission
- game.spell_button.visible=not in_mission
+ for b in combat_buttons:b.visible=in_mission and active_world=="fox_forest"
+ game.spell_button.visible=not in_mission or active_world!="fox_forest"
  if in_mission:
   game.run_button.visible=false
   game.interact_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);game.interact_button.offset_left=-138;game.interact_button.offset_right=-38;game.interact_button.offset_top=-388;game.interact_button.offset_bottom=-292
-  game.hud_map.mission=true;game.hud_map.queue_redraw()
+  game.hud_map.mission=true;game.hud_map.world_id=active_world;game.hud_map.queue_redraw()
  else:game.run_button.visible=true;game.hud_map.mission=false
 func update_stats() -> void:
  if is_instance_valid(hp_bar):hp_bar.max_value=game.rpg.max_hp();hp_bar.value=game.rpg.data.hp
@@ -148,17 +152,13 @@ func update_stats() -> void:
  if is_instance_valid(jump_button):jump_button.disabled=game.paused or transitioning or game.player.defeated
  if is_instance_valid(stats_label):stats_label.text="Lv.%d   HP %d/%d   도력 %d/%d" % [game.rpg.data.level,game.rpg.data.hp,game.rpg.max_hp(),game.rpg.data.mp,game.rpg.max_mp()]
 func show_painting(index: int) -> void:
- if transitioning or in_mission:return
- var p: Dictionary=game.Layout.PAINTINGS[index]
+ if transitioning or in_mission or is_instance_valid(game.modal):return
  var stack: VBoxContainer=game.open_modal("painting")
  if stack==null:return
- game.return_anchor={"map":game.Layout.MAP_ID,"position":[game.player.position.x,game.player.position.y],"facing":game.player.facing,"painting_id":p.id}
- stack.add_child(game.text(p.name,28,game.GOLD))
- var art:=preload("res://scripts/woo/painting_view.gd").new();art.index=index;art.reduced=game.settings.low_effects;art.custom_minimum_size=Vector2(730,290);stack.add_child(art)
- var intro: Label=game.text(p.intro,17);intro.custom_minimum_size.x=730;intro.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;stack.add_child(intro)
- stack.add_child(game.text("도깨비 3마리 처치 · 첫 보상: 경험치 120 / 엽전 50 / 회복약 2 / 잎 3" if index==0 else "봉인된 그림 · 그림 속 임무는 준비 중입니다",16))
- var enter: Button=game.button("그림 속으로" if index==0 else "준비 중",enter_painting,true);enter.disabled=index!=0;stack.add_child(enter)
- stack.add_child(game.button("돌아가기",game.close_modal))
+ stack.get_parent().get_parent().hide()
+ var selected: Dictionary=Worlds.WORLDS[clampi(index,0,Worlds.WORLDS.size()-1)]
+ game.return_anchor={"map":game.Layout.MAP_ID,"position":[game.player.position.x,game.player.position.y],"facing":game.player.facing,"painting_id":selected.id,"camera_zoom":[game.camera.zoom.x,game.camera.zoom.y],"camera_rotation":game.camera.rotation,"camera_position":[game.camera.position.x,game.camera.position.y]}
+ var gallery:=preload("res://scripts/worlds/gallery.gd").new();gallery.adventure=self;gallery.selected=clampi(index,0,Worlds.WORLDS.size()-1);game.modal.add_child(gallery)
  game.save_progress()
 func defeated() -> Array:return game.rpg.data.session.get("defeated",[]) if not game.rpg.data.session.is_empty() else ([0,1,2] if game.rpg.data.completed.has("fox_forest") else [])
 func capture_session() -> void:
@@ -166,13 +166,13 @@ func capture_session() -> void:
  game.rpg.data.session.position=[game.player.position.x,game.player.position.y];game.rpg.data.session.facing=game.player.facing
 func resume_session() -> void:
  if game.return_anchor.is_empty():game.rpg.data.session={};return
- if not load_forest(true):game.rpg.data.session={};game.restore_plaza_anchor()
+ if not load_world(str(game.rpg.data.session.get("map","fox_forest")),true):game.rpg.data.session={};game.restore_plaza_anchor()
 func enter_painting() -> void:
  if transitioning or in_mission:return
  transitioning=true
  await transition(false)
  if not is_inside_tree():return
- if not load_forest(false):
+ if not load_world(selected_world,false):
   game.rpg.data.session={};game.restore_plaza_anchor();game.hint.text="그림을 열지 못했습니다. 광장으로 돌아왔습니다."
  await finish_transition()
  game.save_progress()
@@ -187,6 +187,7 @@ func finish_transition() -> void:
  transitioning=false;game.set_paused(false)
  if in_mission and mission_done:show_completion.call_deferred()
 func load_forest(resume: bool) -> bool:
+ active_world="fox_forest"
  if not is_instance_valid(game.player) or game.return_anchor.is_empty():return false
  if not resume:game.rpg.data.session={"map":"fox_forest","position":[ForestLayout.SPAWN.x,ForestLayout.SPAWN.y],"facing":0,"defeated":[],"completed":false}
  forest=preload("res://scripts/woo/forest.gd").new();game.add_child(forest)
@@ -219,7 +220,7 @@ func return_to_plaza() -> void:
  game.player.reparent(game.world);game.player.collision_mask=1
  game.world.process_mode=Node.PROCESS_MODE_INHERIT;game.world.show();game.world.set_process(true);game.world.set_completed_stories(game.completed_paintings)
  game.player.reset_action();actions.cancel()
- in_mission=false;game.rpg.data.session={};mission_done=false;completion_opened=false
+ in_mission=false;active_world="fox_forest";game.rpg.data.session={};mission_done=false;completion_opened=false
  if is_instance_valid(forest):forest.queue_free()
  forest=null;combat=null
  game.camera.offset=Vector2.ZERO;game.camera.limit_right=int(game.Layout.SIZE.x);game.camera.limit_bottom=int(game.Layout.SIZE.y)
@@ -236,6 +237,7 @@ func show_effects() -> void:
  stack.add_child(game.button("설정으로",func()->void:game.close_modal();game.show_settings()))
  stack.add_child(game.button("게임으로",game.close_modal,true))
 func update_mission_ui(delta: float) -> void:
+ if active_world!="fox_forest":update_exploration_ui();return
  update_stats()
  game.hud_map.update_local(game.player.position,true)
  var zone: Dictionary=ForestLayout.zone_at(game.player.position)
@@ -267,6 +269,7 @@ func update_mission_ui(delta: float) -> void:
  if not game.paused and mission_done and not completion_opened and not transitioning:show_completion.call_deferred()
 func _physics_process(delta: float) -> void:
  if not in_mission:return
+ if active_world!="fox_forest":return
  if shake_left>0:
   shake_left=maxf(0,shake_left-delta)
   var strength: float=HitConfig.SHAKE_PIXELS*shake_power*shake_left/HitConfig.SHAKE_TIME/game.camera.zoom.x
@@ -277,7 +280,7 @@ func _physics_process(delta: float) -> void:
  hit_stop=maxf(0,hit_stop-delta)
  actions.tick(delta)
  game.player.combat_frozen=hit_stop>0
-func can_fight() -> bool:return in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done and game.player.transforming<=0 and game.player.hurt_stun<=0 and not game.player.defeated
+func can_fight() -> bool:return active_world=="fox_forest" and in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done and game.player.transforming<=0 and game.player.hurt_stun<=0 and not game.player.defeated
 func basic_attack() -> void:
  actions.request()
 func jump() -> void:
@@ -314,7 +317,7 @@ func enemy_died(enemy_id: int,p: Vector2) -> void:
  if defeated().size()==3:mission_done=true;game.rpg.data.session.completed=true
  game.save_progress()
 func can_take_damage() -> bool:
- return in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done
+ return active_world=="fox_forest" and in_mission and not transitioning and not game.paused and game.rpg.data.hp>0 and not mission_done
 func hurt_player(amount: int,direction: Vector2=Vector2.ZERO) -> void:
  if not can_take_damage() or player_hurt_cd>0:return
  player_hurt_cd=WooActionConfig.INVULNERABILITY;game.player.hurt_left=.22;game.player.hurt_stun=WooActionConfig.HURT_STUN;game.player.hurt_knock=direction*85;actions.cancel();game.rpg.data.hp=maxi(0,int(game.rpg.data.hp)-amount)
@@ -356,6 +359,7 @@ func acquire_loot(loot: Dictionary) -> bool:
  if game.rpg.data.effects.particles:combat.burst(game.player.position,0,true,true)
  return true
 func mission_interact() -> void:
+ if active_world!="fox_forest":exploration_interact();return
  var loot:=nearby_loot()
  if not loot.is_empty():
   if loot.id=="shrine_seal" and not game.rpg.data.adventure_unlocks.has("forest_cat"):show_forest_trial(loot)
@@ -403,3 +407,48 @@ func show_forest_trial(loot: Dictionary,step: int=0) -> void:
    if not acquire_loot(loot):game.rpg.data=before
    else:game.hint.text="여우의 숲 도술 해금 · 멀티플레이 고양이 둔갑 외형"))
  stack.add_child(game.button("닫기",game.close_modal))
+
+func load_world(id: String,resume: bool=false) -> bool:
+ if not Worlds.known(id):return false
+ if id=="fox_forest":return load_forest(resume)
+ if not is_instance_valid(game.player) or game.return_anchor.is_empty():return false
+ var scene:=preload("res://scripts/worlds/map.gd").new();scene.map_id=id;scene.low_effects=game.settings.low_effects;game.add_child(scene)
+ if not resume:game.rpg.data.session={"map":id,"position":[ExploreLayout.spawn(id).x,ExploreLayout.spawn(id).y],"facing":6,"defeated":[],"completed":false}
+ active_world=id;forest=scene;in_mission=true;mission_done=false;completion_opened=false
+ actions.cancel();game.player.reset_action();game.player.combat_frozen=false;game.player.reparent(scene);game.player.collision_mask=1
+ var p: Array=game.rpg.data.session.position;game.player.position=ExploreLayout.safe(id,Vector2(p[0],p[1]));game.player.facing=int(game.rpg.data.session.facing);game.player.reset_physics_interpolation()
+ game.world.hide();game.world.process_mode=Node.PROCESS_MODE_DISABLED
+ game.camera.limit_right=int(ExploreLayout.SIZE.x);game.camera.limit_bottom=int(ExploreLayout.SIZE.y);game.camera.reset_smoothing();game.camera.offset=Vector2.ZERO
+ game.sound.map_id=id;game.sound.tracking=false;game.nearest_npc=-1;game.nearest_painting=-1;game.near_well=false
+ update_controls();return true
+func nearby_site() -> Dictionary:
+ for site in ExploreLayout.sites(active_world):
+  if game.player.position.distance_to(site.p)<85:return site
+ return {}
+func update_exploration_ui() -> void:
+ update_stats();game.hud_map.update_local(game.player.position,true)
+ var world: Dictionary=Worlds.find(active_world);game.place_label.text=world.title;game.quest_label.get_parent().get_child(0).text=world.title
+ var count:=0
+ for site in ExploreLayout.sites(active_world):
+  if game.rpg.data.visited.has(site.id):count+=1
+ game.quest_label.text="문양 탐험 · %d / 3"%count
+ var site:=nearby_site();game.interact_button.visible=not site.is_empty() or game.player.position.distance_to(ExploreLayout.spawn(active_world))<110
+ game.interact_button.text="문양 살펴보기" if not site.is_empty() else "광장 복귀"
+ game.hint.text="이곳의 문양을 살펴보세요 · 입구의 귀환진에서 광장 복귀" if count<3 else "세 문양을 발견했습니다 · 보상 도술은 아직 확정되지 않았습니다"
+ game.spell_button.disabled=game.paused or game.player.cooldown>0
+ var badge: WooSkillBadge=game.spell_button.get_node("SkillBadge");badge.maximum=game.player.SPELL_COOLDOWN;badge.remaining=game.player.cooldown
+func exploration_interact() -> void:
+ var site:=nearby_site()
+ if site.is_empty():
+  if game.player.position.distance_to(ExploreLayout.spawn(active_world))<110:return_to_plaza()
+  return
+ var stack: VBoxContainer=game.open_modal("world_glyph")
+ if stack==null:return
+ stack.add_child(game.text(site.name,28,game.GOLD));stack.add_child(game.text("빛나는 문양을 맞춰 기억을 기록하세요: "+["달","별","물결"][site.glyph],21))
+ var row:=HBoxContainer.new();stack.add_child(row)
+ for i in range(3):
+  row.add_child(game.button(["달","별","물결"][i],func()->void:
+   if i!=int(site.glyph):game.sound.play_clip("button");return
+   if not game.rpg.data.visited.has(site.id):game.rpg.data.visited.append(site.id)
+   game.close_modal();game.save_progress();game.sound.play_clip("reward")))
+ stack.add_child(game.text("탐험 기록만 저장합니다. 미확정 도술·아이템 보상은 지급하지 않습니다.",17));stack.add_child(game.button("닫기",game.close_modal))

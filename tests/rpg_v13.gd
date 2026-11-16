@@ -58,7 +58,7 @@ func run() -> void:
  check(adv.combat_buttons.all(func(b: Button)->bool:return not b.visible),"plaza combat controls hidden")
  adv.basic_attack();check(adv.attack_cd==0,"plaza rejects basic attack in gameplay code")
  var original: Vector2=game.player.position;var facing:int=game.player.facing
- game.show_painting_intro(1);await frames();check(find_button("준비 중").disabled,"unimplemented paintings remain locked");game.close_modal()
+ game.show_painting_intro(1);await frames();check(not find_button("그림 속으로").disabled,"new palace exploration is genuinely open");game.close_modal()
  game.player.position=Vector2(1690,395);original=game.player.position;game.player.facing=3;facing=3
  game.show_painting_intro(0);await frames()
  check(game.modal_kind=="painting" and not find_button("그림 속으로").disabled,"large painting viewer has real forest entrance")

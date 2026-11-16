@@ -5,7 +5,12 @@ const DECOR=preload("res://assets/woo/v11/decor_atlas.png")
 var index:=0
 var clock:=0.0
 var reduced:=false
-func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE
+var preview_texture: Texture2D
+func _ready() -> void:
+ mouse_filter=Control.MOUSE_FILTER_IGNORE
+ if index>0:
+  var path: String=preload("res://scripts/worlds/catalog.gd").WORLDS[index].thumbnailAsset
+  if ResourceLoader.exists(path):preview_texture=load(path)
 func _process(delta: float) -> void:
  clock+=delta
  queue_redraw()
@@ -13,7 +18,11 @@ func _draw() -> void:
  draw_style_box(border(),Rect2(Vector2.ZERO,size))
  var box:=Rect2(Vector2(6,6),size-Vector2(12,12))
  if index==0:draw_texture_rect(FOX,box,false)
- else:draw_texture_rect_region(DECOR,box,Rect2(index*425,0,425,411))
+ else:
+  if preview_texture!=null:
+   var fit:=Vector2(preview_texture.get_size());fit*=minf(box.size.x/fit.x,box.size.y/fit.y)
+   draw_texture_rect(preview_texture,Rect2(box.get_center()-fit/2,fit),false)
+  else:draw_texture_rect_region(DECOR,box,Rect2(index*425,0,425,411))
  # Localized mist, river reflection and foreground bamboo sway; art stays fixed.
  if index==0:
   for i in range(3 if reduced else 6):

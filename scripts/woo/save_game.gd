@@ -35,6 +35,16 @@ static func valid(data: Variant) -> bool:
 		for n in q:
 			if not (n is int or n is float) or not is_finite(float(n)):return false
 		if not Geometry2D.is_point_in_polygon(Vector2(q[0],q[1]),Layout.BOUNDS):return false
+		for key in ["camera_zoom","camera_position"]:
+			if not anchor.has(key):continue
+			var v=anchor[key]
+			if not v is Array or v.size()!=2:return false
+			for n in v:
+				if not (n is int or n is float) or not is_finite(float(n)) or absf(float(n))>200:return false
+			if key=="camera_zoom" and (v[0]<1 or v[1]<1 or v[0]>4 or v[1]>4):return false
+		if anchor.has("camera_rotation"):
+			var angle=anchor.camera_rotation
+			if not (angle is int or angle is float) or not is_finite(float(angle)) or absf(float(angle))>TAU:return false
 	if not data.get("unlocked",null) is Array: return false
 	for spell in data.unlocked:
 		if not spell is String or spell!="jar": return false
