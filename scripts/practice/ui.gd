@@ -2,6 +2,7 @@ class_name WooPracticeUI
 extends Node
 const Catalog=preload("res://scripts/practice/catalog.gd")
 const Layout=preload("res://scripts/practice/layout.gd")
+const NPCS_ORDER=["blue","red","yokai","rescuee"]
 const Actor=preload("res://scripts/woo/actor.gd")
 var game: Node
 var session: WooPracticeSession
@@ -27,6 +28,9 @@ var original_camera_enabled: bool
 var original_sound_map: String
 var backgrounded:=false
 var leaving:=false
+var release_button: Button
+var aiming:=false
+var preview_until:=0.0
 func _ready() -> void:
  session=preload("res://scripts/practice/session.gd").new(game.player.cosmetic)
  source_scene=game.player.get_parent();original_mode=source_scene.process_mode;original_adventure_mode=game.adventure.process_mode;original_camera_enabled=game.camera.enabled;original_sound_map=game.sound.map_id
@@ -37,7 +41,7 @@ func _ready() -> void:
  for id in ["student"]+session.NPCS.keys():
   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;world.add_child(actor);actor.set_physics_process(false);avatars[id]=actor
   var marker:=preload("res://scripts/seal/color_marker.gd").new();marker.actor=actor;marker.color_id=session.rules.players[id].color;actor.add_child(marker);markers[id]=marker
-  var label: Label=game.text("",10,game.GOLD);label.position=Vector2(-70,-65);label.size.x=140;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;label.add_theme_constant_override("outline_size",3);label.add_theme_color_override("font_outline_color",Color("18202b"));actor.add_child(label);labels[id]=label
+  var plate:=preload("res://scripts/practice/nameplate.gd").new();plate.position=Vector2(0,-65);actor.add_child(plate);labels[id]=plate
  hero=avatars.student
  camera=Camera2D.new();camera.zoom=game.camera.zoom;camera.position=Vector2(0,-36);camera.position_smoothing_enabled=game.settings.smooth_camera;camera.position_smoothing_speed=5;camera.limit_left=0;camera.limit_top=0;camera.limit_right=int(Layout.SIZE.x);camera.limit_bottom=int(Layout.SIZE.y);hero.add_child(camera);camera.make_current()
  for asset in session.rules.arena.assets:
@@ -54,21 +58,31 @@ func control(title: String,p: Vector2,s: Vector2,call: Callable) -> Button:
  return b
 func build_ui() -> void:
  game.new_ui();game.active_context="practice"
- var panel:=Panel.new();panel.position=Vector2(16,8);panel.size=Vector2(920,137);panel.mouse_filter=Control.MOUSE_FILTER_IGNORE;panel.add_theme_stylebox_override("panel",game.style(Color(.055,.075,.12,.92),8));game.ui.add_child(panel)
- header=game.text("",23,game.GOLD);header.position=Vector2(26,18);game.ui.add_child(header)
- notice=game.text("",17);notice.position=Vector2(26,61);notice.custom_minimum_size=Vector2(760,65);notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;game.ui.add_child(notice)
- var guide: Label=game.text("오프라인 자유 체험 · 습득/아이템/온라인 장착 기록과 별개",15,Color("9bbcc5"));guide.position=Vector2(26,118);game.ui.add_child(guide)
- control("이전 모험으로 돌아가기" if game.adventure.in_mission else "광장으로 돌아가기",Vector2(1010,18),Vector2(244,64),leave)
- control("NPC 행동 변경",Vector2(26,153),Vector2(258,60),cycle_npcs)
+ var panel:=Panel.new();panel.position=Vector2(16,10);panel.size=Vector2(350,76);panel.mouse_filter=Control.MOUSE_FILTER_IGNORE;panel.add_theme_stylebox_override("panel",game.style(Color(.055,.075,.12,.88),7));game.ui.add_child(panel)
+ header=game.text("도술 익히기",21,game.GOLD);header.position=Vector2(28,18);game.ui.add_child(header)
+ notice=game.text("",16);notice.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM);notice.offset_left=-350;notice.offset_right=300;notice.offset_top=-62;notice.offset_bottom=-16;notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;notice.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.ui.add_child(notice)
+ control("광장 복귀" if not game.adventure.in_mission else "모험 복귀",Vector2(1096,14),Vector2(158,54),leave)
+ control("수련 설정",Vector2(926,14),Vector2(156,54),show_training_settings)
+ control("도술 목록",Vector2(756,14),Vector2(156,54),show_spells)
  stick=preload("res://scripts/joystick.gd").new();stick.size=Vector2(174,174);stick.position=Vector2(74,498);game.ui.add_child(stick)
- cast_button=control("도술 사용",Vector2(1090,546),Vector2(164,142),cast)
- badge=preload("res://scripts/woo/skill_badge.gd").new();badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);cast_button.add_child(badge)
- interact_button=control("상호작용",Vector2(865,570),Vector2(203,104),interact)
- control("변신 해제",Vector2(1070,440),Vector2(184,84),release)
- control("도술 목록",Vector2(1070,334),Vector2(184,84),show_spells)
- control("초기화",Vector2(865,440),Vector2(184,84),reset)
- control("표적 공격",Vector2(708,570),Vector2(135,104),attack)
+ cast_button=control("도술 사용",Vector2(1094,550),Vector2(140,140),cast);game.adventure.decorate_skill(cast_button,"jar");badge=cast_button.get_node("SkillBadge")
+ interact_button=control("상호작용",Vector2(840,574),Vector2(102,102),interact);game.adventure.decorate_skill(interact_button,"rescue")
+ var hit: Button=control("표적 공격",Vector2(964,574),Vector2(102,102),attack);game.adventure.decorate_skill(hit,"attack")
+ release_button=control("변신 해제",Vector2(1094,482),Vector2(140,50),release)
+ for spec in [[interact_button,"상호작용"],[hit,"공격"],[cast_button,"도술"]]:
+  var label: Label=game.text(spec[1],15,game.GOLD);label.mouse_filter=Control.MOUSE_FILTER_IGNORE;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);label.offset_top=-14;label.offset_bottom=10;spec[0].add_child(label)
+ cast_button.button_down.connect(func()->void:aiming=true)
+ cast_button.button_up.connect(func()->void:aiming=false)
  adjust_safe.call_deferred()
+func show_training_settings() -> void:
+ if is_instance_valid(game.modal):return
+ stick.reset();stick.input_enabled=false
+ var stack: VBoxContainer=game.open_modal("practice_settings");stack.add_child(game.text("수련 설정",27,game.GOLD))
+ stack.add_child(game.button("NPC 행동 변경",func()->void:cycle_npcs();game.close_modal()))
+ stack.add_child(game.button("도술 범위 잠시 확인",func()->void:preview_until=session.rules.elapsed+2.5;game.close_modal()))
+ stack.add_child(game.button("수련 초기화",func()->void:reset();game.close_modal()))
+ stack.add_child(game.button("변신 해제",func()->void:release();game.close_modal()))
+ stack.add_child(game.button("수련으로",game.close_modal))
 func adjust_safe() -> void:
  var view:=game.get_viewport().get_visible_rect().size
  stick.position.y=view.y-222
@@ -76,17 +90,12 @@ func adjust_safe() -> void:
   var safe:=DisplayServer.get_display_safe_area();var size:=DisplayServer.screen_get_size()
   if size.x>0 and size.y>0:stick.position.x=74+float(safe.position.x)*view.x/size.x;stick.position.y-=maxf(0,float(size.y-safe.end.y))*view.y/size.y
 func cycle_npcs() -> void:
- var modes: Array=["patrol","idle","chase","attack","guard"];session.npc_mode=modes[(modes.find(session.npc_mode)+1)%4];session.message={"patrol":"NPC 산책","idle":"NPC 대기","chase":"NPC 추적 · 분신/연막을 시험하세요","attack":"훈련 요괴 공격 · 호신부로 방어해보세요","guard":"NPC 방어 · 표적 공격으로 호신부를 소모시켜 보세요"}[session.npc_mode]
+ var modes: Array=["patrol","idle","chase","attack","guard"];session.npc_mode=modes[(modes.find(session.npc_mode)+1)%modes.size()];session.message={"patrol":"NPC 산책","idle":"NPC 대기","chase":"NPC 추적 · 분신/연막을 시험하세요","attack":"훈련 요괴 공격 · 호신부로 방어해보세요","guard":"NPC 방어 · 표적 공격으로 호신부를 소모시켜 보세요"}[session.npc_mode]
 func show_spells() -> void:
  if is_instance_valid(game.modal):return
- stick.reset()
- var stack: VBoxContainer=game.open_modal("practice_spells");stack.get_parent().custom_minimum_size=Vector2(1080,610);stack.add_child(game.text("도술 익히기 · 모든 도술 자유 체험",26,game.GOLD))
- var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(1030,430);stack.add_child(scroll)
- var grid:=GridContainer.new();grid.columns=2;scroll.add_child(grid)
- for id in Catalog.all():
-  var info: Dictionary=Catalog.all()[id]
-  var b: Button=game.button(info.name+" · "+("선택됨" if session.selected==id else "체험")+"\n"+info.description,select.bind(id));b.custom_minimum_size=Vector2(500,95);b.add_theme_font_size_override("font_size",15);b.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;grid.add_child(b)
- stack.add_child(game.button("수련으로",game.close_modal))
+ stick.reset();stick.input_enabled=false
+ var stack: VBoxContainer=game.open_modal("practice_spells");stack.get_parent().get_parent().hide()
+ var menu:=preload("res://scripts/practice/spell_list.gd").new();menu.practice=self;game.modal.add_child(menu)
 func select(id: String) -> void:
  session.select(id);game.close_modal();stick.reset()
 func cast() -> void:
@@ -114,7 +123,12 @@ func sync(delta: float) -> void:
   var id: String=info.uid;visible_ids.append(id);var actor: WooActor=avatars[id];var p:=Vector2(info.position[0],info.position[1]);var distance:=actor.position.distance_to(p);var moved:=distance>.05
   markers[id].color_id=info.color;actor.position=p;actor.facing=info.facing;actor.cosmetic=info.cosmetic.duplicate();actor.identity_concealed=info.concealed;actor.appearance_form=info.form;actor.jar=false;actor.animation_time+=delta*7;actor.gait_phase+=minf(distance,60)*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if moved else 0.0,delta*10);actor.velocity=Vector2(60,0) if moved else Vector2.ZERO
   actor.action_pose=1 if id=="student" and session.selected=="talisman" else 0;actor.pose_duration=.45;actor.action_left=maxf(0,rules.players[id].buff.get("casting",0)-rules.elapsed)
-  actor.hurt_left=.12 if id!="student" and session.stats[id].stun>rules.elapsed else 0;actor.update_sprite();labels[id].text=(str(info.name)+(" · HP%d"%session.stats[id].hp if id!="student" else ""));labels[id].visible=info.form=="human" and not info.concealed;actor.show()
+  actor.hurt_left=.12 if id!="student" and session.stats[id].stun>rules.elapsed else 0;actor.update_sprite();var plate: WooPracticeNameplate=labels[id];plate.title={"blue":"청월","red":"홍매","yokai":"훈련 요괴","rescuee":"구출 대상"}.get(id,"");plate.hp=100 if id=="student" else session.stats[id].hp;plate.focused=id==session.nearest(180);plate.visible=id!="student" and info.form=="human" and not info.concealed
+  var stack_index:=0
+  for other in NPCS_ORDER:
+   if other==id:break
+   if avatars.has(other) and avatars[other].position.distance_to(p)<55:stack_index+=1
+  plate.position=Vector2(0,-65-stack_index*15);plate.queue_redraw();actor.show()
  for id in avatars:
   if not visible_ids.has(id):avatars[id].hide()
  for asset in rules.arena.assets:
@@ -133,7 +147,8 @@ func sync(delta: float) -> void:
  for hit in session.strikes:combat.burst(hit.position,hit.damage,hit.gold,false)
  session.strikes.clear()
  var info: Dictionary=Catalog.all()[session.selected];var cooldown: float=maxf(0,session.self_player().cd.get(session.selected,0)-rules.elapsed)
- header.text="도술 익히기 · %s  |  쿨타임 %.1f초  |  훈련 HP %d"%[info.name,cooldown,session.hp]
+ header.text="도술 익히기 · "+info.name+"\n훈련 체력 %d"%session.hp
+ release_button.visible=session.self_player().buff.get("transform",0)>rules.elapsed or session.self_player().buff.get("mimic",0)>rules.elapsed or session.self_player().buff.get("mask",0)>rules.elapsed
  notice.text=session.message;badge.skill=info.icon;badge.maximum=info.cd;badge.remaining=cooldown;cast_button.disabled=cooldown>0 and not (session.selected=="transform" and session.self_player().buff.get("transform",0)>rules.elapsed)
  var channel: Dictionary=rules.channels.get("student",{})
  interact_button.text="진행 %.1f초"%maxf(0,channel.until-rules.elapsed) if not channel.is_empty() else ("형상 추출" if session.selected=="transform" else "상호작용")

@@ -279,10 +279,22 @@ func tick(delta: float) -> void:
    if phase=="lobby":remove.append(uid)
    else:p.sealed=true;p.escape=0
   if p.captured and elapsed>=p.escape_until:p.escape=0
+  var before: Vector2=p.position
   if roam(p):p.position=arena.move(p.position,p.position+p.intent*move_speed(p)*delta)
-  if p.intent.length()>.1 and elapsed-p.trail_at>.4:
-   p.trail_at=elapsed;p.trail.append({"p":p.position,"time":elapsed})
-   while p.trail.size()>12:p.trail.pop_front()
+  var walked: Vector2=p.position-before
+  # Real ground displacement only: idle intent, blocked movement and teleports
+  # cannot fabricate a trail. Eighteen world units is one alternating step.
+  var carry: float=p.get("step_distance",0.0)
+  var distance:=walked.length()
+  if distance>.001:
+   var consumed:=0.0
+   while carry+distance-consumed>=18.0:
+    consumed+=18.0-carry;carry=0.0
+    var side: int=int(p.get("step_side",0));var heading:=walked.angle()
+    var foot: Vector2=before+walked.normalized()*consumed+walked.normalized().orthogonal()*(2.5 if side==0 else -2.5)
+    p.trail.append({"p":foot,"time":elapsed,"heading":heading,"side":side});p.step_side=1-side
+   p.step_distance=carry+distance-consumed
+  while not p.trail.is_empty() and (p.trail.size()>32 or elapsed-p.trail[0].time>=6):p.trail.pop_front()
  for uid in remove:players.erase(uid)
  if host=="" or not players.has(host) or not players[host].connected:migrate_host()
  for i in range(effects.size()-1,-1,-1):
@@ -366,7 +378,7 @@ func view(uid: String) -> Dictionary:
   for p in players.values():
    if p.uid!=uid:
     for mark in p.trail:
-     if elapsed-mark.time<6 and mark.p.distance_to(self_p.position)<240:snapshot.footprints.append([snappedf(mark.p.x,4),snappedf(mark.p.y,4)])
+     if elapsed-mark.time<6 and mark.p.distance_to(self_p.position)<240:snapshot.footprints.append([mark.p.x,mark.p.y,mark.get("heading",0.0),mark.get("side",0),elapsed-mark.time])
  return snapshot
 
 static func consume_shield(p: Dictionary,time: float) -> bool:
@@ -378,5 +390,9 @@ func can_observe(viewer_id: String,target_id: String) -> bool:
  var distance: float=observer.position.distance_to(target.position)
  var seen: bool=target.uid==viewer_id or (not target.sealed and distance<(210 if observer.captured else C.VISIBILITY) and arena.line(observer.position,target.position))
  for effect in effects:
-  if effect.kind in ["darkness","smoke"] and effect.position.distance_to(observer.position)<130 and distance>85 and target.uid!=viewer_id:seen=false
+  if target.uid==viewer_id or distance<=85:continue
+  if effect.kind=="darkness" and effect.position.distance_to(observer.position)<130:seen=false
+  if effect.kind=="smoke":
+   var closest:=Geometry2D.get_closest_point_to_segment(effect.position,observer.position,target.position)
+   if closest.distance_to(effect.position)<130:seen=false
  return seen

@@ -36,7 +36,7 @@ func _ready() -> void:
  for entry in [["방향", "turn"],["걷기","walk"],["점프","jump"],["공격","attack"]]:
   var mode: String=entry[1];var b: Button=game.button(entry[0],func()->void:
    if mode=="turn":
-    var directions: Array=[2,4,6,0];preview.facing=directions[(directions.find(preview.facing)+1)%4]
+    var directions: Array=[2,3,4,5,6,7,0,1];preview.facing=directions[(directions.find(preview.facing)+1)%8]
    else:pose="idle" if pose==mode else mode
   );b.custom_minimum_size=Vector2(85,56);b.add_theme_font_size_override("font_size",17);controls.add_child(b)
  var right:=VBoxContainer.new();right.custom_minimum_size=Vector2(730,430);row.add_child(right)

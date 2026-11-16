@@ -1,5 +1,6 @@
 class_name SealEnvironmentAsset
 extends Node2D
+const AnimalArt=preload("res://scripts/spells/animal_regions.gd")
 const Arena=preload("res://scripts/seal/arena.gd")
 const ANIMALS=preload("res://assets/woo/seal/animals.png")
 const FRAMES=preload("res://scripts/woo/art_frames.gd")
@@ -20,13 +21,15 @@ func _draw() -> void:
  if kind in ["cat","dog","chicken"]:
   var row: int=["cat","dog","chicken"].find(kind);var cell:=Vector2(ANIMALS.get_width()/4.0,ANIMALS.get_height()/3.0)
   var frame:=int(clock*7)%4 if moving else 0
-  draw_texture_rect_region(ANIMALS,Rect2(-size.x/2,-size.y,size.x,size.y),Rect2(Vector2(frame,row)*cell+Vector2(3,3),cell-Vector2(6,6)))
+  var region: Array=AnimalArt.REGIONS[row*4+frame];size=AnimalArt.SIZES[kind]
+  draw_texture_rect_region(ANIMALS,Rect2(-size.x/2,-size.y,size.x,size.y),Rect2(region[0],region[1],region[2],region[3]))
  elif kind=="jar":
   var f: Array=FRAMES.VILLAGERS_JARS[6]
   draw_texture_rect_region(JARS,Rect2(-size.x/2,-size.y,size.x,size.y),Rect2(f[0],f[1],f[2],f[3]))
  elif kind in ["dummy","lantern"]:
   var cell:=Vector2(DECOR.get_width()/3.0,DECOR.get_height()/3.0);var index:=6 if kind=="dummy" else 7
-  draw_texture_rect_region(DECOR,Rect2(-size.x/2,-size.y,size.x,size.y),Rect2(Vector2(index%3,index/3)*cell,cell))
+  var region: Array=AnimalArt.DECOR_REGIONS[0 if kind=="dummy" else 1]
+  draw_texture_rect_region(DECOR,Rect2(-size.x/2,-size.y,size.x,size.y),Rect2(region[0],region[1],region[2],region[3]))
  elif kind=="crate":
   draw_rect(Rect2(-12,-22,24,22),Color("75523b"));draw_rect(Rect2(-11,-21,22,20),Color("bc9563"),false,2)
   for y in [-17,-11,-5]:draw_line(Vector2(-11,y),Vector2(11,y),Color("71523a"),1)

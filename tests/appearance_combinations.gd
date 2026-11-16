@@ -21,7 +21,7 @@ func run() -> void:
    for hat in C.HATS:
     for outfit in Art.READY_OUTFITS:
      var look:=C.base_appearance(character);look.hair=hair;look.hat=hat;look.outfit=outfit;look.color=C.OUTFITS[outfit].colors[0];actor.cosmetic=look.duplicate()
-     for direction in range(4):
+     for direction in range(8):
       actor.facing=Direction.FACING[direction]
       for kind in ["core","actions"]:
        for row in range(4 if kind=="core" else 6):
@@ -33,7 +33,7 @@ func run() -> void:
         check(body.visible and body.texture!=null and body.polygon.size()>=4 and body.uv.size()==body.polygon.size(),"real directional body geometry "+context)
         check(str(body.texture.resource_path).contains(character+"_"+kind),"native selected-character face/body source "+context)
         if not visual.uses_baked:
-         check(visual.pieces.hair_back.visible and (visual.pieces.hair_front.visible or direction==1),"directional hair attached "+context)
+         check(visual.pieces.hair_back.visible and (visual.pieces.hair_front.visible or direction in [1,6,7]),"directional hair attached "+context)
          if outfit!="basic":check(visual.pieces.outfit.visible and str(visual.pieces.outfit.texture.resource_path).contains(outfit+"_"+kind),"real garment motion source "+context)
         check(actor.scale==Vector2.ONE and body.scale==Vector2.ONE,"pose never shrinks actor "+context)
      combos+=1
@@ -43,7 +43,7 @@ func run() -> void:
    for color in C.COLORS:
     var look:=C.base_appearance(character);look.accessory=accessory;look.color=color;actor.cosmetic=look;visual._process(0)
     check(visual.appearance==C.normalize(look),"accessory/color preserves character identity")
-  actor.cosmetic=C.base_appearance(character);visual.row_override=0;visual.pose_override="core";visual._process(0)
+  actor.cosmetic=C.base_appearance(character);actor.facing=2;visual.row_override=0;visual.pose_override="core";visual._process(0)
   check(visual.uses_baked and Art.texture("base_"+character+"_actions")!=null,"complete native four-direction atlases exist "+character)
   for outfit in C.OUTFITS:
    if Art.READY_OUTFITS.has(outfit):continue
@@ -62,7 +62,8 @@ func run() -> void:
       for point in [Vector2i(col*160+pixel,row*160),Vector2i(col*160+pixel,row*160+159),Vector2i(col*160,row*160+pixel),Vector2i(col*160+159,row*160+pixel)]:
        if image.get_pixelv(point).a>.5:clean=false
      check(clean,"native pose fits cell without clipping "+character+kind+str(row)+"/"+str(col))
- check(Direction.resolve(1,0)==0 and Direction.resolve(1,3)==3 and Direction.resolve(5,1)==1,"diagonal hysteresis retains adjacent direction")
+ check(Direction.resolve(1,0)==4 and Direction.resolve(1,3)==4 and Direction.resolve(5,1)==6,"real diagonal frames never fall back to cardinal columns")
+ check(Direction.quantize(Vector2.from_angle(PI/8+.02),0)==0 and Direction.quantize(Vector2.from_angle(PI/8+.1),0)==1,"joystick angular hysteresis suppresses boundary flicker")
  actor.queue_free();await frames()
  # Migrate a genuine v1 single-character save without inventing other character looks.
  var legacy:=C.base_appearance("yeonhwa");legacy.hair="silver";legacy.hat="hood"

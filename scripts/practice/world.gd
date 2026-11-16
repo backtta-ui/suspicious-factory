@@ -9,7 +9,7 @@ func _ready() -> void:
   var prop:=Prop.new();prop.kind=data[0];prop.position=data[1];add_child(prop)
  var nameplate:=Label.new();nameplate.text="도술 익히기 · 자유 수련";nameplate.position=Vector2(510,230);nameplate.add_theme_font_override("font",preload("res://assets/fonts/NotoSansCJK-Regular.ttc"));nameplate.add_theme_font_size_override("font_size",16);add_child(nameplate)
 func draw_ground(c: Node2D) -> void:
- var terrain=preload("res://scripts/woo/terrain.gd")
+ var terrain=preload("res://scripts/worlds/plaza_terrain.gd")
  var rng:=RandomNumberGenerator.new();rng.seed=20042004
  for y in range(2):
   for x in range(3):c.draw_texture_rect(terrain.GRASS,Rect2(x*512,y*512,512,512),false,Color("d9d0bc"))
@@ -23,4 +23,3 @@ func draw_ground(c: Node2D) -> void:
  for y in [38,930]:
   c.draw_line(Vector2(35,y),Vector2(1240,y),Color("82654f"),7)
  for x in [35,1240]:c.draw_line(Vector2(x,38),Vector2(x,930),Color("82654f"),7)
- c.draw_arc(Vector2(620,470),120,0,TAU,64,Color("d4b985"),2,true)

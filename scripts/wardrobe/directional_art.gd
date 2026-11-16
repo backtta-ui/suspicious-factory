@@ -7,14 +7,16 @@ const HATS={"gat":0,"bamboo":1,"hood":2,"crown":3,"fox":4,"gold":5}
 const ACCESSORIES={"talisman":0,"gourd":1,"bell":2,"ribbon":3,"pouch":4,"orb":5,"scroll":6,"sigil":7}
 const READY_OUTFITS=["basic","moon","night"]
 static var textures: Dictionary={}
-static func texture(sheet: String) -> Texture2D:
+static func sheet_for(sheet: String,direction: int) -> String:return "d_"+sheet if direction>=4 else sheet
+static func texture(sheet: String,direction: int=-1) -> Texture2D:
+ sheet=sheet_for(sheet,direction)
  if not textures.has(sheet):
   var path: String="res://assets/woo/characters/"+sheet+".png"
   if not ResourceLoader.exists(path):return null
   textures[sheet]=load(path)
  return textures[sheet]
-static func frame(sheet: String,row: int,direction: int) -> Dictionary:return Data.SHEETS[sheet].frames[row*4+direction]
-static func cell(sheet: String,row: int=0,direction: int=0) -> Vector2:return rect(frame(sheet,row,direction).region).size*Vector2(texture(sheet).get_size())
+static func frame(sheet: String,row: int,direction: int) -> Dictionary:return Data.SHEETS[sheet_for(sheet,direction)].frames[row*4+posmod(direction,4)]
+static func cell(sheet: String,row: int=0,direction: int=0) -> Vector2:return rect(frame(sheet,row,direction).region).size*Vector2(texture(sheet,direction).get_size())
 static func supported(slot: String,id: String) -> bool:return slot!="outfit" or READY_OUTFITS.has(id)
 static func effective(raw: Dictionary) -> Dictionary:
  var look:=C.normalize(raw)

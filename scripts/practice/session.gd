@@ -17,6 +17,7 @@ var npc_mode:="patrol"
 var stats: Dictionary={}
 var message:="서버 없는 자유 체험 · 습득/장착/아이템/승리 기록은 바뀌지 않습니다"
 var strikes: Array[Dictionary]=[]
+var visual_events: Array[Dictionary]=[]
 func _init(look: Dictionary) -> void:original=Appearance.normalize(look);reset()
 func reset() -> void:
  npc_mode="patrol"
@@ -36,7 +37,7 @@ func self_player() -> Dictionary:return rules.players.student
 func clear_effects() -> void:
  rules.effects.clear();rules.channels.clear()
  for p in rules.players.values():p.buff.clear();p.intent=Vector2.ZERO
- strikes.clear()
+ strikes.clear();visual_events.clear()
 func select(id: String) -> bool:
  id=Registry.canonical(id)
  if not Registry.all().has(id):return false
@@ -84,7 +85,12 @@ func cast() -> bool:
   for id in NPCS:
    var q: Dictionary=rules.players[id]
    if q.role=="daoist" and not q.captured and rules.near(self_player(),q.position,48):target=id;break
- return reply(rules.command("student",{"op":"cast","skill":selected,"target":target}))
+ var before: Vector2=self_player().position
+ var ok:=reply(rules.command("student",{"op":"cast","skill":selected,"target":target}))
+ if ok:
+  visual_events.append({"kind":selected,"position":before,"time":rules.elapsed})
+  if selected in ["blink","shadow"]:visual_events.append({"kind":selected,"position":self_player().position,"time":rules.elapsed})
+ return ok
 func release() -> void:
  var p:=self_player();p.buff.erase("transform");p.buff.erase("mimic");p.buff.erase("appearance");p.buff.erase("mask");message="원래 외형으로 복귀했습니다"
 func attack(talisman: bool=false) -> bool:
@@ -109,6 +115,7 @@ func attack(talisman: bool=false) -> bool:
  return true
 func tick(delta: float,intent: Vector2) -> void:
  delta=clampf(delta,0,.05)
+ visual_events=visual_events.filter(func(e: Dictionary)->bool:return rules.elapsed-e.time<.7)
  var p:=self_player()
  var facing: int=posmod(roundi(intent.angle()/(PI/4)),8) if intent.length()>.1 else int(p.facing)
  rules.command("student",{"op":"move","intent":[intent.x,intent.y],"facing":facing})

@@ -37,7 +37,7 @@ func clear() -> void:
  for node in pieces.values():node.hide()
  rendered_layers.clear()
 func add_mesh(key: String,sheet: String,row: int,points: PackedVector2Array,uv: PackedVector2Array,component: int=0,palette: int=-1) -> void:
- var node: Polygon2D=pieces[key];node.texture=Art.texture(sheet);node.polygon=points;node.uv=uv;node.show();move_child(node,get_child_count()-1)
+ var node: Polygon2D=pieces[key];node.texture=Art.texture(sheet,direction);node.polygon=points;node.uv=uv;node.show();move_child(node,get_child_count()-1)
  var mat: ShaderMaterial=node.material;mat.set_shader_parameter("head_rect",Vector4(head_rect.position.x,head_rect.position.y,head_rect.size.x,head_rect.size.y));mat.set_shader_parameter("direction",direction);mat.set_shader_parameter("component",component)
  mat.set_shader_parameter("hat_seat",head_rect.position.y+head_rect.size.y*.19 if effective.hat not in ["none","fox"] else -999.0);mat.set_shader_parameter("hood",effective.hat!="fox")
  mat.set_shader_parameter("dye_enabled",palette>=0);mat.set_shader_parameter("palette",maxi(0,palette));mat.set_shader_parameter("dye",C.COLORS[effective.color])
@@ -48,7 +48,7 @@ func raw_mesh(key: String,sheet: String,row: int,foot: Vector2,scale_value: Vect
  if head_only:
   var r:=Art.rect(meta.head);raw_hull=[[r.position.x,r.position.y],[r.end.x,r.position.y],[r.end.x,r.end.y],[r.position.x,r.end.y]]
  for value in raw_hull:
-  var p:=Art.vec(value);points.append((p-foot)*size*scale_value+offset);uvs.append((Art.rect(meta.region).position+p*Art.rect(meta.region).size)*Vector2(Art.texture(sheet).get_size()))
+  var p:=Art.vec(value);points.append((p-foot)*size*scale_value+offset);uvs.append((Art.rect(meta.region).position+p*Art.rect(meta.region).size)*Vector2(Art.texture(sheet,direction).get_size()))
  add_mesh(key,sheet,row,points,uvs,component,palette)
 func equipment(key: String,sheet: String,row: int,width: float,anchor: Vector2,pivot: Vector2,component: int) -> void:
  var meta:=Art.frame(sheet,row,direction);var size:=Art.cell(sheet,row,direction);var box:=Art.rect(meta.box);var factor:=width/(box.size.x*size.x)
@@ -73,7 +73,7 @@ func hat() -> void:
 func accessory() -> void:
  if effective.accessory=="none":return
  var anchor:=Vector2(6,-12)
- if direction==1:anchor.x=-6
+ if direction in [1,6,7]:anchor.x=-6
  if direction in [2,3]:anchor.x=0
  if effective.accessory in ["scroll","sigil"]:anchor=Vector2(0,-17)
  equipment("accessory","accessories",Art.ACCESSORIES[effective.accessory],8,anchor,Vector2(.5,.5),0)
@@ -89,7 +89,7 @@ func rebuild() -> void:
  var foot:=Art.vec(meta.foot)
  head_rect=Art.rect(meta.head);head_rect.position=(head_rect.position-foot)*size*factor;head_rect.size*=size*factor
  var baked: String="base_"+effective.character+"_"+pose_set
- uses_baked=not force_modular and effective==C.base_appearance(effective.character) and Art.texture(baked)!=null
+ uses_baked=not force_modular and effective==C.base_appearance(effective.character) and direction<4 and Art.texture(baked)!=null
  if uses_baked:
   var texture:=Art.texture(baked);var rows:=4 if pose_set=="core" else 6;var cell:=Vector2(texture.get_size())/Vector2(4,rows)
   var p:=PackedVector2Array([Vector2(-48,-84),Vector2(48,-84),Vector2(48,12),Vector2(-48,12)])
@@ -104,11 +104,11 @@ func rebuild() -> void:
   garment_factor=Vector2(gfactor*.96 if effective.character in ["yeonhwa","hongryeon"] else gfactor,gfactor)
   var neck: Vector2=(collar-garment_foot)*gear_size*garment_factor
   head_offset=neck-native_neck;head_rect.position+=head_offset
- if direction!=1:hair(true)
+ if direction not in [1,6,7]:hair(true)
  if effective.accessory in ["scroll","sigil"] and direction==0:accessory()
  raw_mesh("body",sheet,pose_row,foot,Vector2.ONE*factor,head_offset,0,-1 if custom or effective.color==C.base_appearance(effective.character).color else (1 if effective.character=="hongryeon" else (2 if effective.character=="muyeong" else 0)),custom)
  if custom:raw_mesh("outfit",garment_sheet,pose_row,garment_foot,garment_factor,Vector2.ZERO,0,-1 if effective.color==C.OUTFITS[effective.outfit].colors[0] else (3 if effective.outfit=="moon" else 2))
- if direction==1:hair(true)
+ if direction in [1,6,7]:hair(true)
  else:hair(false)
  hat()
  if effective.accessory!="none" and not (effective.accessory in ["scroll","sigil"] and direction==0):accessory()

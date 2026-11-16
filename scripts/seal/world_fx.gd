@@ -1,4 +1,5 @@
 extends Node2D
+const FX=preload("res://scripts/spells/effects.gd")
 var client: Node
 var clock:=0.0
 func _process(delta: float) -> void:clock+=delta;queue_redraw()
@@ -23,7 +24,6 @@ func _draw() -> void:
     draw_rect(Rect2(q-Vector2(3,9),Vector2(6,9)),Color("e3c98c"))
  for e in client.state.get("effects",[]):
   var p:=Vector2(e.position[0],e.position[1])
-  if e.kind in ["smoke","darkness"]:
-   for i in range(4):draw_circle(p+Vector2(sin(i*2.3+clock*.3)*45,cos(i*1.7)*25),48,Color(.12,.14,.22,.28))
-  elif e.kind=="flame":draw_circle(p+Vector2(0,-20+sin(clock*2)*3),7,Color(.55,.85,1,.65))
- for mark in client.state.get("footprints",[]):draw_circle(Vector2(mark[0],mark[1]),2,Color(.5,.8,1,.5))
+  if e.kind in ["smoke","darkness"]:FX.cloud(self,e.kind,p,clock)
+  elif e.kind=="flame":FX.sprite(self,"flame",p+Vector2(0,-20+sin(clock*2)*3),Vector2(24,35))
+ FX.footprints(self,client.state.get("footprints",[]))

@@ -15,13 +15,13 @@ void fragment(){
  float cx=head_rect.x+head_rect.z*.5;
  float eye=head_rect.y+head_rect.w*.48;
  bool face_zone=p.y>eye && p.y<head_rect.y+head_rect.w*1.08;
- bool front_face=(direction==0 && abs(p.x-cx)<head_rect.z*.36) || (direction==2 && p.x<cx+head_rect.z*.06) || (direction==3 && p.x>cx-head_rect.z*.06);
+ bool front_face=((direction==0 || direction==4 || direction==5) && abs(p.x-cx)<head_rect.z*.36) || (direction==2 && p.x<cx+head_rect.z*.06) || (direction==3 && p.x>cx-head_rect.z*.06);
  if(component==1 || component==2){
   if(p.y<hat_seat)c.a=0.0;
-  if(component==1 && direction!=1 && face_zone && front_face)c.a=0.0;
+  if(component==1 && direction!=1 && direction!=6 && direction!=7 && face_zone && front_face)c.a=0.0;
   if(component==1 && p.y>head_rect.y+head_rect.w*1.10)c.a=0.0;
  }
- if(component==3 && hood && direction!=1 && face_zone && front_face)c.a=0.0;
+ if(component==3 && hood && direction!=1 && direction!=6 && direction!=7 && face_zone && front_face)c.a=0.0;
  if(dye_enabled && p.y>head_rect.y+head_rect.w*.98 && p.y< -3.5){
   float hi=max(c.r,max(c.g,c.b));float lo=min(c.r,min(c.g,c.b));
   bool cloth=(palette==0 && c.b>c.r*.90 && c.b>c.g*.90 && hi-lo>.065) || (palette==1 && c.r>c.g*1.4 && c.r>c.b*1.4 && abs(c.g-c.b)<.10) || (palette==2 && hi-lo<.13 && hi<.65 && hi>.08) || (palette==3 && hi-lo<.18 && hi>.25);

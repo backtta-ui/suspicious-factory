@@ -6,6 +6,7 @@ const NOTES={"transform":"가까운 사물·동물에서 형상 추출 → 도�
 static func all() -> Dictionary:
  var out: Dictionary=Online.COMMON.duplicate(true);out.merge(Online.EVIL.duplicate(true))
  out.talisman={"name":Adventure.SPELLS.talisman.name,"cd":preload("res://scripts/woo/action_config.gd").TALISMAN_COOLDOWN,"duration":1.4,"icon":"talisman"}
+ out.transform.duration=preload("res://scripts/seal/settings.gd").DEFAULTS.transform_seconds
  for id in out:out[id].description=NOTES[id]
  return out
 static func canonical(id: String) -> String:return "transform" if id=="jar" else id

@@ -13,6 +13,7 @@ jobs={}
 for name in characters+['moon','night']:
  for kind,rows in [('core',4),('actions',6)]:jobs[name+'_'+kind]=rows
 jobs.update(hair_front=6,hair_back=6,hats=6,accessories=8)
+jobs.update({"d_"+name:rows for name,rows in list(jobs.items())})
 data={}
 for name,rows in jobs.items():
  path=ROOT/'assets/woo/characters'/f'{name}.png';im=np.array(Image.open(path).convert('RGBA'));height,width=im.shape[:2];cw,ch=width/4,height/rows
@@ -39,7 +40,7 @@ for name,rows in jobs.items():
    mask=a[:,:,3]>175;label,count=ndimage.label(mask);sizes=np.bincount(label.ravel());sizes[0]=0
    if not count or sizes.max()<40:raise RuntimeError(f'Empty directional frame {name}/{row}/{col}')
    # Actor frames: keep the actual connected body, exclude unrequested floating effects.
-   if name.split('_')[0] in characters:
+   if name.removeprefix('d_').split('_')[0] in characters:
     keep=[]
     for component in range(1,count+1):
      if sizes[component]<max(30,sizes.max()*.004):continue
