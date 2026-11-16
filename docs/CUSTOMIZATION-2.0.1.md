@@ -44,3 +44,12 @@
 - `scripts/main.gd`, `scripts/seal/{server,rules,client_ui}.gd`
 - `tests/{wardrobe,wardrobe_visual,server_rewards,action_v14,seal_network}.gd`
 - `tools/test.sh`, `tools/verify_apk.py`, `project.godot`, `export_presets.cfg`, README/개인정보/본 안내
+
+
+## 최종 배포 및 원격 턴 복구 확인
+
+최신 구현 커밋 `8c72ff90522bd87459d22aa54778445f8db67367`은 main에 푸시되어 있습니다. [최신 소스 Actions](https://github.com/backtta-ui/suspicious-factory/actions/runs/43829967975)는 성공했고 자동 검사676개/실패0입니다. 해당 CI의 unsigned 중간 결과를 기존 키로 최종 서명한 APK는31개 검사와 추출 리소스의 꾸미기29개 검사를 통과했습니다.
+
+[설치용 APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.1.apk) · [설치용 Actions ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43849336066). ZIP은 Artifacts → `jeon-woochi-verified-apk`를 선택하고 압축을 풀면 됩니다. 기존 앱을 삭제하지 말고 삼성 내 파일 → 다운로드에서 업데이트 설치하세요. ChatGPT에서 열리지 않으면 링크를 길게 눌러 삼성 인터넷/Chrome에서 여세요. Actions ZIP 보관14일, 직접 APK와 이전 APK는 유지합니다.
+
+이전 턴의 마지막 명령(세션54642)은 종료 코드0으로 완료했습니다. 접근 가능한 빌드·테스트 로그에 실패가 없으며 Actions도 성공했습니다. 원격 턴 실패 표시 자체의 플랫폼 내부 원인은 해당 로그에 없어 확정할 수 없습니다. 기능을 다시 만들거나 데이터를 초기화하지 않고 최종 서명·다운로드 제공 단계부터 재개했습니다. 상세 배포 증거는 [CUSTOMIZATION-2.0.1-VERIFICATION.json](CUSTOMIZATION-2.0.1-VERIFICATION.json)에 기록합니다. 갤럭시 실기기 검증은 아직 수행하지 않았습니다.

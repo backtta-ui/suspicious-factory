@@ -1,0 +1,42 @@
+{
+  "version": "2.0.1",
+  "source_commit": "8c72ff90522bd87459d22aa54778445f8db67367",
+  "backup_branch": "backup/dosa-v2.0-customization",
+  "source_actions": {
+    "run": 43829967975,
+    "conclusion": "success",
+    "artifact_id": 14209065372
+  },
+  "installable_artifact_actions": {
+    "run": 43849336066,
+    "conclusion": "success",
+    "artifact_id": 14217276068
+  },
+  "remote_turn_recovery": {
+    "previous_last_exec_session": 54642,
+    "previous_last_exec_exit_code": 0,
+    "build_failure_found": false,
+    "platform_turn_failure_root_cause": "Unavailable: platform internal logs not exposed",
+    "resumed_at": "Final signing and APK delivery; existing features not rebuilt"
+  },
+  "apk": {
+    "path": "builds/jeon-woochi-2.0.1.apk",
+    "public_url": "https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.1.apk",
+    "sha256": "eeb8b358909981299cc0b6d65b7b67e6cc2005ef36f45bfb39e07101ff88c861",
+    "bytes": 82596142,
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "checks": 31
+  },
+  "tests": {
+    "ci_named_checks": 676,
+    "failures": 0,
+    "final_apk_extracted_resource_checks": 29,
+    "server_rewards_checks": 9,
+    "actual_websocket_automated_checks": 32
+  },
+  "public_https_redownload": "sha256_matches",
+  "signed_artifact_redownload": "sha256_matches",
+  "android_device_test": "not_performed",
+  "human_6_to_8_device_test": "not_performed",
+  "render_deployment": "not_performed"
+}
