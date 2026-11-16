@@ -57,3 +57,9 @@ Render Blueprint의 **SEAL_PROGRESS_KEY**는 서버에서 자동 생성하고 �
 **이 자동화 클라이언트는 사람 또는 Android 기기라고 보고하지 않습니다.** 갤럭시6~8대의 인터넷 실기기 플레이·멀티터치·장시간 성능, 실제 Render 배포는 미검증입니다. 실제 구매·VIP 결제·예비 교체·3D 렌더러·건물 등 무제한 사물 형상은 미구현입니다. 최종 테스트 수·APK·Actions 증거는 배포 결과에 별도 기록합니다.
 
 주요 변경: `scripts/seal/{arena,settings,loadout,study,study_ui,environment_asset,color_marker,minimap,progress_ticket,codec}.gd`, 기존 server/rules/client_ui/connection/catalog/world_fx, `scripts/main.gd`, actor/forest/forest_layout, 동물 아틀라스, 네트워크·도술·서명·기존 UI 회귀 테스트, 빌드 검증 도구, Render 환경 설정과 본 문서입니다.
+
+## 최종 APK·Actions 결과
+
+[설치용 APK](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.2.apk) · [소스 Actions 빌드 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43857903371) · [설치용 Actions ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43861041187). ZIP은 Artifacts → `jeon-woochi-verified-apk`를 받은 뒤 압축을 풀어 설치합니다. 보관14일이며 직접 APK와 이전 버전은 유지합니다.
+
+자동 검사786개/실패0, APK32개 통과. 최종 APK 리소스에서도 규칙59·서명8·연결UI15개를 재검사했습니다. APK는83,806,295바이트, 기존 인증서 SHA256 `ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39`, 파일 SHA256 `66b6e46e09115e0365fb640510700d90b712cfb9569989dee78e5f4e7039bac4`입니다. 공개 HTTPS 전체 다운로드 해시를 검증했습니다. 현재 측정의 압축 평균 패킷은 약1,867바이트이며 8명×480초×10Hz 상태 전송은 약72MB 추정(TLS·대기실·수련 제외)입니다. 실제 Render 부하/실기기 결과는 아닙니다. 상세 증거는 [검증 JSON](MULTIPLAYER-2.0.2-VERIFICATION.json)과 [변경 파일 전체 목록](https://github.com/backtta-ui/suspicious-factory/blob/apk-downloads/reports/jeon-woochi/2.0.2/CHANGED-FILES.txt)을 참고하세요.
