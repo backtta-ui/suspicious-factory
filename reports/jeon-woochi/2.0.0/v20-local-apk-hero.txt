@@ -1,0 +1,28 @@
+Fontconfig error: No writable cache directories
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+Fontconfig error: No writable cache directories
+PASS: original base hero texture and scale are canonical
+PASS: pose0 never swaps face, hat, costume, pivot or scale
+PASS: pose1 never swaps face, hat, costume, pivot or scale
+PASS: pose2 never swaps face, hat, costume, pivot or scale
+PASS: pose3 never swaps face, hat, costume, pivot or scale
+PASS: pose4 never swaps face, hat, costume, pivot or scale
+PASS: pose5 never swaps face, hat, costume, pivot or scale
+PASS: pose6 never swaps face, hat, costume, pivot or scale
+PASS: pose7 never swaps face, hat, costume, pivot or scale
+PASS: jump has a real short preparation phase
+PASS: jump rises without reducing character scale
+PASS: jump reaches apex and descent
+PASS: landing restores only height, never image scaling
+PASS: jump control has its own real icon
+PASS: largest attack control uses palm icon
+PASS: anonymous identity uses random persisted credentials
+PASS: anonymous identity survives process/profile reload
+PASS: discarding one consumable updates actual inventory
+PASS: quest valuable cannot be discarded
+PASS: item deletion persists through existing save format
+PASS: main menu launches separate real-network mode
+PASS: no server address never fabricates a connected lobby or players
+PASS: Android back safely leaves multiplayer setup
+HERO V2.0: 23 checks, 0 failures

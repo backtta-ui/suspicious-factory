@@ -1,0 +1,15 @@
+{
+  "source_commit": "974633679b48f6db50e004294eb243db6313c320",
+  "source_actions": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43822477437",
+  "source_actions_status": "success",
+  "ci_artifact": 14205193283,
+  "signing": "Existing persistent Cloud key, unsigned CI intermediate aligned and signed locally",
+  "sha256": "0314a15ec063c3a87a4bcb6edf9a81c58562444a6b4d548f4e4353ac1eaf5da3",
+  "bytes": 78531336,
+  "automated_checks": 633,
+  "apk_checks": 30,
+  "android_device_test": "not_performed",
+  "render_deployment": "not_performed",
+  "public_redownload": "pending",
+  "signed_artifact": "pending"
+}

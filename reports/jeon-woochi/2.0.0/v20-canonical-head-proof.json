@@ -1,0 +1,17 @@
+{
+  "scope": "Interior face pixel ROI only, not entire head alpha boundary",
+  "renderer": "Linux Godot 4.6.3",
+  "roi_xywh": [
+    625,
+    377,
+    30,
+    18
+  ],
+  "attack_pose_changed_face_pixels": [
+    0,
+    0,
+    0,
+    0
+  ],
+  "same_source_texture_and_scale": "Also verified in hero_v20.gd; no Android device claim"
+}

@@ -1,4 +1,20 @@
-# 《도사》 V1.4 — 전투 액션 · 확장 숲 · 도술 보따리
+# 《도사》 V2.0 — 봉인의 밤 · 도술 전투 리뉴얼
+
+[설치용 APK 다운로드 — 약75MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.0.apk)
+
+기존 앱을 삭제하지 말고 **삼성 내 파일 → 다운로드 → 업데이트 설치 → 이어하기**를 선택하세요. Android10+ ARM64/가로 화면, 기존 패키지·서명·저장을 유지합니다.
+
+기존 전우치 외형을 유지하는 점프·4연타·공중 부적, 원형 스킬 아이콘과 서버 권한 6~8인 봉인의 밤을 추가했습니다. **공개 서버는 미배포**입니다. 아래 무료 배포 안내로 Render 주소를 만든 뒤 모든 참가자가 같은 주소를 입력해야 합니다. 서버 없이 기존 모험은 플레이할 수 있습니다.
+
+[휴대폰 무료 Render 서버 배포 안내](https://github.com/backtta-ui/suspicious-factory/blob/main/docs/V2.0-SERVER.md) · [구현·변경 파일·미완료 보고](reports/jeon-woochi/2.0.0/V2.0.md) · [실제 멀티플레이 UI 캡처](reports/jeon-woochi/2.0.0/screenshots/v20-net-roam.png)
+
+[소스 GitHub Actions 빌드 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43822477437). 중간 unsigned APK는 설치용이 아닙니다. 이 페이지 APK는 해당 CI 결과를 기존 Cloud 키로 최종 서명한 설치용입니다. 자동 회귀633개·APK30개 검사 통과. **갤럭시 실기기 및 실제 Render 6~8대 테스트는 미검증**입니다. 무료 서버 절전·월한도·방 소실 제한을 안내에서 확인하세요. 유료 자동 결제·플랜 전환을 사용하지 않습니다.
+
+SHA256: `0314a15ec063c3a87a4bcb6edf9a81c58562444a6b4d548f4e4353ac1eaf5da3`
+
+---
+
+## 이전 버전 《도사》 V1.4 — 전투 액션 · 확장 숲 · 도술 보따리
 
 [설치용 APK 다운로드 — 약73MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.4.0.apk)
 
