@@ -1,4 +1,20 @@
-# 《도사》 V2.0 — 봉인의 밤 · 도술 전투 리뉴얼
+# 《도사》 꾸미기 후속 업데이트 2.0.1
+
+[설치용 APK 직접 다운로드 — 약79MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.1.apk)
+
+기존 앱을 삭제하지 말고 **삼성 내 파일 → 다운로드 → APK → 업데이트 설치 → 이어하기**를 선택하세요. Android10+ ARM64/가로 화면, 기존 패키지·서명·모험 저장을 유지합니다.
+
+타이틀의 **도사 꾸미기** 또는 게임 메뉴 → 의상에서 캐릭터·헤어·의상·모자·장신구·색상을 미리 보고 저장합니다. 전우치/연화 무료, 무영/홍련 모험 해금. 공격 방향 갱신·발동작·광장 둔갑 쿨타임과 개별 공격 이미지 효과를 개선했습니다.
+
+[최신 소스 Actions 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43829967975) · [변경 파일·사용법·미완료 사항](reports/jeon-woochi/2.0.1/CUSTOMIZATION-2.0.1.md) · [꾸미기 화면](reports/jeon-woochi/2.0.1/screenshots/wardrobe-yeonhwa.png)
+
+자동 검사676개, APK31개 통과. 위 설치용 APK는 CI의 unsigned 중간 결과를 기존 키로 최종 서명했습니다. **unsigned 중간 아티팩트는 설치하지 마세요.** 갤럭시 실기기 및 실제6~8대 꾸미기 동기화는 미검증입니다. 이벤트·마스터·구매 상품은 잠금이며 결제 기능이 없습니다. 인터넷 멀티는 기존 무료 서버 배포 후 새 서버 소스로 수동 업데이트해야 합니다.
+
+SHA256: `eeb8b358909981299cc0b6d65b7b67e6cc2005ef36f45bfb39e07101ff88c861`
+
+---
+
+## 이전 버전 《도사》 V2.0 — 봉인의 밤 · 도술 전투 리뉴얼
 
 [설치용 APK 다운로드 — 약75MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.0.apk)
 

@@ -1,0 +1,32 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: legacy/missing wardrobe keeps exact original Woochi defaults
+PASS: four characters, eight outfits, six hairs/six hats/eight accessories plus none
+PASS: Yeonhwa free while adventure characters locked
+PASS: locked character cannot be equipped even by direct profile call
+PASS: real forest and shrine save IDs unlock characters and night outfit
+PASS: nine confirmed server wins do not unlock ten-win outfit
+PASS: cumulative server count replay cannot double rewards
+PASS: thirty confirmed server wins unlock wind robe
+PASS: unreleased event and payment costumes stay locked
+PASS: each owned layer equips independently
+PASS: separate wardrobe survives profile reload without rewriting RPG save
+PASS: unknown IDs and injected stats normalize to safe appearance only
+PASS: saved appearance applied in actual plaza actor
+PASS: woochi keeps speed, collision, scale through all poses
+PASS: yeonhwa keeps speed, collision, scale through all poses
+PASS: muyeong keeps speed, collision, scale through all poses
+PASS: hongryeon keeps speed, collision, scale through all poses
+PASS: plaza transform icon shows real cooldown, not hidden text only
+PASS: actual wardrobe opens and pauses single-player
+PASS: live full-body preview actor exists
+PASS: changing hat updates live preview
+PASS: cancel never overwrites saved equipped appearance
+PASS: lobby snapshot synchronizes cosmetics without roles
+PASS: server refuses wardrobe changes during match
+PASS: random role assignment never changes appearance
+PASS: continue restores appearance alongside existing game
+PASS: attack steers toward live left joystick before impact and actually damages left target
+PASS: authored attack sprite effect is instantiated in real combat
+PASS: buffered next attack follows new right direction instead of stale initial facing
+WARDROBE: 29 checks, 0 failures

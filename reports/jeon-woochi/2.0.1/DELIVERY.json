@@ -1,0 +1,14 @@
+{
+  "source_commit": "8c72ff90522bd87459d22aa54778445f8db67367",
+  "source_actions": 43829967975,
+  "source_actions_status": "success",
+  "ci_artifact": 14209065372,
+  "sha256": "eeb8b358909981299cc0b6d65b7b67e6cc2005ef36f45bfb39e07101ff88c861",
+  "bytes": 82596142,
+  "automated_checks": 676,
+  "apk_checks": 31,
+  "android_device_test": "not_performed",
+  "remote_turn_failure": "No failing build/test command in available logs; platform turn failure reason unavailable",
+  "public_redownload": "pending",
+  "signed_artifact": "pending"
+}
