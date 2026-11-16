@@ -134,7 +134,7 @@ func _physics_process(delta: float) -> void:
 			npc_stride+=distance
 			facing=posmod(roundi((position-previous).angle()/(PI/4)),8)
 		if npc_driver!=null:npc_driver.report_progress(distance,move,delta)
-	elif move.length()>0.05:facing=posmod(roundi(move.angle()/(PI/4)),8)
+	elif move.length()>0.05 and action_left<=0:facing=posmod(roundi(move.angle()/(PI/4)),8)
 	animation_time += delta*(11 if running and not jar else 7) if velocity.length()>2 else delta
 	if not npc or npc_render_visible:update_sprite()
 	if not npc or highlighted!=previous_highlighted:queue_redraw()

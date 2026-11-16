@@ -42,7 +42,11 @@ func run() -> void:
  check(not old_line and adv.actions.visible_line(game.player.position,enemy.position),"reproduce hidden plaza ghost colliders, then remove them from mission physics")
  check(adv.actions.corrected_direction().distance_to((enemy.position-game.player.position).normalized())<.01,"front-biased auto aim corrects moderate angle at world feet")
  var hp:int=enemy.hp
- adv.basic_attack();await create_timer(.2).timeout
+ adv.basic_attack();var attack_facing: int=game.player.facing
+ game.joystick.vector=Vector2.LEFT
+ await create_timer(.2).timeout
+ check(game.player.facing==attack_facing,"movement steering does not reverse a committed attack pose")
+ game.joystick.reset()
  check(enemy.hp==hp-20,"wide first palm cone lands on off-axis target")
  await create_timer(.25).timeout
  check(enemy.hp==hp-20,"one attack never damages same enemy twice")
