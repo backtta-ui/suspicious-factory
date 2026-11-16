@@ -1,7 +1,7 @@
 class_name WooVillageLayout
 extends RefCounted
 const MAP_ID := "gyewol_village"
-const REVISION := 4
+const REVISION := 5
 const SIZE := Vector2(3400,1900)
 # Keep the original entry and three villagers to preserve the player's bearings/save.
 const SPAWN := Vector2(900,610)

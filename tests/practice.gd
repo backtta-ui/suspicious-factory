@@ -83,6 +83,6 @@ func run() -> void:
  game.save_progress();var legacy: Dictionary=game.Save.load_game();var progress: Dictionary=legacy.rpg.duplicate(true);legacy.map_revision=3;var entrance: Vector2=preload("res://scripts/practice/layout.gd").ENTRANCE;legacy.position=[entrance.x,entrance.y]
  var file:=FileAccess.open(game.Save.PATH,FileAccess.WRITE);file.store_string(JSON.stringify(legacy));file.close()
  var migrated: Dictionary=game.Save.load_game()
- check(not migrated.is_empty() and migrated.rpg==progress and migrated.map_revision==4 and game.Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])),"old revision3 save under new entrance migrates safely without losing RPG progress")
+ check(not migrated.is_empty() and migrated.rpg==progress and migrated.map_revision==game.Layout.REVISION and game.Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])),"old revision3 save under new entrance migrates safely without losing RPG progress")
  game.show_menu(false);game.queue_free();await frames()
  print("OFFLINE PRACTICE: %d checks, %d failures"%[checks,failures]);quit(1 if failures else 0)
