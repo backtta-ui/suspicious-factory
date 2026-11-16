@@ -1,0 +1,63 @@
+{
+  "source_commit": "180d4916994d80f895188d3aa1d958fb4f96e86f",
+  "device_test": "not_performed",
+  "suites": [
+    {
+      "suite": "woo_core",
+      "checks": 53,
+      "failures": 0
+    },
+    {
+      "suite": "touch_ui",
+      "checks": 125,
+      "failures": 0
+    },
+    {
+      "suite": "save_recovery",
+      "checks": 11,
+      "failures": 0
+    },
+    {
+      "suite": "sound_performance",
+      "checks": 23,
+      "failures": 0
+    },
+    {
+      "suite": "plaza_v11",
+      "checks": 50,
+      "failures": 0
+    },
+    {
+      "suite": "npc_title_v12",
+      "checks": 38,
+      "failures": 0
+    },
+    {
+      "suite": "rpg_v13",
+      "checks": 58,
+      "failures": 0
+    },
+    {
+      "suite": "v13_ai",
+      "checks": 15,
+      "failures": 0
+    },
+    {
+      "suite": "v13_touch",
+      "checks": 40,
+      "failures": 0
+    }
+  ],
+  "named_checks": 413,
+  "fresh_process_rpg_restart": "passed",
+  "legacy_restart_modes": [
+    "write",
+    "read",
+    "exit"
+  ],
+  "apk_checks": 28,
+  "final_apk_resource_suites": {
+    "rpg_v13": 58,
+    "v13_touch": 40
+  }
+}

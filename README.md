@@ -1,4 +1,22 @@
-# 《도사》 V1.2 — 광장·NPC·타이틀 개선
+# 《도사》 V1.3 — 그림 속 여우의 숲
+
+[설치용 APK 직접 다운로드 — 약 68.5MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.3.0.apk)
+
+기존 앱을 삭제하지 말고 삼성 내 파일 → 다운로드에서 업데이트 설치한 뒤 **이어하기**를 누르세요. Android 10 이상 ARM64 / 가로 화면 / 기존 패키지와 설치 서명을 유지합니다.
+
+그림 장터 → 여우의 숲 → 그림 속으로 → 도깨비 3마리 처치 → 보상 → 광장 복귀가 실제로 플레이됩니다. 가방/물약/경험치/레벨/3슬롯 도술/지형별 발소리/회피/4종 타격 효과를 연결했습니다. 추가 그림과 분신·축지·의상은 잠금이며 일부 숲 아트와 아이콘은 임시입니다.
+
+[최종 소스 Actions 빌드 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43805848449) → 기존 Cloud 키로 최종 서명. 회귀 413개·프로세스 재실행·APK28개 검사 통과. 최종 APK 리소스로 RPG58/터치40/AI15/보상 재실행과 실제 렌더링 재검사도 통과했습니다. 실제 갤럭시 테스트는 수행하지 않았습니다.
+
+[전체 변경 파일·구현/미구현·검증 보고서](reports/jeon-woochi/1.3.0/V1.3.md) / [그림 감상 화면](reports/jeon-woochi/1.3.0/screenshots/v13-painting.png) / [실제 숲 전투 화면](reports/jeon-woochi/1.3.0/screenshots/v13-forest-combat.png) / [가방](reports/jeon-woochi/1.3.0/screenshots/v13-inventory.png)
+
+SHA256: `a0672b8252c7919ffd2b6cbd22256328935e126145ff693df40b1caa8a35526f`
+
+이전 APK는 모두 보존합니다. Actions ZIP 전달 결과와 공개 다운로드 검증은 아래에 추가합니다.
+
+---
+
+## 이전 버전 《도사》 V1.2 — 광장·NPC·타이틀 개선
 
 [설치용 APK 직접 다운로드 — 약 64MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.2.0.apk)
 

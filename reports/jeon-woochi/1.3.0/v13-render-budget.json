@@ -1,0 +1,37 @@
+{
+  "android_device_test": false,
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "results": [
+    {
+      "mean_draw_calls": 180.4,
+      "mean_objects": 485.4,
+      "median_ms": 16.664,
+      "p95_ms": 17.855,
+      "position": [
+        260.0,
+        780.0
+      ]
+    },
+    {
+      "mean_draw_calls": 160.0,
+      "mean_objects": 463.0,
+      "median_ms": 16.667,
+      "p95_ms": 42.981,
+      "position": [
+        700.0,
+        650.0
+      ]
+    },
+    {
+      "mean_draw_calls": 160.0,
+      "mean_objects": 462.0,
+      "median_ms": 16.66,
+      "p95_ms": 26.373,
+      "position": [
+        1110.0,
+        530.0
+      ]
+    }
+  ],
+  "samples_per_position": 90
+}

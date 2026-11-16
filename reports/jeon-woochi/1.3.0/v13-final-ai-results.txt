@@ -1,0 +1,18 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: forest loader initializes real world
+PASS: goblin actually approaches player
+PASS: actual movement advances distinct leg frames
+PASS: sprite cell baseline stays fixed during gait
+PASS: live AI reaches player and attacks with windup
+PASS: enemy does not pass through player collision
+PASS: AI path requests throttled, never every frame
+PASS: paused combat actors remain stable
+PASS: enabled hit timers use separate tunable config
+PASS: hit burst sizes and numbers configured
+PASS: all transient shards and numbers retire
+PASS: all four effects can be disabled independently
+PASS: white flash resets to original appearance
+PASS: real player defeat opens safe return screen
+PASS: completion claim durably saved
+V1.3 AI/EFFECTS: 15 checks, 0 failures

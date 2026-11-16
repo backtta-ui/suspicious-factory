@@ -1,0 +1,43 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: 1280x720: all combat targets inside logical safe viewport
+PASS: 1280x720: attack dodge and skill targets do not overlap
+PASS: 1280x720: combat controls clear joystick
+PASS: 1280x720: native move and attack multitouch
+PASS: 1280x720: native move and skill multitouch
+PASS: 1280x720: native move and dodge multitouch
+PASS: 1280x720: expanded map blocks movement
+PASS: 1280x720: Android back closes map and restores input
+PASS: 2400x1080: all combat targets inside logical safe viewport
+PASS: 2400x1080: attack dodge and skill targets do not overlap
+PASS: 2400x1080: combat controls clear joystick
+PASS: 2400x1080: native move and attack multitouch
+PASS: 2400x1080: native move and skill multitouch
+PASS: 2400x1080: native move and dodge multitouch
+PASS: 2400x1080: expanded map blocks movement
+PASS: 2400x1080: Android back closes map and restores input
+PASS: 2340x1080: all combat targets inside logical safe viewport
+PASS: 2340x1080: attack dodge and skill targets do not overlap
+PASS: 2340x1080: combat controls clear joystick
+PASS: 2340x1080: native move and attack multitouch
+PASS: 2340x1080: native move and skill multitouch
+PASS: 2340x1080: native move and dodge multitouch
+PASS: 2340x1080: expanded map blocks movement
+PASS: 2340x1080: Android back closes map and restores input
+PASS: 2280x1080: all combat targets inside logical safe viewport
+PASS: 2280x1080: attack dodge and skill targets do not overlap
+PASS: 2280x1080: combat controls clear joystick
+PASS: 2280x1080: native move and attack multitouch
+PASS: 2280x1080: native move and skill multitouch
+PASS: 2280x1080: native move and dodge multitouch
+PASS: 2280x1080: expanded map blocks movement
+PASS: 2280x1080: Android back closes map and restores input
+PASS: 960x540: all combat targets inside logical safe viewport
+PASS: 960x540: attack dodge and skill targets do not overlap
+PASS: 960x540: combat controls clear joystick
+PASS: 960x540: native move and attack multitouch
+PASS: 960x540: native move and skill multitouch
+PASS: 960x540: native move and dodge multitouch
+PASS: 960x540: expanded map blocks movement
+PASS: 960x540: Android back closes map and restores input
+V1.3 TOUCH: 40 checks, 0 failures
