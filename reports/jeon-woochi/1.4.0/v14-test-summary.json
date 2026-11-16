@@ -1,0 +1,68 @@
+{
+  "named_checks": 519,
+  "suites": [
+    {
+      "suite": "woo_core",
+      "checks": 53,
+      "failures": 0
+    },
+    {
+      "suite": "touch_ui",
+      "checks": 125,
+      "failures": 0
+    },
+    {
+      "suite": "save_recovery",
+      "checks": 11,
+      "failures": 0
+    },
+    {
+      "suite": "sound_performance",
+      "checks": 23,
+      "failures": 0
+    },
+    {
+      "suite": "plaza_v11",
+      "checks": 50,
+      "failures": 0
+    },
+    {
+      "suite": "npc_title_v12",
+      "checks": 38,
+      "failures": 0
+    },
+    {
+      "suite": "rpg_v13",
+      "checks": 58,
+      "failures": 0
+    },
+    {
+      "suite": "v13_ai",
+      "checks": 15,
+      "failures": 0
+    },
+    {
+      "suite": "v13_touch",
+      "checks": 40,
+      "failures": 0
+    },
+    {
+      "suite": "action_v14",
+      "checks": 50,
+      "failures": 0
+    },
+    {
+      "suite": "touch_v14",
+      "checks": 50,
+      "failures": 0
+    },
+    {
+      "suite": "explore_v14",
+      "checks": 6,
+      "failures": 0
+    }
+  ],
+  "apk_checks": 29,
+  "device_test": false,
+  "save_process_restart": "passed"
+}

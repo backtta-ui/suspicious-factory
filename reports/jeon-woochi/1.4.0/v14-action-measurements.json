@@ -1,0 +1,8 @@
+{
+  "checks": 50,
+  "device_test": false,
+  "failures": 0,
+  "new_grid_cells": 11521,
+  "old_grid_cells": 1990,
+  "sampled_walkable_ratio": 5.7894472361809
+}

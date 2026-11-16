@@ -1,0 +1,57 @@
+{
+  "android_device_test": false,
+  "renderer": "llvmpipe (LLVM 19.1.7, 256 bits)",
+  "results": [
+    {
+      "mean_draw_calls": 217.0,
+      "mean_objects": 553.0,
+      "median_ms": 16.662,
+      "p95_ms": 23.492,
+      "position": [
+        400.0,
+        750.0
+      ]
+    },
+    {
+      "mean_draw_calls": 214.0,
+      "mean_objects": 548.0,
+      "median_ms": 16.663,
+      "p95_ms": 18.83,
+      "position": [
+        1000.0,
+        700.0
+      ]
+    },
+    {
+      "mean_draw_calls": 206.0,
+      "mean_objects": 541.0,
+      "median_ms": 16.658,
+      "p95_ms": 20.929,
+      "position": [
+        1700.0,
+        1110.0
+      ]
+    },
+    {
+      "mean_draw_calls": 216.222222222222,
+      "mean_objects": 550.222222222222,
+      "median_ms": 17.713,
+      "p95_ms": 50.006,
+      "position": [
+        2450.0,
+        650.0
+      ]
+    },
+    {
+      "mean_draw_calls": 216.644444444444,
+      "mean_objects": 554.677777777778,
+      "median_ms": 16.665,
+      "p95_ms": 18.929,
+      "position": [
+        2680.0,
+        1720.0
+      ]
+    }
+  ],
+  "samples_per_position": 90
+}

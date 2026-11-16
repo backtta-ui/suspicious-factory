@@ -1,0 +1,32 @@
+[
+  {
+    "path": "assets/woo/hd/hero.png",
+    "sha256": "f45b25a267078b3e2fe6f62507fa4c8f85876700c36a7755fde095960adf8346",
+    "unchanged_from_v13": true
+  },
+  {
+    "path": "assets/woo/hd/title.png",
+    "sha256": "a0379d7c1eecee5d88398606e7783bdadf66052e647a26f055af1b5a8b2d2603",
+    "unchanged_from_v13": true
+  },
+  {
+    "path": "assets/woo/v12/npc_walk.png",
+    "sha256": "4cf0962cbc3fb852726d142b553ee70494ee06f68fc983aa7fefe36b91a8f8bc",
+    "unchanged_from_v13": true
+  },
+  {
+    "path": "assets/woo/ground_baked.png",
+    "sha256": "2e3d0eff533f6b524f71abce285952d5f9f51c311d0363378ef45336d49014cb",
+    "unchanged_from_v13": true
+  },
+  {
+    "path": "scripts/woo/menu_motion.gd",
+    "sha256": "1c278e9dd16a64841eb2afa386aa3db1b194b920a1b304b45c77c76efe3e34ae",
+    "unchanged_from_v13": true
+  },
+  {
+    "path": "scripts/woo/village_layout.gd",
+    "sha256": "5ee6ff9fafcd4ac8ec4224a031e46f56260ee8f8ea7073761a8c444f45f6e7b4",
+    "unchanged_from_v13": true
+  }
+]

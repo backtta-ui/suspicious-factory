@@ -1,0 +1,53 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: 1280x720: jump and combat buttons remain on-screen
+PASS: 1280x720: jump attack skills and dodge targets never overlap
+PASS: 1280x720: four same-frame native taps reserve combo while steering
+PASS: 1280x720: native moving jump keeps joystick ownership
+PASS: 1280x720: native jump then attack enters aerial combat
+PASS: 1280x720: bundle pauses game and creates 30 real slots
+PASS: 1280x720: native long press opens large item appreciation
+PASS: 1280x720: back closes appreciation without leaking input
+PASS: 1280x720: category does not mutate inventory
+PASS: 1280x720: bundle close restores clean touch state
+PASS: 2400x1080: jump and combat buttons remain on-screen
+PASS: 2400x1080: jump attack skills and dodge targets never overlap
+PASS: 2400x1080: four same-frame native taps reserve combo while steering
+PASS: 2400x1080: native moving jump keeps joystick ownership
+PASS: 2400x1080: native jump then attack enters aerial combat
+PASS: 2400x1080: bundle pauses game and creates 30 real slots
+PASS: 2400x1080: native long press opens large item appreciation
+PASS: 2400x1080: back closes appreciation without leaking input
+PASS: 2400x1080: category does not mutate inventory
+PASS: 2400x1080: bundle close restores clean touch state
+PASS: 2340x1080: jump and combat buttons remain on-screen
+PASS: 2340x1080: jump attack skills and dodge targets never overlap
+PASS: 2340x1080: four same-frame native taps reserve combo while steering
+PASS: 2340x1080: native moving jump keeps joystick ownership
+PASS: 2340x1080: native jump then attack enters aerial combat
+PASS: 2340x1080: bundle pauses game and creates 30 real slots
+PASS: 2340x1080: native long press opens large item appreciation
+PASS: 2340x1080: back closes appreciation without leaking input
+PASS: 2340x1080: category does not mutate inventory
+PASS: 2340x1080: bundle close restores clean touch state
+PASS: 2280x1080: jump and combat buttons remain on-screen
+PASS: 2280x1080: jump attack skills and dodge targets never overlap
+PASS: 2280x1080: four same-frame native taps reserve combo while steering
+PASS: 2280x1080: native moving jump keeps joystick ownership
+PASS: 2280x1080: native jump then attack enters aerial combat
+PASS: 2280x1080: bundle pauses game and creates 30 real slots
+PASS: 2280x1080: native long press opens large item appreciation
+PASS: 2280x1080: back closes appreciation without leaking input
+PASS: 2280x1080: category does not mutate inventory
+PASS: 2280x1080: bundle close restores clean touch state
+PASS: 960x540: jump and combat buttons remain on-screen
+PASS: 960x540: jump attack skills and dodge targets never overlap
+PASS: 960x540: four same-frame native taps reserve combo while steering
+PASS: 960x540: native moving jump keeps joystick ownership
+PASS: 960x540: native jump then attack enters aerial combat
+PASS: 960x540: bundle pauses game and creates 30 real slots
+PASS: 960x540: native long press opens large item appreciation
+PASS: 960x540: back closes appreciation without leaking input
+PASS: 960x540: category does not mutate inventory
+PASS: 960x540: bundle close restores clean touch state
+TOUCH V1.4: 50 checks, 0 failures

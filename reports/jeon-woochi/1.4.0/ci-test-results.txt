@@ -1,0 +1,450 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: actual collision-body walks into 안개 낀 숲 입구
+PASS: actual collision-body walks into 대나무숲
+PASS: actual collision-body walks into 연못과 돌다리
+PASS: actual collision-body walks into 오래된 사당
+PASS: actual collision-body walks into 숲 깊은 곳
+PASS: all-zone traversal finishes on legal ground
+EXPLORE V1.4: 6 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: 1280x720: jump and combat buttons remain on-screen
+PASS: 1280x720: jump attack skills and dodge targets never overlap
+PASS: 1280x720: four same-frame native taps reserve combo while steering
+PASS: 1280x720: native moving jump keeps joystick ownership
+PASS: 1280x720: native jump then attack enters aerial combat
+PASS: 1280x720: bundle pauses game and creates 30 real slots
+PASS: 1280x720: native long press opens large item appreciation
+PASS: 1280x720: back closes appreciation without leaking input
+PASS: 1280x720: category does not mutate inventory
+PASS: 1280x720: bundle close restores clean touch state
+PASS: 2400x1080: jump and combat buttons remain on-screen
+PASS: 2400x1080: jump attack skills and dodge targets never overlap
+PASS: 2400x1080: four same-frame native taps reserve combo while steering
+PASS: 2400x1080: native moving jump keeps joystick ownership
+PASS: 2400x1080: native jump then attack enters aerial combat
+PASS: 2400x1080: bundle pauses game and creates 30 real slots
+PASS: 2400x1080: native long press opens large item appreciation
+PASS: 2400x1080: back closes appreciation without leaking input
+PASS: 2400x1080: category does not mutate inventory
+PASS: 2400x1080: bundle close restores clean touch state
+PASS: 2340x1080: jump and combat buttons remain on-screen
+PASS: 2340x1080: jump attack skills and dodge targets never overlap
+PASS: 2340x1080: four same-frame native taps reserve combo while steering
+PASS: 2340x1080: native moving jump keeps joystick ownership
+PASS: 2340x1080: native jump then attack enters aerial combat
+PASS: 2340x1080: bundle pauses game and creates 30 real slots
+PASS: 2340x1080: native long press opens large item appreciation
+PASS: 2340x1080: back closes appreciation without leaking input
+PASS: 2340x1080: category does not mutate inventory
+PASS: 2340x1080: bundle close restores clean touch state
+PASS: 2280x1080: jump and combat buttons remain on-screen
+PASS: 2280x1080: jump attack skills and dodge targets never overlap
+PASS: 2280x1080: four same-frame native taps reserve combo while steering
+PASS: 2280x1080: native moving jump keeps joystick ownership
+PASS: 2280x1080: native jump then attack enters aerial combat
+PASS: 2280x1080: bundle pauses game and creates 30 real slots
+PASS: 2280x1080: native long press opens large item appreciation
+PASS: 2280x1080: back closes appreciation without leaking input
+PASS: 2280x1080: category does not mutate inventory
+PASS: 2280x1080: bundle close restores clean touch state
+PASS: 960x540: jump and combat buttons remain on-screen
+PASS: 960x540: jump attack skills and dodge targets never overlap
+PASS: 960x540: four same-frame native taps reserve combo while steering
+PASS: 960x540: native moving jump keeps joystick ownership
+PASS: 960x540: native jump then attack enters aerial combat
+PASS: 960x540: bundle pauses game and creates 30 real slots
+PASS: 960x540: native long press opens large item appreciation
+PASS: 960x540: back closes appreciation without leaking input
+PASS: 960x540: category does not mutate inventory
+PASS: 960x540: bundle close restores clean touch state
+TOUCH V1.4: 50 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: real JSON version1 RPG save accepted
+PASS: migration preserves old level XP inventory with version2 defaults
+PASS: default rarities are real persistent data
+PASS: plaza jump separates height from planted world foot position
+PASS: jump keeps normal world collision mask
+PASS: plaza refuses ground and airborne attacks
+PASS: jump lands and restores floor height
+PASS: reproduce hidden plaza ghost colliders, then remove them from mission physics
+PASS: front-biased auto aim corrects moderate angle at world feet
+PASS: movement steering does not reverse a committed attack pose
+PASS: wide first palm cone lands on off-axis target
+PASS: one attack never damages same enemy twice
+PASS: rapid taps buffer next three attacks
+PASS: four stages deal 100/110/130/170 percent with intentional double-hit third stage
+PASS: real contacts drive visible hit counter
+PASS: fourth rising strike launches monster independently of world position
+PASS: combo resets after no input timeout
+PASS: airborne attack hits airborne-capable foot-space targets
+PASS: air combo produces distinct landing strike
+PASS: damage receiver stays active during transformation instead of sharing attack gate
+PASS: player hit flash stun and knockback are real state
+PASS: HP bar and persisted health immediately reflect damage
+PASS: 0.5-second injury immunity prevents duplicate strike
+PASS: injury immunity expires and later hit damages again
+PASS: monster reachable windup strike covers visual club range
+PASS: jump clears low club strike
+PASS: active dodge clears club strike
+PASS: out-of-range strike does not damage
+PASS: static rock blocks monster attack line
+PASS: zero HP freezes actions and opens retry screen
+PASS: defeat pose visibly collapses while retry UI remains responsive
+PASS: retry resets monster IDs and goals, restores live player
+PASS: retry spawn and HP restore while permanent rewards survive
+PASS: actual sampled walkable area expands 4–6x (5.79)
+PASS: navigation connects zone 안개 낀 숲 입구
+PASS: navigation connects zone 대나무숲
+PASS: navigation connects zone 연못과 돌다리
+PASS: navigation connects zone 오래된 사당
+PASS: navigation connects zone 숲 깊은 곳
+PASS: chest gives actual inventory items
+PASS: chest cannot be collected twice
+PASS: exploration claims survive save and reload
+PASS: bundle has actual 5-column 30-slot grid
+PASS: category filters never alter actual inventory
+PASS: selected item has unique large art instead of text glyph
+PASS: expanded appreciation screen opens with item art and story
+PASS: Android back closes inspection without unpausing inventory
+PASS: new bundle use applies real MP and consumes exactly one
+PASS: bundle quantity and rarity persist after usage
+PASS: closing bundle restores gameplay
+ACTION V1.4: 50 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: 1280x720: all combat targets inside logical safe viewport
+PASS: 1280x720: attack dodge and skill targets do not overlap
+PASS: 1280x720: combat controls clear joystick
+PASS: 1280x720: native move and attack multitouch
+PASS: 1280x720: native move and skill multitouch
+PASS: 1280x720: native move and dodge multitouch
+PASS: 1280x720: expanded map blocks movement
+PASS: 1280x720: Android back closes map and restores input
+PASS: 2400x1080: all combat targets inside logical safe viewport
+PASS: 2400x1080: attack dodge and skill targets do not overlap
+PASS: 2400x1080: combat controls clear joystick
+PASS: 2400x1080: native move and attack multitouch
+PASS: 2400x1080: native move and skill multitouch
+PASS: 2400x1080: native move and dodge multitouch
+PASS: 2400x1080: expanded map blocks movement
+PASS: 2400x1080: Android back closes map and restores input
+PASS: 2340x1080: all combat targets inside logical safe viewport
+PASS: 2340x1080: attack dodge and skill targets do not overlap
+PASS: 2340x1080: combat controls clear joystick
+PASS: 2340x1080: native move and attack multitouch
+PASS: 2340x1080: native move and skill multitouch
+PASS: 2340x1080: native move and dodge multitouch
+PASS: 2340x1080: expanded map blocks movement
+PASS: 2340x1080: Android back closes map and restores input
+PASS: 2280x1080: all combat targets inside logical safe viewport
+PASS: 2280x1080: attack dodge and skill targets do not overlap
+PASS: 2280x1080: combat controls clear joystick
+PASS: 2280x1080: native move and attack multitouch
+PASS: 2280x1080: native move and skill multitouch
+PASS: 2280x1080: native move and dodge multitouch
+PASS: 2280x1080: expanded map blocks movement
+PASS: 2280x1080: Android back closes map and restores input
+PASS: 960x540: all combat targets inside logical safe viewport
+PASS: 960x540: attack dodge and skill targets do not overlap
+PASS: 960x540: combat controls clear joystick
+PASS: 960x540: native move and attack multitouch
+PASS: 960x540: native move and skill multitouch
+PASS: 960x540: native move and dodge multitouch
+PASS: 960x540: expanded map blocks movement
+PASS: 960x540: Android back closes map and restores input
+V1.3 TOUCH: 40 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: forest loader initializes real world
+PASS: goblin actually approaches player
+PASS: actual movement advances distinct leg frames
+PASS: sprite cell baseline stays fixed during gait
+PASS: live AI reaches player and attacks with windup
+PASS: enemy does not pass through player collision
+PASS: AI path requests throttled, never every frame
+PASS: paused combat actors remain stable
+PASS: enabled hit timers use separate tunable config
+PASS: hit burst sizes and numbers configured
+PASS: all transient shards and numbers retire
+PASS: all four effects can be disabled independently
+PASS: white flash resets to original appearance
+PASS: real player defeat opens safe return screen
+PASS: completion claim durably saved
+V1.3 AI/EFFECTS: 15 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: fresh-process continuation preserves forest kills and prevents duplicate claimed rewards
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: default RPG save is valid
+PASS: 30 slots and five real starter items
+PASS: reject unknown and negative grants
+PASS: full health does not consume potion
+PASS: potion heals and consumes exactly one
+PASS: mana potion works
+PASS: key and unimplemented clone cannot be used
+PASS: spell equip moves without duplication
+PASS: level up retains XP overflow
+PASS: negative inventory fails save validation
+PASS: unknown inventory fails save validation
+PASS: duplicate equipped spell fails validation
+PASS: real plaza surface differs between stone and grass
+PASS: shop courtyards and actual stone bridge use stone footsteps
+PASS: forest wood and shallow water classifications
+PASS: deep pond blocks, shallow edge walkable
+PASS: joystick inset right30/up12 with size174
+PASS: joystick design size preserved
+PASS: stone surface sample plays on distance cadence
+PASS: grass sample switches at real player foot coordinates
+PASS: plaza combat controls hidden
+PASS: plaza rejects basic attack in gameplay code
+PASS: unimplemented paintings remain locked
+PASS: large painting viewer has real forest entrance
+PASS: painting records exact plaza position and facing
+PASS: portal locks inputs immediately
+PASS: duplicate portal request ignored
+PASS: portal finishes loading playable forest
+PASS: forest contains exactly three live goblins
+PASS: combat buttons activate only inside painting
+PASS: player spawns at actual forest entry
+PASS: joystick retains finger outside original radius
+PASS: moving plus second-finger attack works
+PASS: moving plus skill spends real mana once
+PASS: dodge stops at pond collision
+PASS: actual magic projectile deals damage after physics ray hit
+PASS: blue hit emits bounded 12 shards and damage number
+PASS: camera shake runs independently of HUD
+PASS: camera shake decays back to original offset
+PASS: gold talisman damage and sealing apply
+PASS: hit stop never changes global time scale
+PASS: save works during hit stop
+PASS: first goblin death recorded once
+PASS: mission save keeps plaza position and partial kill state
+PASS: continue resumes forest without resurrecting dead goblin
+PASS: enemy attack applies bounded player damage
+PASS: damage cooldown prevents repeated contact loss
+PASS: three actual deaths open completion screen
+PASS: completion grants XP level and coins
+PASS: rewards arrive in actual inventory
+PASS: persistent claim blocks duplicate rewards
+PASS: reward claim committed before completion UI
+PASS: reverse portal returns to plaza safely
+PASS: exact plaza entry position and direction restored
+PASS: plaza combat controls hidden again
+PASS: completed painting feeds plaza tree, clears mission session
+PASS: native inventory use heals and persists one consumed item
+PASS: V1.2 save without RPG migrates with safe defaults
+RPG V1.3: 58 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: native press raises the gold-border glow
+PASS: release opens settings once and border glow fades
+PASS: 약초꾼 서연 head/torso origin stays fixed across gait frames
+PASS: 약초꾼 서연 uses four distinct foot/leg art frames
+PASS: 약초꾼 서연 left/right contact and swing phases alternate
+PASS: 약초꾼 서연 idle foot positions do not accumulate drift
+PASS: 장돌뱅이 만복 head/torso origin stays fixed across gait frames
+PASS: 장돌뱅이 만복 uses four distinct foot/leg art frames
+PASS: 장돌뱅이 만복 left/right contact and swing phases alternate
+PASS: 장돌뱅이 만복 idle foot positions do not accumulate drift
+PASS: 마을 어른 head/torso origin stays fixed across gait frames
+PASS: 마을 어른 uses four distinct foot/leg art frames
+PASS: 마을 어른 left/right contact and swing phases alternate
+PASS: 마을 어른 idle foot positions do not accumulate drift
+PASS: idle NPC root remains exactly still instead of chasing a moving target
+PATROL {"extent":250.310165405273,"name":"약초꾼 서연","travelled":526.399654150009}
+PASS: 약초꾼 서연 actually patrols beyond the former tiny ellipse
+PASS: 약초꾼 서연 stays out of static obstacles and water
+PATROL {"extent":89.8692474365234,"name":"장돌뱅이 만복","travelled":393.595546960831}
+PASS: 장돌뱅이 만복 actually patrols beyond the former tiny ellipse
+PASS: 장돌뱅이 만복 stays out of static obstacles and water
+PATROL {"extent":272.923645019531,"name":"마을 어른","travelled":294.401016235352}
+PASS: 마을 어른 actually patrols beyond the former tiny ellipse
+PASS: 마을 어른 stays out of static obstacles and water
+PATROL {"extent":148.410751342773,"name":"그림지기 연화","travelled":476.797631263733}
+PASS: 그림지기 연화 actually patrols beyond the former tiny ellipse
+PASS: 그림지기 연화 stays out of static obstacles and water
+PATROL {"extent":117.773490905762,"name":"주모 단이","travelled":335.997918605804}
+PASS: 주모 단이 actually patrols beyond the former tiny ellipse
+PASS: 주모 단이 stays out of static obstacles and water
+PATROL {"extent":96.6913833618164,"name":"부적 상인","travelled":399.997418403625}
+PASS: 부적 상인 actually patrols beyond the former tiny ellipse
+PASS: 부적 상인 stays out of static obstacles and water
+PATROL {"extent":361.283050537109,"name":"정원지기","travelled":556.265084981918}
+PASS: 정원지기 actually patrols beyond the former tiny ellipse
+PASS: 정원지기 stays out of static obstacles and water
+PATROL {"extent":114.399444580078,"name":"도술 스승","travelled":351.99896979332}
+PASS: 도술 스승 actually patrols beyond the former tiny ellipse
+PASS: 도술 스승 stays out of static obstacles and water
+PASS: cached route queries are event-driven, not run for every NPC every frame
+PASS: blocked NPC stops and waits instead of vibrating against a wall
+PASS: blocked fallback preserves a stationary root
+PASS: distant NPC does not animate, move or replan
+PASS: V1.1 revision-2 save is accepted without wiping progress
+PASS: V1.1 position migration retains spell, quest, painting and return-anchor state
+PASS: occupied old position is relocated nearby with original coordinates retained
+NPC/TITLE V1.2: 38 checks, 0 failures; route queries=83
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: animated entry artwork does not intercept touch
+PASS: entry scene motion advances
+PASS: bundled Korean BGM has a valid looping stream
+PASS: native touch toggles BGM independently
+PASS: quality setting reduces entry motion
+PASS: map expansion retains character/camera scale
+WALKABLE AREA: old=668800 new=3737600 ratio=5.58851674641148
+PASS: walkable area is approximately four to six times larger
+PASS: connected walkable route to 중앙 벚꽃 광장
+PASS: connected walkable route to 신비로운 그림 장터
+PASS: connected walkable route to 조선 상점 거리
+PASS: connected walkable route to 벚꽃 정원과 연못
+PASS: connected walkable route to 도술 수련소
+PASS: walkable approach to 여우의 숲
+PASS: walkable approach to 탐관오리의 관아
+PASS: walkable approach to 도깨비의 밤
+PASS: actual character walks to 중앙 벚꽃 광장
+PASS: actual character walks to 신비로운 그림 장터
+PASS: actual character walks to 조선 상점 거리
+PASS: actual character walks to 벚꽃 정원과 연못
+PASS: actual character walks to 도술 수련소
+PASS: pond rejects walking on water
+PASS: stone bridge deck crosses the pond
+PASS: physical character crosses the entire bridge
+PASS: pond collision stops the physical character
+PASS: painting proximity detected 0
+PASS: painting intro matches implemented or locked stage 0
+PASS: painting close restores movement without teleport 0
+PASS: future return anchor restores entry position 0
+PASS: painting proximity detected 1
+PASS: painting intro matches implemented or locked stage 1
+PASS: painting close restores movement without teleport 1
+PASS: future return anchor restores entry position 1
+PASS: painting proximity detected 2
+PASS: painting intro matches implemented or locked stage 2
+PASS: painting close restores movement without teleport 2
+PASS: future return anchor restores entry position 2
+PASS: original V0.1.2 save accepted before migration
+MIGRATED {"jar":true,"legacy_position":[1050.0,600.0],"map":"gyewol_village","map_revision":3,"position":[1098.0,600.0],"schema":1.0,"settings":{"smooth_camera":false},"talked_to_elder":true,"time_of_day":0.4,"unlocked":["jar"]}
+PASS: migration preserves role-free character state and original occupied position
+PASS: migrated position is nearby, safe and can be saved again
+PASS: future painting completion data persists
+PASS: tree growth reflects completion data without inventing a mission
+PASS: duplicate completion data rejected
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PASS: resident remains outside buildings and water
+PLAZA V1.1: 50 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: bounded six-voice audio pool
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: local PCM clip has valid bounded duration
+PASS: button effect starts a voice
+PASS: mute stops voices and prevents new effects
+PASS: terrain uses a single pre-baked sprite
+PASS: expanded additive lanterns without real-time light passes
+PASS: successful transformation emits effect
+PASS: cooldown prevents repeated spell sound
+PASS: footstep follows actual travel distance
+PASS: stationary or blocked movement makes no footstep
+PASS: teleport does not emit footstep
+PASS: sound toggle applies and persists
+PASS: sound can be re-enabled
+PASS: manual save joins pending async autosave
+PASS: exit drains asynchronous save without losing position
+PASS: phone rendering uses bounded logical viewport
+SOUND/PERFORMANCE: 23 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: new game application title
+PASS: touch emulation kept enabled
+PASS: main menu button: 게임 시작
+PASS: main menu button: 이어하기
+PASS: main menu button: 설정
+PASS: main menu button: 종료
+PASS: native touch starts playable game
+PASS: one taoist and all village residents
+PASS: original hanok buildings retained
+PASS: pixel character texture loaded
+PASS: quarter-view follow camera active
+PASS: world depth sorts props and characters
+PASS: live local minimap visible
+PASS: minimap reflects actual local position
+PASS: first-step objective starts incomplete
+PASS: HD hero has eight directions and six animation phases
+PASS: movement direction (1.0, 0.0)
+PASS: movement direction (1.0, 1.0)
+PASS: movement direction (0.0, 1.0)
+PASS: movement direction (-1.0, 1.0)
+PASS: movement direction (-1.0, 0.0)
+PASS: movement direction (-1.0, -1.0)
+PASS: movement direction (0.0, -1.0)
+PASS: movement direction (1.0, -1.0)
+PASS: running is faster than walking
+PASS: well collision blocks movement
+PASS: hanok footprint blocks movement
+PASS: spell starts visible transformation animation
+PASS: transformed into jar with cooldown
+PASS: cooldown rejects repeated spell
+PASS: jar movement slower than human
+PASS: spell returns jar to human
+PASS: proximity dialogue available for NPC 0
+PASS: NPC dialogue opens and stops movement
+PASS: dialogue closes cleanly
+PASS: proximity dialogue available for NPC 1
+PASS: NPC dialogue opens and stops movement
+PASS: dialogue closes cleanly
+PASS: proximity dialogue available for NPC 2
+PASS: NPC dialogue opens and stops movement
+PASS: dialogue closes cleanly
+PASS: elder dialogue completes actual first-step objective
+PASS: atomic local save contains valid map and position
+PASS: save stores spell unlock and settings
+PASS: objective completion persisted
+PASS: saved game enables continue
+PASS: continue restores position
+PASS: background saves and cancels movement
+PASS: Android back closes pause menu
+PASS: save rejects unknown map
+PASS: save rejects nonfinite/outside coordinates
+PASS: expanded lantern network created
+PASS: day-night atmosphere advances
+WOO CORE: 53 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: first atomic save
+PASS: second save keeps backup
+Recovered position: [900.0, 610.0]
+PASS: corrupt primary recovers previous valid save
+PASS: new save after recovery
+PASS: corrupt primary cannot overwrite valid backup
+PASS: older saves without objective field remain compatible
+PASS: new optional objective state roundtrips
+PASS: malformed atmosphere data rejected
+PASS: malformed spell state rejected
+PASS: invalid position does not overwrite good save
+PASS: good save preserved after invalid write request
+SAVE RECOVERY: 11 checks, 0 failures
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+RESTART WRITE: position/map/settings/unlock/form saved; exiting actual game
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+RESTART READ: persisted position, map, settings, spell and form restored
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+EXIT TEST: pressing main-menu exit through native touch

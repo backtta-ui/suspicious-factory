@@ -1,4 +1,22 @@
-# 《도사》 V1.3 — 그림 속 여우의 숲
+# 《도사》 V1.4 — 전투 액션 · 확장 숲 · 도술 보따리
+
+[설치용 APK 다운로드 — 약73MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.4.0.apk)
+
+기존 앱을 삭제하지 말고 **업데이트 설치 → 이어하기**를 누르세요. Android10+ ARM64 / 가로 화면 / 기존 패키지·서명·진행을 유지합니다.
+
+공격 조준/넓은 판정, 빠른 입력 예약 4연타, 점프/공중 공격/착지 타격, 실제 HP 감소와 재도전, 실제 이동 면적 약5.79배의 다섯 구역 숲, 탐험 보상, 다섯 아이템의 실제 그림과 30칸 도술 보따리/확대 감상을 연결했습니다. 광장에서는 공격할 수 없습니다.
+
+[최신 소스 Actions 빌드 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43811384747) → 기존 Cloud 키로 최종 서명. 통합519개와 APK29개 검사, 최종 패키지 내부 실제 리소스164개 검사, 이전 V1.3 APK가 만든 실제 저장 파일 마이그레이션도 통과했습니다. **갤럭시 실기기 검증은 하지 않았습니다.** 일부 배경/모션은 임시 아트이며 추가 그림·분신/축지·새 의상은 잠금입니다.
+
+[전체 변경 파일·실제 오류 원인·구현/한계·검증 보고서](reports/jeon-woochi/1.4.0/V1.4.md) / [도술 보따리](reports/jeon-woochi/1.4.0/screenshots/v14-bundle.png) / [큰 아이템 감상](reports/jeon-woochi/1.4.0/screenshots/v14-inspect.png) / [전투](reports/jeon-woochi/1.4.0/screenshots/v14-attack.png)
+
+SHA256: `c49488b92c356c916cd9090302707cf0085e4fe344fc9df104bf8c8d523b8dc0`
+
+공개 다운로드/Actions ZIP 검증 결과는 아래에 추가합니다. 이전 APK는 모두 보존합니다.
+
+---
+
+## 이전 버전 《도사》 V1.3 — 그림 속 여우의 숲
 
 [설치용 APK 직접 다운로드 — 약 68.5MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.3.0.apk)
 

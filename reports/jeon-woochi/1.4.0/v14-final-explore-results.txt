@@ -1,0 +1,9 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: actual collision-body walks into 안개 낀 숲 입구
+PASS: actual collision-body walks into 대나무숲
+PASS: actual collision-body walks into 연못과 돌다리
+PASS: actual collision-body walks into 오래된 사당
+PASS: actual collision-body walks into 숲 깊은 곳
+PASS: all-zone traversal finishes on legal ground
+EXPLORE V1.4: 6 checks, 0 failures
