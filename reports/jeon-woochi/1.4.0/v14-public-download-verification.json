@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "url": "https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-1.4.0.apk",
+  "bytes": 76530523,
+  "sha256": "c49488b92c356c916cd9090302707cf0085e4fe344fc9df104bf8c8d523b8dc0",
+  "method": "HTTPS GET and full byte SHA256 comparison",
+  "device_test": false
+}

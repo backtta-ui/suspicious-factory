@@ -12,7 +12,7 @@
 
 SHA256: `c49488b92c356c916cd9090302707cf0085e4fe344fc9df104bf8c8d523b8dc0`
 
-공개 다운로드/Actions ZIP 검증 결과는 아래에 추가합니다. 이전 APK는 모두 보존합니다.
+[설치용 Actions ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43812388696) → `jeon-woochi-verified-apk`를 받아 압축을 풀어 설치합니다. 공개 APK와 Actions ZIP을 실제로 다시 내려받아 내부 APK의 SHA256 일치를 확인했습니다. 아티팩트 보관14일, 직접 APK 링크와 이전 APK는 계속 보존합니다.
 
 ---
 
