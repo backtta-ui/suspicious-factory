@@ -10,6 +10,8 @@
   "apk_checks": 30,
   "android_device_test": "not_performed",
   "render_deployment": "not_performed",
-  "public_redownload": "pending",
-  "signed_artifact": "pending"
+  "public_redownload": "sha256_matches",
+  "signed_artifact": "sha256_matches",
+  "signed_artifact_run": 43823622814,
+  "signed_artifact_id": 14205304095
 }

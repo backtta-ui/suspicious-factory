@@ -1,0 +1,61 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: default RPG save is valid
+PASS: 30 slots and five real starter items
+PASS: reject unknown and negative grants
+PASS: full health does not consume potion
+PASS: potion heals and consumes exactly one
+PASS: mana potion works
+PASS: key and unimplemented clone cannot be used
+PASS: spell equip moves without duplication
+PASS: level up retains XP overflow
+PASS: negative inventory fails save validation
+PASS: unknown inventory fails save validation
+PASS: duplicate equipped spell fails validation
+PASS: real plaza surface differs between stone and grass
+PASS: shop courtyards and actual stone bridge use stone footsteps
+PASS: forest wood and shallow water classifications
+PASS: deep pond blocks, shallow edge walkable
+PASS: joystick inset right30/up12 with size174
+PASS: joystick design size preserved
+PASS: stone surface sample plays on distance cadence
+PASS: grass sample switches at real player foot coordinates
+PASS: plaza combat controls hidden
+PASS: plaza rejects basic attack in gameplay code
+PASS: unimplemented paintings remain locked
+PASS: large painting viewer has real forest entrance
+PASS: painting records exact plaza position and facing
+PASS: portal locks inputs immediately
+PASS: duplicate portal request ignored
+PASS: portal finishes loading playable forest
+PASS: forest contains exactly three live goblins
+PASS: combat buttons activate only inside painting
+PASS: player spawns at actual forest entry
+PASS: joystick retains finger outside original radius
+PASS: moving plus second-finger attack works
+PASS: moving plus skill spends real mana once
+PASS: dodge stops at pond collision
+PASS: actual magic projectile deals damage after physics ray hit
+PASS: blue hit emits bounded 12 shards and damage number
+PASS: camera shake runs independently of HUD
+PASS: camera shake decays back to original offset
+PASS: gold talisman damage and sealing apply
+PASS: hit stop never changes global time scale
+PASS: save works during hit stop
+PASS: first goblin death recorded once
+PASS: mission save keeps plaza position and partial kill state
+PASS: continue resumes forest without resurrecting dead goblin
+PASS: enemy attack applies bounded player damage
+PASS: damage cooldown prevents repeated contact loss
+PASS: three actual deaths open completion screen
+PASS: completion grants XP level and coins
+PASS: rewards arrive in actual inventory
+PASS: persistent claim blocks duplicate rewards
+PASS: reward claim committed before completion UI
+PASS: reverse portal returns to plaza safely
+PASS: exact plaza entry position and direction restored
+PASS: plaza combat controls hidden again
+PASS: completed painting feeds plaza tree, clears mission session
+PASS: native inventory use heals and persists one consumed item
+PASS: V1.2 save without RPG migrates with safe defaults
+RPG V1.3: 58 checks, 0 failures

@@ -1,0 +1,43 @@
+{
+  "version": "2.0.0",
+  "source_commit": "974633679b48f6db50e004294eb243db6313c320",
+  "backup_branch": "backup/dosa-v1.4",
+  "source_actions": {
+    "run": 43822477437,
+    "conclusion": "success",
+    "artifact_id": 14205193283
+  },
+  "installable_artifact_actions": {
+    "run": 43823622814,
+    "conclusion": "success",
+    "artifact_id": 14205304095
+  },
+  "apk": {
+    "path": "builds/jeon-woochi-2.0.0.apk",
+    "public_url": "https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.0.apk",
+    "sha256": "0314a15ec063c3a87a4bcb6edf9a81c58562444a6b4d548f4e4353ac1eaf5da3",
+    "bytes": 78531336,
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "checks": 30
+  },
+  "tests": {
+    "local_named_checks": 633,
+    "failures": 0,
+    "real_websocket_automated_network_checks": 27,
+    "connected_game_ui_checks": 13,
+    "final_apk_extracted_resource_checks": {
+      "hero": 23,
+      "action_inventory": 50,
+      "rpg_save": 58,
+      "connected_ui": 13
+    },
+    "renderer": "Linux Godot, not Android"
+  },
+  "public_https_redownload": "sha256_matches",
+  "android_device_test": "not_performed",
+  "render_server_deployment": "not_performed",
+  "render_docker_image_build": "not_performed: Docker daemon unavailable in workspace",
+  "human_6_to_8_device_test": "not_performed",
+  "paid_plan_or_autobilling": "not_enabled",
+  "signed_artifact_redownload": "sha256_matches"
+}

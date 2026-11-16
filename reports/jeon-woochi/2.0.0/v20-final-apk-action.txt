@@ -1,0 +1,53 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: real JSON version1 RPG save accepted
+PASS: migration preserves old level XP inventory with version2 defaults
+PASS: default rarities are real persistent data
+PASS: plaza jump separates height from planted world foot position
+PASS: jump keeps normal world collision mask
+PASS: plaza refuses ground and airborne attacks
+PASS: jump lands and restores floor height
+PASS: reproduce hidden plaza ghost colliders, then remove them from mission physics
+PASS: front-biased auto aim corrects moderate angle at world feet
+PASS: movement steering does not reverse a committed attack pose
+PASS: wide first palm cone lands on off-axis target
+PASS: one attack never damages same enemy twice
+PASS: rapid taps buffer next three attacks
+PASS: four stages deal 100/110/130/170 percent with single staff impact third stage
+PASS: real contacts drive visible hit counter
+PASS: fourth rising strike launches monster independently of world position
+PASS: combo resets after no input timeout
+PASS: airborne attack hits airborne-capable foot-space targets
+PASS: air combo produces distinct landing strike
+PASS: damage receiver stays active during transformation instead of sharing attack gate
+PASS: player hit flash stun and knockback are real state
+PASS: HP bar and persisted health immediately reflect damage
+PASS: 0.5-second injury immunity prevents duplicate strike
+PASS: injury immunity expires and later hit damages again
+PASS: monster reachable windup strike covers visual club range
+PASS: jump clears low club strike
+PASS: active dodge clears club strike
+PASS: out-of-range strike does not damage
+PASS: static rock blocks monster attack line
+PASS: zero HP freezes actions and opens retry screen
+PASS: defeat pose visibly collapses while retry UI remains responsive
+PASS: retry resets monster IDs and goals, restores live player
+PASS: retry spawn and HP restore while permanent rewards survive
+PASS: actual sampled walkable area expands 4–6x (5.79)
+PASS: navigation connects zone 안개 낀 숲 입구
+PASS: navigation connects zone 대나무숲
+PASS: navigation connects zone 연못과 돌다리
+PASS: navigation connects zone 오래된 사당
+PASS: navigation connects zone 숲 깊은 곳
+PASS: chest gives actual inventory items
+PASS: chest cannot be collected twice
+PASS: exploration claims survive save and reload
+PASS: bundle has actual 5-column 30-slot grid
+PASS: category filters never alter actual inventory
+PASS: selected item has unique large art instead of text glyph
+PASS: expanded appreciation screen opens with item art and story
+PASS: Android back closes inspection without unpausing inventory
+PASS: new bundle use applies real MP and consumes exactly one
+PASS: bundle quantity and rarity persist after usage
+PASS: closing bundle restores gameplay
+ACTION V1.4: 50 checks, 0 failures

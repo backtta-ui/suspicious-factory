@@ -12,6 +12,8 @@
 
 SHA256: `0314a15ec063c3a87a4bcb6edf9a81c58562444a6b4d548f4e4353ac1eaf5da3`
 
+[설치용 Actions ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43823622814) → `jeon-woochi-verified-apk` 다운로드 후 압축을 풀어 설치하세요. 공개 APK와 이 ZIP을 다시 내려받아 내부 APK의 해시 일치를 검증했습니다. ZIP 보관14일, 직접 링크는 유지합니다.
+
 ---
 
 ## 이전 버전 《도사》 V1.4 — 전투 액션 · 확장 숲 · 도술 보따리
