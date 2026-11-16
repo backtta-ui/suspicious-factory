@@ -1,6 +1,6 @@
 class_name WooSaveGame
 extends RefCounted
-const Layout = preload("res://scripts/woo/village_layout.gd")
+const Layout = preload("res://scripts/worlds/plaza_layout.gd")
 const PATH := "user://jeonwoochi_save.json"
 const SETTINGS := "user://jeonwoochi_settings.cfg"
 static func valid(data: Variant) -> bool:

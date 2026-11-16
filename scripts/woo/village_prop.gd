@@ -39,7 +39,7 @@ func _ready() -> void:
   "painting","food","cart","jars","dummy","stone_lantern":
    sheet=DECOR;cell=Vector2(DECOR.get_width()/3.0,DECOR.get_height()/3.0)
    index=variant if kind=="painting" else {"food":3,"cart":4,"jars":5,"dummy":6,"stone_lantern":7}.get(kind,0)
-   width={"painting":190,"food":145,"cart":95,"jars":55,"dummy":65,"stone_lantern":52}.get(kind,100)
+   width={"painting":115,"food":145,"cart":95,"jars":55,"dummy":65,"stone_lantern":52}.get(kind,100)
    foot=cell.y-12
  var sprite:=Sprite2D.new();sprite.texture=sheet;sprite.region_enabled=true
  sprite.region_rect=Rect2(Vector2(index%3,floori(float(index)/3))*cell,cell)

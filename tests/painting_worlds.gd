@@ -24,9 +24,11 @@ func run() -> void:
  check(game.Layout.PROPS.filter(func(p: Dictionary)->bool:return p.kind=="painting").size()==1,"exactly one actual painting prop, old records retained")
  # A previously valid revision4 coordinate can be occupied by the new frame.
  var legacy: Dictionary={"schema":1,"map":game.Layout.MAP_ID,"map_revision":4,"position":[1900,350],"settings":{},"unlocked":["jar"],"jar":false,"time_of_day":.4,"talked_to_elder":true,"completed_paintings":["fox_forest"],"return_anchor":{},"rpg":game.rpg.data.duplicate(true)}
+ game.finish_save()
  check(game.Save.save_game(legacy)==OK,"revision4 occupied painting position is accepted for migration")
  var migrated: Dictionary=game.Save.load_game()
- check(not migrated.is_empty() and migrated.talked_to_elder and migrated.completed_paintings==["fox_forest"] and migrated.rpg.inventory==game.rpg.data.inventory and game.Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])) and migrated.legacy_position==[1900,350],"revision5 relocates only occupied position without losing progress")
+ check(not migrated.is_empty() and migrated.talked_to_elder and migrated.completed_paintings==["fox_forest"] and migrated.rpg.inventory==game.rpg.data.inventory and game.Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])) and Vector2(migrated.legacy_position[0],migrated.legacy_position[1])==Vector2(1900,350),"revision5 relocates only occupied position without losing progress")
+ check(preload("res://scripts/woo/village_layout.gd").REVISION==4 and game.Layout.REVISION==5 and preload("res://scripts/woo/village_layout.gd").PROPS.filter(func(p: Dictionary)->bool:return p.kind=="painting").size()==3,"multiplayer retains original layout while story uses isolated revision5")
  check(Worlds.WORLDS.size()==3 and Worlds.WORLDS.all(func(w: Dictionary)->bool:return w.unlocked and not w.mapId.is_empty()),"three data-driven real open maps")
  var look: Dictionary=game.player.cosmetic.duplicate();var inventory: Dictionary=game.rpg.data.inventory.duplicate();var xp: int=game.rpg.data.xp
  game.player.position=Worlds.ENTRY+Vector2(0,65);await frames(6);check(game.nearest_painting==0 and game.interact_button.visible,"single entrance reached through actual plaza proximity")

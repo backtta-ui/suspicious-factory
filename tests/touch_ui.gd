@@ -1,5 +1,5 @@
 extends SceneTree
-const Layout = preload("res://scripts/woo/village_layout.gd")
+const Layout = preload("res://scripts/worlds/plaza_layout.gd")
 var game: Node
 var checks := 0
 var failures := 0

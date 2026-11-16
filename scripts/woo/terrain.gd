@@ -5,7 +5,6 @@ const GRASS=preload("res://assets/woo/v11/meadow.png")
 const Layout=preload("res://scripts/woo/village_layout.gd")
 func _draw() -> void:draw_ground(self)
 static func pave(c: Node2D,center: Vector2,r: Vector2,rng: RandomNumberGenerator,tint: Color) -> void:
- preload("res://scripts/worlds/edges.gd").lawn_border(c,center,r,rng)
  var outline:=PackedVector2Array()
  for i in range(64):outline.append(center+Vector2(cos(i*TAU/64),sin(i*TAU/64))*r)
  c.draw_colored_polygon(outline,tint.darkened(0.26))
@@ -13,7 +12,7 @@ static func pave(c: Node2D,center: Vector2,r: Vector2,rng: RandomNumberGenerator
  for y in range(int(center.y-r.y),int(center.y+r.y),12):
   row+=1
   for x in range(int(center.x-r.x),int(center.x+r.x),23):
-   var p:=Vector2(x+(row%2)*11+rng.randf_range(-5,5),y+rng.randf_range(-4,4))
+   var p:=Vector2(x+(row%2)*11+rng.randf_range(-2,2),y+rng.randf_range(-2,2))
    if ((p-center)/r).length()<0.97:
     stone(c,p,Vector2(rng.randf_range(10,13),rng.randf_range(5,7)),tint.darkened(rng.randf_range(0.0,0.12)))
 static func draw_ground(c: Node2D) -> void:
@@ -22,7 +21,6 @@ static func draw_ground(c: Node2D) -> void:
  for x in range(7):
   for y in range(4):c.draw_texture_rect(GRASS,Rect2(x*512,y*512,512,512),false,Color("b4b8a6"))
  for road in Layout.ROADS:
-  preload("res://scripts/worlds/edges.gd").ribbon(c,road,90,rng)
   var points:=PackedVector2Array(road)
   c.draw_polyline(points,Color("7c7867"),90,true)
   c.draw_polyline(points,Color("9e927d"),68,true)

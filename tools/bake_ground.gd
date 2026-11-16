@@ -6,12 +6,12 @@ func bake() -> void:
  viewport.transparent_bg=false
  viewport.render_target_update_mode=SubViewport.UPDATE_ONCE
  root.add_child(viewport)
- viewport.add_child(preload("res://scripts/woo/terrain.gd").new())
+ viewport.add_child(preload("res://scripts/worlds/plaza_terrain.gd").new())
  await RenderingServer.frame_post_draw
  var image:=viewport.get_texture().get_image()
  if image.get_pixel(300,800).g<image.get_pixel(300,800).r*1.15:
   push_error("Ground material missing or lost before render");quit(1);return
- var error:=image.save_png("res://assets/woo/ground_baked.png")
+ var error:=image.save_png("res://assets/woo/worlds/plaza_ground.png")
  viewport.queue_free()
  print("GROUND BAKE: ",error," size=",image.get_size())
  if error!=OK:quit(error);return

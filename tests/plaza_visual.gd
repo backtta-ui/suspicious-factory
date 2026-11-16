@@ -1,6 +1,6 @@
 extends SceneTree
 var game: Node
-const Layout=preload("res://scripts/woo/village_layout.gd")
+const Layout=preload("res://scripts/worlds/plaza_layout.gd")
 func _initialize() -> void:run.call_deferred()
 func wait_frames(n: int=5) -> void:
  for i in range(n):await process_frame

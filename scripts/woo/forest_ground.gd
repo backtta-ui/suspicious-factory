@@ -9,21 +9,18 @@ func _draw() -> void:
  for x in range(6):
   for y in range(5):draw_texture_rect(GRASS,Rect2(x*512,y*512,512,512),false,Color(.42,.58,.63))
  draw_rect(Rect2(Vector2.ZERO,Layout.SIZE),Color(.04,.08,.15,.23))
- for branch in Layout.BRANCHES:
-  preload("res://scripts/worlds/edges.gd").ribbon(self,branch,50,rng)
-  draw_line(branch[0],branch[1],Color("80766a"),50,true)
- preload("res://scripts/worlds/edges.gd").ribbon(self,Layout.ROAD,112,rng)
- for p in Layout.ROAD:draw_circle(p,56,Color("716c5c"))
+ for branch in Layout.BRANCHES:draw_line(branch[0],branch[1],Color("5c6463"),50,true)
+ for p in Layout.ROAD:draw_circle(p,56,Color("5c6463"))
  for i in range(Layout.ROAD.size()-1):
-  draw_line(Layout.ROAD[i],Layout.ROAD[i+1],Color("716c5c"),112,true)
- for p in Layout.ROAD:draw_circle(p,35,Color("8a8174"))
- for i in range(Layout.ROAD.size()-1):draw_line(Layout.ROAD[i],Layout.ROAD[i+1],Color("8a8174"),69,true)
+  draw_line(Layout.ROAD[i],Layout.ROAD[i+1],Color("5c6463"),112,true)
+ for p in Layout.ROAD:draw_circle(p,35,Color("788083"))
+ for i in range(Layout.ROAD.size()-1):draw_line(Layout.ROAD[i],Layout.ROAD[i+1],Color("788083"),69,true)
  for y in range(180,2000,10):
   for x in range(110,2890,14):
    var p:=Vector2(x+rng.randf_range(-4,4),y+rng.randf_range(-3,3))
    if Layout.surface(p)=="stone":
     var w:=rng.randf_range(9,14);var h:=rng.randf_range(5,8)
-    var c:=Color("a49b85").darkened(rng.randf_range(0,.26))
+    var c:=Color("8b919b").darkened(rng.randf_range(0,.26))
     draw_colored_polygon(PackedVector2Array([p+Vector2(-w/2,-h/2+2),p+Vector2(w/2-2,-h/2),p+Vector2(w/2,h/2),p+Vector2(-w/2+2,h/2)]),c)
  draw_rect(Layout.NEW_POND.grow(8),Color("3d5e68"));draw_rect(Layout.NEW_POND,Color("294f68"))
  draw_texture_rect(BRIDGE,Rect2(1480,1062,580,94),false)

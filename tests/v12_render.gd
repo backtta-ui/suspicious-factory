@@ -17,7 +17,7 @@ func run() -> void:
  for i in range(4):
   actor.npc_stride=i*6.0;actor.update_npc_art();await frames(2);await capture("gait-%d"%i)
  actor.set_physics_process(true)
- for zone in preload("res://scripts/woo/village_layout.gd").ZONES:
+ for zone in preload("res://scripts/worlds/plaza_layout.gd").ZONES:
   game.player.position=zone.center;game.camera.reset_smoothing();await frames(12);await capture(zone.id)
  print("V1.2 RENDER: PASS (local title effects, four gait poses, five revised zones)")
  game.queue_free();await frames(4);quit()

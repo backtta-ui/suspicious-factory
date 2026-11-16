@@ -1,7 +1,7 @@
 extends Node
 const Actor = preload("res://scripts/woo/actor.gd")
-const Village = preload("res://scripts/woo/village.gd")
-const Layout = preload("res://scripts/woo/village_layout.gd")
+const Village = preload("res://scripts/worlds/plaza.gd")
+const Layout = preload("res://scripts/worlds/plaza_layout.gd")
 const Rpg = preload("res://scripts/woo/rpg_state.gd")
 const Adventure = preload("res://scripts/woo/adventure.gd")
 var hero_portrait: TextureRect
@@ -31,7 +31,7 @@ var layer: CanvasLayer
 var ui: Control
 var modal: Control
 var modal_kind := ""
-var world: WooVillage
+var world: WooStoryPlaza
 var player: WooActor
 var camera: Camera2D
 var actors: Array[WooActor] = []

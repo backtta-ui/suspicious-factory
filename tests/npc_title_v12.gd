@@ -1,5 +1,5 @@
 extends SceneTree
-const Layout=preload("res://scripts/woo/village_layout.gd")
+const Layout=preload("res://scripts/worlds/plaza_layout.gd")
 const Save=preload("res://scripts/woo/save_game.gd")
 var game: Node
 var checks:=0

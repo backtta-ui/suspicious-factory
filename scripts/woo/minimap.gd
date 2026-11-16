@@ -1,6 +1,6 @@
 class_name WooLocalMinimap
 extends Control
-const Layout = preload("res://scripts/woo/village_layout.gd")
+const Layout = preload("res://scripts/worlds/plaza_layout.gd")
 var mission:=false
 var world_id:="fox_forest"
 var local_position := Vector2.ZERO

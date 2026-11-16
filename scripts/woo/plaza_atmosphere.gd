@@ -14,8 +14,8 @@ func _draw() -> void:
  if not camera:return
  var view:=get_viewport_rect().size/camera.zoom
  var visible_rect:=Rect2(camera.get_screen_center_position()-view/2,view).grow(90)
- for position in [preload("res://scripts/worlds/catalog.gd").ENTRY]:
-  var anchor: Vector2=position+Vector2(0,-45)
+ for painting in Layout.PAINTINGS:
+  var anchor: Vector2=painting.position+Vector2(0,-45)
   if not visible_rect.has_point(anchor):continue
   draw_texture_rect(GLOW,Rect2(anchor-Vector2(66,55),Vector2(132,110)),false,Color(.44,.45,1,.07+night*.04))
   for i in range(2 if low_effects else 6):

@@ -190,7 +190,7 @@ func load_forest(resume: bool) -> bool:
  active_world="fox_forest"
  if not is_instance_valid(game.player) or game.return_anchor.is_empty():return false
  if not resume:game.rpg.data.session={"map":"fox_forest","position":[ForestLayout.SPAWN.x,ForestLayout.SPAWN.y],"facing":0,"defeated":[],"completed":false}
- forest=preload("res://scripts/woo/forest.gd").new();game.add_child(forest)
+ forest=preload("res://scripts/worlds/forest.gd").new();game.add_child(forest)
  in_mission=true;mission_done=game.rpg.data.session.completed;completion_opened=false
  game.player.reset_action()
  if not game.player.landed.is_connected(actions.landing):game.player.landed.connect(actions.landing)

@@ -1,6 +1,6 @@
 extends SceneTree
 const Save = preload("res://scripts/woo/save_game.gd")
-const Layout = preload("res://scripts/woo/village_layout.gd")
+const Layout = preload("res://scripts/worlds/plaza_layout.gd")
 var checks := 0
 var failures := 0
 func check(ok: bool, detail: String) -> void:
