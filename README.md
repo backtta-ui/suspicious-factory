@@ -13,3 +13,5 @@
 [전체 변경 파일·원인 분석·검증 보고서](reports/jeon-woochi/1.2.0/V1.2.md) / [돌광장](reports/jeon-woochi/1.2.0/screenshots/v12-plaza.png) / [상점 거리](reports/jeon-woochi/1.2.0/screenshots/v12-shops.png) / [타이틀](reports/jeon-woochi/1.2.0/screenshots/v12-title-a.png)
 
 이전 APK와 백업 브랜치를 유지합니다. 파일별 해시는 SHA256SUMS.txt에 있습니다.
+
+[설치용 Actions APK 아티팩트](https://github.com/backtta-ui/suspicious-factory/actions/runs/43785580523) → `jeon-woochi-verified-apk` ZIP을 받아 압축을 풀어 설치합니다. 14일 보관. 공개 APK와 Actions ZIP 재다운로드 해시 확인 완료.
