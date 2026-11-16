@@ -16,13 +16,18 @@ func poll() -> void:
  for p in peers:
   p.ws.poll()
   while p.ws.get_available_packet_count()>0:
-   var packet=JSON.parse_string(p.ws.get_packet().get_string_from_utf8())
+   var wire: PackedByteArray=p.ws.get_packet()
+   var packet=preload("res://scripts/seal/codec.gd").decode(wire)
    if not packet is Dictionary:continue
    match packet.get("op",""):
     "hello":p.uid=packet.uid;p.authenticated=true
     "joined":p.room=packet.room
-    "state":p.state=packet.state;p.snapshots+=1;p.bytes+=JSON.stringify(packet).length()
+    "state":p.state=packet.state;p.snapshots+=1;p.bytes+=JSON.stringify(packet).length();p.wire_bytes=int(p.get("wire_bytes",0))+wire.size()
     "error","reply":p.reply=packet
+    "account":p.account=packet.account
+    "study":p.study=packet.study
+    "study_reply":p.study_reply=packet
+    "study_ended":p.study_ended=true
 func wait_for(predicate: Callable,seconds: float=5.0) -> bool:
  var until:=Time.get_ticks_msec()+int(seconds*1000)
  while Time.get_ticks_msec()<until:
@@ -35,7 +40,7 @@ func connect_peer(identity: String="",secret: String="",resume: String="") -> Di
  var p: Dictionary={"ws":ws,"id":crypto.generate_random_bytes(16).hex_encode() if identity=="" else identity,"secret":crypto.generate_random_bytes(32).hex_encode() if secret=="" else secret,"uid":"","room":"","state":{},"reply":{},"snapshots":0,"bytes":0,"authenticated":false}
  peers.append(p)
  if not await wait_for(func()->bool:return ws.get_ready_state()==WebSocketPeer.STATE_OPEN):return p
- send(p,{"op":"hello","protocol":2,"identity":p.id,"proof":p.secret,"room":resume})
+ send(p,{"op":"hello","protocol":3,"identity":p.id,"proof":p.secret,"room":resume})
  await wait_for(func()->bool:return p.authenticated or not p.reply.is_empty())
  return p
 func _initialize() -> void:run.call_deferred()
@@ -65,6 +70,9 @@ func run() -> void:
  send(host,{"op":"appearance","appearance":preload("res://scripts/wardrobe/catalog.gd").DEFAULT})
  check(await wait_for(func()->bool:return host.reply.has("error")),"real server rejects midmatch appearance change")
  check(host.state.roster[0].cosmetic==appearance,"midmatch appearance remains synchronized after rejected change")
+ check(peers.all(func(p: Dictionary)->bool:return p.state.map_id==host.state.map_id),"all eight socket clients receive the same server-selected registered map")
+ var colors: Array=host.state.roster.map(func(row: Dictionary)->int:return int(row.color))
+ check(colors.all(func(c: int)->bool:return colors.count(c)==1),"eight socket clients receive unique immutable identity colors")
  var roles: Array=[]
  for p in peers:
   roles.append(p.state.self.role)
@@ -100,9 +108,9 @@ func run() -> void:
  send(extra,{"op":"start"})
  check(await wait_for(func()->bool:return six.all(func(p: Dictionary)->bool:return not p.state.is_empty() and p.state.phase=="prepare")),"six-client match starts with private server roles")
  check(six.filter(func(p: Dictionary)->bool:return p.state.self.role=="yokai").size()==2,"six-client match has exactly two yokai")
- var samples:=0;var bytes:=0
- for p in peers:samples+=p.snapshots;bytes+=p.bytes
- var report={"checks":checks,"failures":failures,"transport":"real localhost TCP WebSocket connections","real_android_devices":false,"human_players":false,"clients_in_match":8,"snapshot_packets":samples,"snapshot_bytes":bytes,"mean_snapshot_bytes":float(bytes)/maxi(samples,1)}
+ var samples:=0;var bytes:=0;var wire_bytes:=0
+ for p in peers:samples+=p.snapshots;bytes+=p.bytes;wire_bytes+=int(p.get("wire_bytes",0))
+ var report={"checks":checks,"failures":failures,"transport":"real localhost TCP WebSocket connections","real_android_devices":false,"human_players":false,"clients_in_match":8,"snapshot_packets":samples,"snapshot_bytes":bytes,"mean_snapshot_bytes":float(bytes)/maxi(samples,1),"mean_wire_snapshot_bytes":float(wire_bytes)/maxi(samples,1)}
  var f:=FileAccess.open("res://builds/v20-network-measurements.json",FileAccess.WRITE);f.store_string(JSON.stringify(report,"  "));f.close()
  for p in peers:p.ws.close()
  await process_frame;print("SEAL NETWORK: %d checks, %d failures; real sockets, automated clients, no Android-device claim" % [checks,failures]);quit(0 if failures==0 else 1)

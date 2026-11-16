@@ -3,7 +3,7 @@
 This is not a human or Android-device play test. Never publish identity secrets.
 """
 from pathlib import Path
-import json, os, socket, subprocess, sys, time, urllib.request
+import json, os, socket, subprocess, sys, time, urllib.request, shutil
 root = Path(__file__).resolve().parents[1]
 builds = root / 'builds'
 builds.mkdir(exist_ok=True)
@@ -13,7 +13,7 @@ def free_port():
         return sock.getsockname()[1]
 backend, frontend = free_port(), free_port()
 env = os.environ.copy()
-env.update(XDG_DATA_HOME='/tmp/dosa-seal-server-test', PORT=str(frontend), UPSTREAM_PORT=str(backend), SEAL_TEST_URL=f'ws://127.0.0.1:{frontend}')
+env.update(XDG_DATA_HOME=f'/tmp/dosa-seal-server-{frontend}', PORT=str(frontend), UPSTREAM_PORT=str(backend), SEAL_TEST_URL=f'ws://127.0.0.1:{frontend}')
 godot = os.environ.get('GODOT_BIN', 'godot')
 with (builds/'seal-server-results.txt').open('w') as server_log, (builds/'seal-proxy-results.txt').open('w') as proxy_log:
     server = subprocess.Popen([godot, '--headless', '--path', str(root), '--script', 'res://scripts/seal/server.gd', '--', f'--port={backend}'], env=env, stdout=server_log, stderr=subprocess.STDOUT)
@@ -26,7 +26,7 @@ with (builds/'seal-server-results.txt').open('w') as server_log, (builds/'seal-p
                 raise RuntimeError('Dedicated server exited during startup')
             try:
                 with urllib.request.urlopen(f'http://127.0.0.1:{frontend}/health', timeout=.5) as reply:
-                    ready = json.load(reply).get('protocol') == 2
+                    ready = json.load(reply).get('protocol') == 3
             except OSError:
                 pass
             if ready:
@@ -35,8 +35,8 @@ with (builds/'seal-server-results.txt').open('w') as server_log, (builds/'seal-p
         if not ready:
             raise RuntimeError('Proxy health endpoint failed')
         print('PASS: real deployment HTTP health endpoint and backend readiness')
-        env['XDG_DATA_HOME']='/tmp/dosa-seal-network-client-test'
-        suite='seal_ui' if '--ui-only' in sys.argv else 'seal_network'
+        env['XDG_DATA_HOME']=f'/tmp/dosa-seal-client-{frontend}'
+        suite='seal_acquisition' if '--study-only' in sys.argv else ('seal_ui' if '--ui-only' in sys.argv else 'seal_network')
         display_args=['--headless'] if '--render' not in sys.argv else ['--audio-driver','Dummy','--max-fps','60']
         result=subprocess.call([sys.executable,str(root/'tools/run_godot_checked.py'),str(builds/(suite+'-results.txt')),godot,*display_args,'--path',str(root),'--script','res://tests/'+suite+'.gd'],env=env)
     finally:
@@ -46,4 +46,6 @@ text=(builds/'seal-server-results.txt').read_text()
 if any(marker in text for marker in ['SCRIPT ERROR:', 'ERROR:']):
     print(text)
     result=1
+shutil.rmtree(f'/tmp/dosa-seal-server-{frontend}', ignore_errors=True)
+shutil.rmtree(f'/tmp/dosa-seal-client-{frontend}', ignore_errors=True)
 sys.exit(result)

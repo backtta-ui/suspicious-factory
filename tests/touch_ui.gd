@@ -53,7 +53,7 @@ func run() -> void:
 		game.show_menu(false)
 		await frames(6)
 		var prefix := str(dimensions)+" "
-		for title in ["게임 시작","이어하기","설정","종료"]:
+		for title in ["봉인의 밤 · 온라인","그림 속 모험","이어하기","설정","종료"]:
 			var button:=find_button(title)
 			check(root.get_visible_rect().encloses(button.get_global_rect()),prefix+title+" touch bounds visible")
 		await capture("menu-%dx%d" % [dimensions.x,dimensions.y])
@@ -85,7 +85,7 @@ func run() -> void:
 		touch(Vector2(10,10),false)
 		await frames(3)
 		check(not is_instance_valid(game.modal),prefix+"release outside cancels settings")
-		var start:=find_button("게임 시작")
+		var start:=find_button("그림 속 모험")
 		p=start.get_global_rect().get_center()
 		touch(p,true);touch(p,false);touch(p,true);touch(p,false)
 		await frames(8)

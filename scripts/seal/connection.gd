@@ -51,11 +51,11 @@ func _process(delta: float) -> void:
  if state==WebSocketPeer.STATE_OPEN:
   if not was_open:
    was_open=true;tries=0
-   send({"op":"hello","protocol":C.PROTOCOL,"identity":profile.id,"proof":profile.secret,"room":room})
+   send({"op":"hello","protocol":C.PROTOCOL,"identity":profile.id,"proof":profile.secret,"room":room,"ticket":profile.get("progress_tickets",{}).get(endpoint,"")})
   while ws.get_available_packet_count()>0:
    var bytes:=ws.get_packet()
    if bytes.size()>131072:ws.close(1009);break
-   var value=JSON.parse_string(bytes.get_string_from_utf8())
+   var value=preload("res://scripts/seal/codec.gd").decode(bytes)
    if not value is Dictionary:continue
    last_receive=clock
    if value.get("op","")=="hello":uid=value.uid;authenticated=true;status.emit("서버 연결 완료")

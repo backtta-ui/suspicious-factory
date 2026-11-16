@@ -4,9 +4,9 @@ var clock:=0.0
 func _process(delta: float) -> void:clock+=delta;queue_redraw()
 func _draw() -> void:
  if client.state.is_empty():return
- var catalog=preload("res://scripts/seal/map.gd")
- var jail: Vector2=catalog.JAIL
- draw_arc(catalog.ALTAR,38,0,TAU,48,Color(.75,.65,1,.55),2,true)
+ var catalog=client.arena
+ var jail: Vector2=catalog.jail
+ draw_arc(catalog.altar,38,0,TAU,48,Color(.75,.65,1,.55),2,true)
  draw_rect(Rect2(jail-Vector2(58,36),Vector2(116,72)),Color(.12,.2,.28,.38))
  for x in range(-60,61,15):draw_line(jail+Vector2(x,-52),jail+Vector2(x,26),Color(.5,.7,1,.45),2)
  for m in client.state.get("missions",[]):

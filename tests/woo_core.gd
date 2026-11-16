@@ -41,9 +41,9 @@ func run() -> void:
 	await frames(6)
 	check(ProjectSettings.get_setting("application/config/name")=="도사: 전우치","new game application title")
 	check(Input.emulate_mouse_from_touch,"touch emulation kept enabled")
-	for title in ["게임 시작","이어하기","설정","종료"]:
+	for title in ["봉인의 밤 · 온라인","그림 속 모험","이어하기","설정","종료"]:
 		check(find_button(title)!=null,"main menu button: "+title)
-	await tap(find_button("게임 시작"))
+	await tap(find_button("그림 속 모험"))
 	check(game.screen_name=="playing" and is_instance_valid(game.player),"native touch starts playable game")
 	check(game.actors.size()==Layout.NPCS.size()+1,"one taoist and all village residents")
 	check(Layout.PROPS.filter(func(p: Dictionary)->bool:return p.kind=="hanok").size()>=4,"original hanok buildings retained")

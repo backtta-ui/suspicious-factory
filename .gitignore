@@ -5,6 +5,9 @@ builds/*
 !builds/.gdignore
 *.keystore
 *.jks
+*.key
+seal_server_career.json
+seal_identity.json
 .ci/
 __pycache__/
 *.pyc

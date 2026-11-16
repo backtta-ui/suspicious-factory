@@ -19,7 +19,13 @@ var title_label: Label
 var timer_label: Label
 var role_label: Label
 var event_label: Label
-var world: WooVillage
+var world: Node2D
+var arena:=preload("res://scripts/seal/arena.gd").new()
+var account: Dictionary={"owned_spells":[],"tier":"free"}
+var study_ui: SealStudyUI
+var env_nodes: Dictionary={}
+var color_markers: Dictionary={}
+var extract_button: Button
 var camera: Camera2D
 var avatars: Dictionary={}
 var actor_targets: Dictionary={}
@@ -42,7 +48,7 @@ var code_input: LineEdit
 var current_role_skill:="capture"
 var last_event:=0
 var result_round:=-1
-var mini: WooLocalMinimap
+var mini: Control
 var message:="서버 주소를 입력하고 연결하세요"
 func _ready() -> void:
  profile=Identity.load_profile();connection=Connection.new();connection.profile=profile;connection.room=str(profile.get("last_room",""));add_child(connection)
@@ -77,6 +83,7 @@ func build_login() -> void:
  var code_row:=HBoxContainer.new();stack.add_child(code_row)
  code_input=edit("6자리 방 코드","");code_input.max_length=6;code_row.add_child(code_input);code_row.add_child(game.button("코드 입장",join_room.bind("join")))
  stack.add_child(game.text("주소가 아직 없다면 접속 기능은 대기 상태입니다.\n같은 저장소의 Render 무료 배포 안내를 따라 서버를 만든 후 주소를 입력하세요.",17))
+ stack.add_child(game.button("그림 수련 · 도술 발견",start_study))
  stack.add_child(game.button("서버 무료 배포 안내",func()->void:OS.shell_open("https://github.com/backtta-ui/suspicious-factory/blob/main/docs/V2.0-SERVER.md")))
  stack.add_child(game.button("메인으로",exit_to_main))
 func connect_server() -> void:
@@ -90,27 +97,78 @@ func join_room(op: String) -> void:
  var forest_mastery:=false
  var save: Dictionary=game.Save.load_game()
  if not save.is_empty():forest_mastery=save.get("completed_paintings",[]).has("fox_forest") or save.get("rpg",{}).get("adventure_unlocks",[]).has("forest_cat")
- connection.send({"op":op,"appearance":game.wardrobe.data.appearance.duplicate(),"name":Catalog.clean_name(name_input.text),"room":code_input.text.strip_edges(),"slots":profile.slots,"forest_mastery":forest_mastery,"form":profile.get("form","jar")})
+ connection.send({"op":op,"appearance":game.wardrobe.data.appearance.duplicate(),"name":Catalog.clean_name(name_input.text),"room":code_input.text.strip_edges(),"slots":profile.slots,"reserve":profile.get("reserve",""),"forest_mastery":forest_mastery,"form":profile.get("form","jar")})
+func start_study() -> void:
+ if not connection.authenticated:update_status("먼저 서버 주소를 입력하고 연결하세요");return
+ connection.send({"op":"study_start"})
 func show_loadout() -> void:
- var stack:=open_popup("공통 도술 · 두 칸")
+ var stack:=open_popup("습득 도술 · 주 장착2 / VIP 예비1")
  if stack==null:return
- stack.add_child(game.text("모든 참가자에게 같은 기본 선택지를 제공합니다.\n모험 완료는 둔갑 외형 등 수집 선택지로 연결하며 전투력 차이를 만들지 않습니다.",17))
+ var tier: String=account.get("tier","free")
+ stack.add_child(game.text("무료: 역할 배정 후 준비30초에 보유 중 무작위2개 확정. 요괴는 사물 둔갑 제외.\n결제 미연동: 운영 계정은 무료. 유료/VIP 규칙은 서버 테스트 전용.",17))
  var grid:=GridContainer.new();grid.columns=4;stack.add_child(grid)
  for id in Catalog.COMMON:
-  var b: Button=game.button(Catalog.COMMON[id].name+(" ✓" if profile.slots.has(id) else ""),func()->void:
+  var learned: bool=(state.self.eligible_spells if not state.is_empty() and state.phase!="lobby" else account.get("owned_spells",[])).has(id)
+  var b: Button=game.button(Catalog.COMMON[id].name+(" ✓" if profile.slots.has(id) else "")+(" 🔒" if not learned else ""),func()->void:
    if profile.slots.has(id):profile.slots.erase(id)
    elif profile.slots.size()<2:profile.slots.append(id)
    else:profile.slots.pop_front();profile.slots.append(id)
-   Identity.save_profile(profile);close_popup();show_loadout())
-  b.custom_minimum_size=Vector2(180,90);grid.add_child(b)
- var saved: Dictionary=game.Save.load_game()
- var mastery: bool=not saved.is_empty() and (saved.get("completed_paintings",[]).has("fox_forest") or saved.get("rpg",{}).get("adventure_unlocks",[]).has("forest_cat"))
- var variant: Button=game.button("여우의 숲 고양이 둔갑 · "+("선택: "+str(profile.get("form","jar")) if mastery else "사당 퍼즐 또는 숲 완료로 해금"),func()->void:profile.form="jar" if profile.get("form","jar")=="cat" else "cat";Identity.save_profile(profile);close_popup();show_loadout())
- variant.disabled=not mastery;variant.add_theme_font_size_override("font_size",16);stack.add_child(variant)
+   Identity.save_profile(profile)
+   if connection.room!="":connection.send({"op":"loadout","slots":profile.slots,"reserve":profile.get("reserve","")})
+   close_popup();show_loadout())
+  b.disabled=not learned or tier=="free";b.custom_minimum_size=Vector2(180,80);grid.add_child(b)
+ if tier=="vip":
+  stack.add_child(game.text("예비 도술1개 · 대전 중 교체 비활성화(미확정 규칙)",18))
+  var row:=HBoxContainer.new();stack.add_child(row)
+  for id in (state.self.eligible_spells if not state.is_empty() and state.phase!="lobby" else account.owned_spells):
+   if profile.slots.has(id):continue
+   row.add_child(game.button(Catalog.COMMON[id].name,func()->void:
+    profile.reserve=id;Identity.save_profile(profile)
+    if connection.room!="":connection.send({"op":"loadout","slots":profile.slots,"reserve":id})
+    close_popup();show_loadout()))
  stack.add_child(game.button("닫기",close_popup,true))
+func study_challenge(data: Dictionary) -> void:
+ var stack:=open_popup(Catalog.COMMON[data.skill].name+" · 문양 발견")
+ stack.add_child(game.text(data.story,19))
+ var names: Array=["산","물","불","바람"];var sequence:=""
+ for i in range(3):sequence+=("✓ " if i<int(data.step) else "")+str(names[int(data.pattern[i])])+"  "
+ stack.add_child(game.text("순서대로 읽기: "+sequence,24,game.GOLD))
+ var row:=HBoxContainer.new();stack.add_child(row)
+ for i in range(4):
+  var answer: int=i
+  var b: Button=game.button(names[i],func()->void:connection.send({"op":"study_answer","skill":data.skill,"nonce":data.nonce,"answer":answer}))
+  b.custom_minimum_size=Vector2(170,80);b.disabled=true;row.add_child(b)
+  get_tree().create_timer(.43).timeout.connect(func()->void:if is_instance_valid(b):b.disabled=false)
+ stack.add_child(game.button("그림으로 돌아가기",close_popup))
 func receive(data: Dictionary) -> void:
  var op: String=str(data.get("op",""))
- if op=="joined":profile.last_room=data.room;Identity.save_profile(profile);state={};build_lobby()
+ if op=="account":
+  account=data.account
+  if not profile.get("spell_accounts",{}) is Dictionary:profile.spell_accounts={}
+  if not profile.has("spell_accounts"):profile.spell_accounts={}
+  var cached: Dictionary=profile.spell_accounts.get(connection.endpoint,{})
+  var remembered: Array=preload("res://scripts/seal/loadout.gd").known(cached.get("owned_spells",[])+account.owned_spells)
+  cached=account.duplicate(true);cached.owned_spells=remembered;profile.spell_accounts[connection.endpoint]=cached
+  if not profile.get("progress_tickets",{}) is Dictionary:profile.progress_tickets={}
+  if not profile.has("progress_tickets"):profile.progress_tickets={}
+  if account.has("ticket"):profile.progress_tickets[connection.endpoint]=account.ticket
+  if int(account.get("career_wins",0))>0:game.wardrobe.record_server_wins(connection.endpoint,int(account.career_wins))
+  Identity.save_profile(profile)
+ elif op=="study":
+  if not is_instance_valid(study_ui):
+   close_popup();dispose_world();state={};screen="study";study_ui=preload("res://scripts/seal/study_ui.gd").new();study_ui.client=self;add_child(study_ui)
+  study_ui.update_state(data.study)
+ elif op=="study_reply":
+  if data.has("study_challenge"):study_challenge(data.study_challenge)
+  if data.has("learned"):close_popup()
+  if data.has("notice"):update_status(data.notice)
+  if data.has("error"):update_status(data.error)
+ elif op=="study_ended":
+  close_popup()
+  if is_instance_valid(study_ui):study_ui.queue_free()
+  study_ui=null;state={};build_login()
+ elif op=="hello" and is_instance_valid(study_ui):close_popup();connection.send({"op":"study_start"})
+ elif op=="joined":profile.last_room=data.room;Identity.save_profile(profile);state={};build_lobby()
  elif op=="left":profile.last_room="";Identity.save_profile(profile);dispose_world();state={};build_login()
  elif op=="error" or op=="reply":
   if data.has("error"):update_status(str(data.error))
@@ -144,6 +202,7 @@ func build_lobby() -> void:
   connection.send({"op":"ready","value":not ready}),true))
  start_button=game.button("방장 시작",func()->void:connection.send({"op":"start"}));row.add_child(start_button)
  row.add_child(game.button("방 코드 복사",func()->void:DisplayServer.clipboard_set(connection.room)))
+ stack.add_child(game.button("습득 도술 / 장착 확인",show_loadout))
  stack.add_child(game.button("방 나가기",leave_room))
 func update_lobby() -> void:
  if not is_instance_valid(roster_label):return
@@ -154,28 +213,42 @@ func update_lobby() -> void:
   for i in range(state.roster.size()):
    var hero:=Actor.new();hero.network_remote=true;hero.cosmetic=state.roster[i].get("cosmetic",{});hero.position=Vector2(45+i*88,88);hero.scale=Vector2(1.7,1.7);lobby_art.add_child(hero);hero.collision_layer=0;hero.collision_mask=0
  var lines: Array[String]=[]
- for p in state.roster:lines.append(("♔ " if state.host==p.uid else "")+p.name+" · "+("준비" if p.ready else "대기")+(" · 재접속 대기" if not p.connected else ""))
+ for p in state.roster:lines.append(("♔ " if state.host==p.uid else "")+preload("res://scripts/seal/settings.gd").COLOR_NAMES[int(p.get("color",0))]+" · "+p.name+" · "+("준비" if p.ready else "대기")+(" · 재접속 대기" if not p.connected else ""))
  start_button.disabled=state.host!=connection.uid or state.roster.size()<6 or not state.roster.all(func(p: Dictionary)->bool:return p.ready and p.connected)
- roster_label.text="%d / 8명\n"%state.roster.size()+"\n".join(lines)
+ var loadout_names: Array=[]
+ for id in state.self.slots:loadout_names.append(Catalog.COMMON[id].name if Catalog.COMMON.has(id) else "빈 칸")
+ roster_label.text="%d / 8명 · 내 장착(무료는 역할 배정 후 확정): %s\n"%[state.roster.size()," / ".join(loadout_names)]+"\n".join(lines)
 func build_world() -> void:
  if is_instance_valid(world):return
- world=Village.new();world.cycle_enabled=false;world.time_of_day=.5;add_child(world)
+ arena=preload("res://scripts/seal/arena.gd").new(str(state.get("map_id","village")))
+ world=load(arena.data.scene).new()
+ if arena.id=="village":world.cycle_enabled=false;world.time_of_day=.5
+ add_child(world)
  var fx:=preload("res://scripts/seal/world_fx.gd").new();fx.client=self;fx.z_index=5;world.add_child(fx)
 func dispose_world() -> void:
  if is_instance_valid(world):world.queue_free()
+ env_nodes.clear();color_markers.clear()
  world=null;camera=null;avatars.clear();actor_targets.clear();nameplates.clear();clone_avatars.clear()
 func update_actors() -> void:
  if not is_instance_valid(world):return
+ for asset in state.get("assets",[]):
+  if not env_nodes.has(asset.id):
+   var node:=preload("res://scripts/seal/environment_asset.gd").new();node.kind=asset.kind;world.add_child(node);env_nodes[asset.id]=node
+  var node: SealEnvironmentAsset=env_nodes[asset.id];var position:=Vector2(asset.position[0],asset.position[1]);node.moving=node.position.distance_to(position)>.1;node.facing=4 if position.x<node.position.x else 0;node.position=position
  var visible_ids: Array=[]
  for info in state.actors:
   var id: String=info.uid;visible_ids.append(id)
   if not avatars.has(id):
    var actor:=Actor.new();actor.network_remote=true;actor.position=Vector2(info.position[0],info.position[1]);world.add_child(actor);avatars[id]=actor
-   var label: Label=game.text("",11,Color("ebe5d7"));label.position=Vector2(-60,-65);label.size=Vector2(120,20);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label);nameplates[id]=label
+   var marker:=preload("res://scripts/seal/color_marker.gd").new();marker.actor=actor;actor.add_child(marker);color_markers[id]=marker
+   var label: Label=game.text("",9,Color("ebe5d7"));label.position=Vector2(-27,-58);label.size=Vector2(54,16);label.clip_text=true;label.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label);nameplates[id]=label
    if id==connection.uid:
-    camera=Camera2D.new();camera.zoom=Vector2(2,2);camera.position=Vector2(0,-36);camera.position_smoothing_enabled=true;camera.position_smoothing_speed=6;camera.limit_left=0;camera.limit_top=0;camera.limit_right=3400;camera.limit_bottom=1900;actor.add_child(camera);camera.make_current()
-  var actor: WooActor=avatars[id];actor_targets[id]=Vector2(info.position[0],info.position[1]);actor.cosmetic=info.get("cosmetic",{});actor.facing=int(info.facing);actor.appearance_form=info.form;actor.jar=false;actor.velocity=Vector2(20,0) if info.moving else Vector2.ZERO
+    camera=Camera2D.new();camera.zoom=Vector2(2,2);camera.position=Vector2(0,-36);camera.position_smoothing_enabled=true;camera.position_smoothing_speed=6;camera.limit_left=0;camera.limit_top=0;camera.limit_right=int(arena.data.size.x);camera.limit_bottom=int(arena.data.size.y);actor.add_child(camera);camera.make_current()
+  var actor: WooActor=avatars[id];actor_targets[id]=Vector2(info.position[0],info.position[1]);actor.identity_concealed=bool(info.get("concealed",false));actor.cosmetic=info.get("cosmetic",{});actor.facing=int(info.facing);actor.appearance_form=info.form;actor.jar=false;actor.velocity=Vector2(20,0) if info.moving else Vector2.ZERO
   if info.casting:actor.transforming=.12
+  if color_markers.has(id):color_markers[id].color_id=int(info.get("color",0))
+  nameplates[id].visible=info.form=="human" and not info.get("concealed",false)
+  nameplates[id].modulate=Color(preload("res://scripts/seal/settings.gd").COLORS[int(info.get("color",0))])
   nameplates[id].text=info.name+(" · 나" if id==connection.uid else "")
  for id in avatars.keys():
   if not visible_ids.has(id):avatars[id].queue_free();avatars.erase(id);actor_targets.erase(id);nameplates.erase(id)
@@ -186,19 +259,21 @@ func update_actors() -> void:
   var id: String=str(e.id);clones.append(id)
   if not clone_avatars.has(id):
    var clone:=Actor.new();clone.network_remote=true;clone.position=Vector2(e.position[0],e.position[1]);world.add_child(clone);clone_avatars[id]=clone
+   var marker:=preload("res://scripts/seal/color_marker.gd").new();marker.actor=clone;marker.color_id=int(e.get("color",0));clone.add_child(marker)
    var label: Label=game.text(e.name,11);label.position=Vector2(-60,-65);label.size.x=120;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;clone.add_child(label)
   clone_avatars[id].facing=int(e.facing);clone_avatars[id].cosmetic=e.get("cosmetic",{})
  for id in clone_avatars.keys():
   if not clones.has(id):clone_avatars[id].queue_free();clone_avatars.erase(id)
 func build_hud() -> void:
  screen="game";game.active_context="seal";game.new_ui()
+ extract_button=game.button("형상 추출",func()->void:connection.send({"op":"extract","asset":nearest_extractable()}));extract_button.position=Vector2(938,228);extract_button.custom_minimum_size=Vector2(290,64);game.ui.add_child(extract_button)
  title_label=game.text("봉인의 밤",20,game.GOLD);title_label.position=Vector2(24,14);game.ui.add_child(title_label)
  role_label=game.text("",17);role_label.position=Vector2(24,48);game.ui.add_child(role_label)
  timer_label=game.text("",17);timer_label.position=Vector2(24,76);game.ui.add_child(timer_label)
  event_label=game.text("",17,Color("e9d8b1"));event_label.position=Vector2(24,110);event_label.custom_minimum_size.x=500;game.ui.add_child(event_label)
  status_label=game.text(message,14,Color("96b6ca"));status_label.position=Vector2(24,145);game.ui.add_child(status_label)
  var menu: Button=game.button("메뉴",show_pause);menu.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);menu.offset_left=-280;menu.offset_right=-162;menu.offset_top=22;menu.offset_bottom=82;game.ui.add_child(menu)
- mini=preload("res://scripts/woo/minimap.gd").new();mini.elder_done=true;mini.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);mini.offset_left=-150;mini.offset_right=-18;mini.offset_top=10;mini.offset_bottom=142;game.ui.add_child(mini)
+ mini=preload("res://scripts/seal/minimap.gd").new();mini.client=self;mini.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);mini.offset_left=-150;mini.offset_right=-18;mini.offset_top=10;mini.offset_bottom=142;game.ui.add_child(mini)
  stick=preload("res://scripts/joystick.gd").new();stick.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT);stick.position=Vector2(74,-222);stick.size=Vector2(174,174);game.ui.add_child(stick)
  skill_buttons=[]
  for i in range(2):
@@ -206,6 +281,19 @@ func build_hud() -> void:
  role_button=skill_button("역할 능력",Vector2(-162,-146),Vector2(128,128),role_action)
  interact_button=skill_button("상호작용",Vector2(-306,-132),Vector2(112,112),interact)
  meeting_button=game.button("봉인 회의",func()->void:connection.send({"op":"meeting"}));meeting_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);meeting_button.offset_left=-180;meeting_button.offset_right=-28;meeting_button.offset_top=-350;meeting_button.offset_bottom=-286;game.ui.add_child(meeting_button)
+func show_forms() -> void:
+ var stack:=open_popup("기억한 형상 · 이번 맵")
+ for form in state.self.forms:
+  var id: String=form
+  stack.add_child(game.button(preload("res://scripts/seal/arena.gd").KINDS[id].name,func()->void:connection.send({"op":"select_form","form":id});close_popup()))
+ stack.add_child(game.button("돌아가기",close_popup))
+func nearest_extractable() -> String:
+ if state.is_empty() or not state.self.slots.has("transform") or not state.self.owned_spells.has("transform") or state.self.role!="daoist":return ""
+ var p:=Vector2(state.self.position[0],state.self.position[1]);var distance:=float(state.get("rules",{}).get("extract_range",76.0));var chosen:=""
+ for asset in state.get("assets",[]):
+  var q:=Vector2(asset.position[0],asset.position[1]);var d:=p.distance_to(q)
+  if asset.extractable and d<distance and arena.line(p,q):distance=d;chosen=asset.id
+ return chosen
 func skill_button(label: String,pos: Vector2,dimensions: Vector2,callback: Callable) -> Button:
  var b: Button=game.button(label,callback,true);b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=pos;b.size=dimensions;game.ui.add_child(b)
  for child in b.get_children():child.hide()
@@ -229,6 +317,8 @@ func closest(captured_only: bool=false) -> String:
 func cast_common(index: int) -> void:
  if state.is_empty():return
  var id: String=state.self.slots[index]
+ if not Catalog.COMMON.has(id):return
+ if id=="transform" and state.self.forms.size()>1 and state.self.get("selected_form","")=="":show_forms();return
  connection.send({"op":"cast","skill":id,"target":closest()})
 func role_action() -> void:
  if state.is_empty():return
@@ -248,9 +338,9 @@ func interact() -> void:
   var p:=Vector2(m.position[0],m.position[1])
   if m.kind=="fragments":
    for i in range(3):
-    if origin.distance_to(Map.safe(p+Vector2.from_angle(i*TAU/3)*78))<65 and not state.self.fragments.has(float(i)) and not state.self.fragments.has(i):connection.send({"op":"collect","mission":m.id,"piece":i});return
+    if origin.distance_to(arena.safe(p+Vector2.from_angle(i*TAU/3)*78))<65 and not state.self.fragments.has(float(i)) and not state.self.fragments.has(i):connection.send({"op":"collect","mission":m.id,"piece":i});return
   if origin.distance_to(p)<85:connection.send({"op":"task_open","mission":m.id});return
- if origin.distance_to(Map.ALTAR)<110:connection.send({"op":"fallback"})
+ if origin.distance_to(arena.altar)<110:connection.send({"op":"fallback"})
  else:update_status("봉인 미션, 감옥 또는 중앙 봉인진 가까이 접근하세요")
 func open_popup(title: String) -> VBoxContainer:
  if is_instance_valid(popup):close_popup()
@@ -295,10 +385,14 @@ func show_meeting() -> void:
  var stack:=open_popup("봉인 회의 · "+("토론" if state.phase=="discuss" else "투표"))
  meeting_timer=game.text("",18,game.GOLD);stack.add_child(meeting_timer)
  meeting_log=game.text("",17);meeting_log.custom_minimum_size=Vector2(690,110);meeting_log.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;stack.add_child(meeting_log)
- stack.add_child(game.text("무고한 도사를 지목하면 35초 활동 제한. 동점/기권은 봉인하지 않습니다.",17))
+ stack.add_child(game.text("오봉인 시 임시 활동 제한(서버 설정). 동점/기권은 봉인하지 않습니다.",17))
  var grid:=GridContainer.new();grid.columns=4;stack.add_child(grid)
  for p in state.roster:
-  var b: Button=game.button(p.name+(" · 포획" if p.captured else ""),func()->void:connection.send({"op":"vote","target":p.uid});update_status("투표를 전송했습니다"));b.disabled=state.phase!="vote" or p.sealed or state.self.captured;b.clip_text=true;b.custom_minimum_size=Vector2(180,64);b.add_theme_font_size_override("font_size",16);grid.add_child(b)
+  var b: Button=game.button(preload("res://scripts/seal/settings.gd").COLOR_NAMES[int(p.get("color",0))]+" · "+p.name+(" · 포획" if p.captured else ""),func()->void:connection.send({"op":"vote","target":p.uid});update_status("투표를 전송했습니다"));b.disabled=state.phase!="vote" or p.sealed or state.self.captured;b.clip_text=true;b.custom_minimum_size=Vector2(180,64);b.add_theme_font_size_override("font_size",16);grid.add_child(b)
+ for child in grid.get_children():
+  if child is Button:
+   var index: int=child.get_index()
+   child.add_theme_color_override("font_color",Color(preload("res://scripts/seal/settings.gd").COLORS[int(state.roster[index].color)]))
  var row:=HBoxContainer.new();stack.add_child(row)
  var skip: Button=game.button("기권",func()->void:connection.send({"op":"vote","target":"skip"}));skip.disabled=state.phase!="vote";row.add_child(skip)
  var chat:=edit("회의 채팅 · 최대72자","");chat.max_length=72;row.add_child(chat);row.add_child(game.button("전송",func()->void:connection.send({"op":"chat","text":chat.text});chat.text=""))
@@ -322,13 +416,19 @@ func show_pause() -> void:
  if not state.is_empty() and state.self.role=="yokai":
   var grid:=GridContainer.new();grid.columns=3;stack.add_child(grid)
   for id in Catalog.EVIL:grid.add_child(game.button(Catalog.EVIL[id].name,func()->void:current_role_skill=id;close_popup()))
+ if not state.is_empty() and state.phase=="prepare":stack.add_child(game.button("준비 도술 확인 / 선택",show_loadout))
  if not state.is_empty() and state.phase in ["discuss","vote"]:stack.add_child(game.button("회의 / 투표",show_meeting))
+ if not state.is_empty() and state.self.slots.has("transform"):stack.add_child(game.button("기억한 형상 선택",show_forms))
  stack.add_child(game.button("돌아가기",close_popup,true));stack.add_child(game.button("방 나가기",leave_room))
 func leave_room() -> void:
  close_popup();connection.send({"op":"leave"});connection.room="";profile.last_room="";Identity.save_profile(profile);dispose_world();state={};build_login()
 func exit_to_main() -> void:
  connection.stop();dispose_world();game.seal_client=null;game.show_menu(false);queue_free()
 func back() -> void:
+ if is_instance_valid(study_ui):
+  if is_instance_valid(popup):close_popup()
+  else:connection.send({"op":"study_end"})
+  return
  if is_instance_valid(popup):close_popup()
  elif screen=="game":show_pause()
  elif screen=="lobby":leave_room()
@@ -354,11 +454,11 @@ func _process(delta: float) -> void:
   actor.animation_time+=delta*7 if actor.velocity.length()>0 else delta
   actor.gait_phase+=delta*11;actor.gait_weight=move_toward(actor.gait_weight,1.0 if actor.velocity.length()>0 else 0.0,delta*10)
   if id==connection.uid and can_move:
-   actor.position=Map.move(actor.position,actor.position+stick.vector*(64 if self_state.carry!="" else Catalog.MOVE_SPEED)*minf(delta,.05))
+   actor.position=arena.move(actor.position,actor.position+stick.vector*float(self_state.get("move_speed",Catalog.MOVE_SPEED))*minf(delta,.05))
   if actor.position.distance_to(target)>60:actor.position=target;actor.reset_physics_interpolation()
   else:actor.position=actor.position.lerp(target,minf(1,delta*(10 if id==connection.uid else 12)))
  if is_instance_valid(mini) and avatars.has(connection.uid):mini.update_local(avatars[connection.uid].position,true)
- title_label.text="봉인의 밤 · 방 "+connection.room
+ title_label.text="봉인의 밤 · "+str(state.get("map_name",""))+" · 방 "+connection.room
  var allies: Array[String]=[]
  for id in self_state.teammates:
   for p in state.roster:
@@ -369,10 +469,15 @@ func _process(delta: float) -> void:
  timer_label.text="%02d:%02d · 봉인 기회 %d · %s"%[int(state.time)/60,int(state.time)%60,state.resources,state.phase]
  if not state.events.is_empty():event_label.text=state.events.back().text
  for i in range(2):
-  var id: String=self_state.slots[i];var b:=skill_buttons[i];var badge: WooSkillBadge=b.get_node("Badge");badge.skill=Catalog.COMMON[id].icon;badge.maximum=Catalog.COMMON[id].cd;badge.remaining=float(self_state.cooldowns.get(id,0));b.disabled=not can_move or badge.remaining>0
+  var id: String=self_state.slots[i];var b:=skill_buttons[i];var badge: WooSkillBadge=b.get_node("Badge");badge.skill=Catalog.COMMON[id].icon if Catalog.COMMON.has(id) else "locked";badge.maximum=Catalog.COMMON[id].cd if Catalog.COMMON.has(id) else 1;badge.remaining=float(self_state.cooldowns.get(id,0));badge.locked=not Catalog.COMMON.has(id);b.disabled=not can_move or badge.remaining>0 or badge.locked
+ var display_slots: Array=[]
+ for skill in self_state.slots:display_slots.append(Catalog.COMMON[skill].name if Catalog.COMMON.has(skill) else "빈 칸")
+ if state.phase=="prepare":event_label.text="최종 장착: "+" / ".join(display_slots)+" · 준비 후 재추첨 없음"
  var role_badge: WooSkillBadge=role_button.get_node("Badge")
  role_badge.skill="rescue" if self_state.role!="yokai" or self_state.captured else Catalog.EVIL[current_role_skill].icon
  role_badge.remaining=float(self_state.channel) if self_state.channel>0 else (float(self_state.cooldowns.get(current_role_skill,0)) if self_state.role=="yokai" else 0);role_badge.maximum=5.0 if self_state.channel>0 else float(Catalog.EVIL[current_role_skill].cd)
+ extract_button.visible=self_state.slots.has("transform") and self_state.owned_spells.has("transform") and self_state.role=="daoist"
+ extract_button.disabled=not can_move or nearest_extractable()==""
  role_button.disabled=(not can_move and not self_state.captured) or (self_state.captured and self_state.escape<=0)
  var interact_badge: WooSkillBadge=interact_button.get_node("Badge");interact_badge.skill="talisman";interact_button.disabled=not can_move
  meeting_button.disabled=not can_move or state.resources<1 or state.phase!="roam"

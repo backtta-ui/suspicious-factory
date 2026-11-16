@@ -25,7 +25,7 @@ func run() -> void:
 	root.size=Vector2i(1280,720)
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game)
 	await frames(6);await capture("menu")
-	await tap(find_button("게임 시작",game.ui))
+	await tap(find_button("그림 속 모험",game.ui))
 	assert(game.screen_name=="playing")
 	await frames(10);await capture("village")
 	var p: Vector2=game.joystick.get_global_rect().get_center()+Vector2(60,0)

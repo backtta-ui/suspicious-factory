@@ -27,7 +27,7 @@ func run() -> void:
 	game=load("res://scenes/main.tscn").instantiate();root.add_child(game)
 	await frames(5)
 	if mode=="write":
-		await tap(find_button("게임 시작",game.ui))
+		await tap(find_button("그림 속 모험",game.ui))
 		game.player.position=Layout.SPAWN+Vector2(32,0)
 		game.player.jar=true
 		game.settings.smooth_camera=false

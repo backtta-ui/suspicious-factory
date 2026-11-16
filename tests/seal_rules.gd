@@ -9,8 +9,8 @@ func check(ok: bool,label: String) -> void:
  if ok:print("PASS: "+label)
  else:failures+=1;push_error("FAIL: "+label)
 func room(count: int=8) -> SealRules:
- var r:=Rules.new("123456",321)
- for i in range(count):r.add("p%d"%i,"도사%d"%i,["transform","blink"]);r.command("p%d"%i,{"op":"ready","value":true})
+ var r:=Rules.new("123456",321,{"map_pool":["village"]})
+ for i in range(count):r.add("p%d"%i,"도사%d"%i,["transform","blink"],{"owned_spells":C.COMMON.keys(),"tier":"paid"});r.command("p%d"%i,{"op":"ready","value":true})
  r.start("p0");return r
 func advance(r: SealRules,seconds: float) -> void:
  for i in range(ceili(seconds/.05)):r.tick(.05)
@@ -21,7 +21,7 @@ func run() -> void:
  for count in [6,7,8]:
   var r:=room(count)
   check(teams(r,"yokai").size()==2 and teams(r,"daoist").size()==count-2,"fixed two secret yokai at %d players"%count)
- var r:=room();var evils:=teams(r,"yokai");var daos:=teams(r,"daoist");var evil: Dictionary=r.players[evils[0]];var dao: Dictionary=r.players[daos[0]]
+ var r:=room();var evils:=teams(r,"yokai");var daos:=teams(r,"daoist");var evil: Dictionary=r.players[evils[0]];var dao: Dictionary=r.players[daos[0]];dao.forms=["jar"];dao.selected_form="jar"
  var view:=r.view(dao.uid)
  check(view.self.role=="daoist" and view.self.teammates.is_empty(),"dao receives only own private role")
  check(view.roster.all(func(p: Dictionary)->bool:return not p.has("role") and not p.has("position")),"public roster has neither roles nor world positions")
@@ -78,6 +78,7 @@ func run() -> void:
  check(evil.uid==evils[0] and evil.role==before_role and evil.buff.get("appearance","")==helper.uid,"identity disguise changes appearance only, never actual ID or role")
  # Exercise every implemented common and role ability on authoritative state.
  helper.position=Map.safe(Vector2(1160,730));evil.position=Map.safe(Vector2(1190,730))
+ helper.forms=["jar"];helper.selected_form="jar"
  for skill in ["transform","track","rescue"]:
   helper.slots=[skill,"blink"];helper.cd[skill]=0
   var reply:=r.command(helper.uid,{"op":"cast","skill":skill})
@@ -86,7 +87,7 @@ func run() -> void:
  r.command(helper.uid,{"op":"cast","skill":"smoke"})
  check(r.effects.any(func(e: Dictionary)->bool:return e.kind=="smoke"),"smoke creates an actual visibility-limiting area")
  helper.cd.mask=0;r.command(helper.uid,{"op":"cast","skill":"mask","target":evil.uid})
- check(helper.buff.get("appearance","")==evil.uid and helper.role=="daoist","common mask works for daoists without assigning yokai role")
+ check(helper.buff.get("mask",0)>r.elapsed and not helper.buff.has("appearance") and helper.role=="daoist","common concealment does not copy a player; mimic remains role-specific")
  for skill in ["darkness","fake_flame"]:
   evil.cd[skill]=0;r.command(evil.uid,{"op":"cast","skill":skill})
   check(r.effects.any(func(e: Dictionary)->bool:return e.kind==skill),"role ability creates timed world state: "+skill)

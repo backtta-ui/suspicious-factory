@@ -7,3 +7,6 @@ builds
 *.jks
 *.apk
 *.aab
+
+*.key
+seal_server_career.json

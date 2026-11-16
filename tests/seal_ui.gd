@@ -12,7 +12,7 @@ func poll() -> void:
  for p in peers:
   p.ws.poll()
   while p.ws.get_available_packet_count()>0:
-   var data=JSON.parse_string(p.ws.get_packet().get_string_from_utf8())
+   var data=preload("res://scripts/seal/codec.gd").decode(p.ws.get_packet())
    if data is Dictionary:
     if data.get("op","")=="hello":p.auth=true
     if data.get("op","")=="state":p.state=data.state
@@ -43,16 +43,21 @@ func shot(name: String) -> void:
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
  root.size=Vector2i(1280,720);game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await process_frame
- game.show_seal();await process_frame;var ui: SealClientUI=game.seal_client
+ await tap(find_button("봉인의 밤 · 온라인",game.ui));var ui: SealClientUI=game.seal_client
  ui.address_input.text=address;ui.name_input.text="검사방장";ui.connect_server()
  if not await wait_for(func()->bool:return ui.connection.authenticated):check(false,"UI real-server connect");game.queue_free();await process_frame;quit(1);return
  check(true,"multiplayer setup connects actual WebSocket server")
+ await tap(find_button("그림 수련 · 도술 발견",game.ui))
+ check(await wait_for(func()->bool:return is_instance_valid(ui.study_ui) and not ui.study_ui.state.is_empty()),"native touch opens server-authoritative discovery adventure with actual hero")
+ await shot("study")
+ await tap(find_button("수련에서 돌아가기",game.ui))
+ check(await wait_for(func()->bool:return ui.screen=="login" and not is_instance_valid(ui.study_ui)),"native touch exits study without changing existing single-player save")
  ui.join_room("create")
  check(await wait_for(func()->bool:return ui.screen=="lobby" and not ui.state.is_empty()),"actual lobby replaces setup after server join acknowledgement")
  for i in range(5):
   var ws:=WebSocketPeer.new();ws.connect_to_url(address);var p: Dictionary={"ws":ws,"auth":false,"state":{}};peers.append(p)
   await wait_for(func()->bool:return ws.get_ready_state()==WebSocketPeer.STATE_OPEN)
-  var crypto:=Crypto.new();send(p,{"op":"hello","protocol":2,"identity":crypto.generate_random_bytes(16).hex_encode(),"proof":crypto.generate_random_bytes(32).hex_encode()});await wait_for(func()->bool:return p.auth)
+  var crypto:=Crypto.new();send(p,{"op":"hello","protocol":3,"identity":crypto.generate_random_bytes(16).hex_encode(),"proof":crypto.generate_random_bytes(32).hex_encode()});await wait_for(func()->bool:return p.auth)
   send(p,{"op":"join","room":ui.connection.room,"name":"네트워크%d"%i})
  check(await wait_for(func()->bool:return ui.state.roster.size()==6),"real UI roster shows all six network participants")
  await shot("lobby")

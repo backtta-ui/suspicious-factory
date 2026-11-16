@@ -16,7 +16,7 @@ async def handle(reader, writer):
                 status = b'200 OK'
             except OSError:
                 status = b'503 Service Unavailable'
-            body = json.dumps({'service': 'seal-night', 'protocol': 2, 'status': status.decode()}).encode()
+            body = json.dumps({'service': 'seal-night', 'protocol': 3, 'status': status.decode()}).encode()
             writer.write(b'HTTP/1.1 ' + status + b'\r\nContent-Type: application/json\r\nContent-Length: ' + str(len(body)).encode() + b'\r\nConnection: close\r\n\r\n' + body)
             await writer.drain()
             return

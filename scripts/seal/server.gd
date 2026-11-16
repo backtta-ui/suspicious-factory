@@ -5,6 +5,7 @@ const Catalog=preload("res://scripts/seal/catalog.gd")
 var tcp:=TCPServer.new()
 var sockets: Dictionary={}
 var identities: Dictionary={}
+var tickets: SealProgressTicket
 const CAREER_PATH="user://seal_server_career.json"
 func save_careers() -> void:
  var file:=FileAccess.open(CAREER_PATH+".tmp",FileAccess.WRITE)
@@ -21,6 +22,20 @@ func settle(room: SealRules) -> void:
   if p.role==room.winner and p.connected:entry.wins=int(entry.get("wins",0))+1
   p.career_wins=int(entry.get("wins",0))
  save_careers()
+ for conn in sockets.values():
+  if conn.identity!="" and room.players.has(conn.uid):send_account(conn)
+var studies: Dictionary={}
+const Study=preload("res://scripts/seal/study.gd")
+const Loadout=preload("res://scripts/seal/loadout.gd")
+func account_for(identity: String) -> Dictionary:
+ var entry: Dictionary=identities[identity]
+ var tier: String=str(entry.get("tier","free")) if OS.get_environment("SEAL_TEST_ENTITLEMENTS")=="1" else "free"
+ if tier not in ["free","paid","vip"]:tier="free"
+ return {"owned_spells":Loadout.known(entry.get("owned_spells",[])),"tier":tier,"reserve":str(entry.get("reserve",""))}
+func send_account(conn: Dictionary) -> void:
+ var account:=account_for(conn.identity);account.career_wins=int(identities[conn.identity].get("wins",0))
+ if tickets!=null:account.ticket=tickets.issue(identities[conn.identity])
+ send(conn,{"op":"account","account":account})
 var rooms: Dictionary={}
 var rng:=RandomNumberGenerator.new()
 var crypto:=Crypto.new()
@@ -31,6 +46,14 @@ var next_socket:=1
 var room_limit:=2
 func _initialize() -> void:
  rng.randomize();Engine.max_fps=30
+ var signing_key:=OS.get_environment("SEAL_PROGRESS_KEY")
+ if signing_key.length()<32:
+  if FileAccess.file_exists("user://seal_progress.key"):signing_key=FileAccess.get_file_as_string("user://seal_progress.key")
+  if signing_key.length()<32:
+   signing_key=Crypto.new().generate_random_bytes(32).hex_encode()
+   var key_file:=FileAccess.open("user://seal_progress.key",FileAccess.WRITE)
+   if key_file!=null:key_file.store_string(signing_key);key_file.flush();key_file.close()
+ tickets=preload("res://scripts/seal/progress_ticket.gd").new(signing_key)
  if FileAccess.file_exists(CAREER_PATH):
   var raw=JSON.parse_string(FileAccess.get_file_as_string(CAREER_PATH))
   if raw is Dictionary and raw.size()<=2048:
@@ -72,12 +95,18 @@ func _process(delta: float) -> bool:
  accumulator+=minf(delta,.15)
  while accumulator>=.05:
   accumulator-=.05
+  for study in studies.values():study.tick(.05)
   for room in rooms.values():
    room.tick(.05);settle(room)
  broadcast_left-=delta
  if broadcast_left<=0:
   broadcast_left=.1
+  var stale_studies: Array=[]
+  for uid in studies:
+   if studies[uid].idle>120:stale_studies.append(uid)
+  for uid in stale_studies:studies.erase(uid)
   for conn in sockets.values():
+   if studies.has(conn.uid):send(conn,{"op":"study","study":studies[conn.uid].view()})
    if conn.room!="" and rooms.has(conn.room) and rooms[conn.room].players.has(conn.uid):send(conn,{"op":"state","state":rooms[conn.room].view(conn.uid)})
   var expired: Array=[]
   for code in rooms:
@@ -89,11 +118,13 @@ func remove_socket(id: int) -> void:
  if not sockets.has(id):return
  var conn: Dictionary=sockets[id]
  if rooms.has(conn.room):rooms[conn.room].mark_disconnected(conn.uid)
+ if studies.has(conn.uid):studies[conn.uid].intent=Vector2.ZERO
  sockets.erase(id)
 func send(conn: Dictionary,data: Dictionary) -> void:
  var ws: WebSocketPeer=conn.ws
  if ws.get_ready_state()==WebSocketPeer.STATE_OPEN:
-  var err:=ws.send_text(JSON.stringify(data))
+  var payload:=JSON.stringify(data).to_utf8_buffer()
+  var err:=ws.put_packet(payload.compress(FileAccess.COMPRESSION_GZIP)) if payload.size()>256 else ws.send_text(payload.get_string_from_utf8())
   if err!=OK:ws.close(1013,"Connection busy; reconnect")
 func valid_hex(value: Variant,length: int) -> bool:
  if not value is String or value.length()!=length:return false
@@ -110,14 +141,16 @@ func dispatch(socket_id: int,conn: Dictionary,data: Dictionary) -> void:
   if identities.has(identity) and identities[identity].hash!=proof.sha256_text():send(conn,{"op":"error","error":"익명 플레이어 인증 실패"});return
   if not identities.has(identity):
    if identities.size()>2048:send(conn,{"op":"error","error":"서버가 혼잡합니다"});return
-   identities[identity]={"hash":proof.sha256_text(),"uid":identity.sha256_text().left(16),"wins":0}
+   identities[identity]={"hash":proof.sha256_text(),"uid":identity.sha256_text().left(16),"wins":0,"owned_spells":[]}
    save_careers()
   var uid: String=identities[identity].uid
   # Only one active connection may control this identity.
   for id in sockets:
    if id!=socket_id and sockets[id].uid==uid:sockets[id].ws.close(1000,"Reconnected");sockets[id].room=""
   conn.uid=uid;conn.identity=identity
+  if tickets.restore(data.get("ticket",""),identities[identity]):save_careers()
   send(conn,{"op":"hello","uid":uid,"protocol":Catalog.PROTOCOL})
+  send_account(conn)
   var requested: String=str(data.get("room",""))
   if rooms.has(requested) and rooms[requested].players.has(uid):
    conn.room=requested;rooms[requested].add(uid,"",[]);rooms[requested].players[uid].career_wins=int(identities[identity].get("wins",0));send(conn,{"op":"joined","room":requested})
@@ -125,6 +158,21 @@ func dispatch(socket_id: int,conn: Dictionary,data: Dictionary) -> void:
   return
  if conn.uid=="":send(conn,{"op":"error","error":"먼저 익명 인증이 필요합니다"});return
  if op=="ping":send(conn,{"op":"pong","stamp":data.get("stamp",0)});return
+ if op=="account":send_account(conn);return
+ if op=="study_start":
+  if conn.room!="":send(conn,{"op":"error","error":"먼저 방에서 나와 그림 수련을 시작하세요"});return
+  if not studies.has(conn.uid):
+   if studies.size()>=16:send(conn,{"op":"error","error":"동시 그림 수련 한도입니다. 잠시 후 다시 입장하세요"});return
+   studies[conn.uid]=Study.new(account_for(conn.identity).owned_spells)
+  send(conn,{"op":"study","study":studies[conn.uid].view()});return
+ if op=="study_end":studies.erase(conn.uid);send_account(conn);send(conn,{"op":"study_ended"});return
+ if op in ["study_move","study_open","study_answer"]:
+  if not studies.has(conn.uid):send(conn,{"op":"error","error":"그림 수련에 먼저 입장하세요"});return
+  var reply: Dictionary=studies[conn.uid].command(data)
+  if reply.has("learned"):
+   identities[conn.identity].owned_spells=studies[conn.uid].owned.duplicate();save_careers();send_account(conn)
+  if not reply.is_empty():reply.op="study_reply";send(conn,reply)
+  return
  if op in ["create","join","quick"]:
   if conn.room!="" and rooms.has(conn.room):send(conn,{"op":"error","error":"먼저 현재 방에서 나가세요"});return
   var code: String=str(data.get("room",""))
@@ -140,9 +188,12 @@ func dispatch(socket_id: int,conn: Dictionary,data: Dictionary) -> void:
     if not rooms.has(code):break
    rooms[code]=Rules.new(code)
   if not rooms.has(code):send(conn,{"op":"error","error":"해당 방 코드를 찾을 수 없습니다"});return
-  var loadout=data.get("slots",["transform","blink"])
+  if studies.has(conn.uid):send(conn,{"op":"error","error":"그림 수련에서 먼저 돌아오세요"});return
+  var loadout=data.get("slots",[])
   if not loadout is Array:loadout=[]
-  if not rooms[code].add(conn.uid,Catalog.clean_name(data.get("name","도사")),loadout):send(conn,{"op":"error","error":"게임 중이거나 방이 가득 찼습니다"});return
+  var account:=account_for(conn.identity)
+  account.reserve=str(data.get("reserve",""))
+  if not rooms[code].add(conn.uid,Catalog.clean_name(data.get("name","도사")),loadout,account):send(conn,{"op":"error","error":"게임 중이거나 방이 가득 찼습니다"});return
   rooms[code].players[conn.uid].form_choice="cat" if data.get("forest_mastery",false) and data.get("form","")=="cat" else "jar"
   var player: Dictionary=rooms[code].players[conn.uid]
   player.career_wins=int(identities[conn.identity].get("wins",0))

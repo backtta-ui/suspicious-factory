@@ -14,6 +14,7 @@ const BRANCHES=[[Vector2(900,690),Vector2(1080,470)],[Vector2(2100,1100),Vector2
 const ROAD=[Vector2(230,800),Vector2(500,670),Vector2(700,650),Vector2(900,550),Vector2(1180,620),Vector2(1350,1100),Vector2(2100,1100),Vector2(2450,700),Vector2(2600,1250),Vector2(2680,1720)]
 const GOBLINS=[Vector2(800,700),Vector2(2350,780),Vector2(2640,1650)]
 const BAMBOO=[Vector2(400,450),Vector2(480,350),Vector2(800,300),Vector2(730,430),Vector2(560,850),Vector2(1050,890),Vector2(1300,730),Vector2(1420,650),Vector2(1450,1480),Vector2(2100,1450),Vector2(2320,1240),Vector2(2750,1000),Vector2(2500,1830),Vector2(2200,1670),Vector2(1900,660),Vector2(2700,1550)]
+const EXTRA_BAMBOO=[Vector2(105,360),Vector2(90,580),Vector2(1420,400),Vector2(1430,650),Vector2(1400,800)]
 const TREES=[Vector2(1370,1320),Vector2(2130,1520),Vector2(2170,850),Vector2(2710,680)]
 const LANTERNS=[Vector2(330,740),Vector2(650,710),Vector2(900,480),Vector2(1300,560)]
 const ROCKS=[Vector3(560,400,28),Vector3(760,800,33),Vector3(1020,780,28),Vector3(1180,470,24),Vector3(420,560,23),Vector3(1500,800,30),Vector3(2200,600,28),Vector3(2730,1450,34),Vector3(2350,1720,25)]
@@ -25,7 +26,7 @@ static func can_stand(p: Vector2,margin: float=7) -> bool:
  if Rect2(2390,485,180,100).grow(margin).has_point(p):return false
  for tree in TREES:
   if p.distance_to(tree)<9+margin:return false
- for trunk in BAMBOO:
+ for trunk in BAMBOO+EXTRA_BAMBOO:
   if p.distance_to(trunk)<14+margin:return false
  for light in LANTERNS:
   if p.distance_to(light)<8+margin:return false

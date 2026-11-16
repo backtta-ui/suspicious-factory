@@ -23,7 +23,7 @@ func _ready() -> void:
  for i in range(36):
   add_prop("bamboo",Vector2(120+i*78,175),i)
   if i%2==0:add_prop("tree",Vector2(130+i*76,2010),i)
- for p in [Vector2(105,360),Vector2(90,580),Vector2(1420,400),Vector2(1430,650),Vector2(1400,800)]:add_prop("bamboo",p,0)
+ for p in Layout.EXTRA_BAMBOO:add_prop("bamboo",p,0)
  for x in [120,2920]:
   for y in range(350,2000,160):add_prop("bamboo",Vector2(x,y),0)
  for p in Layout.TREES:add_prop("tree",p,0)

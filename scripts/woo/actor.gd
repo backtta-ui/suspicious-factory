@@ -21,7 +21,9 @@ var pose_duration:=.3
 var jump_preparation:=0.0
 var jump_phase:="ground"
 var network_remote:=false
+var identity_concealed:=false
 var appearance_form:="human"
+var extracted_visual: SealEnvironmentAsset
 const SKILL_SHEET=preload("res://assets/woo/v20/skills.png")
 var dash_left:=0.0
 var dash_direction:=Vector2.ZERO
@@ -90,6 +92,7 @@ func _ready() -> void:
 		add_child(sprite)
 		hero_rig=preload("res://scripts/woo/hero_rig.gd").new();hero_rig.actor=self;add_child(hero_rig)
 		wardrobe_visual=preload("res://scripts/wardrobe/visual.gd").new();wardrobe_visual.actor=self;add_child(wardrobe_visual)
+		extracted_visual=preload("res://scripts/seal/environment_asset.gd").new();extracted_visual.hide();add_child(extracted_visual)
 	npc_origin = position
 func jump() -> bool:
 	if npc or not enabled or defeated or jump_height>0 or jump_velocity>0 or jump_preparation>0 or transforming>0:return false
@@ -187,7 +190,11 @@ func update_sprite() -> void:
 	sprite.scale=Vector2.ONE*ratio
 	sprite.offset=Vector2(region[2]/2.0-region[4],region[3]/2.0-region[5])
 	sprite.flip_h=false
-	sprite.visible=jar or appearance_form!="human"
+	sprite.visible=jar or (appearance_form!="human" and not appearance_form.begins_with("asset:"))
+	if is_instance_valid(extracted_visual):
+		extracted_visual.visible=appearance_form.begins_with("asset:")
+		if extracted_visual.visible:
+			extracted_visual.kind=appearance_form.trim_prefix("asset:");extracted_visual.facing=facing;extracted_visual.moving=velocity.length()>2;extracted_visual.queue_redraw()
 	sprite.position=Vector2(0,-jump_height)
 	sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
 
@@ -229,7 +236,8 @@ func update_npc_art() -> void:
 	npc_right_foot.position+=Vector2(-phase*1.0,-maxf(0,-phase)*.8)
 
 func _draw() -> void:
-	draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
+	if not appearance_form.begins_with("asset:"):
+		draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
 	if landing_left>0:
 		draw_arc(Vector2.ZERO,10+(1-landing_left/.18)*12,0,TAU,16,Color(.8,.75,.65,landing_left/.18*.5),2)
 	if highlighted:

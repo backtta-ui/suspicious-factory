@@ -1,10 +1,10 @@
-# 도사: 전우치 — V2.0 꾸미기 후속 2.0.1
+# 도사: 전우치 — V2.0 멀티플레이 통합 2.0.2
 
 Godot 4.6.3 / GDScript로 만든 Android 도술 어드벤처와 서버 권한 6~8인 추리·추격 게임입니다. 계월촌의 다섯 구역을 탐험하고 그림 속 ‘여우의 숲’에서 도깨비 세 마리와 전투한 뒤 보상을 얻어 돌아옵니다. 기존 GitHub 저장소와 Android 패키지·서명·내보내기 기반을 유지하고 게임을 전면 개편했습니다.
 
-[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.1.apk)
+[갤럭시 APK 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.2.apk)
 
-Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.1, versionCode는 12입니다.
+Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.2, versionCode는 13입니다.
 
 [V2.0 구현·검증·미완료 보고](docs/V2.0.md) · [휴대폰에서 무료 Render 서버 배포](docs/V2.0-SERVER.md)
 
@@ -13,6 +13,10 @@ Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 →
 [캐릭터·의상·공격 개선 안내와 미완료 항목](docs/CUSTOMIZATION-2.0.1.md)
 
 **도사 꾸미기**에서 무료 전우치/연화, 모험으로 해금하는 무영/홍련과 의상·헤어·모자·장신구·색상을 미리 보고 저장하세요. 공격 방향 갱신·발동작·광장 둔갑 쿨타임과 개별 공격 효과도 수정했습니다. 기존 앱을 삭제하지 말고 업데이트 설치하세요.
+
+[최신 멀티플레이 사용법·구현·미완료 보고](docs/MULTIPLAYER-2.0.2.md)
+
+주 버튼 **봉인의 밤 · 온라인** → 서버 연결 → **그림 수련 · 도술 발견** → 습득 → 방 참가 순서입니다. 무료는 역할 배정 뒤 준비 단계에 보유 중 무작위2개를 한 번 확정합니다. 요괴는 사물 둔갑을 후보에서 제외하고 고유 타인 둔갑을 사용합니다. 실제 구현된 마을/여우의 숲을 서버가 무작위 선택합니다. 결제 미연동이므로 운영 계정은 전부 무료입니다.
 
 ## 플레이
 

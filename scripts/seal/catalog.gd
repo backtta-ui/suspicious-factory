@@ -1,5 +1,6 @@
 class_name SealCatalog
 extends RefCounted
+## All cooldowns, durations and phase limits are provisional test balance, not final design.
 const COMMON={
  "transform":{"name":"둔갑술","cd":12.0,"duration":7.0,"icon":"jar"},
  "blink":{"name":"축지법","cd":10.0,"duration":0.0,"icon":"blink"},
@@ -15,7 +16,7 @@ const EVIL={
  "fake_flame":{"name":"가짜 혼불","cd":24.0,"duration":12.0,"icon":"fake_flame"},
  "shadow":{"name":"그림자 이동","cd":16.0,"duration":0.0,"icon":"shadow"},
  "mimic":{"name":"타인 둔갑","cd":25.0,"duration":9.0,"icon":"mimic"}}
-const PROTOCOL=2
+const PROTOCOL=3
 const PORT=10000
 const PREPARATION=30.0
 const MATCH_TIME=480.0

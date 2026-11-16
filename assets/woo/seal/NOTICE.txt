@@ -1,0 +1,4 @@
+Project-generated pixel-art cat, dog and chicken walking atlas.
+Four walking frames per animal; transparent source retained in development workspace.
+Environment assets and transformed players share scripts/seal/environment_asset.gd.
+No paid asset service or runtime generation API is used by the game.
