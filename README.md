@@ -45,7 +45,7 @@ assets/fonts/            한글 폰트와 라이선스
 
 Godot로 `project.godot`를 가져와 F5로 실행합니다. `bash tools/checkpoint.sh`는 게임·터치·저장·실제 프로세스 종료/재실행 검사 후 APK 빌드와 검증을 수행합니다. [빌드 안내](docs/BUILD.md), [전환·검증 보고서](docs/CONVERSION-V0.1.md), [개인정보 안내](docs/PRIVACY.md)를 참고하세요.
 
-[Actions APK 아티팩트 실행 기록](https://github.com/backtta-ui/suspicious-factory/actions/runs/43785580523) — 게임은 Cloud에서 빌드했으며 이 작업은 해당 APK를 검사·보관합니다. 아티팩트 ZIP의 파일 일치 검증도 통과했습니다.
+[Actions APK 아티팩트 실행 기록](https://github.com/backtta-ui/suspicious-factory/actions/runs/43806556594) — 게임은 기존 소스 Actions에서 컴파일하고 Cloud의 기존 키로 최종 서명했으며 이 작업은 설치용 APK를 검사·보관합니다. 아티팩트 ZIP의 파일 일치 검증도 통과했습니다.
 
 V0.1.1은 참고 이미지에 맞춰 타이틀, 한옥·벚나무·등불, 도사 8방향 시트와 주민·항아리, 금빛 UI를 교체했습니다. [그래픽 변경·검증 보고서](docs/VISUAL-V0.1.1.md)를 참고하세요.
 
@@ -56,3 +56,5 @@ V1.1: 실제 이동 면적 약 5.59배의 다섯 구역 광장, 천년 벚꽃나
 V1.2는 돌광장·연결된 상점 거리, 고정 목적지와 실제 4프레임 다리 동작을 쓰는 NPC, 손 도술·폭포·물안개를 국소 애니메이션으로 표시하는 타이틀을 적용했습니다. [원인 분석·수정·검증 보고서](docs/V1.2.md). 기존 음악·게임 기능·그림 잠금 상태를 유지합니다.
 
 [실제 V1.2 소스 Actions 빌드](https://github.com/backtta-ui/suspicious-factory/actions/runs/43783283617) 성공 → 기존 Cloud 키로 최종 서명 → 설치용 APK 아티팩트 전달 및 재다운로드 검증 완료.
+
+V1.3: 그림 감상 → 먹물 도술 입장 → 실제 여우의 숲 → 도깨비 3마리 전투 → 첫 보상 → 원래 광장 위치·방향 복귀. 가방/성장/지형 발소리/3슬롯 도술/회피/4종 타격 효과를 저장 데이터와 연결했습니다. [전체 구현·임시 요소·테스트·다운로드 보고서](docs/V1.3.md). [실제 최종 소스 Actions 빌드](https://github.com/backtta-ui/suspicious-factory/actions/runs/43805848449)와 [설치용 Actions APK ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43806556594).
