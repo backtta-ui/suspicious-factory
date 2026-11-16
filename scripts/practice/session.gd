@@ -27,7 +27,7 @@ func reset() -> void:
  for id in NPCS:
   var p: Dictionary=rules.players[id];p.position=NPCS[id].position;p.color=NPCS[id].color;p.role="yokai" if id=="yokai" else "daoist"
   p.cosmetic=Appearance.DEFAULT.duplicate();p.cosmetic.character="yeonhwa" if id=="blue" else ("hongryeon" if id=="red" else "muyeong");p.cosmetic.hat="none" if id=="red" else "gat";p.cosmetic.hair="flower" if id=="blue" else "silver";p.cosmetic.color="purple" if id=="blue" else "red"
-  stats[id]={"hp":100,"stun":0.0,"attack":0.0,"windup":0.0,"fired":false}
+  stats[id]={"hp":100,"stun":0.0,"attack":0.0,"windup":0.0,"fired":false,"guard_ready":0.0}
  rules.players.rescuee.captured=true;rules.players.rescuee.escape=0
  rules.phase="roam";rules.phase_until=1000000;hp=100;blocks=0;hits=0;defenses=0;strikes.clear()
  rules.missions.append({"id":0,"done":false,"position":rules.arena.altar,"jammed":0.0,"kind":"pillars","name":"수련 봉인 표적","step":0})
@@ -96,6 +96,9 @@ func attack(talisman: bool=false) -> bool:
  for id in NPCS:
   var q: Dictionary=rules.players[id]
   if q.captured or not Attack.in_cone(p.position,aim,q.position,distance) or not rules.arena.line(p.position,q.position):continue
+  if q.protected>rules.elapsed:continue
+  if rules.consume_shield(q,rules.elapsed):
+   defenses+=1;message=NPCS[id].name+" · 방어 성공 / 호신부 소모";strikes.append({"position":q.position,"damage":0,"gold":true});continue
   stats[id].hp=maxi(0,stats[id].hp-damage);stats[id].stun=rules.elapsed+(Attack.TALISMAN_SEAL_SECONDS if talisman else .3);hits+=1
   q.position=rules.arena.move(q.position,q.position+aim*12)
   strikes.append({"position":q.position,"damage":damage,"gold":talisman})
@@ -112,12 +115,13 @@ func tick(delta: float,intent: Vector2) -> void:
  for id in NPCS:
   var q: Dictionary=rules.players[id];var s: Dictionary=stats[id];q.intent=Vector2.ZERO
   if q.captured or s.stun>rules.elapsed:continue
+  if npc_mode=="guard" and s.guard_ready<=rules.elapsed:q.buff.shield=rules.elapsed+8;s.guard_ready=rules.elapsed+10
   var goal: Vector2=NPCS[id].position+Vector2(sin(rules.elapsed*.5+q.color)*62,cos(rules.elapsed*.4+q.color)*32)
   if npc_mode in ["chase","attack"] and rules.can_observe(id,"student") and (p.buff.get("mask",0)<=rules.elapsed or q.position.distance_to(p.position)<80):goal=p.position
   for effect in rules.effects:
    if effect.kind in ["clone","fake_flame"] and q.position.distance_to(effect.position)<260:goal=effect.position;break
   var offset: Vector2=goal-q.position
-  if npc_mode!="idle" and offset.length()>24:q.intent=offset.normalized()*.55;q.facing=posmod(roundi(offset.angle()/(PI/4)),8)
+  if npc_mode not in ["idle","guard"] and offset.length()>24:q.intent=offset.normalized()*.55;q.facing=posmod(roundi(offset.angle()/(PI/4)),8)
   if npc_mode=="attack" and id=="yokai" and rules.can_observe(id,"student") and q.position.distance_to(p.position)<48 and rules.elapsed>=s.attack and not p.captured:
    if s.windup==0:s.windup=rules.elapsed+.42;s.fired=false;q.buff.casting=rules.elapsed+.42
    q.intent=Vector2.ZERO

@@ -53,6 +53,7 @@ func run() -> void:
  s.select("talisman");s.self_player().position=Vector2(600,650);s.self_player().facing=0;s.rules.players.red.position=Vector2(650,650);s.rules.players.red.captured=false;var hp: int=s.stats.red.hp
  check(s.cast() and s.stats.red.hp<hp and s.stats.red.stun>s.rules.elapsed,"shared combat cone/damage/seal actually hit training NPC")
  s.select("blink");check(s.rules.effects.is_empty() and not s.self_player().buff.has("mask") and s.rules.channels.is_empty(),"skill switch clears prior effects, channels, disguise")
+ s.reset();s.select("talisman");s.npc_mode="guard";s.self_player().position=Vector2(600,650);s.self_player().facing=0;s.rules.players.red.position=Vector2(650,650);advance(s,.1);var guarded_hp: int=s.stats.red.hp;s.cast();check(s.stats.red.hp==guarded_hp and s.defenses>0,"training NPC really blocks an attack using shared shield consumption")
  s.reset();check(s.hp==100 and s.rules.effects.is_empty() and s.self_player().forms.is_empty(),"reset clears only isolated session state")
  var secure:=preload("res://scripts/seal/rules.gd").new("111111",5);secure.add("u","이용자",[]);secure.phase="roam";secure.players.u.role="daoist"
  check(secure.command("u",{"op":"cast","skill":"shield"}).has("error"),"production rules still reject unowned and unequipped skill")

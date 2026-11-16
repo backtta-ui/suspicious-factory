@@ -76,7 +76,7 @@ func adjust_safe() -> void:
   var safe:=DisplayServer.get_display_safe_area();var size:=DisplayServer.screen_get_size()
   if size.x>0 and size.y>0:stick.position.x=74+float(safe.position.x)*view.x/size.x;stick.position.y-=maxf(0,float(size.y-safe.end.y))*view.y/size.y
 func cycle_npcs() -> void:
- var modes: Array=["patrol","idle","chase","attack"];session.npc_mode=modes[(modes.find(session.npc_mode)+1)%4];session.message={"patrol":"NPC 산책","idle":"NPC 대기","chase":"NPC 추적 · 분신/연막을 시험하세요","attack":"훈련 요괴 공격 · 호신부로 방어해보세요"}[session.npc_mode]
+ var modes: Array=["patrol","idle","chase","attack","guard"];session.npc_mode=modes[(modes.find(session.npc_mode)+1)%4];session.message={"patrol":"NPC 산책","idle":"NPC 대기","chase":"NPC 추적 · 분신/연막을 시험하세요","attack":"훈련 요괴 공격 · 호신부로 방어해보세요","guard":"NPC 방어 · 표적 공격으로 호신부를 소모시켜 보세요"}[session.npc_mode]
 func show_spells() -> void:
  if is_instance_valid(game.modal):return
  stick.reset()
