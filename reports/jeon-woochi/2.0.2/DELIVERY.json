@@ -1,0 +1,21 @@
+{
+  "version": "2.0.2",
+  "source_commit": "7e7c070a730707d15d512763221d1621aae45dbd",
+  "source_actions": 43857903371,
+  "source_actions_status": "success",
+  "ci_artifact": 14222091721,
+  "sha256": "66b6e46e09115e0365fb640510700d90b712cfb9569989dee78e5f4e7039bac4",
+  "bytes": 83806295,
+  "automated_checks": 786,
+  "apk_checks": 32,
+  "compiled_package_tests": {
+    "rules": 59,
+    "tickets": 8,
+    "connected_ui": 15
+  },
+  "public_redownload": "pending",
+  "signed_artifact": "pending",
+  "real_android_devices": "not_tested",
+  "render_public_deployment": "not_performed",
+  "paid_billing": "not_implemented"
+}

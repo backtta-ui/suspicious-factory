@@ -1,0 +1,62 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: new free player gets empty slots, never free unacquired spells
+PASS: free draw 0 is unique and acquired only
+PASS: free draw 1 is unique and acquired only
+PASS: free draw 2 is unique and acquired only
+PASS: free draw 3 is unique and acquired only
+PASS: free draw 4 is unique and acquired only
+PASS: free draw 5 is unique and acquired only
+PASS: free draw 6 is unique and acquired only
+PASS: free draw 7 is unique and acquired only
+PASS: free draw 8 is unique and acquired only
+PASS: free draw 9 is unique and acquired only
+PASS: free draw 10 is unique and acquired only
+PASS: free draw 11 is unique and acquired only
+PASS: free draw 12 is unique and acquired only
+PASS: free draw 13 is unique and acquired only
+PASS: free draw 14 is unique and acquired only
+PASS: free draw 15 is unique and acquired only
+PASS: free draw 16 is unique and acquired only
+PASS: free draw 17 is unique and acquired only
+PASS: free draw 18 is unique and acquired only
+PASS: free draw 19 is unique and acquired only
+PASS: server random sampler really varies across rounds
+PASS: fewer than two acquired spells uses configurable empty slot policy
+PASS: paid duplicate selection rejected
+PASS: paid unacquired selection rejected
+PASS: VIP stores two active plus one separate acquired reserve
+PASS: VIP never equips three active spells
+PASS: production registry selects both actual implemented maps across server seeds
+PASS: yokai random/selected slots exclude object transformation
+PASS: yokai random/selected slots exclude object transformation
+PASS: free lobby does not pre-roll a role-ineligible loadout
+PASS: first and only free allocation is role-filtered during preparation before live play
+PASS: different concurrent rooms own independent map and collision state
+PASS: village has eight unique server identity colors
+PASS: village spawns all eight actors on legal ground
+PASS: village all mission stations resolve to legal map ground
+PASS: village collision prevents out-of-map movement
+PASS: village exposes only real supported object/animal kinds
+PASS: forest has eight unique server identity colors
+PASS: forest spawns all eight actors on legal ground
+PASS: forest all mission stations resolve to legal map ground
+PASS: forest collision prevents out-of-map movement
+PASS: forest exposes only real supported object/animal kinds
+PASS: mimic copies current color/costume but retains real ID and original base color
+PASS: meeting roster still uses original identity color after mimic
+PASS: owning without equipping transformation cannot extract
+PASS: forging a transformation slot without acquisition cannot extract or use it
+PASS: cast validation independently rejects unacquired spell
+PASS: unregistered/oversized fake shape IDs are rejected
+PASS: stationary channel stores an actually nearby map shape
+PASS: real transformation snapshot uses exact environment renderer kind
+PASS: object movement uses separate provisional object speed
+PASS: human return is allowed while transformation cooldown is active
+PASS: VIP in-game reserve swapping explicitly disabled
+PASS: adventure cannot grant spells from fabricated completion
+PASS: three actual ordered study interactions unlock only that spell
+PASS: replaying an earned adventure cannot duplicate acquisition
+PASS: acquired transformation enables chained hidden-mask discovery
+PASS: hidden discovery prerequisite is actually enforced
+SEAL LATEST: 59 checks, 0 failures

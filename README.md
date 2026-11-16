@@ -1,4 +1,20 @@
-# 《도사》 꾸미기 후속 업데이트 2.0.1
+# 《도사》 멀티플레이 통합 업데이트 2.0.2
+
+[설치용 APK 직접 다운로드 — 약80MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.2.apk)
+
+기존 앱을 삭제하지 말고 **삼성 내 파일 → 다운로드 → APK → 업데이트 설치**하세요. Android10+ ARM64/가로 화면, 기존 패키지·서명·모험·꾸미기 저장을 유지합니다.
+
+주 버튼 **봉인의 밤 · 온라인** → 서버 연결 → **그림 수련 · 도술 발견** → 습득 → 방 참가. 실제 구현된 마을/숲을 서버가 무작위 선택하고, 역할 배정 후 준비 단계에 획득 도술2칸을 확정합니다. 요괴는 사물 둔갑 후보에서 제외하고 고유 타인 둔갑을 사용합니다. 도사는 실제 장착한 둔갑술로 사물/동물의 형상을 추출합니다. 기본8색과 실제 투표ID는 표시 외형과 분리합니다.
+
+[최신 소스 Actions 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/43857903371) · [전체 구현·임시 설정·미완료 보고](reports/jeon-woochi/2.0.2/MULTIPLAYER-2.0.2.md) · [서버 무료 배포](reports/jeon-woochi/2.0.2/V2.0-SERVER.md) · [실제 게임 화면](reports/jeon-woochi/2.0.2/screenshots/net-roam.png)
+
+자동 검사786개, APK32개 통과. 이 APK는 CI의 unsigned 중간 결과를 기존 키로 최종 서명했습니다. **unsigned 중간 아티팩트는 설치하지 마세요.** 갤럭시 실기기6~8대 및 Render 공개 배포는 미검증입니다. 공개 서버가 없다면 무료 배포가 먼저 필요합니다. 프로토콜3이므로 기존 서버도 새 소스로 수동 배포하세요. 유료/VIP 결제는 미구현이며 운영 계정은 모두 무료입니다.
+
+SHA256: `66b6e46e09115e0365fb640510700d90b712cfb9569989dee78e5f4e7039bac4`
+
+---
+
+## 이전 버전 《도사》 꾸미기 후속 업데이트 2.0.1
 
 [설치용 APK 직접 다운로드 — 약79MiB](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/apk-downloads/jeon-woochi-2.0.1.apk)
 

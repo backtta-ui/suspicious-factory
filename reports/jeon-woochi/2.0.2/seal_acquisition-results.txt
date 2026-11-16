@@ -1,0 +1,36 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: authenticated server supplies acquisition account
+PASS: new live account has no free spells or paid entitlement
+PASS: forged account/unlock packets do not grant spells or VIP
+PASS: actual socket enters existing forest discovery adventure
+PASS: authoritative walking reaches actual transform discovery point
+PASS: real discovery challenge opens only at nearby shrine
+PASS: server persists acquisition only after actual ordered adventure interactions
+PASS: authoritative walking reaches actual blink discovery point
+PASS: real discovery challenge opens only at nearby shrine
+PASS: server persists acquisition only after actual ordered adventure interactions
+PASS: adventure returns safely to multiplayer setup
+PASS: learned profile can create actual multiplayer room
+PASS: free lobby preserves acquired book while deferring final random slots until role preparation
+PASS: free ready-lobby cannot reroll or directly select new spells
+PASS: reconnect preserves authoritative acquired spells and anonymous identity
+PASS: acquired reconnect identity opens six-person live test room
+PASS: independent peer 0 actually learns transformation in server adventure
+PASS: independent peer 1 actually learns transformation in server adventure
+PASS: independent peer 2 actually learns transformation in server adventure
+PASS: independent peer 3 actually learns transformation in server adventure
+PASS: independent peer 4 actually learns transformation in server adventure
+PASS: six separately acquired accounts join same real online room
+PASS: role-filtered loadouts finalize once before active round
+PASS: actual yokai never receives object transformation in random slots
+PASS: acquired daoists actually equip their known transformation
+PASS: real game reaches active phase after preparation
+PASS: actual selected map provides reachable, supported nearby extraction target
+PASS: live daoist walks to environment object through authoritative collision
+PASS: actual extraction channel synchronizes stored object form
+PASS: actual transformed avatar uses the same asset kind as its environment target
+PASS: live transformation can return to human without waiting cooldown
+PASS: actual yokai mimic copies daoist color while retaining true own ID
+PASS: mimic never changes authoritative role or voting identity
+SEAL ACQUISITION: 33 checks, 0 failures; actual WebSocket server adventure, not Android

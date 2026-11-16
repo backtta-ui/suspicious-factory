@@ -1,0 +1,8 @@
+{
+  "status": "unsigned_intermediate_not_for_installation",
+  "version": "2.0.2",
+  "bytes": 83766988,
+  "sha256": "ad4c17b602bc1df5f9c139be23bf8456a8b2a16dcd994a71b9b88b9ac4d61a53",
+  "filename": "jeon-woochi-2.0.2.unsigned.apk",
+  "final_signing": "Existing persistent Cloud key; no repository secret needed for unsigned compilation"
+}

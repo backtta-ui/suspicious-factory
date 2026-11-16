@@ -1,0 +1,21 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+WARNING: Could not set V-Sync mode, as changing V-Sync mode is not supported by the graphics driver.
+     at: set_use_vsync (platform/linuxbsd/x11/gl_manager_x11.cpp:364)
+OpenGL API 4.5 (Core Profile) Mesa 25.0.7-2+deb13u1 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 19.1.7, 256 bits)
+
+PASS: multiplayer setup connects actual WebSocket server
+PASS: native touch opens server-authoritative discovery adventure with actual hero
+PASS: native touch exits study without changing existing single-player save
+PASS: actual lobby replaces setup after server join acknowledgement
+PASS: real UI roster shows all six network participants
+PASS: ready/start native touches create synchronized six-avatar world
+PASS: all public avatars use identical canonical appearance and neutral tint
+PASS: only own role appears in live gameplay HUD
+PASS: role and common skill icons fit mobile landscape viewport
+PASS: network menu blocks local controls without pausing server
+PASS: Android back restores network HUD touch context
+PASS: network UI reaches roaming after real preparation timeout
+PASS: touch movement reaches authoritative server and returns through UI snapshots
+PASS: leave room returns to address setup without touching single-player save
+PASS: network mode exits back to preserved main title
+SEAL UI: 15 checks, 0 failures; automated sockets, no Android device claim

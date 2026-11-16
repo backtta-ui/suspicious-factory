@@ -1,0 +1,12 @@
+{
+  "checks": 34,
+  "clients_in_match": 8,
+  "failures": 0,
+  "human_players": false,
+  "mean_snapshot_bytes": 9305.47746835443,
+  "mean_wire_snapshot_bytes": 1867.49620253165,
+  "real_android_devices": false,
+  "snapshot_bytes": 18378318,
+  "snapshot_packets": 1975,
+  "transport": "real localhost TCP WebSocket connections"
+}

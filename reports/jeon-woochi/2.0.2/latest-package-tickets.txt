@@ -1,0 +1,11 @@
+Godot Engine v4.6.3.stable.official.7d41c59c4 - https://godotengine.org
+
+PASS: server-signed progress restores acquired spells and wins after host disk replacement
+PASS: client cannot alter acquired list or win counter in signed receipt
+PASS: receipt is bound to actual player ID
+PASS: receipt also requires original anonymous authentication secret proof
+PASS: different server signing key cannot validate another server's rewards
+PASS: older checkpoints cannot erase new wins or acquired spells
+PASS: malformed receipts rejected without engine errors
+PASS: progress receipt never grants paid or VIP entitlement
+SEAL TICKETS: 8 checks, 0 failures
