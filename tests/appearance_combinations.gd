@@ -87,6 +87,8 @@ func run() -> void:
  for child in game.get_children():
   if child is WooWardrobeScreen:screen=child
  screen.slot="character";screen.select("yeonhwa");screen.save_selection();await frames();check(game.player.cosmetic==legacy and Profile.new().data.appearance==legacy and Profile.new().appearance_for("muyeong")==mu,"save applies preview to real game without overwriting another character")
- game.adventure.load_forest(false);await frames();check(game.player.cosmetic==legacy and game.player.wardrobe_visual.appearance==legacy,"adventure shares actual appearance renderer")
+ game.player.position=Vector2(1690,395);game.show_painting_intro(0);game.close_modal()
+ check(game.adventure.load_forest(false),"real painting anchor permits forest entry");await frames()
+ check(game.adventure.in_mission and game.player.get_parent()==game.adventure.forest and game.player.cosmetic==legacy and game.player.wardrobe_visual.appearance==legacy,"actual forest instance shares appearance renderer")
  game.show_menu(false);game.queue_free();await frames()
  print("APPEARANCE COMBINATIONS: %d ready combinations / %d checks / %d failures"%[combos,checks,failures]);quit(1 if failures else 0)

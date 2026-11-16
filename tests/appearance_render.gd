@@ -23,7 +23,10 @@ func run() -> void:
    if phase=="game-jump":
     for child in game.get_children():
      if child is WooWardrobeScreen:child.set_process(false);child.preview.jump_height=30;child.preview.jump_phase="apex";child.preview.update_sprite()
-  elif phase=="forest":game.adventure.load_forest(false);await frames()
+  elif phase=="forest":
+   game.player.position=Vector2(1690,395);game.show_painting_intro(0);game.close_modal()
+   if not game.adventure.load_forest(false):push_error("Forest capture entry failed");quit(1);return
+   await frames()
  elif phase=="gallery":
   var combinations: Array=[]
   for character in Catalog.CHARACTERS:
