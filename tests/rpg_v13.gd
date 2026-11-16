@@ -42,6 +42,7 @@ func run() -> void:
  bad=state.data.duplicate(true);bad.inventory["fake"]=1;check(not State.valid(bad),"unknown inventory fails save validation")
  bad=state.data.duplicate(true);bad.slots=["jar","jar",""];check(not State.valid(bad),"duplicate equipped spell fails validation")
  check(Surface.at(Vector2(1080,700))=="stone" and Surface.at(Vector2(2400,1000))=="grass","real plaza surface differs between stone and grass")
+ check(Surface.at(Vector2(1810,795))=="stone" and Surface.at(Vector2(1700,1300))=="stone","shop courtyards and actual stone bridge use stone footsteps")
  check(Layout.surface(Vector2(220,790))=="wood" and Layout.surface(Vector2(1100,430))=="water","forest wood and shallow water classifications")
  check(not Layout.can_stand(Vector2(1100,300)) and Layout.can_stand(Vector2(1100,430)),"deep pond blocks, shallow edge walkable")
  game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await frames()

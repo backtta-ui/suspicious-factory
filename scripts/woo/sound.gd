@@ -77,8 +77,6 @@ func play_clip(name: String) -> void:
    if AudioServer.get_driver_name()!="Dummy": voice.play()
    played+=1;return
 func update_steps(p: Vector2, moving: bool, jar: bool) -> void:
- last_surface=preload("res://scripts/woo/terrain_surface.gd").at(p,map_id)
- terrain_stream=STEPS[step_index%STEPS.size()] if last_surface=="stone" else SURFACES[last_surface]
  if not tracking: previous_position=p;tracking=true
  var distance:=p.distance_to(previous_position);previous_position=p
  if not moving or distance>20:
@@ -86,6 +84,8 @@ func update_steps(p: Vector2, moving: bool, jar: bool) -> void:
  step_distance+=distance
  if step_distance >= (17.0 if jar else 23.0):
   step_distance=0
+  last_surface=preload("res://scripts/woo/terrain_surface.gd").at(p,map_id)
+  terrain_stream=STEPS[step_index%STEPS.size()] if last_surface=="stone" else SURFACES[last_surface]
   play_clip("jar_step" if jar else "step")
 
 func update_npc_steps(id: int,p: Vector2,moving: bool,listener: Vector2) -> void:

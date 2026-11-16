@@ -42,4 +42,4 @@ V1.1은 `plaza_v11`을 필수 검사에 추가합니다. GPU 렌더링 검사는
 
 V1.2: 기존 Actions의 `unsigned_only` 입력으로 비밀값 없이 중간 APK를 컴파일할 수 있습니다. 중간 파일은 설치용이 아닙니다. `tools/unsigned_ci_apk.py`로 임시 서명을 제거한 후 기존 Cloud 키로 최종 서명하고 검증·전달합니다. 개인키를 공개 저장소나 아티팩트에 넣지 않습니다. NPC 배치 변경 뒤에는 `godot --headless --path . --script res://tools/bake_npc_navigation.gd`와 `tools/bake_ground.gd`를 개발 환경에서 실행해 캐시를 갱신합니다.
 
-V1.3: `tools/test.sh`에 RPG 57개, AI/타격 효과 15개, 전투 터치 40개와 별도 프로세스 이어하기 검사를 추가했습니다. 숲 바닥을 바꿀 때는 `DISPLAY=:99 godot --path . --audio-driver Dummy --script res://tools/bake_forest.gd`로 베이크한 뒤 에디터 import와 checkpoint를 실행합니다. 게임 실행 시 베이크하지 않습니다.
+V1.3: `tools/test.sh`에 RPG 58개, AI/타격 효과 15개, 전투 터치 40개와 별도 프로세스 이어하기 검사를 추가했습니다. 숲 바닥을 바꿀 때는 `DISPLAY=:99 godot --path . --audio-driver Dummy --script res://tools/bake_forest.gd`로 베이크한 뒤 에디터 import와 checkpoint를 실행합니다. 게임 실행 시 베이크하지 않습니다.
