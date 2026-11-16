@@ -1,0 +1,10 @@
+class_name WooHitConfig
+extends RefCounted
+const STOP_TIME=.08
+const FLASH_TIME=.1
+const SHAKE_TIME=.25
+const SHAKE_PIXELS=10.0
+const PARTICLE_COUNT=12
+const PARTICLE_TIME=.6
+const NUMBER_TIME=.8
+const KNOCKBACK=70.0

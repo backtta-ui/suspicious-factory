@@ -2,6 +2,9 @@ class_name WooSound
 extends Node
 ## Preloaded local clips and a bounded voice pool: no synthesis or disk IO on touch.
 const CLIPS = {
+ "attack":preload("res://assets/audio/attack.wav"),
+ "hit":preload("res://assets/audio/hit.wav"),
+ "reward":preload("res://assets/audio/reward.wav"),
  "button":preload("res://assets/audio/button.wav"),
  "step":preload("res://assets/audio/step.wav"),
  "jar_step":preload("res://assets/audio/jar_step.wav"),
@@ -10,6 +13,11 @@ const CLIPS = {
 }
 const MUSIC=preload("res://assets/audio/moonlit_plaza.ogg")
 const STEPS=[preload("res://assets/audio/step.wav"),preload("res://assets/audio/step2.wav"),preload("res://assets/audio/step3.wav")]
+const SURFACES={"stone":STEPS[0],"grass":preload("res://assets/audio/grass.wav"),"dirt":preload("res://assets/audio/dirt.wav"),"wood":preload("res://assets/audio/wood.wav"),"water":preload("res://assets/audio/water.wav")}
+var terrain_stream: AudioStream
+var last_surface:="stone"
+var nearby_trackers: Dictionary={}
+var map_id:="gyewol_village"
 var music: AudioStreamPlayer
 var music_enabled:=true
 var music_requested:=false
@@ -61,14 +69,16 @@ func play_clip(name: String) -> void:
  if not enabled or backgrounded or not CLIPS.has(name): return
  for voice in voices:
   if not voice.playing:
-   voice.stream=STEPS[step_index%STEPS.size()] if name=="step" else CLIPS[name]
+   voice.stream=(terrain_stream if terrain_stream!=null else STEPS[step_index%STEPS.size()]) if name=="step" else CLIPS[name]
    if name=="step":step_index+=1
    voice.volume_db=-11 if name in ["step","jar_step"] else (-7 if name=="spell" else -10)
-   voice.pitch_scale=1.0+(step_index%3-1)*0.035 if name=="step" else 1.0
+   voice.pitch_scale=1.0+(-.025 if step_index%2==0 else .025) if name=="step" else 1.0
    # Dummy has no mixer to retire WAV playbacks (headless/render CI).
    if AudioServer.get_driver_name()!="Dummy": voice.play()
    played+=1;return
 func update_steps(p: Vector2, moving: bool, jar: bool) -> void:
+ last_surface=preload("res://scripts/woo/terrain_surface.gd").at(p,map_id)
+ terrain_stream=STEPS[step_index%STEPS.size()] if last_surface=="stone" else SURFACES[last_surface]
  if not tracking: previous_position=p;tracking=true
  var distance:=p.distance_to(previous_position);previous_position=p
  if not moving or distance>20:
@@ -77,3 +87,16 @@ func update_steps(p: Vector2, moving: bool, jar: bool) -> void:
  if step_distance >= (17.0 if jar else 23.0):
   step_distance=0
   play_clip("jar_step" if jar else "step")
+
+func update_npc_steps(id: int,p: Vector2,moving: bool,listener: Vector2) -> void:
+ var last: Dictionary=nearby_trackers.get(id,{"p":p,"distance":0.0})
+ var travel: float=p.distance_to(last.p)
+ last.p=p
+ if not moving or travel>20 or p.distance_to(listener)>140:last.distance=0.0
+ else:last.distance+=travel
+ if last.distance>=22:
+  last.distance=0.0
+  var surface: String=preload("res://scripts/woo/terrain_surface.gd").at(p,map_id)
+  var previous:=terrain_stream;terrain_stream=SURFACES[surface]
+  play_clip("step");terrain_stream=previous
+ nearby_trackers[id]=last

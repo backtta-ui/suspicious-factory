@@ -2,6 +2,10 @@ extends Node
 const Actor = preload("res://scripts/woo/actor.gd")
 const Village = preload("res://scripts/woo/village.gd")
 const Layout = preload("res://scripts/woo/village_layout.gd")
+const Rpg = preload("res://scripts/woo/rpg_state.gd")
+const Adventure = preload("res://scripts/woo/adventure.gd")
+var rpg: WooRpgState
+var adventure: WooAdventure
 const Save = preload("res://scripts/woo/save_game.gd")
 const MobileButton = preload("res://scripts/woo/mobile_button.gd")
 const Joystick = preload("res://scripts/joystick.gd")
@@ -95,7 +99,7 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
  node.text = value
  var context := active_context
  var generation := ui_generation
- node.allowed = func() -> bool: return context==active_context and generation==ui_generation
+ node.allowed = func() -> bool: return context==active_context and generation==ui_generation and not (is_instance_valid(adventure) and adventure.transitioning)
  node.add_theme_stylebox_override("normal",style(Color("241e2b") if primary else Color("211d28")))
  node.add_theme_stylebox_override("hover",style(Color("403044")))
  node.add_theme_stylebox_override("pressed",style(Color("685057")))
@@ -143,6 +147,7 @@ func new_ui() -> void:
 
 func show_menu(save_before: bool = true) -> void:
  if save_before and screen_name=="playing": save_progress()
+ if is_instance_valid(adventure):adventure.dispose();adventure.queue_free()
  if is_instance_valid(world):
   world.queue_free()
   world = null
@@ -213,6 +218,8 @@ func start_game(continue_existing: bool = false) -> void:
  world.cycle_enabled = settings.day_cycle
  world.low_effects=settings.low_effects
  sound.context="village"
+ rpg=Rpg.new(saved.get("rpg",{}))
+ adventure=Adventure.new();adventure.game=self;add_child(adventure)
  if saved.has("time_of_day"): world.time_of_day = clampf(float(saved.time_of_day),0,1)
  player = Actor.new()
  player.name = "JeonWoochi"
@@ -250,6 +257,7 @@ func start_game(continue_existing: bool = false) -> void:
  camera.make_current()
  build_hud()
  save_elapsed = 0
+ if not rpg.data.session.is_empty():adventure.resume_session()
  save_progress()
 
 func build_hud() -> void:
@@ -282,7 +290,7 @@ func build_hud() -> void:
  quest_lines.add_child(text("첫걸음",19,GOLD))
  quest_label=text("",16)
  quest_lines.add_child(quest_label)
- var settings_button:=button("메뉴  ☰",show_settings)
+ var settings_button:=button("메뉴  ☰",show_rpg_menu)
  settings_button.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  settings_button.offset_left=-280;settings_button.offset_right=-162
  settings_button.offset_top=24;settings_button.offset_bottom=88
@@ -302,7 +310,8 @@ func build_hud() -> void:
  ui.add_child(hint)
  joystick=Joystick.new()
  joystick.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
- joystick.position=Vector2(44,-210)
+ joystick.position=Vector2(74,-222)
+ joystick.resized.connect(adjust_safe_controls)
  joystick.size=Vector2(174,174)
  ui.add_child(joystick)
  run_button=button("달리기",func() -> void: pass)
@@ -316,6 +325,8 @@ func build_hud() -> void:
  interact_button=button("대화",interact)
  interact_button.name="InteractButton"
  place_action(interact_button,-272,"talk")
+ if is_instance_valid(adventure):adventure.build_controls()
+ adjust_safe_controls.call_deferred()
 
 func place_action(node: WooMobileButton, top: int, icon: String) -> void:
  node.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
@@ -391,6 +402,7 @@ func show_settings() -> void:
  for pref in preferences:
   var control:=button(pref[0],toggle_setting.bind(pref[1]));control.custom_minimum_size.x=320;control.add_theme_font_size_override("font_size",18);grid.add_child(control)
  var credits:=button("음원 출처",show_credits);credits.add_theme_font_size_override("font_size",18);grid.add_child(credits)
+ if screen_name=="playing":stack.add_child(button("전투 효과 설정",adventure.show_effects))
  stack.add_child(button("돌아가기",close_modal,true))
  if screen_name=="playing":
   stack.add_child(button("저장하고 메인으로",func() -> void: close_modal(); show_menu()))
@@ -420,17 +432,21 @@ func show_credits() -> void:
  stack.add_child(button("돌아가기",func() -> void: close_modal();show_settings(),true))
 
 func show_painting_intro(index: int) -> void:
- var painting: Dictionary=Layout.PAINTINGS[index]
- var stack:=open_modal("painting")
- if not stack:return
- return_anchor={"map":Layout.MAP_ID,"position":[player.position.x,player.position.y],"painting_id":painting.id}
- stack.add_child(text(painting.name,28,GOLD))
- var body:=text(painting.intro,22);body.custom_minimum_size=Vector2(660,95);body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;stack.add_child(body)
- stack.add_child(text("봉인된 그림 · 그림 속 임무는 준비 중입니다",18,Color("bdb0ce")))
- var locked:=button("준비 중",func() -> void: pass);locked.disabled=true;stack.add_child(locked)
- stack.add_child(button("광장으로",close_modal,true))
- save_progress()
+ if is_instance_valid(adventure):adventure.show_painting(index)
 
+func show_rpg_menu() -> void:
+ if is_instance_valid(adventure):adventure.show_menu()
+
+func adjust_safe_controls() -> void:
+ if not is_instance_valid(joystick):return
+ var safe:=DisplayServer.get_display_safe_area()
+ var display:=DisplayServer.screen_get_size()
+ var view:=get_viewport().get_visible_rect().size
+ var left:=0.0;var bottom:=0.0
+ if OS.get_name()=="Android" and display.x>0 and display.y>0:
+  left=float(safe.position.x)*view.x/display.x
+  bottom=maxf(0.0,float(display.y-safe.end.y))*view.y/display.y
+ joystick.position=Vector2(74+left,view.y-222-bottom)
 func restore_plaza_anchor() -> bool:
  if not is_instance_valid(player) or return_anchor.get("map","")!=Layout.MAP_ID:return false
  var p: Array=return_anchor.get("position",[])
@@ -445,6 +461,7 @@ func cast_spell() -> void:
 
 func interact() -> void:
  if screen_name!="playing" or paused: return
+ if is_instance_valid(adventure) and adventure.in_mission:adventure.mission_interact();return
  if nearest_painting>=0:
   show_painting_intro(nearest_painting)
   return
@@ -493,7 +510,9 @@ func _exit_tree() -> void:
 
 func save_progress(background: bool = false) -> void:
  if screen_name!="playing" or not is_instance_valid(player): return
- var data := {"schema":1,"map":Layout.MAP_ID,"position":[player.position.x,player.position.y],"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day,"talked_to_elder":talked_to_elder,"map_revision":Layout.REVISION,"completed_paintings":completed_paintings.duplicate(),"return_anchor":return_anchor.duplicate(true)}
+ var data := {"schema":1,"map":Layout.MAP_ID,"position":(return_anchor.position.duplicate() if is_instance_valid(adventure) and adventure.in_mission else [player.position.x,player.position.y]),"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day,"talked_to_elder":talked_to_elder,"map_revision":Layout.REVISION,"completed_paintings":completed_paintings.duplicate(),"return_anchor":return_anchor.duplicate(true)}
+ if is_instance_valid(adventure):adventure.capture_session()
+ if rpg!=null:data.rpg=rpg.data.duplicate(true)
  if not legacy_position.is_empty():data.legacy_position=legacy_position.duplicate()
  # Serialize all writes. Exit/background/manual saves join any pending auto-save.
  finish_save()
@@ -528,17 +547,25 @@ func _physics_process(_delta: float) -> void:
   for i in range(1,actors.size()):
    var resident:=actors[i]
    var distance:=resident.position.distance_to(player.position)
-   resident.enabled=not paused and distance<850
+   resident.enabled=not paused and distance<850 and not adventure.in_mission
    resident.npc_render_visible=animation_rect.has_point(resident.position)
    resident.npc_attention=distance<(70 if resident.npc_attention else 48)
    if resident.enabled and not resident.npc_attention:
     for j in range(1,i):
      if resident.position.distance_squared_to(actors[j].position)<24*24:resident.npc_driver.pause_near_resident();break
+  if not adventure.in_mission:
+   for i in range(1,actors.size()):sound.update_npc_steps(i,actors[i].position,actors[i].npc_walking,player.position)
   sound.update_steps(player.position,not paused and player.velocity.length()>2 and player.transforming<=0,player.jar)
 
 func _process(delta: float) -> void:
  if save_thread != null and not save_thread.is_alive(): finish_save()
  if screen_name!="playing" or not is_instance_valid(player): return
+ if is_instance_valid(adventure) and adventure.in_mission:
+  adventure.update_mission_ui(delta)
+  save_elapsed+=delta
+  if save_elapsed>=8:save_progress(true)
+  return
+ if is_instance_valid(adventure):adventure.update_stats()
  if is_instance_valid(hud_map): hud_map.update_local(player.position,talked_to_elder)
  if is_instance_valid(quest_label): quest_label.text="마을 어른과 대화하기 (%d/1)" % (1 if talked_to_elder else 0)
  spell_button.disabled = paused or player.cooldown>0 or player.transforming>0 or not unlocked.has("jar")
@@ -571,6 +598,7 @@ func _process(delta: float) -> void:
  if save_elapsed>=8: save_progress(true)
 
 func go_back() -> void:
+ if is_instance_valid(adventure) and adventure.transitioning:return
  if is_instance_valid(modal): close_modal()
  elif screen_name=="playing": show_settings()
  else: show_settings()
@@ -586,7 +614,7 @@ func _notification(what: int) -> void:
   if is_instance_valid(sound):sound.set_backgrounded(true)
   if screen_name=="playing":
    save_progress()
-   if not is_instance_valid(modal): show_settings()
+   if not is_instance_valid(modal) and not (is_instance_valid(adventure) and adventure.transitioning): show_settings()
  elif what==NOTIFICATION_APPLICATION_FOCUS_IN or what==NOTIFICATION_APPLICATION_RESUMED:
   if is_instance_valid(sound):sound.set_backgrounded(false)
  elif what==NOTIFICATION_WM_GO_BACK_REQUEST: go_back()

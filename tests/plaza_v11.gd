@@ -91,8 +91,8 @@ func run() -> void:
   check(game.nearest_painting==i and game.interact_button.visible,"painting proximity detected "+str(i))
   var anchor: Vector2=game.player.position
   await tap(game.interact_button)
-  check(game.modal_kind=="painting" and game.paused and button_named("준비 중",game.ui).disabled,"painting intro is honest about unavailable stage "+str(i))
-  await tap(button_named("광장으로",game.ui))
+  check(game.modal_kind=="painting" and game.paused and (not button_named("그림 속으로",game.ui).disabled if i==0 else button_named("준비 중",game.ui).disabled),"painting intro matches implemented or locked stage "+str(i))
+  await tap(button_named("돌아가기",game.ui))
   check(not game.paused and game.player.position.distance_to(anchor)<1,"painting close restores movement without teleport "+str(i))
   game.player.position=Layout.SPAWN
   check(game.restore_plaza_anchor() and game.player.position.distance_to(anchor)<1,"future return anchor restores entry position "+str(i))

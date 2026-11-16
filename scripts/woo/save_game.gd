@@ -5,6 +5,7 @@ const PATH := "user://jeonwoochi_save.json"
 const SETTINGS := "user://jeonwoochi_settings.cfg"
 static func valid(data: Variant) -> bool:
 	if not data is Dictionary: return false
+	if not preload("res://scripts/woo/rpg_state.gd").valid(data.get("rpg",{})):return false
 	if data.get("schema",0)!=1 or data.get("map","")!=Layout.MAP_ID: return false
 	var p = data.get("position",null)
 	if not p is Array or p.size()!=2: return false
@@ -28,6 +29,7 @@ static func valid(data: Variant) -> bool:
 	if not anchor is Dictionary:return false
 	if not anchor.is_empty():
 		if anchor.get("map","")!=Layout.MAP_ID:return false
+		if not preload("res://scripts/woo/rpg_state.gd").integer(anchor.get("facing",2),0,7):return false
 		var q=anchor.get("position",[])
 		if not q is Array or q.size()!=2:return false
 		for n in q:
@@ -57,6 +59,7 @@ static func load_game() -> Dictionary:
 				else:data.last_migration_position=data.position.duplicate()
 				var safe:=Layout.safe_position(point)
 				data.position=[safe.x,safe.y]
+			if data.has("rpg"):data.rpg=preload("res://scripts/woo/rpg_state.gd").new(data.rpg).data
 			data.map_revision=Layout.REVISION
 			return data
 	return {}

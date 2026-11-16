@@ -24,3 +24,9 @@ Modified: excerpt, silence trim, EQ, gain, fades, resampling and mixing.
 
 No external samples are downloaded by the app. Audio is bundled offline.
 The original synthesized V0.1.2 effects are preserved on the backup branch.
+
+V1.3: grass (cloth2), dirt (footstep04), wood (footstep08), attack
+(knifeSlice), hit (chop), reward (handleCoins): Kenney RPG Audio, CC0.
+Filters, excerpts, fades and gain adapted for this game. water.wav is an
+original deterministic filtered-noise splash authored for this project;
+no paid sound service or API used.

@@ -1,5 +1,8 @@
 class_name WooActor
 extends CharacterBody2D
+var dash_left:=0.0
+var dash_direction:=Vector2.ZERO
+var combat_frozen:=false
 var intent := Vector2.ZERO
 var enabled := true
 var running := false
@@ -72,6 +75,8 @@ func begin_transform() -> bool:
 	velocity = Vector2.ZERO
 	return true
 func _physics_process(delta: float) -> void:
+	if combat_frozen and not npc:
+		velocity=Vector2.ZERO;return
 	cooldown = maxf(0,cooldown-delta)
 	if transforming>0:
 		var before := transforming
@@ -88,6 +93,8 @@ func _physics_process(delta: float) -> void:
 	var speed := JAR_SPEED if jar else (RUN_SPEED if running or Input.is_physical_key_pressed(KEY_SHIFT) else WALK_SPEED)
 	if npc:speed=npc_driver.movement_speed if npc_driver!=null else 24.0
 	velocity = move*speed
+	if dash_left>0 and enabled and not npc:
+		dash_left=maxf(0,dash_left-delta);velocity=dash_direction*360.0
 	var previous:=position
 	move_and_slide()
 	var distance:=position.distance_to(previous)

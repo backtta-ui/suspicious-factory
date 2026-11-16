@@ -53,6 +53,8 @@ def main():
             check(any('moonlit_plaza.ogg' in entry for entry in entries) and 'assets/assets/audio/NOTICE.txt' in entries, 'Licensed Korean music and attribution bundled')
             check(all(any(asset in entry for entry in entries) for asset in ['village_atlas.png','decor_atlas.png','stone_bridge.png']), 'Expanded plaza art atlases bundled')
             check(any('npc_walk.png' in entry for entry in entries) and any('title_local.gdshader' in entry for entry in entries), 'V1.2 NPC animation atlas and local title shader bundled')
+            check(all(any(asset in entry for entry in entries) for asset in ['fox_painting.png','goblin.png','forest_ground.png','hit_flash.gdshader','rpg_state.gd','adventure.gd']), 'V1.3 painting, forest, goblin, combat and RPG resources bundled')
+            check(all(any(f'{clip}.wav' in entry for entry in entries) for clip in ['grass','dirt','wood','water','attack','hit','reward']), 'V1.3 terrain and combat audio bundled')
             check(not any('factory_session' in entry or 'factory_v2' in entry for entry in entries), 'Factory/network game resources removed')
             check(not any(entry.startswith(('assets/tests/', 'assets/tools/', 'assets/builds/'))
                           for entry in entries), 'Development files excluded')
