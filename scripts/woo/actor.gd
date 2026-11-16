@@ -162,7 +162,7 @@ func _physics_process(delta: float) -> void:
 			npc_stride+=distance
 			facing=posmod(roundi((position-previous).angle()/(PI/4)),8)
 		if npc_driver!=null:npc_driver.report_progress(distance,move,delta)
-	elif move.length()>0.05:facing=posmod(roundi(move.angle()/(PI/4)),8)
+	elif move.length()>0.18:facing=posmod(roundi(move.angle()/(PI/4)),8)
 	animation_time += delta*(11 if running and not jar else 7) if velocity.length()>2 else delta
 	if not npc or npc_render_visible:update_sprite()
 	if not npc or highlighted!=previous_highlighted:queue_redraw()
@@ -237,7 +237,9 @@ func update_npc_art() -> void:
 	npc_left_foot.position+=Vector2(phase*1.0,-maxf(0,phase)*.8)
 	npc_right_foot.position+=Vector2(-phase*1.0,-maxf(0,-phase)*.8)
 
+var draw_ground:=true
 func _draw() -> void:
+	if not draw_ground:return
 	if not appearance_form.begins_with("asset:"):
 		draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
 	if landing_left>0:

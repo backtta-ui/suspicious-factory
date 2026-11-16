@@ -1,6 +1,14 @@
 class_name WooWardrobeCatalog
 extends RefCounted
 const DEFAULT={"character":"woochi","hair":"black","outfit":"basic","hat":"gat","accessory":"none","color":"navy"}
+const BASE_DEFAULTS={
+ "woochi":{"hair":"black","outfit":"basic","hat":"gat","accessory":"none","color":"navy"},
+ "yeonhwa":{"hair":"flower","outfit":"basic","hat":"none","accessory":"none","color":"purple"},
+ "muyeong":{"hair":"silver","outfit":"basic","hat":"none","accessory":"none","color":"black_gold"},
+ "hongryeon":{"hair":"long","outfit":"basic","hat":"none","accessory":"ribbon","color":"red"}}
+static func base_appearance(id: String) -> Dictionary:
+ if not BASE_DEFAULTS.has(id):id="woochi"
+ var result: Dictionary=BASE_DEFAULTS[id].duplicate();result.character=id;return result
 const COLORS={"navy":Color("415b96"),"purple":Color("a581cc"),"green":Color("5da682"),"red":Color("bd5863"),"white":Color("dedee7"),"black_gold":Color("383747")}
 const COLOR_NAMES={"navy":"남색","purple":"보라색","green":"녹색","red":"붉은색","white":"흰색","black_gold":"검은색·금색"}
 const CHARACTERS={
@@ -24,7 +32,7 @@ const RULES={"free":"처음부터 사용 가능","forest":"여우의 숲 임무 
 static func table(slot: String) -> Dictionary:
  return {"character":CHARACTERS,"hair":HAIRS,"outfit":OUTFITS,"hat":HATS,"accessory":ACCESSORIES}.get(slot,{})
 static func normalize(raw: Variant) -> Dictionary:
- var out: Dictionary=DEFAULT.duplicate()
+ var out: Dictionary=base_appearance(str(raw.get("character","woochi"))) if raw is Dictionary else DEFAULT.duplicate()
  if not raw is Dictionary:return out
  for k in DEFAULT:
   var values: Dictionary=COLORS if k=="color" else table(k)

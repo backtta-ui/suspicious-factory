@@ -19,7 +19,8 @@ func burst(p: Vector2,amount: int,gold: bool,death: bool) -> void:
   numbers.append({"p":p+Vector2(-6,-45),"life":Config.NUMBER_TIME,"amount":amount,"color":color})
 func afterimage(actor: WooActor) -> void:
  if ghosts.size()>=12:ghosts.pop_front()
- ghosts.append({"p":actor.position,"region":actor.sprite.region_rect,"offset":actor.sprite.offset,"scale":actor.sprite.scale,"texture":actor.sprite.texture,"life":.26})
+ ghosts.append({"p":actor.position+Vector2(0,-actor.jump_height),"layers":actor.wardrobe_visual.rendered_layers.duplicate(true),"life":.26})
+
 func swing(p: Vector2,direction: Vector2,stage: int,mode: String,radius: float) -> void:
  if get_child_count()<24:
   var vfx:=preload("res://scripts/woo/attack_vfx.gd").new();vfx.position=p;vfx.direction=direction;vfx.stage=clampi(stage-1,0,3);vfx.radius=radius;add_child(vfx)
@@ -49,8 +50,9 @@ func _draw() -> void:
   if v.stage==4:draw_arc(v.p+Vector2(0,-20),radius*.65,v.angle-1.4,v.angle+1.4,24,c,2,true)
   if v.mode=="air" or v.mode=="landing":draw_arc(v.p,radius*.5,0,TAU,24,c,3,true)
  for v in ghosts:
-  var rect: Rect2=Rect2(v.p+(v.offset-v.region.size/2)*v.scale,v.region.size*v.scale)
-  draw_texture_rect_region(v.texture,rect,v.region,Color(.55,.7,1,v.life/.26*.38))
+  draw_set_transform(v.p)
+  for layer in v.layers:draw_polygon(layer.points,PackedColorArray([Color(.55,.7,1,v.life/.26*.38)]),layer.uv,layer.texture)
+  draw_set_transform(Vector2.ZERO)
  for v in particles:
   var c: Color=v.color;c.a=v.life/Config.PARTICLE_TIME
   draw_rect(Rect2(v.p,Vector2(2,2) if not v.death else Vector2(3,3)),c)

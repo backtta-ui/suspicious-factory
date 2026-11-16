@@ -48,10 +48,11 @@ func _process(delta: float) -> void:
  if not is_instance_valid(hero):return
  var can_move:=not is_instance_valid(client.popup);stick.input_enabled=can_move and client.connection.authenticated
  var move: Vector2=stick.vector if can_move else Vector2.ZERO
+ var previous:=hero.position
  hero.position=arena.move(hero.position,hero.position+move*88*minf(delta,.05))
  if hero.position.distance_to(target)>60:hero.position=target
  else:hero.position=hero.position.lerp(target,minf(1,delta*8))
- hero.velocity=move*88;hero.animation_time+=delta*7;hero.gait_phase+=delta*11;hero.gait_weight=move_toward(hero.gait_weight,1.0 if move.length()>.1 else 0.0,delta*10)
+ hero.velocity=move*88;hero.animation_time+=delta*7;hero.gait_phase+=minf(hero.position.distance_to(previous),60)*.13;hero.gait_weight=move_toward(hero.gait_weight,1.0 if move.length()>.1 else 0.0,delta*10)
  send_left-=delta
  if send_left<=0:send_left=.05;client.connection.send({"op":"study_move","intent":[move.x,move.y]})
  var id:=nearest();button.disabled=id=="" or not can_move

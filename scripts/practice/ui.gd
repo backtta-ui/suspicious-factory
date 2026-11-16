@@ -111,8 +111,8 @@ func _physics_process(delta: float) -> void:
 func sync(delta: float) -> void:
  var rules:=session.rules;var snapshot:=rules.view("student");var visible_ids: Array=[]
  for info in snapshot.actors:
-  var id: String=info.uid;visible_ids.append(id);var actor: WooActor=avatars[id];var p:=Vector2(info.position[0],info.position[1]);var moved:=actor.position.distance_to(p)>.05
-  markers[id].color_id=info.color;actor.position=p;actor.facing=info.facing;actor.cosmetic=info.cosmetic.duplicate();actor.identity_concealed=info.concealed;actor.appearance_form=info.form;actor.jar=false;actor.animation_time+=delta*7;actor.gait_phase+=delta*11;actor.gait_weight=move_toward(actor.gait_weight,1.0 if moved else 0.0,delta*10);actor.velocity=Vector2(60,0) if moved else Vector2.ZERO
+  var id: String=info.uid;visible_ids.append(id);var actor: WooActor=avatars[id];var p:=Vector2(info.position[0],info.position[1]);var distance:=actor.position.distance_to(p);var moved:=distance>.05
+  markers[id].color_id=info.color;actor.position=p;actor.facing=info.facing;actor.cosmetic=info.cosmetic.duplicate();actor.identity_concealed=info.concealed;actor.appearance_form=info.form;actor.jar=false;actor.animation_time+=delta*7;actor.gait_phase+=minf(distance,60)*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if moved else 0.0,delta*10);actor.velocity=Vector2(60,0) if moved else Vector2.ZERO
   actor.action_pose=1 if id=="student" and session.selected=="talisman" else 0;actor.pose_duration=.45;actor.action_left=maxf(0,rules.players[id].buff.get("casting",0)-rules.elapsed)
   actor.hurt_left=.12 if id!="student" and session.stats[id].stun>rules.elapsed else 0;actor.update_sprite();labels[id].text=(str(info.name)+(" · HP%d"%session.stats[id].hp if id!="student" else ""));labels[id].visible=info.form=="human" and not info.concealed;actor.show()
  for id in avatars:
@@ -127,7 +127,7 @@ func sync(delta: float) -> void:
    var copy:=Actor.new();copy.network_remote=true;copy.collision_layer=0;copy.collision_mask=0;world.add_child(copy);copy.set_physics_process(false);clones[id]=copy
    var marker:=preload("res://scripts/seal/color_marker.gd").new();marker.actor=copy;marker.color_id=effect.color;copy.add_child(marker)
    var name: Label=game.text(effect.name,10,game.GOLD);name.position=Vector2(-60,-65);name.size.x=120;name.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;copy.add_child(name)
-  var copy: WooActor=clones[id];copy.position=effect.position;copy.cosmetic=effect.cosmetic;copy.facing=effect.facing;copy.gait_phase+=delta*11;copy.gait_weight=1;copy.animation_time+=delta*7;copy.update_sprite()
+  var copy: WooActor=clones[id];var stride:=copy.position.distance_to(effect.position);copy.position=effect.position;copy.cosmetic=effect.cosmetic;copy.facing=effect.facing;copy.gait_phase+=minf(stride,60)*.13;copy.gait_weight=1 if stride>.05 else 0;copy.animation_time+=delta*7;copy.update_sprite()
  for id in clones.keys():
   if not active_clones.has(id):clones[id].queue_free();clones.erase(id)
  for hit in session.strikes:combat.burst(hit.position,hit.damage,hit.gold,false)

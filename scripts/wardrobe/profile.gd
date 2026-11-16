@@ -4,11 +4,19 @@ const C=preload("res://scripts/wardrobe/catalog.gd")
 const PATH="user://dosa_wardrobe.json"
 var data: Dictionary
 func _init() -> void:
- data={"version":1,"appearance":C.DEFAULT.duplicate(),"owned":[],"verified_wins":0,"server_wins":{}}
+ data={"version":2,"appearance":C.DEFAULT.duplicate(),"per_character":{},"owned":[],"verified_wins":0,"server_wins":{}}
  var raw=JSON.parse_string(FileAccess.get_file_as_string(PATH)) if FileAccess.file_exists(PATH) else null
  if not raw is Dictionary and FileAccess.file_exists(PATH+".bak"):raw=JSON.parse_string(FileAccess.get_file_as_string(PATH+".bak"))
  if raw is Dictionary:
   data.appearance=C.normalize(raw.get("appearance",{}))
+  if raw.get("per_character",null) is Dictionary:
+   for character in C.CHARACTERS:
+    var stored=raw.per_character.get(character,null)
+    if stored is Dictionary:
+     var value: Dictionary=stored.duplicate();value.character=character
+     data.per_character[character]=C.normalize(value)
+  # The old single look belongs only to its selected character. Never fan it out.
+  if not data.per_character.has(data.appearance.character):data.per_character[data.appearance.character]=data.appearance.duplicate()
   if raw.get("owned",null) is Array:
    for id in raw.owned:
     if id is String and id.length()<60 and not data.owned.has(id):data.owned.append(id)
@@ -28,6 +36,8 @@ func refresh(rpg: Dictionary) -> void:
    var key: String=slot+":"+id
    if earned and not data.owned.has(key):data.owned.append(key)
 func owned(slot: String,id: String) -> bool:return slot=="color" or data.owned.has(slot+":"+id)
+func appearance_for(character: String) -> Dictionary:
+ return data.per_character.get(character,C.base_appearance(character)).duplicate()
 func valid_selection(raw: Dictionary) -> bool:
  if C.normalize(raw)!=raw:return false
  for slot in ["character","hair","outfit","hat","accessory"]:
@@ -35,9 +45,10 @@ func valid_selection(raw: Dictionary) -> bool:
  return true
 func equip(raw: Dictionary) -> Error:
  if not valid_selection(raw):return ERR_UNAUTHORIZED
- var before: Dictionary=data.appearance.duplicate();data.appearance=raw.duplicate()
+ var before: Dictionary=data.appearance.duplicate();var previous: Dictionary=data.per_character.duplicate(true)
+ data.appearance=raw.duplicate();data.per_character[raw.character]=raw.duplicate()
  var err:=save()
- if err!=OK:data.appearance=before
+ if err!=OK:data.appearance=before;data.per_character=previous
  return err
 func record_server_wins(endpoint: String,wins: int) -> void:
  if wins<0 or wins>100000:return

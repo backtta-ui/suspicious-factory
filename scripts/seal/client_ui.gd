@@ -450,13 +450,13 @@ func _process(delta: float) -> void:
   var face:=posmod(roundi(move.angle()/(PI/4)),8) if move.length()>.1 else int(self_state.facing)
   connection.send({"op":"move","intent":[move.x,move.y],"facing":face})
  for id in avatars:
-  var actor: WooActor=avatars[id];var target: Vector2=actor_targets.get(id,actor.position)
+  var actor: WooActor=avatars[id];var target: Vector2=actor_targets.get(id,actor.position);var previous:=actor.position
   actor.animation_time+=delta*7 if actor.velocity.length()>0 else delta
-  actor.gait_phase+=delta*11;actor.gait_weight=move_toward(actor.gait_weight,1.0 if actor.velocity.length()>0 else 0.0,delta*10)
   if id==connection.uid and can_move:
    actor.position=arena.move(actor.position,actor.position+stick.vector*float(self_state.get("move_speed",Catalog.MOVE_SPEED))*minf(delta,.05))
   if actor.position.distance_to(target)>60:actor.position=target;actor.reset_physics_interpolation()
   else:actor.position=actor.position.lerp(target,minf(1,delta*(10 if id==connection.uid else 12)))
+  var stride:=actor.position.distance_to(previous);actor.gait_phase+=minf(stride,60)*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if stride>delta*2 else 0.0,delta*10)
  if is_instance_valid(mini) and avatars.has(connection.uid):mini.update_local(avatars[connection.uid].position,true)
  title_label.text="봉인의 밤 · "+str(state.get("map_name",""))+" · 방 "+connection.room
  var allies: Array[String]=[]

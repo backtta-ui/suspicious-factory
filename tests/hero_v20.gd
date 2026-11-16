@@ -12,11 +12,13 @@ func _initialize() -> void:run.call_deferred()
 func run() -> void:
  game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await frames();game.start_game(false);await frames()
  var actor: WooActor=game.player;actor.facing=2;actor.update_sprite()
- var texture: Texture2D=actor.sprite.texture;var region: Rect2=actor.sprite.region_rect
- check(texture==actor.SHEET and actor.sprite.scale==Vector2.ONE*.34,"original base hero texture and scale are canonical")
+ var visual: WooWardrobeVisual=actor.wardrobe_visual;visual._process(0)
+ var original: Dictionary=actor.cosmetic.duplicate()
+ check(visual.uses_baked and not actor.sprite.visible,"complete native character atlas is the actual renderer")
  for pose in range(8):
   actor.action_pose=pose;actor.action_left=.3;actor.pose_duration=.4;actor.update_sprite()
-  check(actor.sprite.texture==texture and actor.sprite.region_rect==region and actor.sprite.scale==Vector2.ONE*.34,"pose%d never swaps face, hat, costume, pivot or scale"%pose)
+  visual._process(0)
+  check(actor.cosmetic==original and visual.appearance==original and visual.pieces.body.scale==Vector2.ONE and str(visual.pieces.body.texture.resource_path).contains("woochi"),"pose%d keeps canonical identity and scale"%pose)
  actor.action_left=0;actor.jump();await create_timer(.025).timeout
  check(actor.jump_phase=="preparation" and actor.jump_height==0,"jump has a real short preparation phase")
  await create_timer(.15).timeout;check(actor.jump_phase=="rising" and actor.jump_height>0,"jump rises without reducing character scale")
