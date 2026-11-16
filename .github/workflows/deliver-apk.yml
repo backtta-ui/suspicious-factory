@@ -11,11 +11,11 @@ on:
         description: 'Immutable apk-downloads commit SHA'
         required: true
         type: string
-      release_tag:
-        description: "Optional release tag for APKs larger than the Git blob limit"
+      multipart:
+        description: "Reassemble verified APK parts from apk-downloads (large APKs)"
         required: false
-        default: ""
-        type: string
+        default: false
+        type: boolean
       apk_sha256:
         description: 'Expected SHA256 of the Cloud-built APK'
         required: true
@@ -32,10 +32,10 @@ jobs:
           APK_NAME: ${{ inputs.apk_name }}
           DOWNLOAD_REF: ${{ inputs.download_ref }}
           APK_SHA256: ${{ inputs.apk_sha256 }}
-          RELEASE_TAG: ${{ inputs.release_tag }}
+          MULTIPART: ${{ inputs.multipart }}
         run: |
           python3 - <<'PY'
-          import hashlib, os, re, urllib.request, zipfile
+          import hashlib, json, os, re, shutil, urllib.request, zipfile
           from pathlib import Path
           ref = os.environ['DOWNLOAD_REF']
           digest = os.environ['APK_SHA256']
@@ -46,13 +46,27 @@ jobs:
           if not re.fullmatch(r'jeon-woochi-[0-9]+\.[0-9]+\.[0-9]+\.apk', name):
               raise SystemExit('Invalid APK filename')
           url = f'https://raw.githubusercontent.com/{os.environ["GITHUB_REPOSITORY"]}/{ref}/{name}'
-          tag = os.environ.get("RELEASE_TAG", "")
-          if tag:
-              if not re.fullmatch(r"android-[0-9]+\.[0-9]+\.[0-9]+", tag):
-                  raise SystemExit("Invalid release tag")
-              url = f'https://github.com/{os.environ["GITHUB_REPOSITORY"]}/releases/download/{tag}/{name}'
           target = root / name
-          urllib.request.urlretrieve(url, target)
+          if os.environ.get("MULTIPART") == "true":
+              base = f'https://raw.githubusercontent.com/{os.environ["GITHUB_REPOSITORY"]}/{ref}/split/'
+              with urllib.request.urlopen(base + name + '.json') as response:
+                  manifest = json.load(response)
+              if manifest['sha256'] != digest or manifest['name'] != name:
+                  raise SystemExit('Manifest identity mismatch')
+              with target.open('wb') as output:
+                  for index, part in enumerate(manifest['parts'], 1):
+                      expected = name + f'.part{index:02d}'
+                      if part['name'] != expected:
+                          raise SystemExit('Invalid part name')
+                      h = hashlib.sha256(); size = 0
+                      with urllib.request.urlopen(base + expected) as response:
+                          while chunk := response.read(1024 * 1024):
+                              output.write(chunk); h.update(chunk); size += len(chunk)
+                      if h.hexdigest() != part['sha256'] or size != part['bytes']:
+                          raise SystemExit('Part checksum/length mismatch')
+              url = base + name + '.json'
+          else:
+              urllib.request.urlretrieve(url, target)
           if hashlib.sha256(target.read_bytes()).hexdigest() != digest:
               raise SystemExit('APK checksum mismatch')
           with zipfile.ZipFile(target) as archive:
