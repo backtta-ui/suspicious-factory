@@ -12,6 +12,8 @@
 
 SHA256: `eeb8b358909981299cc0b6d65b7b67e6cc2005ef36f45bfb39e07101ff88c861`
 
+[설치용 Actions ZIP](https://github.com/backtta-ui/suspicious-factory/actions/runs/43849336066) → Artifacts → `jeon-woochi-verified-apk` 다운로드 후 압축을 풀어 설치하세요. 공개 APK와 Actions ZIP을 실제 재다운로드하여 내부 APK의 SHA256 일치를 검증했습니다.
+
 ---
 
 ## 이전 버전 《도사》 V2.0 — 봉인의 밤 · 도술 전투 리뉴얼

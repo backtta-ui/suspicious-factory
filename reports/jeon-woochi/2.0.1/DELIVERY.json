@@ -9,6 +9,9 @@
   "apk_checks": 31,
   "android_device_test": "not_performed",
   "remote_turn_failure": "No failing build/test command in available logs; platform turn failure reason unavailable",
-  "public_redownload": "pending",
-  "signed_artifact": "pending"
+  "public_redownload": "sha256_matches",
+  "signed_artifact": "sha256_matches",
+  "signed_artifact_run": 43849336066,
+  "signed_artifact_id": 14217276068,
+  "previous_last_command_exit_code": 0
 }
