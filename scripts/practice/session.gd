@@ -117,7 +117,7 @@ func tick(delta: float,intent: Vector2) -> void:
  delta=clampf(delta,0,.05)
  visual_events=visual_events.filter(func(e: Dictionary)->bool:return rules.elapsed-e.time<.7)
  var p:=self_player()
- var facing: int=posmod(roundi(intent.angle()/(PI/4)),8) if intent.length()>.1 else int(p.facing)
+ var facing: int=preload("res://scripts/wardrobe/direction.gd").quantize(intent,int(p.facing))
  rules.command("student",{"op":"move","intent":[intent.x,intent.y],"facing":facing})
  for id in NPCS:
   var q: Dictionary=rules.players[id];var s: Dictionary=stats[id];q.intent=Vector2.ZERO
