@@ -23,7 +23,8 @@ func visible_line(a: Vector2,b: Vector2) -> bool:
  return adventure.game.player.get_world_2d().direct_space_state.intersect_ray(PhysicsRayQueryParameters2D.create(a,b,1)).is_empty()
 func corrected_direction() -> Vector2:
  var player: WooActor=adventure.game.player
- var forward:=Vector2.from_angle(player.facing*PI/4)
+ var input:=player.direction()
+ var forward:=input.normalized() if input.length()>.1 else Vector2.from_angle(player.facing*PI/4)
  var best:=INF;var chosen:=forward
  for enemy in enemies():
   var delta: Vector2=enemy.position-player.position
@@ -64,6 +65,9 @@ func tick(delta: float) -> void:
  reset_left=maxf(0,reset_left-delta)
  if not active:return
  elapsed+=delta
+ # Follow deliberate joystick steering until this strike commits, then take new input on the next combo.
+ if pulses==0 and adventure.game.player.direction().length()>.1:
+  aim=corrected_direction();adventure.game.player.facing=posmod(roundi(aim.angle()/(PI/4)),8);adventure.game.player.push_direction=aim
  var impact: float=.12 if mode!="ground" else C.IMPACT[stage-1]
  if elapsed>=impact and pulses==0:
   impact_hit(0);pulses=1

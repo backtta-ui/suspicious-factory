@@ -32,6 +32,7 @@ var transition_layer: Control
 func _ready() -> void:
  actions=preload("res://scripts/woo/action_controller.gd").new();actions.adventure=self;add_child(actions)
 func dispose() -> void:
+ in_mission=false;set_process(false);set_physics_process(false)
  if is_instance_valid(transition_layer):transition_layer.queue_free()
  if is_instance_valid(forest):forest.queue_free()
  if is_instance_valid(game.camera):game.camera.offset=Vector2.ZERO
@@ -95,9 +96,8 @@ func show_map() -> void:
  stack.add_child(game.text("파랑: 내 위치 · 노랑: 임무 / 출구 · 보라: 그림 장터",17))
  footer(stack)
 func show_outfits() -> void:
- var stack:=page("outfits","의상")
- stack.add_child(game.text("검은 갓과 도포 · 현재 착용 중\n현재 보유한 다른 의상이 없습니다.",23))
- footer(stack)
+ game.close_modal();game.show_wardrobe()
+
 func build_controls() -> void:
  combat_buttons.clear()
  hp_bar=ProgressBar.new();hp_bar.position=Vector2(30,235);hp_bar.size=Vector2(242,12);hp_bar.show_percentage=false;hp_bar.add_theme_stylebox_override("fill",game.style(Color("be5467"),3));hp_bar.add_theme_stylebox_override("background",game.style(Color("241b2a"),3));hp_bar.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.ui.add_child(hp_bar)

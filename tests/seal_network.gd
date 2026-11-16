@@ -50,10 +50,21 @@ func run() -> void:
  for i in range(1,8):
   var p:=await connect_peer();send(p,{"op":"join","room":room_code,"name":"연결%d"%i,"slots":["transform","blink"]})
  check(await wait_for(func()->bool:return not host.state.is_empty() and host.state.roster.size()==8),"eight real socket clients share one room")
+ var appearance: Dictionary=preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate();appearance.character="yeonhwa";appearance.hair="flower";appearance.color="purple";appearance.hat="none"
+ send(host,{"op":"appearance","appearance":appearance})
+ check(await wait_for(func()->bool:return host.state.roster[0].cosmetic==appearance),"real socket lobby synchronizes independent costume IDs")
+ var forbidden: Dictionary=appearance.duplicate();forbidden.outfit="dragon";forbidden.color="black_gold";host.reply={}
+ send(host,{"op":"appearance","appearance":forbidden})
+ check(await wait_for(func()->bool:return host.reply.has("error")),"server refuses unavailable payment/event/master appearance")
+ host.reply={}
+ check(host.state.self.has("career_wins"),"server supplies authoritative career count, never client win input")
  for p in peers:send(p,{"op":"ready","value":true})
  check(await wait_for(func()->bool:return host.state.roster.all(func(row: Dictionary)->bool:return row.ready)),"ready state synchronizes across actual connections")
  send(host,{"op":"start"})
  check(await wait_for(func()->bool:return peers.all(func(p: Dictionary)->bool:return not p.state.is_empty() and p.state.phase=="prepare")),"server starts real 8-client match")
+ send(host,{"op":"appearance","appearance":preload("res://scripts/wardrobe/catalog.gd").DEFAULT})
+ check(await wait_for(func()->bool:return host.reply.has("error")),"real server rejects midmatch appearance change")
+ check(host.state.roster[0].cosmetic==appearance,"midmatch appearance remains synchronized after rejected change")
  var roles: Array=[]
  for p in peers:
   roles.append(p.state.self.role)

@@ -11,6 +11,7 @@ var elapsed:=0.0
 var phase_until:=0.0
 var round_number:=0
 var match_id:=""
+var rewarded:=false
 var resources:=0
 var meetings:=0
 var meeting_ready:=0.0
@@ -39,7 +40,7 @@ func add(uid: String,nick: String,loadout: Array) -> bool:
   if s is String and C.COMMON.has(s) and not slots.has(s) and slots.size()<2:slots.append(s)
  for s in ["transform","blink"]:
   if slots.size()<2 and not slots.has(s):slots.append(s)
- players[uid]={"uid":uid,"name":C.clean_name(nick),"role":"","connected":true,"ready":false,"position":Map.safe(Vector2(900+players.size()*24,680)),"facing":2,"intent":Vector2.ZERO,"slots":slots,"cd":{},"buff":{},"captured":false,"sealed":false,"penalty":0.0,"disconnected_at":0.0,"protected":0.0,"carry":"","fragments":[],"form_choice":"jar","fake_progress":{},"escape":1,"escape_until":0.0,"challenge":{},"trail":[],"trail_at":0.0,"chat_at":-10.0,"joined":players.size()}
+ players[uid]={"cosmetic":preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate(),"career_wins":0,"uid":uid,"name":C.clean_name(nick),"role":"","connected":true,"ready":false,"position":Map.safe(Vector2(900+players.size()*24,680)),"facing":2,"intent":Vector2.ZERO,"slots":slots,"cd":{},"buff":{},"captured":false,"sealed":false,"penalty":0.0,"disconnected_at":0.0,"protected":0.0,"carry":"","fragments":[],"form_choice":"jar","fake_progress":{},"escape":1,"escape_until":0.0,"challenge":{},"trail":[],"trail_at":0.0,"chat_at":-10.0,"joined":players.size()}
  if host=="":host=uid
  event(players[uid].name+" 입장")
  return true
@@ -65,6 +66,7 @@ func start(uid: String) -> bool:
  # Fisher-Yates uses server RNG; no client seed or role input is accepted.
  for i in range(ids.size()-1,0,-1):
   var j:=rng.randi_range(0,i);var swap=ids[i];ids[i]=ids[j];ids[j]=swap
+ rewarded=false
  match_id=Crypto.new().generate_random_bytes(8).hex_encode()
  round_number+=1;elapsed=0;phase="prepare";phase_until=C.PREPARATION;resources=0;meetings=0;meeting_ready=0;fallback_at=0;votes.clear();effects.clear();channels.clear();winner=""
  for i in range(ids.size()):
@@ -81,6 +83,10 @@ func command(uid: String,data: Dictionary) -> Dictionary:
  if not players.has(uid):return {"error":"방에 참가하지 않았습니다"}
  var p: Dictionary=players[uid]
  var op: String=str(data.get("op",""))
+ if op=="appearance":
+  if phase!="lobby":return {"error":"대전 중 외형 변경은 제한됩니다"}
+  p.cosmetic=preload("res://scripts/wardrobe/catalog.gd").normalize(data.get("appearance",{}))
+  return {}
  if op=="ready" and phase=="lobby":
   if data.get("value",false) is bool:p.ready=data.get("value",false)
   return {}
@@ -148,7 +154,7 @@ func cast(p: Dictionary,skill: String,target: String) -> Dictionary:
   if not players.has(target) or players[target].sealed or not near(p,players[target].position,220):return {"error":"가까운 복제 대상을 선택하세요"}
   p.buff[skill]=elapsed+info.duration;p.buff["appearance"]=target
  elif skill in ["clone","smoke","darkness","fake_flame"]:
-  effects.append({"id":serial+effects.size()+1,"kind":skill,"owner":uid,"position":p.position,"until":elapsed+info.duration,"name":p.name,"facing":p.facing})
+  effects.append({"id":serial+effects.size()+1,"kind":skill,"owner":uid,"position":p.position,"until":elapsed+info.duration,"name":p.name,"facing":p.facing,"cosmetic":p.cosmetic.duplicate()})
  elif skill in ["transform","track","shield","rescue"]:p.buff[skill]=elapsed+info.duration
  if skill=="darkness":
   for m in missions:
@@ -261,27 +267,28 @@ func view(uid: String) -> Dictionary:
  var self_p: Dictionary=players[uid]
  var snapshot={"room":code,"host":host,"phase":phase,"round":round_number,"match":match_id,"time":maxf(0,C.MATCH_TIME-elapsed),"phase_time":maxf(0,phase_until-elapsed),"resources":resources,"meetings":meetings,"winner":winner,"events":events.duplicate(true),"roster":[],"actors":[],"missions":[],"effects":[],"self":{},"footprints":[]}
  for p in players.values():
-  snapshot.roster.append({"uid":p.uid,"name":p.name,"ready":p.ready,"connected":p.connected,"captured":p.captured,"sealed":p.sealed,"restricted":p.penalty>elapsed})
+  snapshot.roster.append({"cosmetic":p.cosmetic.duplicate(),"uid":p.uid,"name":p.name,"ready":p.ready,"connected":p.connected,"captured":p.captured,"sealed":p.sealed,"restricted":p.penalty>elapsed})
   var distance: float=self_p.position.distance_to(p.position)
   var visible_player: bool=p.uid==uid or (not p.sealed and distance<(210 if self_p.captured else C.VISIBILITY) and Map.line(self_p.position,p.position))
   for effect in effects:
    if effect.kind in ["darkness","smoke"] and effect.position.distance_to(self_p.position)<130 and distance>85 and p.uid!=uid:visible_player=false
   if visible_player:
    var display: String=p.name
+   var outfit: Dictionary=p.cosmetic
    if p.buff.get("mask",0)>elapsed or p.buff.get("mimic",0)>elapsed:
     var copied: String=p.buff.get("appearance","")
-    if players.has(copied):display=players[copied].name
-   snapshot.actors.append({"uid":p.uid,"name":display,"position":[p.position.x,p.position.y],"facing":p.facing,"moving":p.intent.length()>.1 and roam(p),"form":(p.form_choice if p.buff.get("transform",0)>elapsed else "human"),"casting":p.buff.get("casting",0)>elapsed or p.buff.get("working",0)>elapsed or channels.has(p.uid),"carry":p.carry!="","protected":p.protected>elapsed})
+    if players.has(copied):display=players[copied].name;outfit=players[copied].cosmetic
+   snapshot.actors.append({"cosmetic":outfit.duplicate(),"uid":p.uid,"name":display,"position":[p.position.x,p.position.y],"facing":p.facing,"moving":p.intent.length()>.1 and roam(p),"form":(p.form_choice if p.buff.get("transform",0)>elapsed else "human"),"casting":p.buff.get("casting",0)>elapsed or p.buff.get("working",0)>elapsed or channels.has(p.uid),"carry":p.carry!="","protected":p.protected>elapsed})
  for m in missions:snapshot.missions.append({"id":m.id,"kind":m.kind,"name":m.name,"position":[m.position.x,m.position.y],"step":m.step,"done":m.done})
  for e in effects:
-  if e.position.distance_to(self_p.position)<C.VISIBILITY:snapshot.effects.append({"id":e.id,"kind":"flame" if e.kind=="fake_flame" else e.kind,"position":[e.position.x,e.position.y],"name":e.name,"facing":e.facing})
+  if e.position.distance_to(self_p.position)<C.VISIBILITY:snapshot.effects.append({"id":e.id,"kind":"flame" if e.kind=="fake_flame" else e.kind,"position":[e.position.x,e.position.y],"name":e.name,"facing":e.facing,"cosmetic":e.get("cosmetic",{}).duplicate()})
  var remaining: Dictionary={}
  for s in self_p.cd:remaining[s]=maxf(0,float(self_p.cd[s])-elapsed)
  var buddies: Array=[]
  if self_p.role=="yokai":
   for p in players.values():
    if p.role=="yokai" and p.uid!=uid:buddies.append(p.uid)
- snapshot.self={"uid":uid,"role":self_p.role,"teammates":buddies,"position":[self_p.position.x,self_p.position.y],"facing":self_p.facing,"slots":self_p.slots.duplicate(),"cooldowns":remaining,"captured":self_p.captured,"sealed":self_p.sealed,"penalty":maxf(0,self_p.penalty-elapsed),"protection":maxf(0,self_p.protected-elapsed),"carry":self_p.carry,"fragments":self_p.fragments.duplicate(),"escape":self_p.escape,"escape_time":maxf(0,self_p.escape_until-elapsed),"channel":maxf(0,float(channels.get(uid,{}).get("until",elapsed))-elapsed),"voted":votes.has(uid)}
+ snapshot.self={"career_wins":self_p.career_wins,"uid":uid,"role":self_p.role,"teammates":buddies,"position":[self_p.position.x,self_p.position.y],"facing":self_p.facing,"slots":self_p.slots.duplicate(),"cooldowns":remaining,"captured":self_p.captured,"sealed":self_p.sealed,"penalty":maxf(0,self_p.penalty-elapsed),"protection":maxf(0,self_p.protected-elapsed),"carry":self_p.carry,"fragments":self_p.fragments.duplicate(),"escape":self_p.escape,"escape_time":maxf(0,self_p.escape_until-elapsed),"channel":maxf(0,float(channels.get(uid,{}).get("until",elapsed))-elapsed),"voted":votes.has(uid)}
  if self_p.buff.get("track",0)>elapsed:
   for p in players.values():
    if p.uid!=uid:

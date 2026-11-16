@@ -12,7 +12,7 @@ func _ready() -> void:
 	toggle_mode = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	focus_mode = Control.FOCUS_ALL
-	custom_minimum_size = Vector2(112,64)
+	custom_minimum_size = Vector2(112,64) if custom_minimum_size==Vector2.ZERO else custom_minimum_size.max(Vector2(64,56))
 func usable() -> bool:
 	return is_visible_in_tree() and not disabled and (not allowed.is_valid() or allowed.call())
 func cancel() -> void:

@@ -12,6 +12,8 @@ var profile: Dictionary
 var state: Dictionary={}
 var screen:="login"
 var status_label: Label
+var lobby_art: Control
+var lobby_art_key:=""
 var roster_label: Label
 var title_label: Label
 var timer_label: Label
@@ -88,7 +90,7 @@ func join_room(op: String) -> void:
  var forest_mastery:=false
  var save: Dictionary=game.Save.load_game()
  if not save.is_empty():forest_mastery=save.get("completed_paintings",[]).has("fox_forest") or save.get("rpg",{}).get("adventure_unlocks",[]).has("forest_cat")
- connection.send({"op":op,"name":Catalog.clean_name(name_input.text),"room":code_input.text.strip_edges(),"slots":profile.slots,"forest_mastery":forest_mastery,"form":profile.get("form","jar")})
+ connection.send({"op":op,"appearance":game.wardrobe.data.appearance.duplicate(),"name":Catalog.clean_name(name_input.text),"room":code_input.text.strip_edges(),"slots":profile.slots,"forest_mastery":forest_mastery,"form":profile.get("form","jar")})
 func show_loadout() -> void:
  var stack:=open_popup("공통 도술 · 두 칸")
  if stack==null:return
@@ -117,6 +119,8 @@ func receive(data: Dictionary) -> void:
   if data.has("challenge"):challenge(data.challenge)
  elif op=="state":
   var previous: String=str(state.get("phase",""));state=data.state
+  var wins: int=int(state.self.get("career_wins",0))
+  if wins>int(game.wardrobe.data.server_wins.get(connection.endpoint,0)):game.wardrobe.record_server_wins(connection.endpoint,wins)
   if state.phase=="lobby":
    if screen!="lobby":dispose_world();build_lobby()
    update_lobby()
@@ -129,7 +133,8 @@ func receive(data: Dictionary) -> void:
 func build_lobby() -> void:
  screen="lobby";var stack:=panel("봉인의 밤 · 방 "+connection.room)
  stack.add_child(game.text("6~8명 모두 준비하면 방장만 시작할 수 있습니다. 요괴는 항상2명입니다.",19))
- roster_label=game.text("참가자 확인 중…",21);stack.add_child(roster_label)
+ lobby_art=Control.new();lobby_art.custom_minimum_size=Vector2(720,90);stack.add_child(lobby_art);lobby_art_key=""
+ roster_label=game.text("참가자 확인 중…",17);stack.add_child(roster_label)
  status_label=game.text(message,17,Color("98bad5"));stack.add_child(status_label)
  var row:=HBoxContainer.new();stack.add_child(row)
  row.add_child(game.button("준비 / 취소",func()->void:
@@ -142,6 +147,12 @@ func build_lobby() -> void:
  stack.add_child(game.button("방 나가기",leave_room))
 func update_lobby() -> void:
  if not is_instance_valid(roster_label):return
+ var art_key:=JSON.stringify(state.roster)
+ if art_key!=lobby_art_key and is_instance_valid(lobby_art):
+  lobby_art_key=art_key
+  for child in lobby_art.get_children():child.queue_free()
+  for i in range(state.roster.size()):
+   var hero:=Actor.new();hero.network_remote=true;hero.cosmetic=state.roster[i].get("cosmetic",{});hero.position=Vector2(45+i*88,88);hero.scale=Vector2(1.7,1.7);lobby_art.add_child(hero);hero.collision_layer=0;hero.collision_mask=0
  var lines: Array[String]=[]
  for p in state.roster:lines.append(("♔ " if state.host==p.uid else "")+p.name+" · "+("준비" if p.ready else "대기")+(" · 재접속 대기" if not p.connected else ""))
  start_button.disabled=state.host!=connection.uid or state.roster.size()<6 or not state.roster.all(func(p: Dictionary)->bool:return p.ready and p.connected)
@@ -163,7 +174,7 @@ func update_actors() -> void:
    var label: Label=game.text("",11,Color("ebe5d7"));label.position=Vector2(-60,-65);label.size=Vector2(120,20);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label);nameplates[id]=label
    if id==connection.uid:
     camera=Camera2D.new();camera.zoom=Vector2(2,2);camera.position=Vector2(0,-36);camera.position_smoothing_enabled=true;camera.position_smoothing_speed=6;camera.limit_left=0;camera.limit_top=0;camera.limit_right=3400;camera.limit_bottom=1900;actor.add_child(camera);camera.make_current()
-  var actor: WooActor=avatars[id];actor_targets[id]=Vector2(info.position[0],info.position[1]);actor.facing=int(info.facing);actor.appearance_form=info.form;actor.jar=false;actor.velocity=Vector2(20,0) if info.moving else Vector2.ZERO
+  var actor: WooActor=avatars[id];actor_targets[id]=Vector2(info.position[0],info.position[1]);actor.cosmetic=info.get("cosmetic",{});actor.facing=int(info.facing);actor.appearance_form=info.form;actor.jar=false;actor.velocity=Vector2(20,0) if info.moving else Vector2.ZERO
   if info.casting:actor.transforming=.12
   nameplates[id].text=info.name+(" · 나" if id==connection.uid else "")
  for id in avatars.keys():
@@ -176,7 +187,7 @@ func update_actors() -> void:
   if not clone_avatars.has(id):
    var clone:=Actor.new();clone.network_remote=true;clone.position=Vector2(e.position[0],e.position[1]);world.add_child(clone);clone_avatars[id]=clone
    var label: Label=game.text(e.name,11);label.position=Vector2(-60,-65);label.size.x=120;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;clone.add_child(label)
-  clone_avatars[id].facing=int(e.facing)
+  clone_avatars[id].facing=int(e.facing);clone_avatars[id].cosmetic=e.get("cosmetic",{})
  for id in clone_avatars.keys():
   if not clones.has(id):clone_avatars[id].queue_free();clone_avatars.erase(id)
 func build_hud() -> void:
@@ -297,9 +308,11 @@ func show_result() -> void:
  var key: String=str(state.get("match",connection.room+":"+str(state.round)))
  if profile.get("last_result","")!=key:
   profile.last_result=key;profile.played=int(profile.get("played",0))+1
-  if victory:profile.wins=int(profile.get("wins",0))+1
+  profile.wins=maxi(int(profile.get("wins",0)),int(state.self.get("career_wins",0)))
   Identity.save_profile(profile)
  var stack:=open_popup(("승리 · " if victory else "패배 · ")+("도사 최종 봉인" if state.winner=="daoist" else "요괴의 밤"))
+ var portrait:=Control.new();portrait.custom_minimum_size=Vector2(180,135);stack.add_child(portrait)
+ var hero:=Actor.new();hero.network_remote=true;hero.cosmetic=game.wardrobe.data.appearance.duplicate();hero.position=Vector2(100,125);hero.scale=Vector2(2.4,2.4);portrait.add_child(hero)
  stack.add_child(game.text("한 판을 마쳤습니다. 방장이 재대전을 열 수 있습니다.",21))
  var rematch: Button=game.button("방장 재대전",func()->void:close_popup();connection.send({"op":"rematch"}),true);rematch.disabled=state.host!=connection.uid;stack.add_child(rematch)
  stack.add_child(game.button("방 나가기",leave_room))
@@ -339,6 +352,7 @@ func _process(delta: float) -> void:
  for id in avatars:
   var actor: WooActor=avatars[id];var target: Vector2=actor_targets.get(id,actor.position)
   actor.animation_time+=delta*7 if actor.velocity.length()>0 else delta
+  actor.gait_phase+=delta*11;actor.gait_weight=move_toward(actor.gait_weight,1.0 if actor.velocity.length()>0 else 0.0,delta*10)
   if id==connection.uid and can_move:
    actor.position=Map.move(actor.position,actor.position+stick.vector*(64 if self_state.carry!="" else Catalog.MOVE_SPEED)*minf(delta,.05))
   if actor.position.distance_to(target)>60:actor.position=target;actor.reset_physics_interpolation()

@@ -24,10 +24,11 @@ func _draw() -> void:
  var head:=98.0;var hips:=127.0
  # Rigid head and common foot pivot preserve identity and apparent size.
  var center: float=frame[4]
- section(frame,center-17,head,34,hips-head)
+ var custom_body: bool=is_instance_valid(actor.wardrobe_visual) and actor.wardrobe_visual.custom_body()
+ if not custom_body:section(frame,center-17,head,34,hips-head)
  var phase: float=clampf(1-actor.action_left/maxf(actor.pose_duration,.001),0,1)
  var pulse:=sin(phase*PI)
- var stride:=sin(actor.animation_time*TAU/4) if actor.velocity.length()>2 and actor.action_left<=0 and actor.jump_height==0 else 0.0
+ var stride:=sin(actor.gait_phase)*actor.gait_weight
  var left:=stride*.2;var right:=-stride*.2
  if actor.action_left>0:
   match actor.action_pose:
@@ -43,8 +44,8 @@ func _draw() -> void:
   left-=spread;right+=spread
  if actor.landing_left>0:left=-.3*actor.landing_left/.18;right=.3*actor.landing_left/.18
  var shoulder_l:=Vector2(-6,-16);var shoulder_r:=Vector2(6,-16)
- section(frame,0,head,center-17,hips-head,shoulder_l,left)
- section(frame,center+17,head,frame[2]-center-17,hips-head,shoulder_r,right)
+ if not custom_body:section(frame,0,head,center-17,hips-head,shoulder_l,left)
+ if not custom_body:section(frame,center+17,head,frame[2]-center-17,hips-head,shoulder_r,right)
  section(frame,0,hips,center,frame[3]-hips,Vector2(-3,-5),sin(phase*PI)*.13 if actor.action_left>0 else stride*.2)
  section(frame,center,hips,frame[2]-center,frame[3]-hips,Vector2(3,-5),-sin(phase*PI)*.13 if actor.action_left>0 else -stride*.2)
  if actor.action_left>0:
@@ -61,4 +62,4 @@ func _draw() -> void:
    draw_arc(hand,3+pulse*5,-PI,PI,12,Color(.4,.8,1,pulse*.75),2)
 
  # Keep canonical face/hat above weapon trails; articulation never substitutes its pixels.
- section(frame,0,0,frame[2],head)
+ if not is_instance_valid(actor.wardrobe_visual) or not actor.wardrobe_visual.custom_head():section(frame,0,0,frame[2],head)

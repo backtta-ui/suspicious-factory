@@ -1,0 +1,6 @@
+Project-specific generated game art for Dosa / Jeon Woochi.
+layers.png: 32 face, garment, hair, hat and accessory components.
+combat_vfx.png: 16 authored effect frames across four attack styles.
+Original generated images retained in the development workspace.
+Composition, palette, pivot and animation logic are in scripts/wardrobe and scripts/woo.
+No paid third-party asset service or runtime API is required.

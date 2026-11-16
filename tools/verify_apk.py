@@ -57,6 +57,7 @@ def main():
             check(all(any(f'{clip}.wav' in entry for entry in entries) for clip in ['grass','dirt','wood','water','attack','hit','reward']), 'V1.3 terrain and combat audio bundled')
             check(all(any(asset in entry for entry in entries) for asset in ['hero_actions.png','items.png','action_controller.gd','bundle_ui.gd','forest_wind.ogg']), 'V1.4 action poses, unique item art, controller, bundle UI and ambience bundled')
             check(all(any(asset in entry for entry in entries) for asset in ['skills.png','hero_rig.gd','client_ui.gd','rules.gd','connection.gd']), 'V2.0 canonical hero, skill atlas and real multiplayer protocol bundled')
+            check(all(any(asset in entry for entry in entries) for asset in ['wardrobe/layers.png','wardrobe/profile.gd','wardrobe/visual.gd','wardrobe/screen.gd','combat_vfx.png']), 'Layered wardrobe, persistence, live preview and attack VFX bundled')
             check(not any('factory_session' in entry or 'factory_v2' in entry for entry in entries), 'Factory/network game resources removed')
             check(not any(entry.startswith(('assets/tests/', 'assets/tools/', 'assets/builds/'))
                           for entry in entries), 'Development files excluded')

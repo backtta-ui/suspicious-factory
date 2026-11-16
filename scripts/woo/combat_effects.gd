@@ -21,6 +21,8 @@ func afterimage(actor: WooActor) -> void:
  if ghosts.size()>=12:ghosts.pop_front()
  ghosts.append({"p":actor.position,"region":actor.sprite.region_rect,"offset":actor.sprite.offset,"scale":actor.sprite.scale,"texture":actor.sprite.texture,"life":.26})
 func swing(p: Vector2,direction: Vector2,stage: int,mode: String,radius: float) -> void:
+ if get_child_count()<24:
+  var vfx:=preload("res://scripts/woo/attack_vfx.gd").new();vfx.position=p;vfx.direction=direction;vfx.stage=clampi(stage-1,0,3);vfx.radius=radius;add_child(vfx)
  swings.append({"p":p,"angle":direction.angle(),"stage":stage,"mode":mode,"radius":radius,"life":.24})
 func _process(delta: float) -> void:
  for i in range(swings.size()-1,-1,-1):

@@ -14,6 +14,8 @@ var hurt_stun:=0.0
 var hurt_knock:=Vector2.ZERO
 var defeated:=false
 var defeat_elapsed:=0.0
+var cosmetic: Dictionary=preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate()
+var wardrobe_visual: WooWardrobeVisual
 var hero_rig: WooHeroRig
 var pose_duration:=.3
 var jump_preparation:=0.0
@@ -33,6 +35,8 @@ var npc_variant := 0
 var npc_name := ""
 var tint := Color.WHITE
 var facing := 2
+var gait_phase:=0.0
+var gait_weight:=0.0
 var animation_time := 0.0
 var cooldown := 0.0
 var transforming := 0.0
@@ -85,6 +89,7 @@ func _ready() -> void:
 	else:
 		add_child(sprite)
 		hero_rig=preload("res://scripts/woo/hero_rig.gd").new();hero_rig.actor=self;add_child(hero_rig)
+		wardrobe_visual=preload("res://scripts/wardrobe/visual.gd").new();wardrobe_visual.actor=self;add_child(wardrobe_visual)
 	npc_origin = position
 func jump() -> bool:
 	if npc or not enabled or defeated or jump_height>0 or jump_velocity>0 or jump_preparation>0 or transforming>0:return false
@@ -143,13 +148,16 @@ func _physics_process(delta: float) -> void:
 	var previous:=position
 	move_and_slide()
 	var distance:=position.distance_to(previous)
+	if not npc:
+		gait_phase+=distance*.13
+		gait_weight=move_toward(gait_weight,1.0 if distance>delta*2 and action_left<=0 and jump_height==0 else 0.0,delta*10)
 	if npc:
 		npc_walking=distance>delta*1.0
 		if npc_walking:
 			npc_stride+=distance
 			facing=posmod(roundi((position-previous).angle()/(PI/4)),8)
 		if npc_driver!=null:npc_driver.report_progress(distance,move,delta)
-	elif move.length()>0.05 and action_left<=0:facing=posmod(roundi(move.angle()/(PI/4)),8)
+	elif move.length()>0.05:facing=posmod(roundi(move.angle()/(PI/4)),8)
 	animation_time += delta*(11 if running and not jar else 7) if velocity.length()>2 else delta
 	if not npc or npc_render_visible:update_sprite()
 	if not npc or highlighted!=previous_highlighted:queue_redraw()

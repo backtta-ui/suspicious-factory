@@ -4,6 +4,9 @@ const Village = preload("res://scripts/woo/village.gd")
 const Layout = preload("res://scripts/woo/village_layout.gd")
 const Rpg = preload("res://scripts/woo/rpg_state.gd")
 const Adventure = preload("res://scripts/woo/adventure.gd")
+var hero_portrait: TextureRect
+var hero_name: Label
+var wardrobe: WooWardrobe
 var rpg: WooRpgState
 var adventure: WooAdventure
 const Save = preload("res://scripts/woo/save_game.gd")
@@ -62,6 +65,8 @@ var legacy_position: Array=[]
 
 func _ready() -> void:
  get_tree().auto_accept_quit = false
+ wardrobe=preload("res://scripts/wardrobe/profile.gd").new()
+ wardrobe.refresh(Save.load_game().get("rpg",{}))
  settings = Save.settings()
  sound = preload("res://scripts/woo/sound.gd").new()
  add_child(sound)
@@ -200,6 +205,8 @@ func show_menu(save_before: bool = true) -> void:
  menu.add_child(button("종료",quit_game))
  var multiplayer_button:=button("봉인의 밤 · 멀티플레이",show_seal,true)
  multiplayer_button.position=Vector2(30,594);multiplayer_button.custom_minimum_size=Vector2(360,64);ui.add_child(multiplayer_button)
+ var dress:=button("도사 꾸미기",show_wardrobe)
+ dress.position=Vector2(30,516);dress.custom_minimum_size=Vector2(360,64);ui.add_child(dress)
  var chapter:=text("第一章  ·  계월촌",16,GOLD)
  chapter.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  chapter.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
@@ -208,6 +215,18 @@ func show_menu(save_before: bool = true) -> void:
  var version:=text("V%s   ·   그림 속 모험 · 봉인의 밤" % ProjectSettings.get_setting("application/config/version"),14,Color("c3b7bc"))
  version.position=Vector2(30,676)
  ui.add_child(version)
+
+func apply_appearance_ui() -> void:
+ var look: Dictionary=wardrobe.data.appearance
+ if is_instance_valid(hero_name):hero_name.text=preload("res://scripts/wardrobe/catalog.gd").CHARACTERS[look.character].name
+ if is_instance_valid(hero_portrait):
+  if look.character!="woochi":hero_portrait.texture=preload("res://scripts/wardrobe/art.gd").icon(preload("res://scripts/wardrobe/catalog.gd").CHARACTERS[look.character].cell)
+  else:
+   var atlas:=AtlasTexture.new();atlas.atlas=Actor.SHEET;var f: Array=ArtFrames.HERO[34];atlas.region=Rect2(f[0],f[1],f[2],f[3]);hero_portrait.texture=atlas
+
+func show_wardrobe() -> void:
+ if is_instance_valid(modal):return
+ var screen:=preload("res://scripts/wardrobe/screen.gd").new();screen.game=self;add_child(screen)
 
 func show_seal() -> void:
  if is_instance_valid(seal_client):return
@@ -231,6 +250,7 @@ func start_game(continue_existing: bool = false) -> void:
  if saved.has("time_of_day"): world.time_of_day = clampf(float(saved.time_of_day),0,1)
  player = Actor.new()
  player.name = "JeonWoochi"
+ wardrobe.refresh(rpg.data);player.cosmetic=wardrobe.data.appearance.duplicate()
  player.position = Vector2(saved.position[0],saved.position[1]) if not saved.is_empty() else Layout.SPAWN
  player.jar = bool(saved.get("jar",false))
  unlocked = saved.get("unlocked",["jar"])
@@ -281,13 +301,15 @@ func build_hud() -> void:
  var frame: Array=ArtFrames.HERO[34]
  atlas.region=Rect2(frame[0],frame[1],frame[2],frame[3])
  portrait.texture=atlas
+ hero_portrait=portrait
  portrait.custom_minimum_size=Vector2(48,60)
  portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
  portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
  portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
  row.add_child(portrait)
  var lines:=VBoxContainer.new();row.add_child(lines)
- lines.add_child(text("전우치",20,GOLD))
+ hero_name=text("전우치",20,GOLD);lines.add_child(hero_name)
+ apply_appearance_ui()
  place_label=text("계월촌 · 밤",15)
  lines.add_child(place_label)
  var quest:=PanelContainer.new()
@@ -520,7 +542,9 @@ func save_progress(background: bool = false) -> void:
  if screen_name!="playing" or not is_instance_valid(player): return
  var data := {"schema":1,"map":Layout.MAP_ID,"position":(return_anchor.position.duplicate() if is_instance_valid(adventure) and adventure.in_mission else [player.position.x,player.position.y]),"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day,"talked_to_elder":talked_to_elder,"map_revision":Layout.REVISION,"completed_paintings":completed_paintings.duplicate(),"return_anchor":return_anchor.duplicate(true)}
  if is_instance_valid(adventure):adventure.capture_session()
- if rpg!=null:data.rpg=rpg.data.duplicate(true)
+ if rpg!=null:
+  data.rpg=rpg.data.duplicate(true)
+  wardrobe.refresh(rpg.data);wardrobe.save()
  if not legacy_position.is_empty():data.legacy_position=legacy_position.duplicate()
  # Serialize all writes. Exit/background/manual saves join any pending auto-save.
  finish_save()
@@ -579,6 +603,8 @@ func _process(delta: float) -> void:
  if is_instance_valid(quest_label): quest_label.text="마을 어른과 대화하기 (%d/1)" % (1 if talked_to_elder else 0)
  spell_button.disabled = paused or player.cooldown>0 or player.transforming>0 or not unlocked.has("jar")
  spell_button.text = ("둔갑 %.1f" % player.cooldown) if player.cooldown>0 else ("인간 복귀" if player.jar else "둔갑술")
+ if spell_button.has_node("SkillBadge"):
+  var badge: WooSkillBadge=spell_button.get_node("SkillBadge");badge.maximum=player.SPELL_COOLDOWN;badge.remaining=player.cooldown;badge.locked=not unlocked.has("jar")
  run_button.disabled = player.jar or paused
  place_label.text = Layout.zone_at(player.position)+"  ·  "+("밤" if world.time_of_day>0.3 and world.time_of_day<0.7 else "낮")
  if paused: return

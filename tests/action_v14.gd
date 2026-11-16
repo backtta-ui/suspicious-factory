@@ -43,15 +43,16 @@ func run() -> void:
  check(adv.actions.corrected_direction().distance_to((enemy.position-game.player.position).normalized())<.01,"front-biased auto aim corrects moderate angle at world feet")
  var hp:int=enemy.hp
  adv.basic_attack();var attack_facing: int=game.player.facing
+ await create_timer(.13).timeout
  game.joystick.vector=Vector2.LEFT
- await create_timer(.2).timeout
- check(game.player.facing==attack_facing,"movement steering does not reverse a committed attack pose")
+ await create_timer(.07).timeout
+ check(game.player.facing==4 and adv.actions.aim.x>0,"joystick turns the actor after impact while committed damage direction stays stable")
  game.joystick.reset()
  check(enemy.hp==hp-20,"wide first palm cone lands on off-axis target")
  await create_timer(.25).timeout
  check(enemy.hp==hp-20,"one attack never damages same enemy twice")
  # A fast burst queues the three following attacks, rather than disabling the button.
- adv.actions.cancel();adv.hit_stop=0;game.player.position=Vector2(600,650);enemy.position=Vector2(660,650);enemy.hp=1000;enemy.jump_height=0
+ adv.actions.cancel();adv.hit_stop=0;game.player.facing=0;game.player.position=Vector2(600,650);enemy.position=Vector2(660,650);enemy.hp=1000;enemy.jump_height=0
  adv.basic_attack();adv.basic_attack();adv.basic_attack();adv.basic_attack()
  check(adv.actions.queue.size()==3,"rapid taps buffer next three attacks")
  await create_timer(2.1).timeout
