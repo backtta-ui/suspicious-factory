@@ -28,13 +28,14 @@ func _ready() -> void:
  var row:=HBoxContainer.new();stack.add_child(row)
  var left:=VBoxContainer.new();left.custom_minimum_size=Vector2(380,430);row.add_child(left)
  var stage:=Control.new();stage.custom_minimum_size=Vector2(380,300);stage.mouse_filter=Control.MOUSE_FILTER_IGNORE;left.add_child(stage)
- preview=preload("res://scripts/woo/actor.gd").new();preview.position=Vector2(190,275);preview.scale=Vector2(4.6,4.6);stage.add_child(preview);preview.set_physics_process(false);preview.collision_layer=0;preview.collision_mask=0
+ # One fixed preview scale fits even a full-height jump; never resize for a hat/pose.
+ preview=preload("res://scripts/woo/actor.gd").new();preview.position=Vector2(190,285);preview.scale=Vector2(3.5,3.5);stage.add_child(preview);preview.set_physics_process(false);preview.collision_layer=0;preview.collision_mask=0
  description=game.text("",19);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.custom_minimum_size=Vector2(370,65);left.add_child(description)
  var controls:=HBoxContainer.new();left.add_child(controls)
  for entry in [["방향", "turn"],["걷기","walk"],["점프","jump"],["공격","attack"]]:
   var mode: String=entry[1];var b: Button=game.button(entry[0],func()->void:
    if mode=="turn":preview.facing=(preview.facing+1)%8
-   else:pose=mode
+   else:pose="idle" if pose==mode else mode
   );b.custom_minimum_size=Vector2(85,56);b.add_theme_font_size_override("font_size",17);controls.add_child(b)
  var right:=VBoxContainer.new();right.custom_minimum_size=Vector2(730,430);row.add_child(right)
  var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(730,330);right.add_child(scroll)

@@ -39,12 +39,13 @@ func run() -> void:
      combos+=1
      if combos%32==0:await frames(1)
  actor.reset_action()
- for accessory in C.ACCESSORIES:
-  for color in C.COLORS:
-   var look:=C.DEFAULT.duplicate();look.character="yeonhwa";look.accessory=accessory;look.color=color
-   actor.cosmetic=look;actor.wardrobe_visual._process(0)
-   check(actor.wardrobe_visual.appearance==look,"accessory/color combination "+accessory+"/"+color)
-   if accessory!="none":check((actor.wardrobe_visual.pieces.accessory.get_parent()==actor.appearance_back)==Fit.accessory_behind(accessory),"accessory front/back attachment "+accessory)
+ for character in C.CHARACTERS:
+  for accessory in C.ACCESSORIES:
+   for color in C.COLORS:
+    var look:=C.DEFAULT.duplicate();look.character=character;look.accessory=accessory;look.color=color
+    actor.cosmetic=look;actor.wardrobe_visual._process(0)
+    check(actor.wardrobe_visual.appearance==look,"accessory/color combination "+accessory+"/"+color)
+    if accessory!="none":check((actor.wardrobe_visual.pieces.accessory.get_parent()==actor.appearance_back)==Fit.accessory_behind(accessory),"accessory front/back attachment "+accessory)
  check(Fit.HATS.fox.mode=="mask" and Fit.HATS.hood.mode=="hood","mask uses face rule distinct from crown/hood")
  actor.queue_free();await frames()
  # Actual existing UI, profile format, cancellation and plaza/adventure renderer.
@@ -62,6 +63,7 @@ func run() -> void:
  screen.slot="character";screen.select("muyeong");await frames()
  var expected:=look.duplicate();expected.character="muyeong"
  check(screen.draft==expected and screen.preview.cosmetic==expected,"character change retains hair/outfit/hat/charm/color")
+ check(screen.preview.position.y-(50+30)*screen.preview.scale.y>=0 and screen.preview.position.y+4*screen.preview.scale.y<=300,"full-height preview jump and hat stay inside stage at one fixed scale")
  screen.close();await frames()
  check(profile.data.appearance==look and game.player.cosmetic==look,"cancel leaves both saved and live look unchanged")
  game.show_wardrobe();await frames()
