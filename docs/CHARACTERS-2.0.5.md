@@ -34,8 +34,10 @@
 - [걷기 접지 자세](characters-2.0.5/walk.png)
 - [공격 자세](characters-2.0.5/actions.png)
 - [헤어/모자/의상 조합](characters-2.0.5/custom.png)
+- [의상 조합의 실제 4방향](characters-2.0.5/custom-directions.png)
 - [실제 옷장](characters-2.0.5/wardrobe.png)
 - [실제 광장](characters-2.0.5/plaza.png)
+- [실제 여우의 숲](characters-2.0.5/forest.png)
 - [실제 수련장](characters-2.0.5/practice.png)
 
 화면은 Godot Linux Compatibility 렌더러 캡처다. Galaxy 실기기 화면으로 주장하지 않는다.
@@ -43,3 +45,23 @@
 ## 검증과 배포
 
 최종 검증 수치/CI/서명/APK 다운로드 링크는 동봉 JSON 및 아래 최종 결과를 참조한다. 로컬 자동 입력과 실제 소켓 테스트는 실기기 멀티플레이 테스트와 구분한다. Galaxy 설치·터치·프레임은 사용자 실기기 확인이 필요하다. 앱을 삭제하지 말고 기존 앱 위에 업데이트 설치해야 로컬 기록을 유지할 수 있다.
+
+### 최종 로컬·배포 결과
+
+- 필수 `bash tools/checkpoint.sh` 종료 코드 0. 기존 이동/전투/저장/터치/실제 소켓 회귀 검사 통과.
+- 외형: 504 지원 조합 × 4방향 × 코어4/동작6 자세, 실제 전신 텍스처/얼굴 출처/레이어/높이/저장 불변성 검사 포함 **134,781 검사, 0 실패**. 완성형 기본 시트의 실제 픽셀 경계도 검사했다. 이는 모든 프레임의 미술 품질을 사람이 검수했다는 의미는 아니다.
+- v1→v2 캐릭터별 저장 이관, 두 캐릭터 독립 저장/복원/취소, 앱 프로세스 재시작, 기존 소유권/미래 아이템/확정 승리 기록 보존 검사 통과.
+- APK에서 꺼낸 실제 컴파일 리소스로 Linux Godot 재실행: 외형 134,781 / 수련장 기능 74 / 수련장 터치 28 / 모험 복귀 5 검사 모두 통과. Android 네이티브 실행 검증과 구분한다.
+- 실제 APK 정적 검증 35항목 통과: 서명, ZIP, ARM64, API29+, 가로 화면, 권한, 16KiB 정렬, 새 방향 에셋 포함 여부. 같은 기존 서명 인증서이며 설치된 앱 위에 업데이트할 수 있는 조건을 유지한다.
+- APK: `builds/jeon-woochi-2.0.5.apk`, 94,247,009바이트. SHA256 `99c8faee1c953671020e99b4b5a470ef10a01e25448d15da64e359a6dbd334c3`.
+- [수정 파일 전체 목록](CHARACTERS-2.0.5-CHANGED-FILES.txt), [기계 판독 검증 결과](CHARACTERS-2.0.5-VERIFICATION.json).
+
+[갤럭시 APK 직접 다운로드](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/9d80a43dcea3e3ba51e6689a06d2bcd285edd81c/jeon-woochi-2.0.5.apk)
+
+휴대폰 브라우저에서 열기 → 다운로드 → 삼성 ‘내 파일’의 다운로드 폴더 → APK → 기존 앱 위에 업데이트. **기존 앱을 삭제하지 않는다.**
+
+[설치 가능한 서명 APK Actions 다운로드](https://github.com/backtta-ui/suspicious-factory/actions/runs/43913989935): 실행 하단 Artifacts → `jeon-woochi-verified-apk` → ZIP 다운로드 → ‘내 파일’에서 압축 해제 → APK 설치. GitHub 로그인 필요. 아티팩트 보관 14일이며 위 직접 링크는 별도로 제공한다. 이 Actions는 Cloud 체크포인트가 빌드·기존 키로 서명한 정확한 APK를 재다운로드하고 검증해 첨부하며, 재컴파일 작업은 아니다.
+
+[GitHub 독립 컴파일 검사](https://github.com/backtta-ui/suspicious-factory/actions/runs/43913076655)는 같은 게임 소스를 테스트·컴파일한다. 원격에 기존 키를 올리지 않기 위해 unsigned-only 중간 파일을 생성한다. 그 중간 파일을 설치용으로 안내하지 않는다. 실제 설치 파일은 위 Cloud 체크포인트 서명 APK다. 세부 최종 실행 상태는 검증 JSON에 기록한다.
+
+독립 컴파일 Actions **43913076655 성공**, 서명 APK 전달 Actions **43913989935 성공**. 전달 아티팩트 ZIP 안의 APK를 실제 재다운로드해 위 SHA256과 일치함을 추가 확인했다.

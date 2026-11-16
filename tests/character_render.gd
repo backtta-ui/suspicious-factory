@@ -18,6 +18,8 @@ func run() -> void:
     if col==1:actor.cosmetic.hair="silver";actor.cosmetic.hat="hood"
     if col==2:actor.cosmetic.outfit="moon";actor.cosmetic.color="white";actor.cosmetic.hat="gat"
     if col==3:actor.cosmetic.outfit="night";actor.cosmetic.color="black_gold";actor.cosmetic.hat="bamboo";actor.cosmetic.accessory="gourd"
+   if mode=="custom-directions":
+    actor.cosmetic.hair=["long","silver","tied","flower"][row];actor.cosmetic.hat=["bamboo","hood","fox","crown"][row];actor.cosmetic.outfit="moon" if row%2==0 else "night";actor.cosmetic.color="white" if row%2==0 else "black_gold"
    root.add_child(actor);actor.set_physics_process(false);actor.collision_layer=0;actor.collision_mask=0;actor.update_sprite();actors.append(actor)
    if mode=="walk":actor.wardrobe_visual.row_override=1 if col%2==0 else 2;actor.wardrobe_visual.pose_override="core"
    if mode=="actions":actor.wardrobe_visual.row_override=col;actor.wardrobe_visual.pose_override="actions"

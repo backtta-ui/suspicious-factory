@@ -1,0 +1,284 @@
+{
+  "version": "2.0.5",
+  "version_code": 16,
+  "backup_branch": "backup/dosa-2.0.4-before-character-rebuild",
+  "game_source_commit": "e40755ec9ae0de587246892c6f84ad97d7515cbc",
+  "verification_commit": "e041ef210c0f815704ca9c6030000a0082b68fef",
+  "apk_build_origin": "Codex Cloud mandatory checkpoint using existing persistent key; independently compiled again by GitHub Actions unsigned-only workflow",
+  "apk": {
+    "status": "passed",
+    "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.5.apk",
+    "checked_at": "2026-11-16T16:59:14.433617+00:00",
+    "device_test": "not_performed",
+    "checks": [
+      "APK exists and is nonempty",
+      "ZIP integrity",
+      "Android manifest and executable bytecode present",
+      "Godot ARM64 engine present",
+      "Bundled font license present",
+      "Splash image present",
+      "HD hero, environment atlas and title art packaged",
+      "Baked low-draw-call terrain packaged",
+      "All five offline sound effects packaged",
+      "Licensed Korean music and attribution bundled",
+      "Expanded plaza art atlases bundled",
+      "V1.2 NPC animation atlas and local title shader bundled",
+      "V1.3 painting, forest, goblin, combat and RPG resources bundled",
+      "V1.3 terrain and combat audio bundled",
+      "V1.4 action poses, unique item art, controller, bundle UI and ambience bundled",
+      "V2.0 canonical hero, skill atlas and real multiplayer protocol bundled",
+      "Layered wardrobe, persistence, live preview and attack VFX bundled",
+      "Clean head atlas, per-character attachments and hair/headwear coverage bundled",
+      "Offline practice map, isolated session and shared spell rules bundled",
+      "Random arenas, verified acquisition, signed progress and shape extraction bundled",
+      "Four complete base characters and real directional customization motion atlases bundled",
+      "Factory/network game resources removed",
+      "Development files excluded",
+      "APK cryptographic signature valid",
+      "Signing certificate fingerprint readable",
+      "Expected package ID",
+      "Minimum Android 10 / API 29",
+      "Target API at least 35",
+      "ARM64-only build",
+      "Landscape orientation",
+      "Android automatic data backup disabled",
+      "Only Internet permission for dedicated multiplayer; offline adventure preserved",
+      "New game display title",
+      "4-byte ZIP / 16 KiB native library alignment",
+      "Version name readable"
+    ],
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "version": "2.0.5",
+    "target_api": 36,
+    "bytes": 94247009,
+    "sha256": "99c8faee1c953671020e99b4b5a470ef10a01e25448d15da64e359a6dbd334c3"
+  },
+  "checkpoint_exit_code": 0,
+  "suites": [
+    {
+      "suite": "woo_core",
+      "summary": "WOO CORE: 54 checks, 0 failures",
+      "sha256": "7ababb2110b29d655d38f14fb6b6e635cc03ebc0f970bbb865b951d7e2ab6cca"
+    },
+    {
+      "suite": "touch_ui",
+      "summary": "WOO TOUCH: 130 checks, 0 failures",
+      "sha256": "e5148382d8bc2e8dbc0e7200552bdddfffc04364d778f75f3d3679687dca1f01"
+    },
+    {
+      "suite": "save_recovery",
+      "summary": "SAVE RECOVERY: 11 checks, 0 failures",
+      "sha256": "e1fa7ea1e1da0118db3f405d59c3cfdabe4f47a542e3e6c002090a10469f9c35"
+    },
+    {
+      "suite": "sound_performance",
+      "summary": "SOUND/PERFORMANCE: 23 checks, 0 failures",
+      "sha256": "cd2777ef14bfb7cc34def3c5d54ad8cad02b005d36d4209bda7477e8c1c638ff"
+    },
+    {
+      "suite": "plaza_v11",
+      "summary": "PLAZA V1.1: 50 checks, 0 failures",
+      "sha256": "8636b57bdc9bb11dbb13865a6212bc32df904c9c8681680fe3ba0d501056a9f6"
+    },
+    {
+      "suite": "npc_title_v12",
+      "summary": "NPC/TITLE V1.2: 38 checks, 0 failures; route queries=83",
+      "sha256": "46159cce2ec3826185906665292d3b23ad084491ca4865b835b895afbb8825d3"
+    },
+    {
+      "suite": "rpg_v13",
+      "summary": "RPG V1.3: 58 checks, 0 failures",
+      "sha256": "8f3f2a14a89c5bed7ca1fc92720b9eac1e02691b65282e060d994bb48d921435"
+    },
+    {
+      "suite": "v13_ai",
+      "summary": "V1.3 AI/EFFECTS: 15 checks, 0 failures",
+      "sha256": "c8ba960c2593666b335d5fab5a70ad7cda15d0e572b9d845bf075d9361cb1603"
+    },
+    {
+      "suite": "v13_touch",
+      "summary": "V1.3 TOUCH: 40 checks, 0 failures",
+      "sha256": "559d33e48d998c607b98f631104f0cf2ff80a15332adec52b8de0938e9479a80"
+    },
+    {
+      "suite": "action_v14",
+      "summary": "ACTION V1.4: 50 checks, 0 failures",
+      "sha256": "0dc8a5b0c8a47f17083d789d56946a565d5ff1ded0fa3bc70aa7c93896e872fa"
+    },
+    {
+      "suite": "touch_v14",
+      "summary": "TOUCH V1.4: 50 checks, 0 failures",
+      "sha256": "3d46b25aadd82041a7f7fa76f77d2c2190aebfe55ad9f58d5a5051e8c253f885"
+    },
+    {
+      "suite": "explore_v14",
+      "summary": "EXPLORE V1.4: 6 checks, 0 failures",
+      "sha256": "7ee7683233442783b1451bf89894aca9ad169f477ce31e4be5abe51b60e54771"
+    },
+    {
+      "suite": "hero_v20",
+      "summary": "HERO V2.0: 23 checks, 0 failures",
+      "sha256": "37fc46269bbeff7135baa7141bdf6b652984e17ac78494076e17fa68c742cb7a"
+    },
+    {
+      "suite": "seal_rules",
+      "summary": "SEAL RULES: 51 checks, 0 failures",
+      "sha256": "a225b63d05292bd28ef75e1e60ae3b89ad3358a2956278337a2a7d52c30d7e01"
+    },
+    {
+      "suite": "wardrobe",
+      "summary": "WARDROBE: 29 checks, 0 failures",
+      "sha256": "958401597afcf7fbf11682da994b480fa88da523872add7ad64fe5750b55bc07"
+    },
+    {
+      "suite": "server_rewards",
+      "summary": "SERVER REWARDS: 9 checks, 0 failures",
+      "sha256": "bfa5ace35bd2c4e6a78afcfc1cc44c6d5e8f168da73f2e4d5f4e672af4ce0aa1"
+    },
+    {
+      "suite": "seal_latest",
+      "summary": "SEAL LATEST: 59 checks, 0 failures",
+      "sha256": "e619ef2f8d23a64ffc4237370377ea2719bcdfb621d558a05174ec9e377c8a5a"
+    },
+    {
+      "suite": "seal_tickets",
+      "summary": "SEAL TICKETS: 8 checks, 0 failures",
+      "sha256": "da6efb60be1b5c3c50721f844009d4ae81ed93acfd76f4f38e97041d6f87a6f8"
+    },
+    {
+      "suite": "appearance_combinations",
+      "summary": "APPEARANCE COMBINATIONS: 504 ready combinations / 134781 checks / 0 failures",
+      "sha256": "69c8a00838e4d25bb8d58653ae1169ff8df2ca8a05d0963d96b1d47f69228b5c"
+    },
+    {
+      "suite": "practice",
+      "summary": "OFFLINE PRACTICE: 74 checks, 0 failures",
+      "sha256": "c6c89669dcfdd5ac60337d3aa6182c333190430b4da1b0fae14003cf8d5a7015"
+    },
+    {
+      "suite": "practice_touch",
+      "summary": "PRACTICE TOUCH: 28 checks, 0 failures",
+      "sha256": "0f0d61b2ad5db196d7e95ddfe567c3b0dcc6d9553e2b16e213080e27d55415aa"
+    },
+    {
+      "suite": "practice_return",
+      "summary": "PRACTICE RETURN: 5 checks, 0 failures",
+      "sha256": "05f0d3494902a67105600d6125313b68026cf0cfd09f8457c3b34df0fa940812"
+    },
+    {
+      "suite": "seal_network",
+      "summary": "SEAL NETWORK: 34 checks, 0 failures; real sockets, automated clients, no Android-device claim",
+      "sha256": "2f0b0d2fc07c25210d933dc0dd44e3967eb309c3163d7ba8bc5f2da70351a995"
+    },
+    {
+      "suite": "seal_ui",
+      "summary": "SEAL UI: 15 checks, 0 failures; automated sockets, no Android device claim",
+      "sha256": "081858b55a42bf7d832c2b5889d9db9d4ed837ea1fb68ff8dfc1a0e9224ebc4c"
+    },
+    {
+      "suite": "seal_acquisition",
+      "summary": "SEAL ACQUISITION: 33 checks, 0 failures; actual WebSocket server adventure, not Android",
+      "sha256": "584d77a644bc8f8342e8ee101578e8c5504f6979bce3d522d4904f2175e083ec"
+    },
+    {
+      "suite": "appearance_restart_write",
+      "summary": "APPEARANCE PROCESS write: PASS"
+    },
+    {
+      "suite": "appearance_restart_read",
+      "summary": "APPEARANCE PROCESS read: PASS"
+    }
+  ],
+  "exported_apk_runtime": {
+    "apk": "builds/jeon-woochi-2.0.5.apk",
+    "android_device_test": false,
+    "method": "Actual APK assets and compiled game scripts executed by Linux Godot; only test driver copied from source",
+    "results": [
+      {
+        "suite": "appearance_combinations",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/appearance_combinations-final-apk-results.txt"
+      },
+      {
+        "suite": "practice",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/practice-final-apk-results.txt"
+      },
+      {
+        "suite": "practice_touch",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/practice_touch-final-apk-results.txt"
+      },
+      {
+        "suite": "practice_return",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/practice_return-final-apk-results.txt"
+      }
+    ]
+  },
+  "android_device_test": "not_performed",
+  "internet_android_multiplayer_test": "not_performed",
+  "automated_network_test": "actual local WebSocket server and independent clients; existing network/role/appearance rules regression passed",
+  "assets": {
+    "source_sheets": 16,
+    "source_frames": 344,
+    "complete_native_atlases": 8,
+    "native_frames": 160,
+    "directions": [
+      "front",
+      "back",
+      "left",
+      "right"
+    ],
+    "ready_outfits": [
+      "basic",
+      "moon",
+      "night"
+    ],
+    "unavailable_outfits": [
+      "goblin",
+      "wind",
+      "snow",
+      "heaven",
+      "dragon"
+    ],
+    "unsupported_policy": "Ownership and saved IDs retained; unavailable new selections disabled; legacy look visibly falls back to native clothes with notice"
+  },
+  "limitations": [
+    "No real Galaxy device validation",
+    "Five outfits do not have directional motion art",
+    "Four directions, not eight",
+    "Two walk contacts and neutral, one jump pose, shared hurt/landing pose; further animation polish pending",
+    "Some source hair/defensive boot edges need pixel cleanup",
+    "New directional artwork follows existing character concept but is not pixel-identical to original art"
+  ],
+  "download": {
+    "url": "https://raw.githubusercontent.com/backtta-ui/suspicious-factory/9d80a43dcea3e3ba51e6689a06d2bcd285edd81c/jeon-woochi-2.0.5.apk",
+    "bytes": 94247009,
+    "sha256": "99c8faee1c953671020e99b4b5a470ef10a01e25448d15da64e359a6dbd334c3",
+    "matches_signed_apk": true
+  },
+  "distribution_commit": "9d80a43dcea3e3ba51e6689a06d2bcd285edd81c",
+  "github_compile_run": {
+    "id": 43913076655,
+    "url": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43913076655",
+    "status": "completed",
+    "unsigned_intermediate": true,
+    "conclusion": "success"
+  },
+  "github_delivery_run": {
+    "id": 43913989935,
+    "url": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43913989935",
+    "status": "completed",
+    "conclusion": "success",
+    "artifact_id": 14247928873
+  },
+  "github_delivery_artifact_redownload": {
+    "run_id": 43913989935,
+    "artifact_id": 14247928873,
+    "apk_sha256": "99c8faee1c953671020e99b4b5a470ef10a01e25448d15da64e359a6dbd334c3",
+    "bytes": 94247009,
+    "matches_public_signed_apk": true
+  },
+  "game_source_identical_to_compile_commit": true
+}
