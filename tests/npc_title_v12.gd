@@ -4,6 +4,7 @@ const Save=preload("res://scripts/woo/save_game.gd")
 var game: Node
 var checks:=0
 var failures:=0
+var patrol_measurements:=[]
 func _initialize() -> void:run.call_deferred()
 func check(ok: bool,label: String) -> void:
  checks+=1
@@ -66,6 +67,8 @@ func run() -> void:
   for i in range(180):
    await physics_frame
    extent=maxf(extent,actor.position.distance_to(origin))
+  patrol_measurements.append({"name":actor.npc_name,"travelled":actor.npc_driver.travelled-before,"extent":extent})
+  print("PATROL ",JSON.stringify(patrol_measurements[-1]))
   check(actor.npc_driver.travelled-before>45 and extent>24,actor.npc_name+" actually patrols beyond the former tiny ellipse")
   check(Layout.can_stand(actor.position,0),actor.npc_name+" stays out of static obstacles and water")
  var queries: int=game.world.navigation.queries
@@ -89,5 +92,7 @@ func run() -> void:
  var migrated:=Save.load_game()
  check(migrated.jar and migrated.talked_to_elder and migrated.completed_paintings==["fox_forest"] and migrated.return_anchor.position.size()==2 and migrated.map_revision==3,"V1.1 position migration retains spell, quest, painting and return-anchor state")
  check(Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])) and migrated.has("legacy_position"),"occupied old position is relocated nearby with original coordinates retained")
+ var report: Dictionary={"status":"failed" if failures else "passed","checks":checks,"idle_max_drift":max_idle_delta,"route_queries":queries,"patrols":patrol_measurements,"device_test":"not_performed"}
+ var file:=FileAccess.open("res://builds/v12-npc-measurements.json",FileAccess.WRITE);file.store_string(JSON.stringify(report,"  "));file.close()
  print("NPC/TITLE V1.2: %d checks, %d failures; route queries=%d" % [checks,failures,queries])
  game.queue_free();await frames(3);quit(1 if failures else 0)
