@@ -64,8 +64,9 @@ func line(a: Vector2,b: Vector2) -> bool:
  return true
 func move(from: Vector2,to: Vector2) -> Vector2:
  var n:=maxi(1,ceili(from.distance_to(to)/3));var current:=from
- for i in range(1,n+1):
-  var next:=from.lerp(to,float(i)/n)
+ var step: Vector2=(to-from)/n
+ for i in range(n):
+  var next:=current+step
   if can_stand(next):current=next
   elif can_stand(Vector2(next.x,current.y)):current.x=next.x
   elif can_stand(Vector2(current.x,next.y)):current.y=next.y

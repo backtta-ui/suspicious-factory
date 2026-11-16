@@ -79,8 +79,8 @@ func tick(delta: float) -> void:
    if active:break
 func impact_hit(pulse: int) -> void:
  var player: WooActor=adventure.game.player
- var range_value: float=145 if mode=="talisman" else (120 if mode=="air" else C.RANGES[stage-1])
- var damage: int=32 if mode=="talisman" else (26 if mode=="air" else C.DAMAGE[stage-1])
+ var range_value: float=C.TALISMAN_RANGE if mode=="talisman" else (120 if mode=="air" else C.RANGES[stage-1])
+ var damage: int=C.TALISMAN_DAMAGE if mode=="talisman" else (26 if mode=="air" else C.DAMAGE[stage-1])
  if mode=="air":
   var bolt:=preload("res://scripts/woo/air_talisman.gd").new();bolt.adventure=adventure;bolt.direction=aim;bolt.position=player.position;bolt.height=player.jump_height;adventure.forest.add_child(bolt);return
  adventure.combat.swing(player.position,aim,stage,mode,range_value)
@@ -88,7 +88,7 @@ func impact_hit(pulse: int) -> void:
   var id: String="%d:%d" % [enemy.get_instance_id(),pulse]
   if struck.has(id):continue
   var delta: Vector2=enemy.position-player.position
-  if delta.length()>range_value+12 or absf(aim.angle_to(delta))>C.CONE_HALF_ANGLE or not visible_line(player.position,enemy.position):continue
+  if not C.in_cone(player.position,aim,enemy.position,range_value) or not visible_line(player.position,enemy.position):continue
   struck[id]=true;last_attack_hit=true;hits+=1;hit_left=1.5
   adventure.enemy_hit(enemy,damage,aim,mode=="talisman")
   if mode=="ground" and stage==4:enemy.launch_up(160);adventure.hit_stop=.11 if adventure.game.rpg.data.effects.hit_stop else 0

@@ -261,7 +261,7 @@ func update_actors() -> void:
    var clone:=Actor.new();clone.network_remote=true;clone.position=Vector2(e.position[0],e.position[1]);world.add_child(clone);clone_avatars[id]=clone
    var marker:=preload("res://scripts/seal/color_marker.gd").new();marker.actor=clone;marker.color_id=int(e.get("color",0));clone.add_child(marker)
    var label: Label=game.text(e.name,11);label.position=Vector2(-60,-65);label.size.x=120;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;clone.add_child(label)
-  clone_avatars[id].facing=int(e.facing);clone_avatars[id].cosmetic=e.get("cosmetic",{})
+  clone_avatars[id].position=Vector2(e.position[0],e.position[1]);clone_avatars[id].facing=int(e.facing);clone_avatars[id].cosmetic=e.get("cosmetic",{})
  for id in clone_avatars.keys():
   if not clones.has(id):clone_avatars[id].queue_free();clone_avatars.erase(id)
 func build_hud() -> void:

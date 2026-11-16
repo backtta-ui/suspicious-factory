@@ -90,7 +90,7 @@ func run() -> void:
  var old: Dictionary={"schema":1,"map":Layout.MAP_ID,"map_revision":2,"position":[1640,1050],"settings":{"smooth_camera":true},"unlocked":["jar"],"jar":true,"talked_to_elder":true,"completed_paintings":["fox_forest"],"return_anchor":{"map":Layout.MAP_ID,"position":[1900,400]},"time_of_day":.4}
  check(Save.save_game(old)==OK,"V1.1 revision-2 save is accepted without wiping progress")
  var migrated:=Save.load_game()
- check(migrated.jar and migrated.talked_to_elder and migrated.completed_paintings==["fox_forest"] and migrated.return_anchor.position.size()==2 and migrated.map_revision==3,"V1.1 position migration retains spell, quest, painting and return-anchor state")
+ check(migrated.jar and migrated.talked_to_elder and migrated.completed_paintings==["fox_forest"] and migrated.return_anchor.position.size()==2 and migrated.map_revision==Layout.REVISION,"V1.1 position migration retains spell, quest, painting and return-anchor state")
  check(Layout.can_stand(Vector2(migrated.position[0],migrated.position[1])) and migrated.has("legacy_position"),"occupied old position is relocated nearby with original coordinates retained")
  var report: Dictionary={"status":"failed" if failures else "passed","checks":checks,"idle_max_drift":max_idle_delta,"route_queries":queries,"patrols":patrol_measurements,"device_test":"not_performed"}
  var file:=FileAccess.open("res://builds/v12-npc-measurements.json",FileAccess.WRITE);file.store_string(JSON.stringify(report,"  "));file.close()

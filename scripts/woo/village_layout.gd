@@ -1,7 +1,7 @@
 class_name WooVillageLayout
 extends RefCounted
 const MAP_ID := "gyewol_village"
-const REVISION := 3
+const REVISION := 4
 const SIZE := Vector2(3400,1900)
 # Keep the original entry and three villagers to preserve the player's bearings/save.
 const SPAWN := Vector2(900,610)
@@ -77,6 +77,7 @@ const CORE_PROPS := [
 static var PROPS: Array = build_props()
 static func build_props() -> Array:
  var result: Array=CORE_PROPS.duplicate(true)
+ result.append({"kind":"shrine","position":preload("res://scripts/practice/layout.gd").ENTRANCE})
  for painting in PAINTINGS: result.append({"kind":"painting","position":painting.position,"variant":painting.index})
  for p in [Vector2(1570,510),Vector2(2230,530),Vector2(1690,890),Vector2(2210,930),Vector2(2080,590),Vector2(1350,1030),Vector2(1970,1180),Vector2(1460,1460)]:
   result.append({"kind":"lantern","position":p})

@@ -206,7 +206,7 @@ func cast(p: Dictionary,skill: String,target: String) -> Dictionary:
   if not players.has(target):return {"error":"가까운 대상을 선택하세요"}
   var q: Dictionary=players[target]
   if q.role!="daoist" or not available(q) or not near(p,q.position,48) or q.protected>elapsed:return {"error":"포획 범위 또는 보호 상태를 확인하세요"}
-  if q.buff.get("shield",0)>elapsed:q.buff.erase("shield");q.protected=elapsed+2;p.cd[skill]=elapsed+info.cd;return {"notice":"호신부가 포획을 막았습니다"}
+  if consume_shield(q,elapsed):p.cd[skill]=elapsed+info.cd;return {"notice":"호신부가 포획을 막았습니다"}
   q.captured=true;q.position=arena.safe(arena.jail+Vector2(rng.randf_range(-24,24),rng.randf_range(-18,18)));q.intent=Vector2.ZERO;q.escape_until=elapsed+12 if q.escape>0 else 0;channels.erase(q.uid)
  elif skill in ["blink","shadow"]:
   p.position=arena.move(p.position,p.position+Vector2.from_angle(p.facing*PI/4)*(150 if skill=="shadow" else 110))
@@ -286,6 +286,7 @@ func tick(delta: float) -> void:
  for uid in remove:players.erase(uid)
  if host=="" or not players.has(host) or not players[host].connected:migrate_host()
  for i in range(effects.size()-1,-1,-1):
+  if effects[i].kind=="clone":effects[i].position=arena.move(effects[i].position,effects[i].position+Vector2.from_angle(effects[i].facing*PI/4)*36*delta)
   if effects[i].until<=elapsed:effects.remove_at(i)
  for uid in channels.keys():
   if not players.has(uid):channels.erase(uid);continue
@@ -342,10 +343,7 @@ func view(uid: String) -> Dictionary:
  var snapshot={"rules":options.duplicate(true),"map_id":arena.id,"map_name":arena.data.name,"map_size":[arena.data.size.x,arena.data.size.y],"altar":[arena.altar.x,arena.altar.y],"jail":[arena.jail.x,arena.jail.y],"assets":arena.public_assets(elapsed),"settings_temporary":true,"room":code,"host":host,"phase":phase,"round":round_number,"match":match_id,"time":maxf(0,C.MATCH_TIME-elapsed),"phase_time":maxf(0,phase_until-elapsed),"resources":resources,"meetings":meetings,"winner":winner,"events":events.duplicate(true),"roster":[],"actors":[],"missions":[],"effects":[],"self":{},"footprints":[]}
  for p in players.values():
   snapshot.roster.append({"color":p.color,"cosmetic":p.cosmetic.duplicate(),"uid":p.uid,"name":p.name,"ready":p.ready,"connected":p.connected,"captured":p.captured,"sealed":p.sealed,"restricted":p.penalty>elapsed})
-  var distance: float=self_p.position.distance_to(p.position)
-  var visible_player: bool=p.uid==uid or (not p.sealed and distance<(210 if self_p.captured else C.VISIBILITY) and arena.line(self_p.position,p.position))
-  for effect in effects:
-   if effect.kind in ["darkness","smoke"] and effect.position.distance_to(self_p.position)<130 and distance>85 and p.uid!=uid:visible_player=false
+  var visible_player:=can_observe(uid,p.uid)
   if visible_player:
    var display: String=p.name
    var outfit: Dictionary=p.cosmetic
@@ -370,3 +368,15 @@ func view(uid: String) -> Dictionary:
     for mark in p.trail:
      if elapsed-mark.time<6 and mark.p.distance_to(self_p.position)<240:snapshot.footprints.append([snappedf(mark.p.x,4),snappedf(mark.p.y,4)])
  return snapshot
+
+static func consume_shield(p: Dictionary,time: float) -> bool:
+ if p.buff.get("shield",0)<=time:return false
+ p.buff.erase("shield");p.protected=time+2;return true
+func can_observe(viewer_id: String,target_id: String) -> bool:
+ if not players.has(viewer_id) or not players.has(target_id):return false
+ var observer: Dictionary=players[viewer_id];var target: Dictionary=players[target_id]
+ var distance: float=observer.position.distance_to(target.position)
+ var seen: bool=target.uid==viewer_id or (not target.sealed and distance<(210 if observer.captured else C.VISIBILITY) and arena.line(observer.position,target.position))
+ for effect in effects:
+  if effect.kind in ["darkness","smoke"] and effect.position.distance_to(observer.position)<130 and distance>85 and target.uid!=viewer_id:seen=false
+ return seen

@@ -73,15 +73,22 @@ func show_character() -> void:
  footer(stack)
 func show_spells() -> void:
  var stack:=page("spells","도술 도감 · 최대 3슬롯")
+ stack.add_child(game.button("도술 익히기 · 서버 없이 모든 도술 체험",game.enter_practice))
  var slots:=HBoxContainer.new();stack.add_child(slots)
  for i in range(3):
   var id: String=game.rpg.data.slots[i]
   slots.add_child(game.button("슬롯 %d%s\n%s" % [i+1," ✓" if i==selected_slot else "",State.SPELLS[id].name if id!="" else "비어 있음"],func()->void:selected_slot=i;show_spells()))
- for id in State.SPELLS:
-  var spell: Dictionary=State.SPELLS[id]
-  var b: Button=game.button("%s · %s" % [spell.name,spell.description],func()->void:game.rpg.equip(selected_slot,id);game.save_progress();show_spells())
-  b.disabled=not spell.available;b.add_theme_font_size_override("font_size",17);stack.add_child(b)
- footer(stack)
+ var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(790,330);stack.add_child(scroll)
+ var rows:=VBoxContainer.new();scroll.add_child(rows)
+ var registry=preload("res://scripts/practice/catalog.gd")
+ for id in registry.all():
+  var info: Dictionary=registry.all()[id];var row:=HBoxContainer.new();rows.add_child(row)
+  var label: Label=game.text(info.name+"\n"+info.description,16);label.custom_minimum_size=Vector2(450,70);label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;row.add_child(label)
+  var alias: String="jar" if id=="transform" else id
+  if State.SPELLS.has(alias):
+   var equip: Button=game.button("장착",func()->void:game.rpg.equip(selected_slot,alias);game.save_progress();show_spells());equip.disabled=not State.SPELLS[alias].available;equip.add_theme_font_size_override("font_size",16);row.add_child(equip)
+  var trial: Button=game.button("체험하기",game.enter_practice.bind(id));trial.add_theme_font_size_override("font_size",17);row.add_child(trial)
+ var bottom:=HBoxContainer.new();stack.add_child(bottom);bottom.add_child(game.button("메뉴로",func()->void:game.close_modal();show_menu()));bottom.add_child(game.button("게임으로",game.close_modal,true))
 func show_journal() -> void:
  var stack:=page("journal","임무 일지")
  stack.add_child(game.text("첫걸음 · 마을 어른과 대화하기 (%d/1)" % int(game.talked_to_elder),22))

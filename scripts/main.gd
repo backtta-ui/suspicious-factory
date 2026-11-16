@@ -20,6 +20,8 @@ const DebugInput = preload("res://scripts/touch_debug.gd")
 const FONT = preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const INK := Color("191825")
 const GOLD := Color("d8b87e")
+var practice: WooPracticeUI
+var near_practice:=false
 var seal_client: SealClientUI
 var screen_name := "menu"
 var active_context := "menu"
@@ -415,7 +417,7 @@ func close_modal() -> void:
   modal.queue_free()
  modal = null
  modal_kind = ""
- active_context = "hud" if screen_name=="playing" else "menu"
+ active_context = "practice" if screen_name=="practice" else ("hud" if screen_name=="playing" else "menu")
  if screen_name=="playing": set_paused(false)
 
 func show_settings() -> void:
@@ -464,6 +466,10 @@ func show_credits() -> void:
 func show_painting_intro(index: int) -> void:
  if is_instance_valid(adventure):adventure.show_painting(index)
 
+func enter_practice(skill: String="transform") -> void:
+ if is_instance_valid(practice) or screen_name!="playing" or not is_instance_valid(player):return
+ practice=preload("res://scripts/practice/ui.gd").new();practice.game=self;add_child(practice);practice.select(skill)
+
 func show_rpg_menu() -> void:
  if is_instance_valid(adventure):adventure.show_menu()
 
@@ -492,6 +498,8 @@ func cast_spell() -> void:
 func interact() -> void:
  if screen_name!="playing" or paused: return
  if is_instance_valid(adventure) and adventure.in_mission:adventure.mission_interact();return
+ if near_practice:
+  enter_practice();return
  if nearest_painting>=0:
   show_painting_intro(nearest_painting)
   return
@@ -621,11 +629,14 @@ func _process(delta: float) -> void:
  nearest_painting=-1
  for i in range(Layout.PAINTINGS.size()):
   if player.position.distance_to(Layout.PAINTINGS[i].position)<85:nearest_painting=i;break
+ near_practice=player.position.distance_to(preload("res://scripts/practice/layout.gd").DOOR)<80
  near_well = player.position.distance_to(Layout.WELL)<60
- interact_button.visible = nearest_npc>=0 or near_well or nearest_painting>=0
- interact_button.text = "그림 보기" if nearest_painting>=0 else ("대화" if nearest_npc>=0 else "우물 조사")
+ interact_button.visible = near_practice or nearest_npc>=0 or near_well or nearest_painting>=0
+ interact_button.text = "도술 익히기 입장" if near_practice else ("그림 보기" if nearest_painting>=0 else ("대화" if nearest_npc>=0 else "우물 조사"))
+ interact_button.add_theme_font_size_override("font_size",13 if near_practice else 18)
  hint.text = (str(Layout.NPCS[nearest_npc].name)+" · 대화 가능") if nearest_npc>=0 else ("항아리 둔갑 중 · 이동 속도 감소" if player.jar else "주민과 대화하거나 마을을 탐험하세요")
  if nearest_painting>=0:hint.text=Layout.PAINTINGS[nearest_painting].name+" · 그림 소개"
+ if near_practice:hint.text="도술 익히기 · 서버 없이 모든 도술 체험"
  if saved_indicator>0:
   saved_indicator -= delta
   if last_save_error != OK: hint.text = "저장 실패: 기기 저장 공간을 확인하세요"
@@ -633,6 +644,10 @@ func _process(delta: float) -> void:
  if save_elapsed>=8: save_progress(true)
 
 func go_back() -> void:
+ if screen_name=="practice" and is_instance_valid(practice):
+  if is_instance_valid(modal):close_modal()
+  else:practice.leave()
+  return
  if screen_name=="seal" and is_instance_valid(seal_client):seal_client.back();return
  if is_instance_valid(adventure) and adventure.transitioning:return
  if is_instance_valid(modal):
@@ -652,10 +667,12 @@ func _unhandled_key_input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
  if what==NOTIFICATION_APPLICATION_FOCUS_OUT or what==NOTIFICATION_APPLICATION_PAUSED:
   if is_instance_valid(sound):sound.set_backgrounded(true)
+  if is_instance_valid(practice):practice.backgrounded=true;practice.stick.reset()
   if screen_name=="playing":
    save_progress()
    if not is_instance_valid(modal) and not (is_instance_valid(adventure) and adventure.transitioning): show_settings()
  elif what==NOTIFICATION_APPLICATION_FOCUS_IN or what==NOTIFICATION_APPLICATION_RESUMED:
   if is_instance_valid(sound):sound.set_backgrounded(false)
+  if is_instance_valid(practice):practice.backgrounded=false
  elif what==NOTIFICATION_WM_GO_BACK_REQUEST: go_back()
  elif what==NOTIFICATION_WM_CLOSE_REQUEST: quit_game()

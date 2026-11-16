@@ -18,3 +18,10 @@ const MONSTER_START=43.0
 const WINDUP=.42
 const TALISMAN_COST=12
 const TALISMAN_COOLDOWN=2.2
+
+const TALISMAN_DAMAGE=32
+const TALISMAN_RANGE=145.0
+const TALISMAN_SEAL_SECONDS=1.4
+static func in_cone(origin: Vector2,aim: Vector2,target: Vector2,distance: float) -> bool:
+ var delta:=target-origin
+ return delta.length()<=distance+12 and absf(aim.angle_to(delta))<=CONE_HALF_ANGLE

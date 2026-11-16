@@ -134,7 +134,7 @@ func receive_damage(amount: int,direction: Vector2,talisman: bool) -> void:
  if adventure.game.rpg.data.effects.flash:flash=Config.FLASH_TIME
  knocked=direction*Config.KNOCKBACK
  if poise_cd<=0:stagger=.16;poise_cd=.9
- if talisman:sealed=1.4
+ if talisman:sealed=preload("res://scripts/woo/action_config.gd").TALISMAN_SEAL_SECONDS
  if hp==0:
   collision_layer=0;collision_mask=0;state="dead";update_frame(7)
   adventure.enemy_died(enemy_id,position)

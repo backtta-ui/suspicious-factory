@@ -17,6 +17,7 @@ func _ready() -> void:
  y_sort_enabled=true;texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
  var ground:=Sprite2D.new();ground.texture=preload("res://assets/woo/ground_baked.png");ground.centered=false;ground.z_index=-100;add_child(ground)
  add_child(preload("res://scripts/woo/scenery.gd").new())
+ add_child(preload("res://scripts/practice/entrance.gd").new())
  water=preload("res://scripts/woo/water.gd").new();add_child(water)
  petals=preload("res://scripts/woo/petals.gd").new();add_child(petals)
  atmosphere=preload("res://scripts/woo/plaza_atmosphere.gd").new();add_child(atmosphere)
