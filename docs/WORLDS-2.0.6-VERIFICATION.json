@@ -1,0 +1,291 @@
+{
+  "version": "2.0.6",
+  "version_code": 17,
+  "source_commit": "da26d8d8ff070c4933d1093262da7ad57b08d92f",
+  "backup_branch": "backup/dosa-2.0.5-before-painting-worlds",
+  "checkpoint_status": "passed",
+  "apk": {
+    "status": "passed",
+    "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.6.apk",
+    "checked_at": "2026-11-16T20:45:09.244132+00:00",
+    "device_test": "not_performed",
+    "checks": [
+      "APK exists and is nonempty",
+      "ZIP integrity",
+      "Android manifest and executable bytecode present",
+      "Godot ARM64 engine present",
+      "Bundled font license present",
+      "Splash image present",
+      "HD hero, environment atlas and title art packaged",
+      "Baked low-draw-call terrain packaged",
+      "All five offline sound effects packaged",
+      "Licensed Korean music and attribution bundled",
+      "Expanded plaza art atlases bundled",
+      "V1.2 NPC animation atlas and local title shader bundled",
+      "V1.3 painting, forest, goblin, combat and RPG resources bundled",
+      "V1.3 terrain and combat audio bundled",
+      "V1.4 action poses, unique item art, controller, bundle UI and ambience bundled",
+      "V2.0 canonical hero, skill atlas and real multiplayer protocol bundled",
+      "Layered wardrobe, persistence, live preview and attack VFX bundled",
+      "Clean head atlas, per-character attachments and hair/headwear coverage bundled",
+      "Offline practice map, isolated session and shared spell rules bundled",
+      "Random arenas, verified acquisition, signed progress and shape extraction bundled",
+      "Four complete base characters and real directional customization motion atlases bundled",
+      "Three-world gallery and playable palace/coast resources bundled",
+      "Factory/network game resources removed",
+      "Development files excluded",
+      "APK cryptographic signature valid",
+      "Signing certificate fingerprint readable",
+      "Expected package ID",
+      "Minimum Android 10 / API 29",
+      "Target API at least 35",
+      "ARM64-only build",
+      "Landscape orientation",
+      "Android automatic data backup disabled",
+      "Only Internet permission for dedicated multiplayer; offline adventure preserved",
+      "New game display title",
+      "4-byte ZIP / 16 KiB native library alignment",
+      "Version name readable"
+    ],
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "version": "2.0.6",
+    "target_api": 36,
+    "bytes": 103069383,
+    "sha256": "d0510658b28050a147bac2835070e34e9eac41281c36ce35031ab5aaa7e37d73"
+  },
+  "github_compile": {
+    "id": 43951139193,
+    "status": "completed",
+    "conclusion": "success",
+    "unsigned_only": true,
+    "url": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43951139193"
+  },
+  "android_device_test": "not_performed",
+  "multiplayer_rules_maps_server_and_character_code": "unchanged from ce99b026b10fc13bbd5d644b2a7a9c32214b90b1",
+  "worlds": {
+    "fox_forest": {
+      "playable": true,
+      "size": [
+        3000,
+        2160
+      ],
+      "existing_combat_rewards_preserved": true
+    },
+    "moon_palace": {
+      "playable": true,
+      "size": [
+        1800,
+        1300
+      ],
+      "interactions": 3,
+      "new_spell_rewards": false
+    },
+    "red_sea": {
+      "playable": true,
+      "size": [
+        1800,
+        1300
+      ],
+      "interactions": 3,
+      "animated_water": true,
+      "new_spell_rewards": false
+    }
+  },
+  "tests": [
+    {
+      "suite": "painting_worlds",
+      "result": "PAINTING WORLDS: 53 checks, 0 failures"
+    },
+    {
+      "suite": "appearance_combinations",
+      "result": "APPEARANCE COMBINATIONS: 504 ready combinations / 134781 checks / 0 failures"
+    },
+    {
+      "suite": "practice",
+      "result": "OFFLINE PRACTICE: 74 checks, 0 failures"
+    },
+    {
+      "suite": "practice_touch",
+      "result": "PRACTICE TOUCH: 28 checks, 0 failures"
+    },
+    {
+      "suite": "practice_return",
+      "result": "PRACTICE RETURN: 5 checks, 0 failures"
+    },
+    {
+      "suite": "plaza_v11",
+      "result": "PLAZA V1.1: 42 checks, 0 failures"
+    },
+    {
+      "suite": "rpg_v13",
+      "result": "RPG V1.3: 58 checks, 0 failures"
+    },
+    {
+      "suite": "touch_v14",
+      "result": "TOUCH V1.4: 50 checks, 0 failures"
+    },
+    {
+      "suite": "seal_network",
+      "result": "SEAL NETWORK: 34 checks, 0 failures; real sockets, automated clients, no Android-device claim"
+    },
+    {
+      "suite": "seal_ui",
+      "result": "SEAL UI: 15 checks, 0 failures; automated sockets, no Android device claim"
+    },
+    {
+      "suite": "seal_acquisition",
+      "result": "SEAL ACQUISITION: 33 checks, 0 failures; actual WebSocket server adventure, not Android"
+    },
+    {
+      "suite": "moon_palace_write",
+      "result": "WORLD PROCESS write-moon_palace: PASS"
+    },
+    {
+      "suite": "moon_palace_read",
+      "result": "WORLD PROCESS read-moon_palace: PASS"
+    },
+    {
+      "suite": "red_sea_write",
+      "result": "WORLD PROCESS write-red_sea: PASS"
+    },
+    {
+      "suite": "red_sea_read",
+      "result": "WORLD PROCESS read-red_sea: PASS"
+    }
+  ],
+  "limitations": [
+    "No Galaxy device or Android emulator execution performed",
+    "New palace and coast have short glyph discovery interactions only, no new confirmed spell rewards or large quests",
+    "Further art polish and terrain transition variation remain; commercial art quality and Galaxy 60 FPS are not claimed"
+  ],
+  "checkpoint_exit_code": 0,
+  "story_map_revision": 5,
+  "original_multiplayer_map_dependencies": [
+    {
+      "path": "scripts/woo/village_layout.gd",
+      "sha256": "b4ff85bbefa9ef64f33a44d992a6cc36969735516c3a14f719354f15cd5b1483",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "scripts/woo/village.gd",
+      "sha256": "60b05d71e1d11fcd0f6024b98f12895d7ae71249997182cf66188966844dce01",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "scripts/woo/village_prop.gd",
+      "sha256": "4372e39c05002ab6981bc951cc233799575843c3ea806ceb4d7c1281fc762086",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "scripts/woo/plaza_atmosphere.gd",
+      "sha256": "8cd70fdb9d805c247a0bc42575a02f903c11ebc546715464fcb84abdea2f4238",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "scripts/woo/forest.gd",
+      "sha256": "2efcee1631bdcf9d3b0e15491e762ece14ae58f7159240a705e30990c65079a0",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "scripts/woo/terrain.gd",
+      "sha256": "cdbb08e338b0c0eece5799b72b0879f2566bc5a87b8b7b13d81f60ac7077e152",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "scripts/woo/forest_ground.gd",
+      "sha256": "f3681025c2100f01c7ac3ad4c53edc64269b616d5d7c2a0564757a474e2b304d",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "assets/woo/ground_baked.png",
+      "sha256": "2e3d0eff533f6b524f71abce285952d5f9f51c311d0363378ef45336d49014cb",
+      "identical_to_2_0_5": true
+    },
+    {
+      "path": "assets/woo/v13/forest_ground.png",
+      "sha256": "30346062c7422e8c791411e3374defe9ef97b2d83fe9429723d7e3c447a2df1a",
+      "identical_to_2_0_5": true
+    }
+  ],
+  "superseded_candidate": {
+    "source_commit": "27430c4c1bedad94a08b92f0b1b8e6a6c3b04fbd",
+    "distribution_commit": "e1c03ee70e0a0def79409f940e60d650cc63cd88",
+    "reason": "Replaced before final handoff to isolate multiplayer map dependencies and protect occupied old save positions"
+  },
+  "exported_apk_runtime": {
+    "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.6.apk",
+    "android_device_test": false,
+    "method": "Actual APK assets and compiled game scripts executed by Linux Godot; only test driver copied from source",
+    "results": [
+      {
+        "suite": "painting_worlds",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-painting_worlds.txt"
+      },
+      {
+        "suite": "appearance_combinations",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-appearance_combinations.txt"
+      },
+      {
+        "suite": "practice_return",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-practice_return.txt"
+      },
+      {
+        "suite": "worlds_restart-write-moon_palace",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-worlds_restart-write-moon_palace.txt"
+      },
+      {
+        "suite": "worlds_restart-read-moon_palace",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-worlds_restart-read-moon_palace.txt"
+      },
+      {
+        "suite": "worlds_restart-write-red_sea",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-worlds_restart-write-red_sea.txt"
+      },
+      {
+        "suite": "worlds_restart-read-red_sea",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/worlds-exported-worlds_restart-read-red_sea.txt"
+      }
+    ],
+    "apk_sha256": "d0510658b28050a147bac2835070e34e9eac41281c36ce35031ab5aaa7e37d73"
+  },
+  "test_audit": [
+    {
+      "run_id": 43949898105,
+      "conclusion": "failure",
+      "reason": "Migration test compared a parsed JSON numeric array with an integer array; corrected assertion to compare Vector2 values"
+    },
+    {
+      "run_id": 43950941821,
+      "conclusion": "cancelled",
+      "reason": "Superseded after the scene-count test was updated for the isolated story plaza"
+    }
+  ],
+  "download": {
+    "url": "https://raw.githubusercontent.com/backtta-ui/suspicious-factory/b7c5e0536c85b0c88a6aba34d3d85fb7e84e7b65/jeon-woochi-2.0.6.apk",
+    "bytes": 103069383,
+    "sha256": "d0510658b28050a147bac2835070e34e9eac41281c36ce35031ab5aaa7e37d73",
+    "matches_signed_apk": true
+  },
+  "distribution_commit": "b7c5e0536c85b0c88a6aba34d3d85fb7e84e7b65",
+  "github_delivery": {
+    "id": 43953920524,
+    "status": "completed",
+    "conclusion": "success",
+    "url": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43953920524"
+  },
+  "github_delivery_artifact_redownload": {
+    "run_id": 43953920524,
+    "artifact_id": 14270840530,
+    "sha256": "d0510658b28050a147bac2835070e34e9eac41281c36ce35031ab5aaa7e37d73",
+    "bytes": 103069383,
+    "matches_public_signed_apk": true
+  },
+  "verified_at_utc": "2026-11-16T20:54:40.637544+00:00"
+}
