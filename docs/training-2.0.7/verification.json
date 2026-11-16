@@ -1,0 +1,178 @@
+{
+  "source_commit": "ed0fe07d1ba909c73fd738bc3483c83cc8ed174b",
+  "backup_branch": "backup/dosa-2.0.6-before-training-overhaul",
+  "checkpoint_exit_code": 0,
+  "registered_spells": 14,
+  "original_directional_frames": 344,
+  "new_diagonal_frames": 344,
+  "appearance_checks": 269182,
+  "appearance_failures": 0,
+  "practice_checks": 74,
+  "practice_touch_checks": 40,
+  "spell_integrity_checks": 8,
+  "android_device_test": false,
+  "apk": {
+    "status": "passed",
+    "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.7.apk",
+    "checked_at": "2026-11-16T21:31:47.953148+00:00",
+    "device_test": "not_performed",
+    "checks": [
+      "APK exists and is nonempty",
+      "ZIP integrity",
+      "Android manifest and executable bytecode present",
+      "Godot ARM64 engine present",
+      "Bundled font license present",
+      "Splash image present",
+      "HD hero, environment atlas and title art packaged",
+      "Baked low-draw-call terrain packaged",
+      "All five offline sound effects packaged",
+      "Licensed Korean music and attribution bundled",
+      "Expanded plaza art atlases bundled",
+      "V1.2 NPC animation atlas and local title shader bundled",
+      "V1.3 painting, forest, goblin, combat and RPG resources bundled",
+      "V1.3 terrain and combat audio bundled",
+      "V1.4 action poses, unique item art, controller, bundle UI and ambience bundled",
+      "V2.0 canonical hero, skill atlas and real multiplayer protocol bundled",
+      "Layered wardrobe, persistence, live preview and attack VFX bundled",
+      "Clean head atlas, per-character attachments and hair/headwear coverage bundled",
+      "Offline practice map, isolated session and shared spell rules bundled",
+      "Random arenas, verified acquisition, signed progress and shape extraction bundled",
+      "Four complete base characters and real directional customization motion atlases bundled",
+      "Three-world gallery and playable palace/coast resources bundled",
+      "Factory/network game resources removed",
+      "Development files excluded",
+      "APK cryptographic signature valid",
+      "Signing certificate fingerprint readable",
+      "Expected package ID",
+      "Minimum Android 10 / API 29",
+      "Target API at least 35",
+      "ARM64-only build",
+      "Landscape orientation",
+      "Android automatic data backup disabled",
+      "Only Internet permission for dedicated multiplayer; offline adventure preserved",
+      "New game display title",
+      "4-byte ZIP / 16 KiB native library alignment",
+      "Version name readable"
+    ],
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "version": "2.0.7",
+    "target_api": 36,
+    "bytes": 121809183,
+    "sha256": "cca2743fad1da5fb0630d7a17ee0a7d27679db471c750f6c67a5a2b32105119b"
+  },
+  "exported_runtime": {
+    "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.7.apk",
+    "android_device_test": false,
+    "method": "Actual APK assets and compiled game scripts executed by Linux Godot; only test driver copied from source",
+    "results": [
+      {
+        "suite": "painting_worlds",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-painting_worlds.txt"
+      },
+      {
+        "suite": "appearance_combinations",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-appearance_combinations.txt"
+      },
+      {
+        "suite": "practice_return",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-practice_return.txt"
+      },
+      {
+        "suite": "practice",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-practice.txt"
+      },
+      {
+        "suite": "practice_touch",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-practice_touch.txt"
+      },
+      {
+        "suite": "spell_integrity",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-spell_integrity.txt"
+      },
+      {
+        "suite": "worlds_restart-write-moon_palace",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-worlds_restart-write-moon_palace.txt"
+      },
+      {
+        "suite": "worlds_restart-read-moon_palace",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-worlds_restart-read-moon_palace.txt"
+      },
+      {
+        "suite": "worlds_restart-write-red_sea",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-worlds_restart-write-red_sea.txt"
+      },
+      {
+        "suite": "worlds_restart-read-red_sea",
+        "exit_code": 0,
+        "log": "/workspace/suspicious-factory/builds/training-exported-worlds_restart-read-red_sea.txt"
+      }
+    ],
+    "apk_sha256": "cca2743fad1da5fb0630d7a17ee0a7d27679db471c750f6c67a5a2b32105119b"
+  },
+  "distribution_commit": "94053ae229c19ece900f544b020c4f188f5e44c3",
+  "signed_delivery_run": 43961464239,
+  "source_ci_run": 43960559885,
+  "source_ci_status": "success",
+  "public_https": {
+    "status": "passed",
+    "method": "Public HTTPS parts redownloaded in order and reconstructed SHA256 streamed",
+    "bytes": 121809183,
+    "sha256": "cca2743fad1da5fb0630d7a17ee0a7d27679db471c750f6c67a5a2b32105119b",
+    "commit": "94053ae229c19ece900f544b020c4f188f5e44c3"
+  },
+  "incomplete": [
+    "Some diagonal equipment perspective/pixel-density refinement",
+    "Five previously unsupported outfit motion sets",
+    "All-spell commercial-quality multiframe effects",
+    "Blink/shadow mechanical differentiation requires approved design",
+    "New fox/animal idle/run animation sets and complete environment-art/collision audit",
+    "Galaxy hardware, Android safe-area and sustained 60FPS tests"
+  ],
+  "suite_summaries": {
+    "painting_worlds-results.txt": "PAINTING WORLDS: 53 checks, 0 failures",
+    "server_rewards-results.txt": "SERVER REWARDS: 9 checks, 0 failures",
+    "v13_ai-results.txt": "V1.3 AI/EFFECTS: 15 checks, 0 failures",
+    "seal_acquisition-results.txt": "SEAL ACQUISITION: 33 checks, 0 failures; actual WebSocket server adventure, not Android",
+    "npc_title_v12-results.txt": "NPC/TITLE V1.2: 38 checks, 0 failures; route queries=83",
+    "practice_touch-results.txt": "PRACTICE TOUCH: 40 checks, 0 failures",
+    "seal_rules-results.txt": "SEAL RULES: 51 checks, 0 failures",
+    "appearance_combinations-results.txt": "APPEARANCE COMBINATIONS: 504 ready combinations / 269182 checks / 0 failures",
+    "v13_touch-results.txt": "V1.3 TOUCH: 40 checks, 0 failures",
+    "practice_return-results.txt": "PRACTICE RETURN: 5 checks, 0 failures",
+    "seal_ui-results.txt": "SEAL UI: 15 checks, 0 failures; automated sockets, no Android device claim",
+    "action_v14-results.txt": "ACTION V1.4: 50 checks, 0 failures",
+    "spell_integrity-results.txt": "SPELL INTEGRITY: 8 checks / 0 failures",
+    "wardrobe-results.txt": "WARDROBE: 29 checks, 0 failures",
+    "sound_performance-results.txt": "SOUND/PERFORMANCE: 23 checks, 0 failures",
+    "woo_core-results.txt": "WOO CORE: 54 checks, 0 failures",
+    "seal_latest-results.txt": "SEAL LATEST: 59 checks, 0 failures",
+    "seal_tickets-results.txt": "SEAL TICKETS: 8 checks, 0 failures",
+    "rpg_v13-results.txt": "RPG V1.3: 58 checks, 0 failures",
+    "save_recovery-results.txt": "SAVE RECOVERY: 11 checks, 0 failures",
+    "plaza_v11-results.txt": "PLAZA V1.1: 42 checks, 0 failures",
+    "touch_v14-results.txt": "TOUCH V1.4: 50 checks, 0 failures",
+    "touch_ui-results.txt": "WOO TOUCH: 130 checks, 0 failures",
+    "hero_v20-results.txt": "HERO V2.0: 23 checks, 0 failures",
+    "practice-results.txt": "OFFLINE PRACTICE: 74 checks, 0 failures",
+    "seal_network-results.txt": "SEAL NETWORK: 34 checks, 0 failures; real sockets, automated clients, no Android-device claim",
+    "explore_v14-results.txt": "EXPLORE V1.4: 6 checks, 0 failures"
+  },
+  "actions_artifact_redownload": {
+    "status": "passed",
+    "run": 43961464239,
+    "artifact": 14275345544,
+    "name": "jeon-woochi-2.0.7.apk",
+    "bytes": 121809183,
+    "sha256": "cca2743fad1da5fb0630d7a17ee0a7d27679db471c750f6c67a5a2b32105119b"
+  },
+  "source_ci_url": "https://github.com/backtta-ui/suspicious-factory/actions/runs/43960559885"
+}
