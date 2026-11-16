@@ -36,13 +36,15 @@ jobs:
     outputs:
       unsigned: ${{ steps.configure.outputs.unsigned }}
     env:
-      XDG_DATA_HOME: ${{ runner.temp }}/factory-data
-      XDG_CONFIG_HOME: ${{ runner.temp }}/factory-config
-      XDG_CACHE_HOME: ${{ runner.temp }}/factory-cache
       GODOT_ANDROID_KEYSTORE_DEBUG_USER: androiddebugkey
       GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD: android
     steps:
       - uses: actions/checkout@v4
+      - name: Configure isolated temporary paths
+        run: |
+          echo "XDG_DATA_HOME=$RUNNER_TEMP/factory-data" >> "$GITHUB_ENV"
+          echo "XDG_CONFIG_HOME=$RUNNER_TEMP/factory-config" >> "$GITHUB_ENV"
+          echo "XDG_CACHE_HOME=$RUNNER_TEMP/factory-cache" >> "$GITHUB_ENV"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
