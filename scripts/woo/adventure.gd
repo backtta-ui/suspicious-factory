@@ -65,7 +65,8 @@ func show_item(id: String) -> void:
  var bundle:=game.modal.get_child(game.modal.get_child_count()-1) as WooBundleUI
  bundle.selected=id;bundle.rebuild()
 func show_character() -> void:
- var stack:=page("character","전우치 · Lv.%d" % game.rpg.data.level)
+ var hero_name: String=preload("res://scripts/wardrobe/catalog.gd").CHARACTERS[game.wardrobe.data.appearance.character].name
+ var stack:=page("character",hero_name+" · Lv.%d" % game.rpg.data.level)
  stack.add_child(game.text("%s\n경험치 %d / %d\n체력 %d / %d     도력 %d / %d\n배운 도술: 둔갑술 · 부적술" % [game.rpg.rank(),game.rpg.data.xp,game.rpg.xp_needed(),game.rpg.data.hp,game.rpg.max_hp(),game.rpg.data.mp,game.rpg.max_mp()],23))
  var portrait:=preload("res://scripts/woo/item_art.gd").new();portrait.item_id="seal";portrait.animated=true;portrait.custom_minimum_size=Vector2(90,70);stack.add_child(portrait)
  stack.add_child(game.text("등급 승급은 추후 수련 조건에 연결됩니다.",17))
