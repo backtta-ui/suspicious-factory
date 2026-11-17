@@ -1,0 +1,1715 @@
+{
+  "method": "Static inventory; not a PASS assertion",
+  "script_count": 109,
+  "files": [
+    {
+      "path": "scripts/joystick.gd",
+      "sha256": "9e102bbce74c21b8c5ee63ad96169ef3646f2d0fc4bc7956e44ad66b5bb9ac0c",
+      "class": [
+        "TouchJoystick"
+      ],
+      "methods": [
+        "_ready",
+        "_input",
+        "update_vector",
+        "reset",
+        "_notification",
+        "_draw",
+        "arrange"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/main.gd",
+      "sha256": "97eb59e12864318932fc4d1712d3d85adda5b8367e696d56177da56a6849a862",
+      "class": [],
+      "methods": [
+        "_ready",
+        "style",
+        "text",
+        "button",
+        "perform_action",
+        "new_ui",
+        "show_menu",
+        "apply_appearance_ui",
+        "show_wardrobe",
+        "show_seal",
+        "start_game",
+        "build_hud",
+        "place_action",
+        "set_paused",
+        "open_modal",
+        "fit_popup",
+        "retire_popup",
+        "close_modal",
+        "show_settings",
+        "toggle_setting",
+        "show_credits",
+        "show_painting_intro",
+        "enter_practice",
+        "show_rpg_menu",
+        "adjust_safe_controls",
+        "restore_plaza_anchor",
+        "cast_spell",
+        "interact",
+        "show_dialogue",
+        "next_dialogue",
+        "finish_save",
+        "_exit_tree",
+        "save_progress",
+        "quit_game",
+        "_physics_process",
+        "_process",
+        "go_back",
+        "_unhandled_key_input",
+        "_notification"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/arena.gd",
+      "sha256": "c81cce3f422a43aad86da4b7e63712e7db862b5206289fc573c0e8334f8991af",
+      "class": [
+        "WooPracticeArena"
+      ],
+      "methods": [
+        "_init"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/catalog.gd",
+      "sha256": "f639887b24dff4c9255449c1fcdeecfc28517be9b66b011cc80e202110641b55",
+      "class": [
+        "WooPracticeCatalog"
+      ],
+      "methods": [
+        "all",
+        "canonical"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/entrance.gd",
+      "sha256": "5e9d7644c276fbe0f9ef3073c588eb96b0081b3c9162bf217e17eff13b01269d",
+      "class": [
+        "WooPracticeEntrance"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/fx.gd",
+      "sha256": "48eb355180c9710ca6d107c25bf59a98744e6d416a50c603d5702b06d2a03858",
+      "class": [
+        "WooPracticeFx"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/layout.gd",
+      "sha256": "6ca0a25d1c5ae7bcef327958c4defec678b68c2e5385bcaebfd1dbd439f5e84e",
+      "class": [
+        "WooPracticeLayout"
+      ],
+      "methods": [
+        "can_stand"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/nameplate.gd",
+      "sha256": "5476575754947c041f56b1591f5ee3d68939b3ba3fd03f2209f7ba4c494c55c0",
+      "class": [
+        "WooPracticeNameplate"
+      ],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/rules.gd",
+      "sha256": "a1bb0ad392a688084988174986275641c04eacdc627b9c66a161d90aeab9e3f2",
+      "class": [
+        "WooPracticeRules"
+      ],
+      "methods": [
+        "check_win"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/session.gd",
+      "sha256": "9cb736c9d23c72b52b00196ef4e6065fa49a2c2cb42652a2748cc744de689465",
+      "class": [
+        "WooPracticeSession"
+      ],
+      "methods": [
+        "_init",
+        "reset",
+        "self_player",
+        "clear_effects",
+        "select",
+        "nearest",
+        "nearest_asset",
+        "reply",
+        "interact",
+        "cast",
+        "release",
+        "attack",
+        "tick"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/spell_list.gd",
+      "sha256": "54736e8383a803c07dcf7dcc104b82b5e2c6e93330fb86dd78f9d93caae0ead5",
+      "class": [
+        "WooPracticeSpellList"
+      ],
+      "methods": [
+        "_ready",
+        "choose",
+        "pick_at"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/ui.gd",
+      "sha256": "e2a343d236646255b3ebdd3b76fd7f30aed6420c642d45e5971eb80f33a069cb",
+      "class": [
+        "WooPracticeUI"
+      ],
+      "methods": [
+        "_ready",
+        "control",
+        "build_ui",
+        "show_training_settings",
+        "adjust_safe",
+        "cycle_npcs",
+        "show_spells",
+        "select",
+        "cast",
+        "interact",
+        "release",
+        "attack",
+        "reset",
+        "_physics_process",
+        "sync",
+        "exit_to_plaza",
+        "leave"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/practice/world.gd",
+      "sha256": "108ed0892252e085496a96df468365c3e078d4f1fb7814e5d064f68e14e47ed7",
+      "class": [
+        "WooPracticeWorld"
+      ],
+      "methods": [
+        "_ready",
+        "draw_ground"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/arena.gd",
+      "sha256": "f9f8e48c8cdabcfc7b5d73be52962776b365e318b3f3736ace0b583b1f43817b",
+      "class": [
+        "SealArena"
+      ],
+      "methods": [
+        "_init",
+        "base_stand",
+        "can_stand",
+        "safe",
+        "sight",
+        "line",
+        "move",
+        "asset_position",
+        "public_assets",
+        "find_asset"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/catalog.gd",
+      "sha256": "1d08bc61a589c30163a65e540c1d3c4a9c162ef11b0be946fadf5ad10d08d3df",
+      "class": [
+        "SealCatalog"
+      ],
+      "methods": [
+        "clean_text",
+        "clean_name",
+        "finite_number",
+        "vector",
+        "whole"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/client_ui.gd",
+      "sha256": "901e4287801f1eaeb84754df7131a57ec729c2a45eeade684754d967e75d433f",
+      "class": [
+        "SealClientUI"
+      ],
+      "methods": [
+        "_ready",
+        "_exit_tree",
+        "panel",
+        "edit",
+        "update_status",
+        "build_login",
+        "connect_server",
+        "join_room",
+        "start_study",
+        "show_loadout",
+        "study_challenge",
+        "receive",
+        "build_lobby",
+        "update_lobby",
+        "build_world",
+        "dispose_world",
+        "update_actors",
+        "build_hud",
+        "show_forms",
+        "nearest_extractable",
+        "skill_button",
+        "closest",
+        "cast_common",
+        "role_action",
+        "interact",
+        "open_popup",
+        "close_popup",
+        "challenge",
+        "show_meeting",
+        "show_result",
+        "show_pause",
+        "leave_room",
+        "exit_to_main",
+        "back",
+        "_process"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/codec.gd",
+      "sha256": "90c5fb8edf620b78738ff1af2dffefe913322931a2b9e5c7d1eecb430098606e",
+      "class": [
+        "SealCodec"
+      ],
+      "methods": [
+        "decode"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/color_marker.gd",
+      "sha256": "7d698a3651365e1b0da53cc0a4601d8a423766e41e2bf58ed35c6171e5fc645f",
+      "class": [],
+      "methods": [
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/connection.gd",
+      "sha256": "82c919f1c16a236dccfb4262ef8c9bb51d5d1bb01df9c2468aba80d9f67ff13a",
+      "class": [
+        "SealConnection"
+      ],
+      "methods": [
+        "connect_to",
+        "begin",
+        "send",
+        "stop",
+        "_process",
+        "_notification"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/environment_asset.gd",
+      "sha256": "f5e105e817022d8275eed3ad8e84517cdf3d7dfac55c119adc7608188e99f66b",
+      "class": [
+        "SealEnvironmentAsset"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/identity.gd",
+      "sha256": "783102d102495488a166ada56da7b43d4cc12dc7d31e80d4b79e96920a95676b",
+      "class": [
+        "SealIdentity"
+      ],
+      "methods": [
+        "load_profile",
+        "save_profile"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/loadout.gd",
+      "sha256": "690ccb969cd9b8b65c5de0977316a9e4cd48757af4057c7627b277aa9a86e882",
+      "class": [
+        "SealLoadout"
+      ],
+      "methods": [
+        "known",
+        "select_spells"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/map.gd",
+      "sha256": "549b346028acfcb703cfb53190fc0936018b6fa7af64918b941dfb60044009a7",
+      "class": [
+        "SealMap"
+      ],
+      "methods": [
+        "safe",
+        "can_stand",
+        "visible_cell",
+        "line",
+        "move"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/minimap.gd",
+      "sha256": "75716870711548b74babea5ef856f254f1acca5b79b5e8de7e8ae66c62f30c79",
+      "class": [],
+      "methods": [
+        "_ready",
+        "update_local",
+        "point",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/progress_ticket.gd",
+      "sha256": "25eb65e9ff4228a3d87dce5d1653b0a09fcf6f19e469b4e1ec128d2d2a9a1dcb",
+      "class": [
+        "SealProgressTicket"
+      ],
+      "methods": [
+        "_init",
+        "issue",
+        "restore"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/rules.gd",
+      "sha256": "f57a3e58232c1aafa36c26b6ce5efb4f3dbf6c1015eaf90144dd2f04b59d9e50",
+      "class": [
+        "SealRules"
+      ],
+      "methods": [
+        "_init",
+        "event",
+        "add",
+        "mark_disconnected",
+        "migrate_host",
+        "available",
+        "roam",
+        "near",
+        "result",
+        "eligible",
+        "finalize_loadout",
+        "start",
+        "command",
+        "cast",
+        "task",
+        "complete_task",
+        "tick",
+        "resolve_vote",
+        "check_win",
+        "move_speed",
+        "view",
+        "consume_shield",
+        "can_observe"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/server.gd",
+      "sha256": "2e83bd223f5e85afa9956532579926bb6c10369d7c8c449d323468106ee8be77",
+      "class": [],
+      "methods": [
+        "save_careers",
+        "settle",
+        "account_for",
+        "send_account",
+        "_initialize",
+        "_process",
+        "remove_socket",
+        "send",
+        "valid_hex",
+        "dispatch"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/settings.gd",
+      "sha256": "abd36e234f871d81198436c4204bc9c8ecf7d225109188366002b31b113d0c9b",
+      "class": [
+        "SealSettings"
+      ],
+      "methods": [
+        "options"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/study.gd",
+      "sha256": "aade92f55383bc9770bec54131779e64f11b36af915074cbc1c938694b7eb3be",
+      "class": [
+        "SealStudy"
+      ],
+      "methods": [
+        "_init",
+        "tick",
+        "command",
+        "view"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/study_ui.gd",
+      "sha256": "d4151addf7da7db448c33c15ea8b45bf9596e95d8a3befe01dcf1c44166c56b5",
+      "class": [
+        "SealStudyUI"
+      ],
+      "methods": [
+        "_ready",
+        "nearest",
+        "interact",
+        "update_state",
+        "_process",
+        "draw_markers"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/seal/world_fx.gd",
+      "sha256": "330e2f8b142e2fd1768a78751db63aba29e216385608bbbc3d81103b742e62ee",
+      "class": [],
+      "methods": [
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/spells/animal_regions.gd",
+      "sha256": "f012385e19f1f516774413e7675a9c703e8b3d6275096ea80486e3dbdea74f83",
+      "class": [],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/spells/effects.gd",
+      "sha256": "8c2b3a36272dbc042f2b15a3a2006d6d5f4913e0b139734e1f2898c374398a28",
+      "class": [
+        "WooSpellEffects"
+      ],
+      "methods": [
+        "sprite",
+        "cloud",
+        "footprints"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/touch_debug.gd",
+      "sha256": "ea61ccc1194337830824ba5e80ccfea055bc4927c1aa024d8e53082ebc6a679b",
+      "class": [
+        "TouchDebug"
+      ],
+      "methods": [
+        "_ready",
+        "_input",
+        "record",
+        "observe",
+        "collect_buttons"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/design.gd",
+      "sha256": "a6788fbd45ebd1f215bc16115269b9bb384a2185512b167ec96bdf3d25520305",
+      "class": [
+        "WooUIDesign"
+      ],
+      "methods": [
+        "button_style",
+        "panel",
+        "place_action",
+        "decorate",
+        "popup_enter",
+        "popup_exit",
+        "position_stick",
+        "retire_inputs",
+        "wrap_text",
+        "interaction",
+        "cancel_controls"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/loading.gd",
+      "sha256": "3e59927750b8213443d6124c5982894996ed48b95162e214ed3e7098dd24262c",
+      "class": [
+        "WooLoadingOverlay"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/menu_hub.gd",
+      "sha256": "77e537f25fadb8a768863209a65eb018b6b35c50cd3ed6f75e06a2a0b51d7012",
+      "class": [
+        "WooMenuHub"
+      ],
+      "methods": [
+        "show"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/menu_icon.gd",
+      "sha256": "21c4eb7ee5713ada872678034fd9093a394ee9469dfdd44fb2a00219a03392c1",
+      "class": [],
+      "methods": [
+        "_ready",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/nameplate.gd",
+      "sha256": "1315e5de225358456b5a5b0ef1757c03415911d41427f9ddf87d5d515b18f792",
+      "class": [
+        "WooNPCNameplate"
+      ],
+      "methods": [
+        "_draw",
+        "box"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/popup_scroll.gd",
+      "sha256": "506105b585d014b7f3adca77b93b849e29d2ddcb87a8e88553183d1e55ec5b74",
+      "class": [
+        "WooPopupScroll"
+      ],
+      "methods": [
+        "cancel_buttons",
+        "_input"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/screen_layout.gd",
+      "sha256": "e35f24f48b2445fef0f8e64067c139831e3f074be1b12bb5943066d036d7361d",
+      "class": [
+        "WooScreenLayout"
+      ],
+      "methods": [
+        "safe_margin",
+        "create",
+        "button_state",
+        "scroll",
+        "gesture"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/screen_ornament.gd",
+      "sha256": "fc8708ac6b0d543667ea09952d7110bd6e359050fcfb5665e7b6678466391671",
+      "class": [],
+      "methods": [
+        "_ready",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/spell_codex.gd",
+      "sha256": "e8f26540cc3dfb1b391d731f322b4e06a96dd22b83e8bc9ce8fd4b08da234ffa",
+      "class": [
+        "WooSpellCodex"
+      ],
+      "methods": [
+        "_ready",
+        "icon",
+        "clear",
+        "rebuild_list",
+        "select",
+        "alias",
+        "can_equip",
+        "rebuild_detail",
+        "rebuild_slots",
+        "equip_selected",
+        "unequip_selected",
+        "_process"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/ui/vital_bar.gd",
+      "sha256": "2c723566dbc4b62703dda5c594ae4b97449cb6c95698c51f58f0bf4701216d99",
+      "class": [
+        "WooVitalBar"
+      ],
+      "methods": [
+        "_ready"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/art.gd",
+      "sha256": "d49ef5a986ec42b68cc3a4ab71dc8c0b791e5ac9661c49765e8044f76f1b4884",
+      "class": [
+        "WooWardrobeArt"
+      ],
+      "methods": [
+        "head_region",
+        "region",
+        "icon"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/catalog.gd",
+      "sha256": "60c6e8655b7eddd1b5187a1c8051cc9a80cea7957c47f5612f6a3a7fa17bae22",
+      "class": [
+        "WooWardrobeCatalog"
+      ],
+      "methods": [
+        "base_appearance",
+        "table",
+        "normalize"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/compatibility.gd",
+      "sha256": "06bb0cd63a326b3552ef2eec6d82d45abeb07c58b025422d49c388144889465d",
+      "class": [
+        "WooAppearanceCompatibility"
+      ],
+      "methods": [
+        "hair_rect",
+        "hat_rect",
+        "accessory_rect",
+        "accessory_behind"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/direction.gd",
+      "sha256": "7fb57560f7aa590580db66bd2f0978bab098dbd070c80032d96d9947a614b73d",
+      "class": [
+        "WooCharacterDirection"
+      ],
+      "methods": [
+        "resolve",
+        "quantize"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/directional_art.gd",
+      "sha256": "dd1f308ac57fdbfc3092eb2db819b95b1231eddd68e855d1645c36a0b99717a3",
+      "class": [
+        "WooDirectionalArt"
+      ],
+      "methods": [
+        "sheet_for",
+        "texture",
+        "frame",
+        "cell",
+        "supported",
+        "effective",
+        "pending",
+        "idle_height",
+        "rect",
+        "vec"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/directional_data.gd",
+      "sha256": "cbb08351ab16d0698b368070d05bdb0e9f662ebe6d83cd94af8fa5e5f77c83e7",
+      "class": [
+        "WooDirectionalData"
+      ],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/profile.gd",
+      "sha256": "b8711016b59cd2e073bee4279ad838780dce97739ff2cdbc7f5d4b65559a5d5e",
+      "class": [
+        "WooWardrobe"
+      ],
+      "methods": [
+        "_init",
+        "refresh",
+        "owned",
+        "appearance_for",
+        "valid_selection",
+        "equip",
+        "record_server_wins",
+        "save"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/screen.gd",
+      "sha256": "7129e4de0a291fd6d0683982613cfd2cec5418daa67091f80e779fd581c22647",
+      "class": [
+        "WooWardrobeScreen"
+      ],
+      "methods": [
+        "_ready",
+        "refresh",
+        "select",
+        "save_selection",
+        "close",
+        "_process"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/wardrobe/visual.gd",
+      "sha256": "89c50436098a5b0056658caf422bbc59c396612e7dbe2cb1d3e25d19570663b5",
+      "class": [
+        "WooWardrobeVisual"
+      ],
+      "methods": [
+        "custom_body",
+        "custom_head",
+        "_ready",
+        "choose_pose",
+        "clear",
+        "add_mesh",
+        "raw_mesh",
+        "equipment",
+        "hair",
+        "hat",
+        "accessory",
+        "rebuild",
+        "_process"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/action_config.gd",
+      "sha256": "11aa470b13cf066388f3a176acb8b4fa707596e1a4d7c669a5ba756cad25682b",
+      "class": [
+        "WooActionConfig"
+      ],
+      "methods": [
+        "in_cone"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/action_controller.gd",
+      "sha256": "62e52c7731b4c8ab38103b19c84977b1b9a40c2ecd76974a022fa9a31c01a8b4",
+      "class": [
+        "WooActionController"
+      ],
+      "methods": [
+        "enemies",
+        "visible_line",
+        "corrected_direction",
+        "request",
+        "begin",
+        "tick",
+        "impact_hit",
+        "cancel",
+        "landing"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/actor.gd",
+      "sha256": "fb061fb04015cbe974a088e366f2542420660bd53b37f68f0836be0efd107ff0",
+      "class": [
+        "WooActor"
+      ],
+      "methods": [
+        "_ready",
+        "jump",
+        "reset_action",
+        "direction",
+        "begin_transform",
+        "_physics_process",
+        "update_sprite",
+        "npc_part",
+        "update_npc_art",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/adventure.gd",
+      "sha256": "008ff3be7383df6517230288c5d1008379ec3ba60871e22cc3cc2ca5ed32ed11",
+      "class": [
+        "WooAdventure"
+      ],
+      "methods": [
+        "_ready",
+        "dispose",
+        "show_menu",
+        "page",
+        "footer",
+        "show_inventory",
+        "show_item",
+        "show_character",
+        "show_spells",
+        "show_journal",
+        "show_map",
+        "show_outfits",
+        "build_controls",
+        "decorate_skill",
+        "update_controls",
+        "update_stats",
+        "show_painting",
+        "defeated",
+        "capture_session",
+        "resume_session",
+        "enter_painting",
+        "transition",
+        "finish_transition",
+        "load_forest",
+        "return_to_plaza",
+        "show_effects",
+        "update_mission_ui",
+        "_physics_process",
+        "can_fight",
+        "basic_attack",
+        "jump",
+        "cast_slot",
+        "launch",
+        "dodge",
+        "enemy_hit",
+        "enemy_died",
+        "can_take_damage",
+        "hurt_player",
+        "retry_mission",
+        "nearby_loot",
+        "acquire_loot",
+        "mission_interact",
+        "show_completion",
+        "show_forest_trial",
+        "load_world",
+        "nearby_site",
+        "update_exploration_ui",
+        "exploration_interact"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/air_talisman.gd",
+      "sha256": "beaefbc8f23e5177f8c17b01b425307b2a0c6a8d2a5827a7f9f445919fcf7639",
+      "class": [],
+      "methods": [
+        "_physics_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/art_frames.gd",
+      "sha256": "e2a4533576f8ea407ffcf20ddac72918a746cf67c15bc05aa3dd6ba507054498",
+      "class": [],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/attack_vfx.gd",
+      "sha256": "5c2f71cb82846f33f8dd0df5a22557a3f185088f17dd3aee348b8d0b163e02f4",
+      "class": [
+        "WooAttackVFX"
+      ],
+      "methods": [
+        "_ready",
+        "update_frame",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/bundle_ui.gd",
+      "sha256": "4647d99f68a1ed0729fc17c9553133ac3ad46aaa9339b60fcf7cf5c91e1d34ad",
+      "class": [
+        "WooBundleUI"
+      ],
+      "methods": [
+        "_ready",
+        "clear",
+        "rebuild",
+        "select",
+        "show_detail",
+        "use_selected",
+        "inspect_item",
+        "close_inspector",
+        "confirm_discard"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/combat_effects.gd",
+      "sha256": "28fd1a5407551c8f9b40904a71fb1e82034585624e320771283a4e43e93ba212",
+      "class": [
+        "WooCombatEffects"
+      ],
+      "methods": [
+        "_ready",
+        "burst",
+        "afterimage",
+        "swing",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/forest.gd",
+      "sha256": "2efcee1631bdcf9d3b0e15491e762ece14ae58f7159240a705e30990c65079a0",
+      "class": [
+        "WooForest"
+      ],
+      "methods": [
+        "_ready",
+        "add_prop",
+        "rect_collision",
+        "route",
+        "nearest_cell"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/forest_atmosphere.gd",
+      "sha256": "6646afd52fd39541d985625f32a885a7b1edc3b3e5b1a6d357bbfe96cb86294f",
+      "class": [],
+      "methods": [
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/forest_ground.gd",
+      "sha256": "f3681025c2100f01c7ac3ad4c53edc64269b616d5d7c2a0564757a474e2b304d",
+      "class": [],
+      "methods": [
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/forest_layout.gd",
+      "sha256": "04785b92dce02617ddc8ed92136ba020aa694737cef17a10b02c804286be62cc",
+      "class": [
+        "WooForestLayout"
+      ],
+      "methods": [
+        "can_stand",
+        "safe",
+        "surface",
+        "zone_at"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/forest_loot.gd",
+      "sha256": "29691c45b7764063300591c7b627e91f296c94cf848d235e838cec188b8af8d9",
+      "class": [],
+      "methods": [
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/goblin.gd",
+      "sha256": "48175ec1e9d9f1ef3b1d1238852e45d1db1d8a05c7eee7411018a07ed1bf84ac",
+      "class": [
+        "WooGoblin"
+      ],
+      "methods": [
+        "_ready",
+        "choose_patrol",
+        "_physics_process",
+        "steer",
+        "clear_path",
+        "can_strike",
+        "launch_up",
+        "update_frame",
+        "receive_damage",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/hero_rig.gd",
+      "sha256": "548d3549b60d3cc343a4688fdf3520ac5c1f0a689d6ee5a118e2858658254f8f",
+      "class": [
+        "WooHeroRig"
+      ],
+      "methods": [
+        "_process",
+        "section",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/hit_config.gd",
+      "sha256": "390989050b982af0cd281faef233ba961db509f3164e90e6a55b81d43964a2e1",
+      "class": [
+        "WooHitConfig"
+      ],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/item_art.gd",
+      "sha256": "98f740551de90375d099ef2613e69d83f22debbeb9882853607dd60109c483f8",
+      "class": [
+        "WooItemArt"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/item_hold.gd",
+      "sha256": "4ea684923874fdcd82c22fb4d7a546241ca337f33a8ed6b788923287c108db7d",
+      "class": [],
+      "methods": [
+        "_process"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/menu_motion.gd",
+      "sha256": "1c278e9dd16a64841eb2afa386aa3db1b194b920a1b304b45c77c76efe3e34ae",
+      "class": [],
+      "methods": [
+        "_ready",
+        "image_point",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/minimap.gd",
+      "sha256": "013bd20abf8ee2a3d53a28b6de11dce58e4a0cee5b00c0139f3f671bd411997b",
+      "class": [
+        "WooLocalMinimap"
+      ],
+      "methods": [
+        "_ready",
+        "update_local",
+        "point",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/mobile_button.gd",
+      "sha256": "90635a6b6f4a287230c874d80263c7512fd7ba445afb2e8713fac8329deeca74",
+      "class": [
+        "WooMobileButton"
+      ],
+      "methods": [
+        "_ready",
+        "usable",
+        "pointer_inside",
+        "cancel",
+        "down",
+        "up",
+        "_input",
+        "_notification"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/npc_art.gd",
+      "sha256": "009b42535972aafd5a731960c556f31d5f0b61b238eec3bfbbff7225c49d7a8a",
+      "class": [],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/npc_driver.gd",
+      "sha256": "f0d88da4136f4e49162e208331b89e071ca17ab868f6302eaa124ab0cd3f8630",
+      "class": [
+        "WooNpcDriver"
+      ],
+      "methods": [
+        "_init",
+        "begin_wait",
+        "step",
+        "report_progress",
+        "pause_near_resident"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/npc_nav_data.gd",
+      "sha256": "7690aa747574b4838d0bb578d0f772b4c0184c6c748f25f560fc31eb0587c59b",
+      "class": [],
+      "methods": [],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/npc_navigation.gd",
+      "sha256": "01d209d27cf69a8985a376d9d541c434b5a5dcd77555db897d491e87a366e105",
+      "class": [
+        "WooNpcNavigation"
+      ],
+      "methods": [
+        "_init",
+        "segment_clear",
+        "closest_accessible",
+        "route"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/ornament.gd",
+      "sha256": "d32bf66f6b89f3c15e4076c06190c9195e5843459763b0f44f51f602a183a055",
+      "class": [
+        "WooOrnament"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw",
+        "bubble_style"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/painting_view.gd",
+      "sha256": "351b93c42878988058d8350c3ca7f9b93e762c2f5b5f5e6805f5efcd5cb1fe25",
+      "class": [
+        "WooPaintingView"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw",
+        "mist_ellipse",
+        "border"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/petals.gd",
+      "sha256": "c5e581638338eddef064e219ded6b25c43dbaa59311e831cf42a19f1edf7515a",
+      "class": [
+        "WooPetals"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/plaza_atmosphere.gd",
+      "sha256": "8cd70fdb9d805c247a0bc42575a02f903c11ebc546715464fcb84abdea2f4238",
+      "class": [],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/portal_transition.gd",
+      "sha256": "283e39644b60fdfffb56b0952d8f36424cdc5b4936b43bbfd0e687ebf9e7fad3",
+      "class": [],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/projectile.gd",
+      "sha256": "709000b4d89a95e9afec30bcd5152005bae929cff083b925fcd8c1679ea2798a",
+      "class": [],
+      "methods": [
+        "_physics_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/rpg_state.gd",
+      "sha256": "a4856439ca7327d0e9385f29d82df1adb2d09b635429ccae151bec07077a0717",
+      "class": [
+        "WooRpgState"
+      ],
+      "methods": [
+        "_init",
+        "integer",
+        "valid",
+        "max_hp",
+        "max_mp",
+        "xp_needed",
+        "rank",
+        "count",
+        "add_item",
+        "use_item",
+        "grant_xp",
+        "claim_fox_reward",
+        "equip",
+        "unequip",
+        "discard_item"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/save_game.gd",
+      "sha256": "97f0a31ce81d60040bdd812b09c095211c4ff520a66bf3ca10f9f1c45f31c493",
+      "class": [
+        "WooSaveGame"
+      ],
+      "methods": [
+        "valid",
+        "read_valid",
+        "load_game",
+        "save_game",
+        "settings",
+        "save_settings"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/scenery.gd",
+      "sha256": "5afa7dae6d3220986ce546ccd3dc7bc26ef5d07c5d1e05385ddb5026f12a7f9e",
+      "class": [
+        "WooScenery"
+      ],
+      "methods": [
+        "_ready",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/skill_badge.gd",
+      "sha256": "1432f08b1114ab1c8665d8933c92acd4846e6e7af009b70ad078290971fb7a10",
+      "class": [
+        "WooSkillBadge"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/sound.gd",
+      "sha256": "4a160e2ec79194314384d5f00900c97a9e4268da4309f00cb44a1e1f47dda810",
+      "class": [
+        "WooSound"
+      ],
+      "methods": [
+        "_ready",
+        "set_music_enabled",
+        "set_backgrounded",
+        "_process",
+        "set_enabled",
+        "shutdown",
+        "_exit_tree",
+        "play_clip",
+        "update_steps",
+        "update_npc_steps"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/terrain.gd",
+      "sha256": "cdbb08e338b0c0eece5799b72b0879f2566bc5a87b8b7b13d81f60ac7077e152",
+      "class": [
+        "WooTerrain"
+      ],
+      "methods": [
+        "_draw",
+        "pave",
+        "draw_ground",
+        "stone"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/terrain_surface.gd",
+      "sha256": "0f530c42f4b28e51e897a24ec8267eb59bb07b44de3865bbbb24c252f3811126",
+      "class": [
+        "WooTerrainSurface"
+      ],
+      "methods": [
+        "segment_distance",
+        "ellipse",
+        "at"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/village.gd",
+      "sha256": "60b05d71e1d11fcd0f6024b98f12895d7ae71249997182cf66188966844dce01",
+      "class": [
+        "WooVillage"
+      ],
+      "methods": [
+        "_ready",
+        "set_completed_stories",
+        "_process",
+        "draw_ground"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/village_layout.gd",
+      "sha256": "b4ff85bbefa9ef64f33a44d992a6cc36969735516c3a14f719354f15cd5b1483",
+      "class": [
+        "WooVillageLayout"
+      ],
+      "methods": [
+        "build_props",
+        "footprint",
+        "radius",
+        "can_stand",
+        "safe_position",
+        "zone_at"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/village_prop.gd",
+      "sha256": "4372e39c05002ab6981bc951cc233799575843c3ea806ceb4d7c1281fc762086",
+      "class": [
+        "WooVillageProp"
+      ],
+      "methods": [
+        "_ready",
+        "set_stories",
+        "_draw",
+        "draw_memories"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/woo/water.gd",
+      "sha256": "9bba580a33bfdea794473525d7519fcc9afeb790bf7de98d23cd628e4c205dd0",
+      "class": [],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw",
+        "draw_bridge"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/catalog.gd",
+      "sha256": "482903093695a9fd3f911eae22c21d77caf9a5d2194d7ffd60e2b48806c5ff38",
+      "class": [
+        "WooPaintingWorlds"
+      ],
+      "methods": [
+        "find",
+        "known"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/edges.gd",
+      "sha256": "7738845b42fed47e0c1e3b4e54057206f5afe077e73e264ac69fbca44a3f967b",
+      "class": [
+        "WooTerrainEdges"
+      ],
+      "methods": [
+        "ribbon",
+        "lawn_border"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/forest.gd",
+      "sha256": "139c7b1a017283867a60d1c614f33ca2aa6638b488cc7f8fb62ce6c503024226",
+      "class": [
+        "WooStoryForest"
+      ],
+      "methods": [
+        "_ready",
+        "add_prop",
+        "rect_collision",
+        "route",
+        "nearest_cell"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/forest_ground.gd",
+      "sha256": "fbcab7215508f343f17ceef87bc4e2168cac6c8060ae883e801c8807154b7841",
+      "class": [],
+      "methods": [
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/gallery.gd",
+      "sha256": "07cb93e4f6a316a3aae3dad4f1afc8e7ba50e0202480e7b58e528c511f85a0c8",
+      "class": [
+        "WooPaintingGallery"
+      ],
+      "methods": [
+        "_ready",
+        "draw_painting",
+        "refresh",
+        "change",
+        "enter",
+        "_input"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/layout.gd",
+      "sha256": "a5075f55602423883916dd719359b7423c23896eb75678e73c3aba59434a728e",
+      "class": [
+        "WooExplorationLayout"
+      ],
+      "methods": [
+        "bounds",
+        "spawn",
+        "objects",
+        "sites",
+        "footprint",
+        "safe"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/map.gd",
+      "sha256": "6e62eb0f867cde88eb08eeaa41b35753526439916c81ccba832a0f72bdf67b49",
+      "class": [
+        "WooExplorationMap"
+      ],
+      "methods": [
+        "_ready",
+        "_process",
+        "draw_floor",
+        "draw_motion"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/plaza.gd",
+      "sha256": "763b4b06d741946ba65626be8eb24ebf7e9bfad5985fd97912e91cb36be428f4",
+      "class": [
+        "WooStoryPlaza"
+      ],
+      "methods": [
+        "_ready",
+        "set_completed_stories",
+        "_process",
+        "draw_ground"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/plaza_atmosphere.gd",
+      "sha256": "e81d931831d9d639d8fa9dc248b16c185171cccf942db222137b1f0be016306f",
+      "class": [],
+      "methods": [
+        "_ready",
+        "_process",
+        "_draw"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/plaza_layout.gd",
+      "sha256": "d7c96337ca8452fc4c25a11b637bb67b5bbfd15037f6c30ba05c86d4ed7b6032",
+      "class": [
+        "WooStoryPlazaLayout"
+      ],
+      "methods": [
+        "build_props",
+        "footprint",
+        "radius",
+        "can_stand",
+        "safe_position",
+        "zone_at"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/plaza_navigation.gd",
+      "sha256": "ebc7efa3bbb1f7a949ec1283df4de65940839ea2431ca017f0bf02d19497cbe9",
+      "class": [
+        "WooStoryNavigation"
+      ],
+      "methods": [
+        "_init",
+        "segment_clear",
+        "closest_accessible",
+        "route"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/plaza_prop.gd",
+      "sha256": "c82ca4c68471575e885a92957d820b4bcf52af053b8449fe23c47cef2844075c",
+      "class": [
+        "WooStoryPlazaProp"
+      ],
+      "methods": [
+        "_ready",
+        "set_stories",
+        "_draw",
+        "draw_memories"
+      ],
+      "execution_claim": false
+    },
+    {
+      "path": "scripts/worlds/plaza_terrain.gd",
+      "sha256": "5e9d4291512410fd02d2c39de5f88cd6bda729f6e1156599a00954451e4ba977",
+      "class": [
+        "WooStoryTerrain"
+      ],
+      "methods": [
+        "_draw",
+        "pave",
+        "draw_ground",
+        "stone"
+      ],
+      "execution_claim": false
+    }
+  ],
+  "asset_types": {
+    ".png": 81,
+    ".wav": 14,
+    ".txt": 6,
+    ".json": 3,
+    ".ogg": 2,
+    ".otf": 1,
+    ".ttc": 1,
+    ".gdshader": 2,
+    ".md": 1,
+    ".svg": 1
+  },
+  "registered_spells": [
+    {
+      "id": "transform",
+      "name": "둔갑술"
+    },
+    {
+      "id": "blink",
+      "name": "축지법"
+    },
+    {
+      "id": "clone",
+      "name": "분신술"
+    },
+    {
+      "id": "track",
+      "name": "추적부"
+    },
+    {
+      "id": "shield",
+      "name": "호신부"
+    },
+    {
+      "id": "smoke",
+      "name": "연막술"
+    },
+    {
+      "id": "mask",
+      "name": "천면술"
+    },
+    {
+      "id": "rescue",
+      "name": "해봉술"
+    },
+    {
+      "id": "capture",
+      "name": "그림자 포획"
+    },
+    {
+      "id": "darkness",
+      "name": "어둠의 장막"
+    },
+    {
+      "id": "fake_flame",
+      "name": "가짜 혼불"
+    },
+    {
+      "id": "shadow",
+      "name": "그림자 이동"
+    },
+    {
+      "id": "mimic",
+      "name": "타인 둔갑"
+    },
+    {
+      "id": "talisman",
+      "name": "부적술"
+    }
+  ],
+  "map_contracts": {
+    "plaza": "safe social hub",
+    "fox_forest": "combat adventure",
+    "moon_palace": "noncombat glyph exploration",
+    "red_sea": "noncombat glyph exploration",
+    "offline_practice": "isolated local training",
+    "multiplayer": [
+      "village",
+      "forest"
+    ]
+  }
+}

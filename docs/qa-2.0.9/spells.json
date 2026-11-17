@@ -1,0 +1,128 @@
+[
+  {
+    "category": "변신",
+    "cd": 12.0,
+    "description": "가까운 사물·동물에서 형상 추출 → 도술 사용. 인간으로 복귀할 수 있습니다.",
+    "duration": 9.0,
+    "icon": "jar",
+    "id": "transform",
+    "name": "둔갑술"
+  },
+  {
+    "category": "이동",
+    "cd": 10.0,
+    "description": "바라보는 방향으로 축지합니다. 벽과 사물을 통과하지 않습니다.",
+    "duration": 0.0,
+    "icon": "blink",
+    "id": "blink",
+    "name": "축지법"
+  },
+  {
+    "category": "보조",
+    "cd": 18.0,
+    "description": "같은 외형의 분신이 이동합니다. 훈련 요괴의 시선을 끌어보세요.",
+    "duration": 8.0,
+    "icon": "clone",
+    "id": "clone",
+    "name": "분신술"
+  },
+  {
+    "category": "보조",
+    "cd": 16.0,
+    "description": "산책하는 훈련 NPC가 남긴 최근 발자국을 탐지합니다.",
+    "duration": 7.0,
+    "icon": "track",
+    "id": "track",
+    "name": "추적부"
+  },
+  {
+    "category": "보조",
+    "cd": 22.0,
+    "description": "훈련 공격·포획을 한 번 방어합니다. 방어 뒤 보호 시간이 생깁니다.",
+    "duration": 8.0,
+    "icon": "shield",
+    "id": "shield",
+    "name": "호신부"
+  },
+  {
+    "category": "보조",
+    "cd": 20.0,
+    "description": "연막 안에서는 먼 NPC가 보이지 않으며 요괴도 나를 놓칩니다.",
+    "duration": 6.0,
+    "icon": "smoke",
+    "id": "smoke",
+    "name": "연막술"
+  },
+  {
+    "category": "변신",
+    "cd": 25.0,
+    "description": "얼굴과 신원을 감춥니다. 훈련 요괴가 가까이서만 식별합니다.",
+    "duration": 9.0,
+    "icon": "mask",
+    "id": "mask",
+    "name": "천면술"
+  },
+  {
+    "category": "보조",
+    "cd": 20.0,
+    "description": "감옥의 도사를 더 빠르게 구출합니다. 사용 뒤 가까이서 상호작용하세요.",
+    "duration": 8.0,
+    "icon": "rescue",
+    "id": "rescue",
+    "name": "해봉술"
+  },
+  {
+    "category": "공격",
+    "cd": 13.0,
+    "description": "가까운 훈련 도사를 감옥으로 포획합니다.",
+    "duration": 0.0,
+    "icon": "capture",
+    "id": "capture",
+    "name": "그림자 포획"
+  },
+  {
+    "category": "보조",
+    "cd": 30.0,
+    "description": "어둠으로 시야를 가리고 가까운 봉인 표적을 방해합니다.",
+    "duration": 7.0,
+    "icon": "darkness",
+    "id": "darkness",
+    "name": "어둠의 장막"
+  },
+  {
+    "category": "보조",
+    "cd": 24.0,
+    "description": "가짜 혼불로 훈련 NPC를 유인합니다.",
+    "duration": 12.0,
+    "icon": "fake_flame",
+    "id": "fake_flame",
+    "name": "가짜 혼불"
+  },
+  {
+    "category": "이동",
+    "cd": 16.0,
+    "description": "벽을 통과하지 않는 긴 그림자 이동입니다.",
+    "duration": 0.0,
+    "icon": "shadow",
+    "id": "shadow",
+    "name": "그림자 이동"
+  },
+  {
+    "category": "변신",
+    "cd": 25.0,
+    "description": "가까운 도사의 외형과 색상을 복제합니다. 실제 ID는 유지됩니다.",
+    "duration": 9.0,
+    "icon": "mimic",
+    "id": "mimic",
+    "name": "타인 둔갑"
+  },
+  {
+    "category": "공격",
+    "cd": 2.2,
+    "description": "전방의 표적에 부적 피해와 짧은 봉인을 적용합니다.",
+    "duration": 1.4,
+    "icon": "talisman",
+    "id": "talisman",
+    "name": "부적술"
+  }
+]

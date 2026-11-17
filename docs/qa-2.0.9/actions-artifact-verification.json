@@ -1,0 +1,9 @@
+{
+  "run_id": 44034709289,
+  "artifact_id": 14307146005,
+  "archive_bytes": 121294559,
+  "apk_name": "jeon-woochi-2.0.9.apk",
+  "sha256": "d4d9700a68df9c884ca697273dae6993740acef69318805d5064117f500c22cd",
+  "status": "passed",
+  "method": "Actual Actions ZIP HTTPS redownload, APK SHA256 from decompressed stream"
+}
