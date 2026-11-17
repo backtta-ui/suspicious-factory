@@ -27,10 +27,10 @@ func _ready() -> void:
  for i in range(keys.size()):
   var key: String=keys[i];var b: Button=game.button(titles[i],func()->void:slot=key;refresh());b.custom_minimum_size=Vector2(170,60);tabs.add_child(b)
  var row:=HBoxContainer.new();stack.add_child(row)
- var left:=VBoxContainer.new();left.custom_minimum_size=Vector2(380,430);row.add_child(left)
- var stage:=Control.new();stage.custom_minimum_size=Vector2(380,300);stage.mouse_filter=Control.MOUSE_FILTER_IGNORE;left.add_child(stage)
+ var left:=VBoxContainer.new();left.custom_minimum_size=Vector2(380,400);row.add_child(left)
+ var stage:=Control.new();stage.custom_minimum_size=Vector2(380,270);stage.mouse_filter=Control.MOUSE_FILTER_IGNORE;left.add_child(stage)
  # One fixed preview scale fits even a full-height jump; never resize for a hat/pose.
- preview=preload("res://scripts/woo/actor.gd").new();preview.position=Vector2(190,285);preview.scale=Vector2(3.0,3.0);stage.add_child(preview);preview.set_physics_process(false);preview.collision_layer=0;preview.collision_mask=0
+ preview=preload("res://scripts/woo/actor.gd").new();preview.position=Vector2(190,255);preview.scale=Vector2(3.0,3.0);stage.add_child(preview);preview.set_physics_process(false);preview.collision_layer=0;preview.collision_mask=0
  description=game.text("",19);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.custom_minimum_size=Vector2(370,65);left.add_child(description)
  var controls:=HBoxContainer.new();left.add_child(controls)
  for entry in [["방향", "turn"],["걷기","walk"],["점프","jump"],["공격","attack"]]:
@@ -39,8 +39,8 @@ func _ready() -> void:
     var directions: Array=[2,3,4,5,6,7,0,1];preview.facing=directions[(directions.find(preview.facing)+1)%8]
    else:pose="idle" if pose==mode else mode
   );b.custom_minimum_size=Vector2(85,56);b.add_theme_font_size_override("font_size",17);controls.add_child(b)
- var right:=VBoxContainer.new();right.custom_minimum_size=Vector2(730,430);row.add_child(right)
- var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(730,330);right.add_child(scroll)
+ var right:=VBoxContainer.new();right.custom_minimum_size=Vector2(730,400);row.add_child(right)
+ var scroll:=ScrollContainer.new();scroll.custom_minimum_size=Vector2(730,300);right.add_child(scroll)
  list=GridContainer.new();list.columns=3;scroll.add_child(list)
  detail=game.text("",19);detail.custom_minimum_size=Vector2(720,82);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;right.add_child(detail)
  var footer:=HBoxContainer.new();stack.add_child(footer)
@@ -48,6 +48,7 @@ func _ready() -> void:
  footer.add_child(game.button("변경 취소",close))
  footer.add_child(game.button("기본 차림",func()->void:draft=C.base_appearance(draft.character);refresh()))
  footer.add_child(game.text("서버 확정 누적 %d승"%wardrobe.data.verified_wins,18))
+ var gesture:=preload("res://scripts/ui/popup_scroll.gd").new();gesture.scroll=scroll;game.modal.add_child(gesture)
  refresh()
 func refresh() -> void:
  for child in list.get_children():list.remove_child(child);child.queue_free()

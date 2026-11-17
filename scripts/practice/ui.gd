@@ -88,6 +88,7 @@ func show_training_settings() -> void:
  stack.add_child(game.button("도술 범위 잠시 확인",func()->void:preview_until=session.rules.elapsed+2.5;game.close_modal()))
  stack.add_child(game.button("수련 초기화",func()->void:reset();game.close_modal()))
  stack.add_child(game.button("변신 해제",func()->void:release();game.close_modal()))
+ if game.adventure.in_mission:stack.add_child(game.button("광장으로 돌아가기",exit_to_plaza))
  stack.add_child(game.button("수련으로",game.close_modal))
 func adjust_safe() -> void:
  preload("res://scripts/ui/design.gd").position_stick(stick)
@@ -156,6 +157,10 @@ func sync(delta: float) -> void:
  notice.text=session.message;badge.skill=info.icon;badge.maximum=info.cd;badge.remaining=cooldown;cast_button.disabled=cooldown>0 and not (session.selected=="transform" and session.self_player().buff.get("transform",0)>rules.elapsed)
  var channel: Dictionary=rules.channels.get("student",{})
  interact_button.text="진행 %.1f초"%maxf(0,channel.until-rules.elapsed) if not channel.is_empty() else ("형상 추출" if session.selected=="transform" else "상호작용")
+func exit_to_plaza() -> void:
+ leave()
+ if game.adventure.in_mission:game.adventure.return_to_plaza()
+
 func leave() -> void:
  if leaving:return
  leaving=true;stick.reset();game.close_modal();session.clear_effects();world.hide();world.process_mode=Node.PROCESS_MODE_DISABLED
