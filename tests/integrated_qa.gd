@@ -70,9 +70,15 @@ func run() -> void:
  var data: Dictionary=game.rpg.data.duplicate(true);var look: Dictionary=game.wardrobe.data.duplicate(true)
  game.enter_practice("track");game.enter_practice("smoke")
  check(game.content_loading,"LOAD-GUARD","loading is explicit and blocks duplicate entry",true)
+ game._notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_OUT)
  game.go_back();await frames(8)
  check(is_instance_valid(game.practice) and not game.content_loading,"LOAD-READY","practice starts once and clears loading state")
  var room: WooPracticeUI=game.practice
+ var suspended: float=room.session.rules.elapsed;await frames(8)
+ check(room.backgrounded and room.session.rules.elapsed==suspended,"LOAD-BACKGROUND","background notification during loading suspends new training session",true)
+ game._notification(MainLoop.NOTIFICATION_APPLICATION_FOCUS_IN)
+ await create_timer(.08).timeout
+ check(not room.backgrounded and room.session.rules.elapsed>suspended,"LOAD-RESUME","foreground notification resumes the same session",true)
  check(room.stick.get_global_rect()==stick_rect,"HUD-STICK-PRACTICE","training and adventure joystick match",true)
  check(room.vitality.get_global_rect()==hp_rect,"HUD-HP-PRACTICE","training uses same HP component geometry",true)
  check(room.cast_button.size==D.ACTIONS.spell.size,"HUD-SPELL-PRACTICE","common spell dimensions override old minimum size",true)

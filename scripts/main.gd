@@ -474,13 +474,15 @@ func show_painting_intro(index: int) -> void:
 
 var content_loading:=false
 func enter_practice(skill: String="transform") -> void:
- if is_instance_valid(practice) or content_loading or screen_name!="playing" or not is_instance_valid(player):return
+ if is_instance_valid(practice) or content_loading or screen_name!="playing" or not is_instance_valid(player) or adventure.transitioning:return
  content_loading=true;close_modal();set_paused(true)
  var loading:=preload("res://scripts/ui/loading.gd").new();loading.title="도술 익히기 · 수련장을 준비합니다";layer.add_child(loading)
  await get_tree().process_frame
  await get_tree().process_frame
  if not is_inside_tree():return
- practice=preload("res://scripts/practice/ui.gd").new();practice.game=self;add_child(practice);practice.select(skill)
+ if quitting or screen_name!="playing" or not is_instance_valid(player):
+  content_loading=false;loading.queue_free();return
+ practice=preload("res://scripts/practice/ui.gd").new();practice.game=self;add_child(practice);practice.select(skill);practice.backgrounded=sound.backgrounded
  content_loading=false;loading.queue_free()
 
 func show_rpg_menu() -> void:
