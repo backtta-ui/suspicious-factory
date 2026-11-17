@@ -16,7 +16,7 @@ func run() -> void:
   if arg.begins_with("--phase="):phase=arg.trim_prefix("--phase=")
  if phase in ["game","game-jump","plaza","forest"]:
   var game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await frames();game.start_game(false);await frames()
-  var look:=Catalog.DEFAULT.duplicate();look.character="yeonhwa";look.hair="silver";look.hat="hood";look.color="purple"
+  var look:=Catalog.DEFAULT.duplicate();look.character="yeonhwa";look.hair="silver";look.hat="hood";look.color="purple";look.color_override=true
   game.wardrobe.equip(look);game.player.cosmetic=look
   if phase in ["game","game-jump"]:
    game.show_wardrobe();await frames()

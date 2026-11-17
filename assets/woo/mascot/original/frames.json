@@ -23,7 +23,41 @@
           287,
           303
         ],
-        "rgba_sha256": "61cd4b083d61f66e297af576a434591c41fbf6c28eb05cbfaa6572dc66c9ee65"
+        "rgba_sha256": "61cd4b083d61f66e297af576a434591c41fbf6c28eb05cbfaa6572dc66c9ee65",
+        "hands": [
+          [
+            79.5,
+            257.0
+          ],
+          [
+            205.5,
+            257.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-front-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-front-foot-0.png",
+            "rect": [
+              90,
+              284,
+              143,
+              302
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-front-foot-1.png",
+            "rect": [
+              143,
+              284,
+              198,
+              302
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
       },
       "left": {
         "path": "res://assets/woo/mascot/original/woochi-left.png",
@@ -41,7 +75,41 @@
           276,
           303
         ],
-        "rgba_sha256": "763218c0c49ee7e577544167b9480c829cc3088f8505be6df8cfe7a3bcf6e08a"
+        "rgba_sha256": "763218c0c49ee7e577544167b9480c829cc3088f8505be6df8cfe7a3bcf6e08a",
+        "hands": [
+          [
+            109.5,
+            209.0
+          ],
+          [
+            127.0,
+            263.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-left-foot-0.png",
+            "rect": [
+              70,
+              284,
+              129,
+              302
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-left-foot-1.png",
+            "rect": [
+              129,
+              284,
+              189,
+              303
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
       },
       "back": {
         "path": "res://assets/woo/mascot/original/woochi-back.png",
@@ -59,7 +127,41 @@
           279,
           303
         ],
-        "rgba_sha256": "d32a16dd1ac3768c93d6b5c2d04ef6fa25a6c17248c46b4d2cb024c884af361e"
+        "rgba_sha256": "d32a16dd1ac3768c93d6b5c2d04ef6fa25a6c17248c46b4d2cb024c884af361e",
+        "hands": [
+          [
+            71.5,
+            257.5
+          ],
+          [
+            203.5,
+            257.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-back-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-back-foot-0.png",
+            "rect": [
+              80,
+              284,
+              137,
+              302
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-back-foot-1.png",
+            "rect": [
+              137,
+              284,
+              208,
+              303
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
       },
       "right": {
         "path": "res://assets/woo/mascot/original/woochi-right.png",
@@ -77,9 +179,251 @@
           274,
           303
         ],
-        "rgba_sha256": "d175a04de0d4a698a7f0b6bdd86098355e00202d6e6a00907c5199d98380e00b"
+        "rgba_sha256": "d175a04de0d4a698a7f0b6bdd86098355e00202d6e6a00907c5199d98380e00b",
+        "hands": [
+          [
+            139.0,
+            263.0
+          ],
+          [
+            159.0,
+            218.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-right-foot-0.png",
+            "rect": [
+              86,
+              284,
+              138,
+              302
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-right-foot-1.png",
+            "rect": [
+              138,
+              284,
+              198,
+              302
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
       },
-      "scale": 0.18305084745762712
+      "scale": 0.18305084745762712,
+      "front_right": {
+        "path": "res://assets/woo/mascot/original/woochi-front_right.png",
+        "foot": [
+          137.0,
+          297
+        ],
+        "size": [
+          252,
+          301
+        ],
+        "scale": 0.18430034129692832,
+        "source_rect": [
+          35,
+          7,
+          252,
+          301
+        ],
+        "extension": true,
+        "hands": [
+          [
+            81.0,
+            252.5
+          ],
+          [
+            198.0,
+            243.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-front_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-front_right-foot-0.png",
+            "rect": [
+              79,
+              282,
+              137,
+              301
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-front_right-foot-1.png",
+            "rect": [
+              137,
+              282,
+              183,
+              299
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
+      },
+      "front_left": {
+        "path": "res://assets/woo/mascot/original/woochi-front_left.png",
+        "foot": [
+          119.5,
+          296
+        ],
+        "size": [
+          258,
+          300
+        ],
+        "scale": 0.18493150684931506,
+        "source_rect": [
+          344,
+          8,
+          258,
+          300
+        ],
+        "extension": true,
+        "hands": [
+          [
+            60.0,
+            242.5
+          ],
+          [
+            174.5,
+            252.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-front_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-front_left-foot-0.png",
+            "rect": [
+              72,
+              282,
+              119,
+              298
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-front_left-foot-1.png",
+            "rect": [
+              119,
+              282,
+              174,
+              300
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
+      },
+      "back_left": {
+        "path": "res://assets/woo/mascot/original/woochi-back_left.png",
+        "foot": [
+          123.0,
+          294
+        ],
+        "size": [
+          241,
+          298
+        ],
+        "scale": 0.18620689655172415,
+        "source_rect": [
+          656,
+          10,
+          241,
+          298
+        ],
+        "extension": true,
+        "hands": [
+          [
+            69.5,
+            248.5
+          ],
+          [
+            181.0,
+            239.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-back_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-back_left-foot-0.png",
+            "rect": [
+              72,
+              280,
+              123,
+              297
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-back_left-foot-1.png",
+            "rect": [
+              123,
+              280,
+              169,
+              291
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
+      },
+      "back_right": {
+        "path": "res://assets/woo/mascot/original/woochi-back_right.png",
+        "foot": [
+          141.0,
+          298
+        ],
+        "size": [
+          245,
+          302
+        ],
+        "scale": 0.1836734693877551,
+        "source_rect": [
+          974,
+          8,
+          245,
+          302
+        ],
+        "extension": true,
+        "hands": [
+          [
+            193.0,
+            248.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/woochi-back_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/woochi-back_right-foot-0.png",
+            "rect": [
+              93,
+              283,
+              141,
+              296
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/woochi-back_right-foot-1.png",
+            "rect": [
+              141,
+              283,
+              183,
+              300
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.68
+      }
     },
     "yeonhwa": {
       "front": {
@@ -98,7 +442,41 @@
           217,
           276
         ],
-        "rgba_sha256": "3d7ea01475bd9e733fcd8c5c944f76328090cd4257a574e4f9ea39b145d4d122"
+        "rgba_sha256": "3d7ea01475bd9e733fcd8c5c944f76328090cd4257a574e4f9ea39b145d4d122",
+        "hands": [
+          [
+            38.0,
+            230.5
+          ],
+          [
+            170.0,
+            230.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-front-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-front-foot-0.png",
+            "rect": [
+              54,
+              259,
+              105,
+              276
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-front-foot-1.png",
+            "rect": [
+              105,
+              259,
+              162,
+              276
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
       },
       "left": {
         "path": "res://assets/woo/mascot/original/yeonhwa-left.png",
@@ -116,7 +494,41 @@
           206,
           277
         ],
-        "rgba_sha256": "3ae61997b6943343159fc07dac9e7cee22692bf0a848ae0f1c3bf9b30c3bec72"
+        "rgba_sha256": "3ae61997b6943343159fc07dac9e7cee22692bf0a848ae0f1c3bf9b30c3bec72",
+        "hands": [
+          [
+            91.5,
+            237.0
+          ],
+          [
+            112.0,
+            211.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-left-foot-0.png",
+            "rect": [
+              51,
+              260,
+              88,
+              277
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-left-foot-1.png",
+            "rect": [
+              88,
+              260,
+              154,
+              277
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
       },
       "back": {
         "path": "res://assets/woo/mascot/original/yeonhwa-back.png",
@@ -134,7 +546,41 @@
           207,
           269
         ],
-        "rgba_sha256": "7ca8815e4c14985e8da602862de946672a7ccb55d3bb97def88b329e113c214b"
+        "rgba_sha256": "7ca8815e4c14985e8da602862de946672a7ccb55d3bb97def88b329e113c214b",
+        "hands": [
+          [
+            40.5,
+            222.5
+          ],
+          [
+            175.0,
+            223.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-back-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-back-foot-0.png",
+            "rect": [
+              53,
+              252,
+              108,
+              269
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-back-foot-1.png",
+            "rect": [
+              108,
+              252,
+              155,
+              269
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
       },
       "right": {
         "path": "res://assets/woo/mascot/original/yeonhwa-right.png",
@@ -152,9 +598,255 @@
           212,
           278
         ],
-        "rgba_sha256": "73e1c4eb8ab874a8d5b5ef4447344cccdd1d549100d92100471d9c5c487e3bd2"
+        "rgba_sha256": "73e1c4eb8ab874a8d5b5ef4447344cccdd1d549100d92100471d9c5c487e3bd2",
+        "hands": [
+          [
+            118.0,
+            204.0
+          ],
+          [
+            120.0,
+            238.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-right-foot-0.png",
+            "rect": [
+              53,
+              261,
+              124,
+              278
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-right-foot-1.png",
+            "rect": [
+              124,
+              261,
+              159,
+              278
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
       },
-      "scale": 0.20149253731343283
+      "scale": 0.20149253731343283,
+      "front_right": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-front_right.png",
+        "foot": [
+          113.0,
+          276
+        ],
+        "size": [
+          204,
+          280
+        ],
+        "scale": 0.19852941176470587,
+        "source_rect": [
+          58,
+          324,
+          204,
+          280
+        ],
+        "extension": true,
+        "hands": [
+          [
+            52.5,
+            225.5
+          ],
+          [
+            178.5,
+            219.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-front_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-front_right-foot-0.png",
+            "rect": [
+              63,
+              263,
+              113,
+              280
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-front_right-foot-1.png",
+            "rect": [
+              113,
+              263,
+              153,
+              275
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
+      },
+      "front_left": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-front_left.png",
+        "foot": [
+          91.5,
+          277
+        ],
+        "size": [
+          209,
+          281
+        ],
+        "scale": 0.1978021978021978,
+        "source_rect": [
+          371,
+          323,
+          209,
+          281
+        ],
+        "extension": true,
+        "hands": [
+          [
+            25.0,
+            222.0
+          ],
+          [
+            139.0,
+            229.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-front_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-front_left-foot-0.png",
+            "rect": [
+              52,
+              264,
+              91,
+              276
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-front_left-foot-1.png",
+            "rect": [
+              91,
+              264,
+              141,
+              280
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
+      },
+      "back_left": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-back_left.png",
+        "foot": [
+          106.0,
+          274
+        ],
+        "size": [
+          211,
+          278
+        ],
+        "scale": 0.2,
+        "source_rect": [
+          677,
+          327,
+          211,
+          278
+        ],
+        "extension": true,
+        "hands": [
+          [
+            47.5,
+            221.5
+          ],
+          [
+            175.5,
+            212.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-back_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-back_left-foot-0.png",
+            "rect": [
+              54,
+              261,
+              106,
+              278
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-back_left-foot-1.png",
+            "rect": [
+              106,
+              261,
+              158,
+              274
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
+      },
+      "back_right": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-back_right.png",
+        "foot": [
+          110.5,
+          276
+        ],
+        "size": [
+          206,
+          280
+        ],
+        "scale": 0.19852941176470587,
+        "source_rect": [
+          997,
+          325,
+          206,
+          280
+        ],
+        "extension": true,
+        "hands": [
+          [
+            162.0,
+            197.5
+          ],
+          [
+            175.0,
+            223.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/yeonhwa-back_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-back_right-foot-0.png",
+            "rect": [
+              59,
+              263,
+              110,
+              280
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/yeonhwa-back_right-foot-1.png",
+            "rect": [
+              110,
+              263,
+              154,
+              279
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.62
+      }
     },
     "muyeong": {
       "front": {
@@ -173,7 +865,41 @@
           234,
           307
         ],
-        "rgba_sha256": "8cfa612fa1bffd61a2be6ea244e576cbe6fa050b38db1c4325912e6ed6cb842b"
+        "rgba_sha256": "8cfa612fa1bffd61a2be6ea244e576cbe6fa050b38db1c4325912e6ed6cb842b",
+        "hands": [
+          [
+            36.0,
+            253.5
+          ],
+          [
+            176.0,
+            253.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-front-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-front-foot-0.png",
+            "rect": [
+              58,
+              288,
+              107,
+              307
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-front-foot-1.png",
+            "rect": [
+              107,
+              288,
+              172,
+              307
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
       "left": {
         "path": "res://assets/woo/mascot/original/muyeong-left.png",
@@ -191,7 +917,37 @@
           240,
           306
         ],
-        "rgba_sha256": "3d63da97c818067ebdebda0e4c472eb6ed0f441a49d02823e2b8283006f77a8f"
+        "rgba_sha256": "3d63da97c818067ebdebda0e4c472eb6ed0f441a49d02823e2b8283006f77a8f",
+        "hands": [
+          [
+            105.5,
+            259.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-left-foot-0.png",
+            "rect": [
+              60,
+              287,
+              101,
+              304
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-left-foot-1.png",
+            "rect": [
+              101,
+              287,
+              159,
+              306
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
       "back": {
         "path": "res://assets/woo/mascot/original/muyeong-back.png",
@@ -209,7 +965,41 @@
           204,
           306
         ],
-        "rgba_sha256": "233f7c7d6458a87e5b0a65a9fc592d9f9387e1b362924e0f040b051e3e63ed7d"
+        "rgba_sha256": "233f7c7d6458a87e5b0a65a9fc592d9f9387e1b362924e0f040b051e3e63ed7d",
+        "hands": [
+          [
+            35.0,
+            252.0
+          ],
+          [
+            178.0,
+            253.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-back-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-back-foot-0.png",
+            "rect": [
+              51,
+              287,
+              106,
+              305
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-back-foot-1.png",
+            "rect": [
+              106,
+              287,
+              153,
+              305
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
       "right": {
         "path": "res://assets/woo/mascot/original/muyeong-right.png",
@@ -227,9 +1017,247 @@
           239,
           307
         ],
-        "rgba_sha256": "98ae1d9d0bf5523f1eb627bca9b3ed3a00c95fc7bc857ff21985c2a06d333f71"
+        "rgba_sha256": "98ae1d9d0bf5523f1eb627bca9b3ed3a00c95fc7bc857ff21985c2a06d333f71",
+        "hands": [
+          [
+            131.5,
+            261.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-right-foot-0.png",
+            "rect": [
+              83,
+              288,
+              136,
+              307
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-right-foot-1.png",
+            "rect": [
+              136,
+              288,
+              179,
+              305
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
-      "scale": 0.1806020066889632
+      "scale": 0.1806020066889632,
+      "front_right": {
+        "path": "res://assets/woo/mascot/original/muyeong-front_right.png",
+        "foot": [
+          130.0,
+          299
+        ],
+        "size": [
+          233,
+          303
+        ],
+        "scale": 0.18305084745762712,
+        "source_rect": [
+          40,
+          609,
+          233,
+          303
+        ],
+        "extension": true,
+        "hands": [
+          [
+            73.0,
+            250.0
+          ],
+          [
+            195.5,
+            242.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-front_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-front_right-foot-0.png",
+            "rect": [
+              69,
+              284,
+              130,
+              303
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-front_right-foot-1.png",
+            "rect": [
+              130,
+              284,
+              174,
+              298
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      },
+      "front_left": {
+        "path": "res://assets/woo/mascot/original/muyeong-front_left.png",
+        "foot": [
+          97.0,
+          299
+        ],
+        "size": [
+          234,
+          303
+        ],
+        "scale": 0.18305084745762712,
+        "source_rect": [
+          360,
+          609,
+          234,
+          303
+        ],
+        "extension": true,
+        "hands": [
+          [
+            35.5,
+            244.5
+          ],
+          [
+            150.5,
+            250.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-front_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-front_left-foot-0.png",
+            "rect": [
+              58,
+              284,
+              97,
+              296
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-front_left-foot-1.png",
+            "rect": [
+              97,
+              284,
+              145,
+              303
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      },
+      "back_left": {
+        "path": "res://assets/woo/mascot/original/muyeong-back_left.png",
+        "foot": [
+          110.5,
+          298
+        ],
+        "size": [
+          204,
+          302
+        ],
+        "scale": 0.1836734693877551,
+        "source_rect": [
+          676,
+          609,
+          204,
+          302
+        ],
+        "extension": true,
+        "hands": [
+          [
+            46.5,
+            243.5
+          ],
+          [
+            178.0,
+            241.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-back_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-back_left-foot-0.png",
+            "rect": [
+              53,
+              283,
+              110,
+              302
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-back_left-foot-1.png",
+            "rect": [
+              110,
+              283,
+              153,
+              296
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      },
+      "back_right": {
+        "path": "res://assets/woo/mascot/original/muyeong-back_right.png",
+        "foot": [
+          125.5,
+          298
+        ],
+        "size": [
+          219,
+          302
+        ],
+        "scale": 0.1836734693877551,
+        "source_rect": [
+          987,
+          610,
+          219,
+          302
+        ],
+        "extension": true,
+        "hands": [
+          [
+            180.5,
+            251.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/muyeong-back_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-back_right-foot-0.png",
+            "rect": [
+              73,
+              283,
+              125,
+              297
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/muyeong-back_right-foot-1.png",
+            "rect": [
+              125,
+              283,
+              164,
+              302
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      }
     },
     "hongryeon": {
       "front": {
@@ -248,7 +1276,41 @@
           229,
           313
         ],
-        "rgba_sha256": "aa7d8be1faf7aa4b6785c0ad7d908e4128c718f45b7378183642af268c8e1b92"
+        "rgba_sha256": "aa7d8be1faf7aa4b6785c0ad7d908e4128c718f45b7378183642af268c8e1b92",
+        "hands": [
+          [
+            42.5,
+            268.5
+          ],
+          [
+            188.0,
+            268.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-front-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-front-foot-0.png",
+            "rect": [
+              57,
+              294,
+              118,
+              313
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-front-foot-1.png",
+            "rect": [
+              118,
+              294,
+              171,
+              312
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
       "left": {
         "path": "res://assets/woo/mascot/original/hongryeon-left.png",
@@ -266,7 +1328,41 @@
           211,
           312
         ],
-        "rgba_sha256": "d871c055798fbc527165d62d37d97b7267497257305b8cc15a8aafcfdcd44ea8"
+        "rgba_sha256": "d871c055798fbc527165d62d37d97b7267497257305b8cc15a8aafcfdcd44ea8",
+        "hands": [
+          [
+            47.5,
+            252.5
+          ],
+          [
+            98.5,
+            267.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-left-foot-0.png",
+            "rect": [
+              52,
+              293,
+              92,
+              311
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-left-foot-1.png",
+            "rect": [
+              92,
+              293,
+              153,
+              312
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
       "back": {
         "path": "res://assets/woo/mascot/original/hongryeon-back.png",
@@ -284,7 +1380,41 @@
           213,
           314
         ],
-        "rgba_sha256": "efbdff587848ab4aa5bcf5305127fa592573aff867305e0e4c339de38b7f08e1"
+        "rgba_sha256": "efbdff587848ab4aa5bcf5305127fa592573aff867305e0e4c339de38b7f08e1",
+        "hands": [
+          [
+            34.5,
+            267.0
+          ],
+          [
+            177.0,
+            267.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-back-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-back-foot-0.png",
+            "rect": [
+              53,
+              295,
+              106,
+              314
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-back-foot-1.png",
+            "rect": [
+              106,
+              295,
+              159,
+              312
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
       "right": {
         "path": "res://assets/woo/mascot/original/hongryeon-right.png",
@@ -302,9 +1432,267 @@
           208,
           313
         ],
-        "rgba_sha256": "dc3314022e2eca7808b639198e4bf44b1db49cc2816d49c76e6bb622845b004b"
+        "rgba_sha256": "dc3314022e2eca7808b639198e4bf44b1db49cc2816d49c76e6bb622845b004b",
+        "hands": [
+          [
+            107.5,
+            268.0
+          ],
+          [
+            160.0,
+            266.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-right-foot-0.png",
+            "rect": [
+              52,
+              294,
+              114,
+              313
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-right-foot-1.png",
+            "rect": [
+              114,
+              294,
+              156,
+              311
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
       },
-      "scale": 0.17704918032786884
+      "scale": 0.17704918032786884,
+      "front_right": {
+        "path": "res://assets/woo/mascot/original/hongryeon-front_right.png",
+        "foot": [
+          123.5,
+          317
+        ],
+        "size": [
+          225,
+          321
+        ],
+        "scale": 0.17252396166134185,
+        "source_rect": [
+          47,
+          913,
+          225,
+          321
+        ],
+        "extension": true,
+        "hands": [
+          [
+            61.0,
+            267.5
+          ],
+          [
+            195.5,
+            260.5
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-front_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-front_right-foot-0.png",
+            "rect": [
+              69,
+              301,
+              123,
+              321
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-front_right-foot-1.png",
+            "rect": [
+              123,
+              301,
+              168,
+              317
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      },
+      "front_left": {
+        "path": "res://assets/woo/mascot/original/hongryeon-front_left.png",
+        "foot": [
+          102.5,
+          317
+        ],
+        "size": [
+          222,
+          321
+        ],
+        "scale": 0.17252396166134185,
+        "source_rect": [
+          357,
+          914,
+          222,
+          321
+        ],
+        "extension": true,
+        "hands": [
+          [
+            32.5,
+            261.0
+          ],
+          [
+            139.0,
+            270.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-front_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-front_left-foot-0.png",
+            "rect": [
+              55,
+              301,
+              102,
+              315
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-front_left-foot-1.png",
+            "rect": [
+              102,
+              301,
+              161,
+              320
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      },
+      "back_left": {
+        "path": "res://assets/woo/mascot/original/hongryeon-back_left.png",
+        "foot": [
+          110.5,
+          315
+        ],
+        "size": [
+          218,
+          319
+        ],
+        "scale": 0.17363344051446947,
+        "source_rect": [
+          673,
+          913,
+          218,
+          319
+        ],
+        "extension": true,
+        "hands": [
+          [
+            41.0,
+            265.0
+          ],
+          [
+            180.0,
+            263.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-back_left-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-back_left-foot-0.png",
+            "rect": [
+              54,
+              299,
+              110,
+              318
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-back_left-foot-1.png",
+            "rect": [
+              110,
+              299,
+              163,
+              314
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      },
+      "back_right": {
+        "path": "res://assets/woo/mascot/original/hongryeon-back_right.png",
+        "foot": [
+          112.0,
+          316
+        ],
+        "size": [
+          215,
+          320
+        ],
+        "scale": 0.17307692307692307,
+        "source_rect": [
+          994,
+          914,
+          215,
+          320
+        ],
+        "extension": true,
+        "hands": [
+          [
+            173.5,
+            267.0
+          ]
+        ],
+        "motion_body": "res://assets/woo/mascot/original/hongryeon-back_right-rig-body.png",
+        "feet": [
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-back_right-foot-0.png",
+            "rect": [
+              53,
+              300,
+              112,
+              314
+            ],
+            "derived_occluded": false
+          },
+          {
+            "path": "res://assets/woo/mascot/original/hongryeon-back_right-foot-1.png",
+            "rect": [
+              112,
+              300,
+              161,
+              319
+            ],
+            "derived_occluded": false
+          }
+        ],
+        "neck": 0.7
+      }
     }
-  }
+  },
+  "direction_order": [
+    "front",
+    "back",
+    "left",
+    "right",
+    "front_right",
+    "front_left",
+    "back_left",
+    "back_right"
+  ],
+  "extension_source": "res://art_sources/mascot/diagonal-extension-original.png",
+  "extension_sha256": "29de395a9c6b14cdaa6c78eeb1abac83f0cebfbdab02cfb03040107b65d3be9a",
+  "extension_size": [
+    1262,
+    1246
+  ]
 }

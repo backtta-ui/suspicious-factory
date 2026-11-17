@@ -22,12 +22,12 @@ func run() -> void:
  check(profile.equip(look)==ERR_UNAUTHORIZED,"locked character cannot be equipped even by direct profile call")
  profile.refresh({"completed":["fox_forest"],"loot_claims":["shrine_seal"]})
  check(profile.owned("character","muyeong") and profile.owned("character","hongryeon") and profile.owned("outfit","night"),"real forest and shrine save IDs unlock characters and night outfit")
- profile.record_server_wins("wss://test.invalid",9);check(not profile.owned("outfit","moon"),"nine confirmed server wins do not unlock ten-win outfit")
+ profile.record_server_wins("wss://test.invalid",9);check(profile.owned("outfit","moon"),"cosmetic access remains free without changing verified win count")
  profile.record_server_wins("wss://test.invalid",10);profile.record_server_wins("wss://test.invalid",10)
  check(profile.owned("outfit","moon") and profile.data.verified_wins==10,"cumulative server count replay cannot double rewards")
  profile.record_server_wins("wss://test.invalid",30);check(profile.owned("outfit","wind"),"thirty confirmed server wins unlock wind robe")
- check(not profile.owned("outfit","dragon") and not profile.owned("outfit","snow"),"unreleased event and payment costumes stay locked")
- look=Catalog.DEFAULT.duplicate();look.character="yeonhwa";look.hair="flower";look.outfit="night";look.color="black_gold";look.hat="bamboo";look.accessory="orb"
+ check(profile.owned("outfit","dragon") and profile.owned("outfit","snow"),"all costume acquisition locks removed without payment")
+ look=Catalog.DEFAULT.duplicate();look.character="yeonhwa";look.hair="flower";look.outfit="night";look.color="black_gold";look.color_override=true;look.hat="bamboo";look.accessory="orb"
  check(profile.equip(look)==OK,"each owned layer equips independently")
  check(Profile.new().data.appearance==look,"separate wardrobe survives profile reload without rewriting RPG save")
  check(Catalog.normalize({"character":"unknown","outfit":123,"speed":999})==Catalog.DEFAULT,"unknown IDs and injected stats normalize to safe appearance only")

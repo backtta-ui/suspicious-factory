@@ -1,23 +1,23 @@
 class_name WooWardrobeCatalog
 extends RefCounted
-const DEFAULT={"character":"woochi","hair":"black","outfit":"basic","hat":"gat","accessory":"none","color":"navy"}
+const DEFAULT={"character":"woochi","hair":"black","outfit":"basic","hat":"gat","accessory":"none","color":"navy","color_override":false}
 const BASE_DEFAULTS={
  "woochi":{"hair":"black","outfit":"basic","hat":"gat","accessory":"none","color":"navy"},
- "yeonhwa":{"hair":"flower","outfit":"basic","hat":"none","accessory":"none","color":"purple"},
- "muyeong":{"hair":"silver","outfit":"basic","hat":"none","accessory":"none","color":"black_gold"},
- "hongryeon":{"hair":"long","outfit":"basic","hat":"none","accessory":"ribbon","color":"red"}}
+ "yeonhwa":{"hair":"flower","outfit":"basic","hat":"none","accessory":"none","color":"pink"},
+ "muyeong":{"hair":"tied","outfit":"basic","hat":"none","accessory":"none","color":"purple"},
+ "hongryeon":{"hair":"long","outfit":"basic","hat":"hood","accessory":"ribbon","color":"red"}}
 static func base_appearance(id: String) -> Dictionary:
  if not BASE_DEFAULTS.has(id):id="woochi"
- var result: Dictionary=BASE_DEFAULTS[id].duplicate();result.character=id;return result
-const COLORS={"navy":Color("415b96"),"purple":Color("a581cc"),"green":Color("5da682"),"red":Color("bd5863"),"white":Color("dedee7"),"black_gold":Color("383747")}
-const COLOR_NAMES={"navy":"남색","purple":"보라색","green":"녹색","red":"붉은색","white":"흰색","black_gold":"검은색·금색"}
+ var result: Dictionary=BASE_DEFAULTS[id].duplicate();result.character=id;result.color_override=false;return result
+const COLORS={"pink":Color("ce8caa"),"navy":Color("415b96"),"purple":Color("a581cc"),"green":Color("5da682"),"red":Color("bd5863"),"white":Color("dedee7"),"black_gold":Color("383747")}
+const COLOR_NAMES={"pink":"분홍색","navy":"남색","purple":"보라색","green":"녹색","red":"붉은색","white":"흰색","black_gold":"검은색·금색"}
 const CHARACTERS={
  "woochi":{"name":"전우치","cell":0,"rule":"free","description":"장난기 있는 계월촌의 도사. 기존 전우치 그대로."},
  "yeonhwa":{"name":"연화","cell":1,"rule":"free","description":"갈색 머리와 꽃을 사랑하는 차분한 여성 도사."},
- "muyeong":{"name":"무영","cell":2,"rule":"forest","description":"그림 속 세계를 떠도는 은백색 머리의 도사."},
+ "muyeong":{"name":"무영","cell":2,"rule":"forest","description":"그림자 속에서 도술을 익힌 신비로운 도사."},
  "hongryeon":{"name":"홍련","cell":3,"rule":"shrine","description":"여우의 숲 사당의 문양을 푼 붉은 도사."}}
 const OUTFITS={
- "basic":{"name":"기본 도사복","cell":4,"rule":"free","colors":["navy","purple","green","red","white","black_gold"]},
+ "basic":{"name":"기본 도사복","cell":4,"rule":"free","colors":["navy","pink","purple","green","red","white","black_gold"]},
  "moon":{"name":"백월 도사복","cell":5,"rule":"wins10","colors":["white","purple"]},
  "night":{"name":"흑야 도사복","cell":6,"rule":"forest","colors":["black_gold","navy"]},
  "goblin":{"name":"도깨비 도복","cell":7,"rule":"goblin","colors":["purple","green"]},
@@ -35,8 +35,10 @@ static func normalize(raw: Variant) -> Dictionary:
  var out: Dictionary=base_appearance(str(raw.get("character","woochi"))) if raw is Dictionary else DEFAULT.duplicate()
  if not raw is Dictionary:return out
  for k in DEFAULT:
+  if k=="color_override":
+   out[k]=raw.get(k,false)==true;continue
   var values: Dictionary=COLORS if k=="color" else table(k)
   var value=raw.get(k,null)
   if value is String and values.has(value):out[k]=value
- if not OUTFITS[out.outfit].colors.has(out.color):out.color=OUTFITS[out.outfit].colors[0]
+ if not out.color_override:out.color=base_appearance(out.character).color
  return out

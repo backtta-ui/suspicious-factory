@@ -25,12 +25,12 @@ func _ready() -> void:
  preview=preload("res://scripts/woo/actor.gd").new();preview.position=Vector2(215,335);preview.scale=Vector2.ONE*4.25;stage.add_child(preview);preview.set_physics_process(false);preview.collision_layer=0;preview.collision_mask=0
  description=game.text("",19);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.custom_minimum_size=Vector2(410,62);left.add_child(description)
  var controls:=HBoxContainer.new();left.add_child(controls)
- for entry in [["방향","turn"],["걷기","walk"],["점프","jump"],["공격","attack"]]:
+ for entry in [["방향","turn"],["걷기","walk"],["달리기","run"],["점프","jump"],["공격","attack"]]:
   var mode: String=entry[1];var b: Button=game.button(entry[0],func()->void:
    if mode=="turn":
     var directions: Array=[2,3,4,5,6,7,0,1];preview.facing=directions[(directions.find(preview.facing)+1)%8]
    else:pose="idle" if pose==mode else mode
-  );b.custom_minimum_size=Vector2(92,54);b.add_theme_font_size_override("font_size",16);controls.add_child(b)
+  );b.custom_minimum_size=Vector2(80,54);b.add_theme_font_size_override("font_size",16);controls.add_child(b)
  var right:=VBoxContainer.new();right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;frame.body.add_child(right)
  var tabs:=HBoxContainer.new();tabs.add_theme_constant_override("separation",6);right.add_child(tabs)
  var keys:=["character","hair","outfit","hat","accessory","color"];var titles:=["캐릭터","헤어","의상","모자","장신구","색상"]
@@ -49,7 +49,6 @@ func refresh() -> void:
  for child in list.get_children():list.remove_child(child);child.queue_free()
  var table: Dictionary=C.COLORS if slot=="color" else C.table(slot)
  for id in table:
-  if slot=="color" and not C.OUTFITS[draft.outfit].colors.has(id):continue
   var owned:=wardrobe.owned(slot,id)
   var supported: bool=preload("res://scripts/wardrobe/directional_art.gd").supported(slot,id,draft.character)
   var name: String=C.COLOR_NAMES[id] if slot=="color" else table[id].name
@@ -58,12 +57,13 @@ func refresh() -> void:
   if slot=="hat" and id==base.hat:name={"woochi":"원본 갓","yeonhwa":"원본 꽃 장식","muyeong":"원본 차림","hongryeon":"원본 두건"}[draft.character]
   if slot=="color" and id==base.color:name="원본 색상"
   if slot=="accessory" and id=="none":name="추가 장식 없음"
-  var b: Button=game.button(("✓ " if draft[slot]==id else "")+name+(" 🔒" if not owned else "")+(" · 방향 준비 중" if not supported else ""),select.bind(id));b.custom_minimum_size=Vector2(150,128);b.add_theme_font_size_override("font_size",16)
+  var b: Button=game.button(("✓ " if draft[slot]==id else "")+name+(" 🔒" if not owned else "")+(" · 리소스 준비 중" if not supported else ""),select.bind(id));b.custom_minimum_size=Vector2(150,128);b.add_theme_font_size_override("font_size",16)
   for mode in ["font_color","font_hover_color","font_pressed_color","font_disabled_color","font_hover_pressed_color"]:b.add_theme_color_override(mode,Color.TRANSPARENT)
   preload("res://scripts/ui/screen_layout.gd").button_state(b,draft[slot]==id)
-  b.disabled=not supported;list.add_child(b)
-  if slot=="character":
-   var mini:=preload("res://scripts/woo/actor.gd").new();mini.cosmetic=C.base_appearance(id);mini.draw_ground=false;mini.position=Vector2(75,74);mini.scale=Vector2.ONE*1.15;b.add_child(mini);mini.set_physics_process(false);mini.collision_layer=0;mini.collision_mask=0
+  b.text="";b.tooltip_text=name;b.set_meta("item_id",id)
+  b.disabled=false;list.add_child(b)
+  if slot=="character" or (slot in ["hair","hat","outfit"] and id==base[slot]):
+   var mini:=preload("res://scripts/woo/actor.gd").new();mini.cosmetic=C.base_appearance(id if slot=="character" else draft.character);mini.draw_ground=false;mini.position=Vector2(75,74);mini.scale=Vector2.ONE*1.15;b.add_child(mini);mini.set_physics_process(false);mini.collision_layer=0;mini.collision_mask=0
   elif slot!="color" and table[id].cell>=0:
    var image:=TextureRect.new();image.texture=Art.icon(table[id].cell);image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;image.position=Vector2(45,8);image.size=Vector2(60,60);image.mouse_filter=Control.MOUSE_FILTER_IGNORE;b.add_child(image)
   elif slot=="color":
@@ -73,7 +73,7 @@ func refresh() -> void:
  preview.cosmetic=draft.duplicate();preview.update_sprite()
  description.text=C.CHARACTERS[draft.character].name+"\n"+C.CHARACTERS[draft.character].description
  var value: Dictionary={} if slot=="color" else table[draft[slot]]
- detail.text=(C.COLOR_NAMES[draft.color]+" · 의상에 적용" if slot=="color" else value.name+" · "+("보유" if wardrobe.owned(slot,draft[slot]) else "미보유 / 미리보기만 가능")+"\n"+C.RULES[value.rule])
+ detail.text=(C.COLOR_NAMES[draft.color]+" · 의상에 적용" if slot=="color" else value.name+" · "+("보유" if wardrobe.owned(slot,draft[slot]) else "미보유 / 미리보기만 가능")+"\n"+(C.RULES[value.rule] if slot=="character" else "꾸미기 자유 선택 · 구매/레벨/재화 조건 없음"))
  if slot in ["hair","hat","color"] and draft[slot]==C.base_appearance(draft.character)[slot]:detail.text="원본 기본 차림 · 선택한 도사의 원본 외형입니다.\n원본용 교체 리소스가 준비된 항목만 변경할 수 있습니다."
  var pending: String=preload("res://scripts/wardrobe/directional_art.gd").pending(draft)
  if pending!="":detail.text+="\n"+pending
@@ -82,7 +82,9 @@ func select(id: String) -> void:
  if slot=="character":
   drafts[draft.character]=draft.duplicate()
   draft=drafts.get(id,wardrobe.appearance_for(id)).duplicate()
- else:draft[slot]=id
+ else:
+  draft[slot]=id
+  if slot=="color":draft.color_override=id!=C.base_appearance(draft.character).color
  draft=C.normalize(draft);refresh()
 func save_selection() -> void:
  var err:=wardrobe.equip(draft)
@@ -96,8 +98,9 @@ func _process(delta: float) -> void:
  if not is_instance_valid(preview):return
  preview.position.x=preview.get_parent().size.x/2
  preview.animation_time+=delta*9
- preview.gait_weight=1.0 if pose=="walk" else 0.0
- preview.velocity=Vector2.from_angle(preview.facing*PI/4)*88 if pose=="walk" else Vector2.ZERO
+ preview.gait_weight=1.0 if pose in ["walk","run"] else 0.0
+ preview.running=pose=="run"
+ preview.velocity=Vector2.from_angle(preview.facing*PI/4)*(142 if pose=="run" else 88) if pose in ["walk","run"] else Vector2.ZERO
  preview.gait_phase+=preview.velocity.length()*delta*.13
  preview.jump_height=maxf(0,sin(Time.get_ticks_msec()*.003)*20) if pose=="jump" else 0.0
  if pose=="attack":preview.action_pose=int(Time.get_ticks_msec()/500)%4;preview.pose_duration=.5;preview.action_left=.5-fmod(Time.get_ticks_msec()*.001,.5)

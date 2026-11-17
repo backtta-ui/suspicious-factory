@@ -4,17 +4,19 @@ const C=preload("res://scripts/wardrobe/catalog.gd")
 const PATH="user://dosa_wardrobe.json"
 var data: Dictionary
 func _init() -> void:
- data={"version":2,"appearance":C.DEFAULT.duplicate(),"per_character":{},"owned":[],"verified_wins":0,"server_wins":{}}
+ data={"version":3,"appearance":C.DEFAULT.duplicate(),"per_character":{},"owned":[],"verified_wins":0,"server_wins":{}}
  var raw=JSON.parse_string(FileAccess.get_file_as_string(PATH)) if FileAccess.file_exists(PATH) else null
  if not raw is Dictionary and FileAccess.file_exists(PATH+".bak"):raw=JSON.parse_string(FileAccess.get_file_as_string(PATH+".bak"))
  if raw is Dictionary:
-  data.appearance=C.normalize(raw.get("appearance",{}))
+  if int(raw.get("version",1))<3:data.legacy_appearance_v2=raw.duplicate(true)
+  elif raw.has("legacy_appearance_v2"):data.legacy_appearance_v2=raw.legacy_appearance_v2
+  data.appearance=stored_look(raw.get("appearance",{}),int(raw.get("version",1))<3)
   if raw.get("per_character",null) is Dictionary:
    for character in C.CHARACTERS:
     var stored=raw.per_character.get(character,null)
     if stored is Dictionary:
      var value: Dictionary=stored.duplicate();value.character=character
-     data.per_character[character]=C.normalize(value)
+     data.per_character[character]=stored_look(value,int(raw.get("version",1))<3)
   # The old single look belongs only to its selected character. Never fan it out.
   if not data.per_character.has(data.appearance.character):data.per_character[data.appearance.character]=data.appearance.duplicate()
   if raw.get("owned",null) is Array:
@@ -32,10 +34,10 @@ func refresh(rpg: Dictionary) -> void:
   var table: Dictionary=C.table(slot)
   for id in table:
    var rule: String=table[id].rule
-   var earned: bool=rule=="free" or (rule in ["forest","goblin"] and rpg.get("completed",[]).has("fox_forest")) or (rule=="shrine" and rpg.get("loot_claims",[]).has("shrine_seal")) or (rule=="wins10" and data.verified_wins>=10) or (rule=="wins30" and data.verified_wins>=30)
+   var earned: bool=slot!="character" or rule=="free" or (rule in ["forest","goblin"] and rpg.get("completed",[]).has("fox_forest")) or (rule=="shrine" and rpg.get("loot_claims",[]).has("shrine_seal")) or (rule=="wins10" and data.verified_wins>=10) or (rule=="wins30" and data.verified_wins>=30)
    var key: String=slot+":"+id
    if earned and not data.owned.has(key):data.owned.append(key)
-func owned(slot: String,id: String) -> bool:return slot=="color" or data.owned.has(slot+":"+id)
+func owned(slot: String,id: String) -> bool:return slot=="color" or (slot!="character" and C.table(slot).has(id)) or data.owned.has(slot+":"+id)
 func appearance_for(character: String) -> Dictionary:
  return data.per_character.get(character,C.base_appearance(character)).duplicate()
 func valid_selection(raw: Dictionary) -> bool:
@@ -62,3 +64,12 @@ func save() -> Error:
  file.store_string(JSON.stringify(data));file.flush();file.close()
  if FileAccess.file_exists(PATH):DirAccess.copy_absolute(ProjectSettings.globalize_path(PATH),ProjectSettings.globalize_path(PATH+".bak"))
  return DirAccess.rename_absolute(ProjectSettings.globalize_path(PATH+".tmp"),ProjectSettings.globalize_path(PATH))
+
+static func stored_look(raw: Variant,legacy: bool) -> Dictionary:
+ var value: Dictionary=raw.duplicate(true) if raw is Dictionary else {}
+ # Earlier native presets used misleading item IDs although the visible source
+ # had tied dark hair / a red hood. Keep those source designs on migration.
+ if legacy and value.get("outfit","basic")=="basic" and not value.has("color_override"):
+  if value.get("character","")=="muyeong" and value.get("hair","")=="silver" and value.get("hat","none")=="none":value.hair="tied"
+  if value.get("character","")=="hongryeon" and value.get("hair","")=="long" and value.get("hat","none")=="none":value.hat="hood"
+ return C.normalize(value)

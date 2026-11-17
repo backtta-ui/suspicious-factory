@@ -200,20 +200,12 @@ func dispatch(socket_id: int,conn: Dictionary,data: Dictionary) -> void:
   var player: Dictionary=rooms[code].players[conn.uid]
   player.career_wins=int(identities[conn.identity].get("wins",0))
   var outfit: Dictionary=preload("res://scripts/wardrobe/catalog.gd").normalize(data.get("appearance",{}))
-  if outfit.outfit in ["snow","heaven","dragon"]:outfit.outfit="basic";outfit.color="navy"
-  if outfit.hat=="gold":outfit.hat="gat"
-  if outfit.accessory=="sigil":outfit.accessory="none"
-  if (outfit.outfit=="moon" and player.career_wins<10) or (outfit.outfit=="wind" and player.career_wins<30):outfit.outfit="basic";outfit.color="navy"
   player.cosmetic=outfit
   conn.room=code;send(conn,{"op":"joined","room":code});return
  if op=="leave":
   if rooms.has(conn.room):rooms[conn.room].mark_disconnected(conn.uid)
   conn.room="";send(conn,{"op":"left"});return
  if not rooms.has(conn.room):send(conn,{"op":"error","error":"서버의 방이 종료되었습니다","room_expired":true});return
- if op=="appearance":
-  var look: Dictionary=preload("res://scripts/wardrobe/catalog.gd").normalize(data.get("appearance",{}))
-  var wins: int=int(identities[conn.identity].get("wins",0))
-  if look.outfit in ["snow","heaven","dragon"] or look.hat=="gold" or look.accessory=="sigil":send(conn,{"op":"error","error":"준비 중인 꾸미기는 장착할 수 없습니다"});return
-  if (look.outfit=="moon" and wins<10) or (look.outfit=="wind" and wins<30):send(conn,{"op":"error","error":"서버 승리 조건이 부족합니다"});return
+ # Cosmetic acquisition is free; Rules.command still enforces lobby-only changes.
  var reply: Dictionary=rooms[conn.room].command(conn.uid,data)
  if not reply.is_empty():reply.op="reply";send(conn,reply)

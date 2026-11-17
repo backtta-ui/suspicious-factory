@@ -20,7 +20,7 @@ func run() -> void:
   for hair in C.HAIRS:
    for hat in C.HATS:
     for outfit in C.OUTFITS:
-     var look:=C.base_appearance(character);look.hair=hair;look.hat=hat;look.outfit=outfit;look.color=C.OUTFITS[outfit].colors[0];actor.cosmetic=look.duplicate()
+     var look:=C.base_appearance(character);look.hair=hair;look.hat=hat;look.outfit=outfit;look.color=C.OUTFITS[outfit].colors[0];look.color_override=look.color!=C.base_appearance(character).color;actor.cosmetic=look.duplicate()
      for direction in range(8):
       actor.facing=Direction.FACING[direction]
       for kind in ["core","actions"]:
@@ -47,7 +47,7 @@ func run() -> void:
  for character in C.CHARACTERS:
   for accessory in C.ACCESSORIES:
    for color in C.COLORS:
-    var look:=C.base_appearance(character);look.accessory=accessory;look.color=color;actor.cosmetic=look;visual._process(0)
+    var look:=C.base_appearance(character);look.accessory=accessory;look.color=color;look.color_override=color!=C.base_appearance(character).color;actor.cosmetic=look;visual._process(0)
     check(visual.appearance==C.normalize(look),"accessory/color preserves character identity")
   actor.cosmetic=C.base_appearance(character);actor.facing=2;visual.row_override=0;visual.pose_override="core";visual._process(0)
   check(visual.uses_original and visual.original_sprite.visible and str(visual.original_sprite.texture.resource_path).contains(character+"-front"),"complete approved original retains selected character "+character)
@@ -76,7 +76,7 @@ func run() -> void:
  var old:={"version":1,"appearance":legacy,"owned":["outfit:future_item","outfit:wind"],"server_wins":{"test":30}}
  var file:=FileAccess.open(Profile.PATH,FileAccess.WRITE);file.store_string(JSON.stringify(old));file.close()
  var profile:=Profile.new();profile.refresh({"completed":["fox_forest"],"loot_claims":["shrine_seal"]})
- check(profile.data.version==2 and profile.data.appearance==legacy and profile.appearance_for("yeonhwa")==legacy,"v1 appearance migrates only to its owner")
+ check(profile.data.version==3 and profile.data.appearance==legacy and profile.appearance_for("yeonhwa")==legacy,"v1 appearance migrates only to its owner")
  check(profile.appearance_for("muyeong")==C.base_appearance("muyeong") and profile.appearance_for("woochi")==C.DEFAULT,"other characters start from complete own defaults")
  var mu:=C.base_appearance("muyeong");mu.hat="bamboo";check(profile.equip(mu)==OK,"independent Muyeong save")
  var restored:=Profile.new();check(restored.appearance_for("yeonhwa")==legacy and restored.appearance_for("muyeong")==mu and restored.data.owned.has("outfit:future_item") and restored.data.owned.has("outfit:wind") and restored.data.verified_wins==30,"save/reload preserves both looks, unknown ownership and verified wins")

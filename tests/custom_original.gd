@@ -15,7 +15,7 @@ func run() -> void:
  for char in C.CHARACTERS:
   for color in C.COLORS:
    for accessory in C.ACCESSORIES:
-    var look:=C.base_appearance(char);look.color=color;look.accessory=accessory;actor.cosmetic=look
+    var look:=C.base_appearance(char);look.color=color;look.color_override=color!=C.base_appearance(char).color;look.accessory=accessory;actor.cosmetic=look
     for dir in range(8):
      actor.facing=D.FACING[dir];visual._process(0)
      check(visual.uses_original and visual.original_sprite.texture.resource_path.contains(char+"-"),"every accessory/color retains approved native character")

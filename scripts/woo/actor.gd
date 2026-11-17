@@ -38,6 +38,7 @@ var npc_variant := 0
 var npc_name := ""
 var tint := Color.WHITE
 var facing := 2
+var locomotion_velocity:=Vector2.ZERO
 var gait_phase:=0.0
 var gait_weight:=0.0
 var animation_time := 0.0
@@ -101,6 +102,7 @@ func jump() -> bool:
 	if npc or not enabled or defeated or jump_height>0 or jump_velocity>0 or jump_preparation>0 or transforming>0:return false
 	jump_preparation=.07;jump_phase="preparation";return true
 func reset_action() -> void:
+	locomotion_velocity=Vector2.ZERO
 	jump_height=0;jump_velocity=0;jump_preparation=0;jump_phase="ground";action_left=0;action_pose=-1;hurt_stun=0;hurt_left=0;hurt_knock=Vector2.ZERO;defeated=false;defeat_elapsed=0.0;air_chain=false;push_left=0;dash_left=0;combat_frozen=false
 func direction() -> Vector2:
 	if not enabled or transforming>0 or hurt_stun>0 or defeated: return Vector2.ZERO
@@ -112,13 +114,14 @@ func begin_transform() -> bool:
 	transform_target = not jar
 	transforming = TRANSFORM_TIME
 	velocity = Vector2.ZERO
+	locomotion_velocity=Vector2.ZERO
 	return true
 func _physics_process(delta: float) -> void:
 	if network_remote:
 		transforming=maxf(0,transforming-delta);update_sprite();queue_redraw();return
 	if defeated:defeat_elapsed+=delta
 	if combat_frozen and not npc:
-		velocity=Vector2.ZERO;return
+		velocity=Vector2.ZERO;locomotion_velocity=Vector2.ZERO;return
 	if not npc and enabled:
 		action_left=maxf(0,action_left-delta);hurt_left=maxf(0,hurt_left-delta);hurt_stun=maxf(0,hurt_stun-delta);landing_left=maxf(0,landing_left-delta)
 		if jump_preparation>0:
@@ -144,6 +147,10 @@ func _physics_process(delta: float) -> void:
 	var speed := JAR_SPEED if jar else (RUN_SPEED if running or Input.is_physical_key_pressed(KEY_SHIFT) else WALK_SPEED)
 	if npc:speed=npc_driver.movement_speed if npc_driver!=null else 24.0
 	velocity = move*speed
+	if not npc:
+		if not enabled or transforming>0 or defeated:locomotion_velocity=Vector2.ZERO;velocity=Vector2.ZERO
+		locomotion_velocity=locomotion_velocity.move_toward(velocity,(1100.0 if move.length()>.05 else 1500.0)*delta)
+		velocity=locomotion_velocity
 	if dash_left>0 and enabled and not npc:
 		dash_left=maxf(0,dash_left-delta);velocity=dash_direction*360.0
 	if not npc and enabled:
@@ -163,7 +170,7 @@ func _physics_process(delta: float) -> void:
 			npc_stride+=distance
 			facing=posmod(roundi((position-previous).angle()/(PI/4)),8)
 		if npc_driver!=null:npc_driver.report_progress(distance,move,delta)
-	elif move.length()>0.18:facing=preload("res://scripts/wardrobe/direction.gd").quantize(move,facing)
+	elif move.length()>0.05:facing=preload("res://scripts/wardrobe/direction.gd").quantize(move.normalized(),facing)
 	animation_time += delta*(11 if running and not jar else 7) if velocity.length()>2 else delta
 	if not npc or npc_render_visible:update_sprite()
 	if not npc or highlighted!=previous_highlighted:queue_redraw()

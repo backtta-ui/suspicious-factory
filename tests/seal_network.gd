@@ -55,12 +55,13 @@ func run() -> void:
  for i in range(1,8):
   var p:=await connect_peer();send(p,{"op":"join","room":room_code,"name":"연결%d"%i,"slots":["transform","blink"]})
  check(await wait_for(func()->bool:return not host.state.is_empty() and host.state.roster.size()==8),"eight real socket clients share one room")
- var appearance: Dictionary=preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate();appearance.character="yeonhwa";appearance.hair="flower";appearance.color="purple";appearance.hat="none"
+ var appearance: Dictionary=preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate();appearance.character="yeonhwa";appearance.hair="flower";appearance.color="purple";appearance.color_override=true;appearance.hat="none"
  send(host,{"op":"appearance","appearance":appearance})
  check(await wait_for(func()->bool:return host.state.roster[0].cosmetic==appearance),"real socket lobby synchronizes independent costume IDs")
- var forbidden: Dictionary=appearance.duplicate();forbidden.outfit="dragon";forbidden.color="black_gold";host.reply={}
+ var forbidden: Dictionary=appearance.duplicate();forbidden.outfit="dragon";forbidden.color="black_gold";forbidden.color_override=true;host.reply={}
  send(host,{"op":"appearance","appearance":forbidden})
- check(await wait_for(func()->bool:return host.reply.has("error")),"server refuses unavailable payment/event/master appearance")
+ check(await wait_for(func()->bool:return host.state.roster[0].cosmetic==forbidden),"all cosmetic IDs accepted without payment or win requirement")
+ appearance=forbidden
  host.reply={}
  check(host.state.self.has("career_wins"),"server supplies authoritative career count, never client win input")
  for p in peers:send(p,{"op":"ready","value":true})
