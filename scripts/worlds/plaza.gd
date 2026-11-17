@@ -22,6 +22,7 @@ func _ready() -> void:
  var ground:=Sprite2D.new();ground.texture=load("res://assets/woo/worlds/plaza_ground.png");ground.centered=false;ground.z_index=-100;add_child(ground)
  add_child(preload("res://scripts/woo/scenery.gd").new())
  add_child(preload("res://scripts/practice/entrance.gd").new())
+ add_child(preload("res://scripts/simulation/entrance.gd").new())
  water=preload("res://scripts/woo/water.gd").new();add_child(water)
  petals=preload("res://scripts/woo/petals.gd").new();add_child(petals)
  atmosphere=preload("res://scripts/worlds/plaza_atmosphere.gd").new();add_child(atmosphere)

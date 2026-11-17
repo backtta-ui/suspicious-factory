@@ -26,6 +26,7 @@ var effects: Array[Dictionary]=[]
 var channels: Dictionary={}
 var winner:=""
 var events: Array[Dictionary]=[]
+var actions: Array[Dictionary]=[]
 var serial:=0
 var nonce_serial:=0
 var fallback_at:=0.0
@@ -104,7 +105,7 @@ func start(uid: String) -> bool:
  var spawn_ids: Array=players.keys()
  for i in range(spawn_ids.size()-1,0,-1):
   var j:=rng.randi_range(0,i);var swap=spawn_ids[i];spawn_ids[i]=spawn_ids[j];spawn_ids[j]=swap
- round_number+=1;elapsed=0;phase="prepare";phase_until=C.PREPARATION;resources=0;meetings=0;meeting_ready=0;fallback_at=0;votes.clear();effects.clear();channels.clear();winner=""
+ actions.clear();round_number+=1;elapsed=0;phase="prepare";phase_until=C.PREPARATION;resources=0;meetings=0;meeting_ready=0;fallback_at=0;votes.clear();effects.clear();channels.clear();winner=""
  for i in range(ids.size()):
   var p: Dictionary=players[ids[i]];p.role="yokai" if i<2 else "daoist";p.position=arena.spawn_points[spawn_ids.find(p.uid)];p.captured=false;p.capture_until=0.0;p.sealed=false;p.penalty=0;p.cd={};p.buff={};p.forms=[];p.selected_form="";p.escape=1;p.escape_until=0;p.carry="";p.fragments=[];p.challenge={};p.intent=Vector2.ZERO;p.protected=0
   finalize_loadout(p)
@@ -120,6 +121,7 @@ func command(uid: String,data: Dictionary) -> Dictionary:
  if not players.has(uid):return {"error":"방에 참가하지 않았습니다"}
  var p: Dictionary=players[uid]
  var op: String=str(data.get("op",""))
+ if op=="cancel_channel":channels.erase(uid);return {}
  if op=="appearance":
   if phase!="lobby":return {"error":"대전 중 외형 변경은 제한됩니다"}
   p.cosmetic=preload("res://scripts/wardrobe/catalog.gd").normalize(data.get("appearance",{}))
@@ -163,6 +165,7 @@ func command(uid: String,data: Dictionary) -> Dictionary:
   if not channels.has(uid):channels[uid]={"kind":"escape","until":elapsed+5.0,"origin":p.position}
   return {"notice":"자력해봉 중 · 이동하지 말고 기다리세요"}
  if not roam(p):return {"error":"현재 상태에서는 사용할 수 없습니다"}
+ if op=="unmask":p.buff.erase("transform");p.buff.erase("mimic");return {}
  if op=="meeting":
   if phase!="roam" or resources<int(options.meeting_cost) or meetings>=int(options.meeting_limit) or elapsed<meeting_ready or not near(p,arena.altar,110):return {"error":"중앙 봉인진 · 봉인 자원1 · 회의 대기시간을 확인하세요"}
   resources-=int(options.meeting_cost);meetings+=1;phase="discuss";phase_until=elapsed+C.DISCUSSION;votes.clear();channels.clear()
@@ -183,6 +186,7 @@ func command(uid: String,data: Dictionary) -> Dictionary:
   p.selected_form=form;return {}
  if op=="cast":return cast(p,str(data.get("skill","")),str(data.get("target","")))
  if op=="rescue":
+  if p.role!="daoist":return {"error":"구출은 도사팀만 가능합니다"}
   var target: String=str(data.get("target",""))
   if not players.has(target) or not players[target].captured or not near(p,players[target].position,68):return {"error":"감옥의 동료 가까이 접근하세요"}
   if channels.has(uid) and channels[uid].kind=="rescue" and channels[uid].target==target:return {"notice":"구출 중입니다"}
@@ -207,6 +211,7 @@ func cast(p: Dictionary,skill: String,target: String) -> Dictionary:
   var q: Dictionary=players[target]
   if q.role!="daoist" or not available(q) or not near(p,q.position,48) or q.protected>elapsed:return {"error":"포획 범위 또는 보호 상태를 확인하세요"}
   if consume_shield(q,elapsed):p.cd[skill]=elapsed+info.cd;return {"notice":"호신부가 포획을 막았습니다"}
+  actions.append({"kind":"capture","actor":uid,"target":target,"time":elapsed})
   q.captured=true;q.capture_until=elapsed+float(options.capture_seconds);q.position=arena.safe(arena.jail+Vector2(rng.randf_range(-24,24),rng.randf_range(-18,18)));q.intent=Vector2.ZERO;q.escape_until=elapsed+12 if q.escape>0 else 0;channels.erase(q.uid)
  elif skill in ["blink","shadow"]:
   p.position=arena.move(p.position,p.position+Vector2.from_angle(p.facing*PI/4)*(150 if skill=="shadow" else 110))
@@ -268,6 +273,7 @@ func task(p: Dictionary,data: Dictionary) -> Dictionary:
  return {"notice":"봉인 진행 %d/3" % m.step}
 func complete_task(p: Dictionary,m: Dictionary) -> void:
  if p.role!="daoist" or m.done:return
+ actions.append({"kind":"task","actor":p.uid,"mission":m.id,"time":elapsed})
  m.done=true;m.step=3;resources+=1;p.fragments=[];event(m.name+" 완료 · 봉인 기회 +1")
 func tick(delta: float) -> void:
  delta=clampf(delta,0,.1)
@@ -316,7 +322,9 @@ func tick(delta: float) -> void:
    p.escape=0;p.captured=false;p.position=arena.safe(arena.jail+Vector2(-90,0));p.protected=elapsed+float(options.protected_seconds)
   elif channel.kind=="rescue" and p.role=="daoist" and players.has(channel.target):
    var q: Dictionary=players[channel.target]
-   if q.captured and near(p,q.position,75):q.captured=false;q.position=arena.safe(arena.jail+Vector2(-90,0));q.protected=elapsed+float(options.protected_seconds);q.buff["casting"]=elapsed+.8
+   if q.captured and near(p,q.position,75):
+    actions.append({"kind":"rescue","actor":uid,"target":q.uid,"time":elapsed})
+    q.captured=false;q.position=arena.safe(arena.jail+Vector2(-90,0));q.protected=elapsed+float(options.protected_seconds);q.buff["casting"]=elapsed+.8
   elif channel.kind=="fallback" and p.role=="daoist" and resources==0 and elapsed>=fallback_at:resources+=1;fallback_at=elapsed+float(options.fallback_cooldown);event("봉인진 기도로 기회 +1")
   channels.erase(uid)
  if phase=="prepare" and elapsed>=phase_until:phase="roam";event("요괴의 이동 제한이 풀렸습니다")

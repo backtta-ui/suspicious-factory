@@ -22,6 +22,7 @@ const INK := Color("191825")
 const GOLD := Color("d8b87e")
 var practice: WooPracticeUI
 var near_practice:=false
+var near_simulation:=false
 var seal_client: SealClientUI
 var screen_name := "menu"
 var active_context := "menu"
@@ -217,6 +218,12 @@ func apply_appearance_ui() -> void:
 func show_wardrobe() -> void:
  if is_instance_valid(modal):return
  var screen:=preload("res://scripts/wardrobe/screen.gd").new();screen.game=self;add_child(screen)
+
+func enter_simulation() -> void:
+ if screen_name!="playing" or paused or content_loading or adventure.in_mission or is_instance_valid(seal_client):return
+ save_progress();close_modal();set_paused(true)
+ screen_name="seal";active_context="seal";new_ui()
+ seal_client=preload("res://scripts/simulation/client.gd").new();seal_client.game=self;add_child(seal_client)
 
 func show_seal() -> void:
  if is_instance_valid(seal_client):return
@@ -548,6 +555,8 @@ func cast_spell() -> void:
 func interact() -> void:
  if screen_name!="playing" or paused: return
  if is_instance_valid(adventure) and adventure.in_mission:adventure.mission_interact();return
+ if near_simulation:
+  enter_simulation();return
  if near_practice:
   enter_practice();return
  if nearest_painting>=0:
@@ -681,12 +690,14 @@ func _process(delta: float) -> void:
  nearest_painting=-1
  if player.position.distance_to(preload("res://scripts/worlds/catalog.gd").ENTRY)<100:nearest_painting=0
  near_practice=player.position.distance_to(preload("res://scripts/practice/layout.gd").DOOR)<80
+ near_simulation=player.position.distance_to(preload("res://scripts/simulation/entrance.gd").DOOR)<72
  near_well = player.position.distance_to(Layout.WELL)<60
- interact_button.visible = near_practice or nearest_npc>=0 or near_well or nearest_painting>=0
- interact_button.text = "도술 익히기 입장" if near_practice else ("그림 세계" if nearest_painting>=0 else ("대화" if nearest_npc>=0 else "우물 조사"))
+ interact_button.visible = near_simulation or near_practice or nearest_npc>=0 or near_well or nearest_painting>=0
+ interact_button.text = "도술 모의전 입장" if near_simulation else ("도술 익히기 입장" if near_practice else ("그림 세계" if nearest_painting>=0 else ("대화" if nearest_npc>=0 else "우물 조사")))
  interact_button.add_theme_font_size_override("font_size",13 if near_practice else 18)
  hint.text = (str(Layout.NPCS[nearest_npc].name)+" · 대화 가능") if nearest_npc>=0 else ("항아리 둔갑 중 · 이동 속도 감소" if player.jar else "주민과 대화하거나 마을을 탐험하세요")
  if nearest_painting>=0:hint.text="그림 세계 · 세 개의 모험"
+ if near_simulation:hint.text="도술 모의전 · 서버 없이 봇과 한 판"
  if near_practice:hint.text="도술 익히기 · 서버 없이 모든 도술 체험"
  if saved_indicator>0:
   saved_indicator -= delta
