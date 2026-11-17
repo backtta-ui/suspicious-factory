@@ -355,7 +355,7 @@ func open_popup(title: String) -> VBoxContainer:
  popup_notice=game.text("",15,Color("e1bd86"));stack.add_child(popup_notice)
  return stack
 func close_popup() -> void:
- if is_instance_valid(popup):popup.hide();popup.queue_free()
+ if is_instance_valid(popup):game.retire_popup(popup)
  popup=null;popup_notice=null;meeting_log=null;meeting_timer=null;game.active_context="seal"
  if is_instance_valid(stick):stick.reset();stick.input_enabled=true
 func challenge(info: Dictionary) -> void:

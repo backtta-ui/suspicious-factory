@@ -413,9 +413,14 @@ func fit_popup(scroll: ScrollContainer,stack: VBoxContainer) -> void:
  preload("res://scripts/ui/design.gd").wrap_text(stack)
  scroll.custom_minimum_size=Vector2(600,minf(stack.get_combined_minimum_size().y,get_viewport().get_visible_rect().size.y-80))
 
+func retire_popup(control: Control) -> void:
+ # Active UI owns only active dialogs, independently of render-frame speed.
+ control.theme=ui.theme;control.reparent(layer);layer.move_child(control,0)
+ preload("res://scripts/ui/design.gd").popup_exit(control)
+
 func close_modal() -> void:
  if is_instance_valid(modal):
-  preload("res://scripts/ui/design.gd").popup_exit(modal)
+  retire_popup(modal)
  modal = null
  modal_kind = ""
  active_context = "practice" if screen_name=="practice" else ("hud" if screen_name=="playing" else "menu")
