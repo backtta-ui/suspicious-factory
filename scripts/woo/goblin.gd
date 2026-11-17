@@ -2,6 +2,7 @@ class_name WooGoblin
 extends CharacterBody2D
 const ART=preload("res://assets/woo/v13/goblin.png")
 const Config=preload("res://scripts/woo/hit_config.gd")
+var nameplate: WooNPCNameplate
 var adventure: WooAdventure
 var enemy_id:=0
 var hp:=60
@@ -37,6 +38,7 @@ func _ready() -> void:
  var shape:=CollisionShape2D.new();var circle:=CircleShape2D.new();circle.radius=9;shape.shape=circle;add_child(shape)
  white_material=ShaderMaterial.new();white_material.shader=preload("res://assets/woo/v13/hit_flash.gdshader")
  max_hp=hp
+ nameplate=preload("res://scripts/ui/nameplate.gd").new();nameplate.title="꼬마 도깨비";nameplate.hostile=true;nameplate.position=Vector2(0,-65);add_child(nameplate)
  origin=position;target=position;state_time=1.2+enemy_id*.4
  sprite=Sprite2D.new();sprite.texture=ART;sprite.material=white_material;sprite.region_enabled=true;sprite.centered=false;sprite.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;add_child(sprite)
  # Fixed cell pivot and common planted-foot baseline, never alpha-bounds per frame.
@@ -49,6 +51,7 @@ func choose_patrol() -> void:
  target=next if WooForestLayout.can_stand(next,15) else origin
  state="patrol";state_time=5.0;stuck=0
 func _physics_process(delta: float) -> void:
+ nameplate.hp=hp;nameplate.max_hp=max_hp;nameplate.focused=hp<max_hp;nameplate.visible=hp>0;nameplate.queue_redraw()
  if not is_instance_valid(adventure.game.player) or adventure.game.paused:return
  if hp<=0:
   death_left-=delta;sprite.modulate.a=maxf(0,death_left/.4);sprite.scale*=1-delta*.6
@@ -141,6 +144,5 @@ func receive_damage(amount: int,direction: Vector2,talisman: bool) -> void:
 func _draw() -> void:
  if hp<=0:return
  draw_set_transform(Vector2.ZERO,0,Vector2(1,.35));draw_circle(Vector2.ZERO,12,Color(0,0,0,.3));draw_set_transform(Vector2.ZERO)
- if hp<max_hp:draw_rect(Rect2(-13,-55,26,3),Color("29232e"));draw_rect(Rect2(-13,-55,26*hp/float(max_hp),3),Color("db8f92"))
  if state=="attack" and attack_time<WooActionConfig.WINDUP:draw_arc(Vector2.ZERO,30,0,TAU,24,Color(1,.4,.3,.4),1.5)
  if sealed>0:draw_arc(Vector2(0,-14),18,0,TAU,24,Color("f4d27f"),1.5)

@@ -83,16 +83,7 @@ func _ready() -> void:
  add_child(touch_debug)
 
 func style(color: Color, radius: int = 5) -> StyleBoxFlat:
- var box := StyleBoxFlat.new()
- box.bg_color = color
- box.border_color = Color("8e744e")
- box.set_border_width_all(1)
- box.set_corner_radius_all(radius)
- box.content_margin_left = 20
- box.content_margin_right = 20
- box.content_margin_top = 12
- box.content_margin_bottom = 12
- return box
+ return preload("res://scripts/ui/design.gd").panel(color,radius)
 
 func text(value: String, font_size: int = 22, color: Color = Color("e8e1cc")) -> Label:
  var label := Label.new()
@@ -107,11 +98,11 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
  node.text = value
  var context := active_context
  var generation := ui_generation
- node.allowed = func() -> bool: return context==active_context and generation==ui_generation and not (is_instance_valid(adventure) and adventure.transitioning)
- node.add_theme_stylebox_override("normal",style(Color("241e2b") if primary else Color("211d28")))
- node.add_theme_stylebox_override("hover",style(Color("403044")))
- node.add_theme_stylebox_override("pressed",style(Color("685057")))
- node.add_theme_stylebox_override("hover_pressed",style(Color("685057")))
+ node.allowed = func() -> bool: return context==active_context and generation==ui_generation and not content_loading and not (is_instance_valid(adventure) and adventure.transitioning)
+ node.add_theme_stylebox_override("normal",style(preload("res://scripts/ui/design.gd").PANEL.lightened(.035) if primary else preload("res://scripts/ui/design.gd").PANEL))
+ node.add_theme_stylebox_override("hover",style(preload("res://scripts/ui/design.gd").PANEL.lightened(.12)))
+ node.add_theme_stylebox_override("pressed",style(Color("344e69")))
+ node.add_theme_stylebox_override("hover_pressed",style(Color("344e69")))
  node.add_theme_stylebox_override("disabled",style(Color("1a2d34")))
  node.add_theme_color_override("font_color",Color("f4d99d") if primary else Color("e8e1cc"))
  node.add_theme_color_override("font_pressed_color",Color("fff4cd"))
@@ -145,7 +136,7 @@ func new_ui() -> void:
  ui.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
  var theme := Theme.new()
- theme.default_font = FONT
+ theme.default_font = preload("res://scripts/ui/design.gd").FONT
  theme.default_font_size = 22
  theme.set_constant("separation","VBoxContainer",12)
  theme.set_constant("separation","HBoxContainer",18)
@@ -374,6 +365,7 @@ func place_action(node: WooMobileButton, top: int, icon: String) -> void:
  for child in node.get_children():
   if child is WooOrnament: child.circular=true;child.icon=icon
  ui.add_child(node)
+ preload("res://scripts/ui/design.gd").place_action(node,{"spell":"spell","talk":"interact","run":"run"}[icon])
 
 func set_paused(value: bool) -> void:
  paused = value
@@ -405,16 +397,24 @@ func open_modal(kind: String) -> VBoxContainer:
  modal.add_child(center)
  var card := PanelContainer.new()
  card.custom_minimum_size.x = 620
- card.add_theme_stylebox_override("panel",style(Color("171d2c"),10))
+ card.add_theme_stylebox_override("panel",style(preload("res://scripts/ui/design.gd").PANEL,10))
  center.add_child(card)
- var stack := VBoxContainer.new()
- card.add_child(stack)
+ var scroll:=ScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;card.add_child(scroll)
+ var stack := VBoxContainer.new();stack.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ scroll.add_child(stack)
+ var gesture:=preload("res://scripts/ui/popup_scroll.gd").new();gesture.scroll=scroll;modal.add_child(gesture)
+ fit_popup.call_deferred(scroll,stack)
+ preload("res://scripts/ui/design.gd").popup_enter(modal)
  return stack
+
+func fit_popup(scroll: ScrollContainer,stack: VBoxContainer) -> void:
+ if not is_instance_valid(scroll) or not is_instance_valid(stack):return
+ preload("res://scripts/ui/design.gd").wrap_text(stack)
+ scroll.custom_minimum_size=Vector2(600,minf(stack.get_combined_minimum_size().y,get_viewport().get_visible_rect().size.y-80))
 
 func close_modal() -> void:
  if is_instance_valid(modal):
-  modal.hide()
-  modal.queue_free()
+  preload("res://scripts/ui/design.gd").popup_exit(modal)
  modal = null
  modal_kind = ""
  active_context = "practice" if screen_name=="practice" else ("hud" if screen_name=="playing" else "menu")
@@ -438,7 +438,7 @@ func show_settings() -> void:
  stack.add_child(button("돌아가기",close_modal,true))
  if screen_name=="playing":
   stack.add_child(button("저장하고 메인으로",func() -> void: close_modal(); show_menu()))
- stack.add_child(text("자동 저장  ·  계정과 서버 연결 없음",16,Color("9db3ac")))
+ stack.add_child(text("기기 내 자동 저장 · 오프라인 진행 유지",16,Color("9db3ac")))
 
 func toggle_setting(key: String) -> void:
  settings[key] = not settings[key]
@@ -466,23 +466,24 @@ func show_credits() -> void:
 func show_painting_intro(index: int) -> void:
  if is_instance_valid(adventure):adventure.show_painting(index)
 
+var content_loading:=false
 func enter_practice(skill: String="transform") -> void:
- if is_instance_valid(practice) or screen_name!="playing" or not is_instance_valid(player):return
+ if is_instance_valid(practice) or content_loading or screen_name!="playing" or not is_instance_valid(player):return
+ content_loading=true;close_modal();set_paused(true)
+ var loading:=preload("res://scripts/ui/loading.gd").new();loading.title="도술 익히기 · 수련장을 준비합니다";layer.add_child(loading)
+ await get_tree().process_frame
+ await get_tree().process_frame
+ if not is_inside_tree():return
  practice=preload("res://scripts/practice/ui.gd").new();practice.game=self;add_child(practice);practice.select(skill)
+ content_loading=false;loading.queue_free()
 
 func show_rpg_menu() -> void:
  if is_instance_valid(adventure):adventure.show_menu()
 
 func adjust_safe_controls() -> void:
  if not is_instance_valid(joystick):return
- var safe:=DisplayServer.get_display_safe_area()
- var display:=DisplayServer.screen_get_size()
- var view:=get_viewport().get_visible_rect().size
- var left:=0.0;var bottom:=0.0
- if OS.get_name()=="Android" and display.x>0 and display.y>0:
-  left=float(safe.position.x)*view.x/display.x
-  bottom=maxf(0.0,float(display.y-safe.end.y))*view.y/display.y
- joystick.position=Vector2(74+left,view.y-222-bottom)
+ preload("res://scripts/ui/design.gd").position_stick(joystick)
+
 func restore_plaza_anchor() -> bool:
  if not is_instance_valid(player) or return_anchor.get("map","")!=Layout.MAP_ID:return false
  var p: Array=return_anchor.get("position",[])
@@ -648,6 +649,7 @@ func _process(delta: float) -> void:
  if save_elapsed>=8: save_progress(true)
 
 func go_back() -> void:
+ if content_loading:return
  if screen_name=="practice" and is_instance_valid(practice):
   if is_instance_valid(modal):close_modal()
   else:practice.leave()

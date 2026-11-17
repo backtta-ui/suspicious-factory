@@ -83,6 +83,7 @@ func _ready() -> void:
 	sprite = Sprite2D.new()
 	sprite.modulate = tint
 	if npc:
+		common_nameplate=preload("res://scripts/ui/nameplate.gd").new();common_nameplate.title=npc_name;common_nameplate.position=Vector2(0,-65);add_child(common_nameplate)
 		npc_visual=Node2D.new();add_child(npc_visual)
 		npc_visual.add_child(sprite)
 		npc_torso=Sprite2D.new();npc_visual.add_child(npc_torso)
@@ -166,6 +167,7 @@ func _physics_process(delta: float) -> void:
 	animation_time += delta*(11 if running and not jar else 7) if velocity.length()>2 else delta
 	if not npc or npc_render_visible:update_sprite()
 	if not npc or highlighted!=previous_highlighted:queue_redraw()
+	if common_nameplate!=null:common_nameplate.visible=highlighted and npc_render_visible;common_nameplate.queue_redraw()
 	previous_highlighted=highlighted
 func update_sprite() -> void:
 	if npc:
@@ -237,6 +239,7 @@ func update_npc_art() -> void:
 	npc_left_foot.position+=Vector2(phase*1.0,-maxf(0,phase)*.8)
 	npc_right_foot.position+=Vector2(-phase*1.0,-maxf(0,-phase)*.8)
 
+var common_nameplate: WooNPCNameplate
 var draw_ground:=true
 func _draw() -> void:
 	if not draw_ground:return

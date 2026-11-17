@@ -47,6 +47,7 @@ func show_menu() -> void:
  var grid:=GridContainer.new();grid.columns=3;stack.add_child(grid)
  for entry in [["가방",show_inventory],["캐릭터",show_character],["도술",show_spells],["임무 일지",show_journal],["지도",show_map],["의상",show_outfits]]:
   var b: Button=game.button(entry[0],entry[1]);b.custom_minimum_size=Vector2(220,70);grid.add_child(b)
+ if in_mission:stack.add_child(game.button("광장으로 돌아가기",return_to_plaza))
  stack.add_child(game.button("설정",func()->void:game.close_modal();game.show_settings()))
  stack.add_child(game.button("저장하고 메인으로",func()->void:game.close_modal();game.show_menu()))
  stack.add_child(game.button("돌아가기",game.close_modal,true))
@@ -112,17 +113,19 @@ func show_outfits() -> void:
 
 func build_controls() -> void:
  combat_buttons.clear()
- hp_bar=ProgressBar.new();hp_bar.position=Vector2(30,235);hp_bar.size=Vector2(242,12);hp_bar.show_percentage=false;hp_bar.add_theme_stylebox_override("fill",game.style(Color("be5467"),3));hp_bar.add_theme_stylebox_override("background",game.style(Color("241b2a"),3));hp_bar.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.ui.add_child(hp_bar)
+ hp_bar=preload("res://scripts/ui/vital_bar.gd").new();hp_bar.position=preload("res://scripts/ui/design.gd").VITALS_RECT.position;hp_bar.size=preload("res://scripts/ui/design.gd").VITALS_RECT.size;hp_bar.show_percentage=false;hp_bar.add_theme_stylebox_override("fill",game.style(Color("be5467"),3));hp_bar.add_theme_stylebox_override("background",game.style(Color("241b2a"),3));hp_bar.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.ui.add_child(hp_bar)
  combo_label=game.text("",25,game.GOLD);combo_label.position=Vector2(330,105);game.ui.add_child(combo_label)
  loot_icon=preload("res://scripts/woo/item_art.gd").new();loot_icon.position=Vector2(305,154);loot_icon.size=Vector2(48,48);loot_icon.hide();game.ui.add_child(loot_icon)
  loot_label=game.text("",17,game.GOLD);loot_label.position=Vector2(360,168);game.ui.add_child(loot_label)
  jump_button=game.button("점프",jump);jump_button.name="JumpButton";jump_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);jump_button.offset_left=-415;jump_button.offset_right=-303;jump_button.offset_top=-144;jump_button.offset_bottom=-44;game.ui.add_child(jump_button)
- stats_label=game.text("",15,game.GOLD);stats_label.position=Vector2(30,205);game.ui.add_child(stats_label)
+ stats_label=game.text("",15,game.GOLD);stats_label.position=preload("res://scripts/ui/design.gd").STATS_POSITION;game.ui.add_child(stats_label)
  for spec in [["AttackButton","공격",Vector2(-174,-160),Vector2(138,126),basic_attack],["DodgeButton","회피",Vector2(-292,-144),Vector2(100,100),dodge],["Skill1","",Vector2(-350,-270),Vector2(100,90),cast_slot.bind(0)],["Skill2","",Vector2(-238,-282),Vector2(100,90),cast_slot.bind(1)],["Skill3","",Vector2(-126,-270),Vector2(100,90),cast_slot.bind(2)]]:
   var b: Button=game.button(spec[1],spec[4],true);b.name=spec[0];b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=spec[2];b.size=spec[3];b.add_theme_font_size_override("font_size",17);game.ui.add_child(b);combat_buttons.append(b)
   for connection in b.pressed.get_connections():b.pressed.disconnect(connection.callable)
   b.pressed.connect(spec[4])
  for i in range(combat_buttons.size()):decorate_skill(combat_buttons[i],["attack","dodge","talisman","jar","locked"][i])
+ preload("res://scripts/ui/design.gd").place_action(combat_buttons[0],"attack")
+ preload("res://scripts/ui/design.gd").place_action(combat_buttons[2],"spell")
  decorate_skill(jump_button,"jump")
  decorate_skill(game.spell_button,"jar")
  update_controls()
@@ -133,17 +136,14 @@ func build_controls() -> void:
  for child in expand.get_children():child.hide()
  game.ui.add_child(expand)
 func decorate_skill(b: Button,skill: String) -> void:
- for child in b.get_children():
-  if child is WooOrnament:child.hide()
- for mode in ["normal","hover","pressed","hover_pressed","disabled"]:b.add_theme_stylebox_override(mode,StyleBoxEmpty.new())
- for mode in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:b.add_theme_color_override(mode,Color(0,0,0,0))
- var badge:=preload("res://scripts/woo/skill_badge.gd").new();badge.name="SkillBadge";badge.skill=skill;badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);b.add_child(badge)
+ preload("res://scripts/ui/design.gd").decorate(b,skill)
+
 func update_controls() -> void:
  for b in combat_buttons:b.visible=in_mission and active_world=="fox_forest"
  game.spell_button.visible=not in_mission or active_world!="fox_forest"
  if in_mission:
   game.run_button.visible=false
-  game.interact_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);game.interact_button.offset_left=-138;game.interact_button.offset_right=-38;game.interact_button.offset_top=-388;game.interact_button.offset_bottom=-292
+  preload("res://scripts/ui/design.gd").place_action(game.interact_button,"interact")
   game.hud_map.mission=true;game.hud_map.world_id=active_world;game.hud_map.queue_redraw()
  else:game.run_button.visible=true;game.hud_map.mission=false
 func update_stats() -> void:
@@ -178,7 +178,7 @@ func enter_painting() -> void:
  game.save_progress()
 func transition(reverse: bool) -> void:
  game.close_modal();game.set_paused(true)
- transition_layer=preload("res://scripts/woo/portal_transition.gd").new();transition_layer.reverse=reverse;transition_layer.reduced=game.settings.low_effects;transition_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);game.layer.add_child(transition_layer)
+ transition_layer=preload("res://scripts/woo/portal_transition.gd").new();transition_layer.painting=load(Worlds.find(active_world if reverse else selected_world).thumbnailAsset);transition_layer.world_title=Worlds.find(active_world if reverse else selected_world).title;transition_layer.reverse=reverse;transition_layer.reduced=game.settings.low_effects;transition_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);game.layer.add_child(transition_layer)
  await get_tree().create_timer(1.65).timeout
 func finish_transition() -> void:
  if is_instance_valid(transition_layer):transition_layer.finishing=true
@@ -434,7 +434,7 @@ func update_exploration_ui() -> void:
  game.quest_label.text="문양 탐험 · %d / 3"%count
  var site:=nearby_site();game.interact_button.visible=not site.is_empty() or game.player.position.distance_to(ExploreLayout.spawn(active_world))<110
  game.interact_button.text="문양 살펴보기" if not site.is_empty() else "광장 복귀"
- game.hint.text="이곳의 문양을 살펴보세요 · 입구의 귀환진에서 광장 복귀" if count<3 else "세 문양을 발견했습니다 · 보상 도술은 아직 확정되지 않았습니다"
+ game.hint.text="이곳의 문양을 살펴보세요 · 메뉴에서도 광장 복귀 가능" if count<3 else "세 문양을 발견했습니다 · 보상 도술은 아직 확정되지 않았습니다"
  game.spell_button.disabled=game.paused or game.player.cooldown>0
  var badge: WooSkillBadge=game.spell_button.get_node("SkillBadge");badge.maximum=game.player.SPELL_COOLDOWN;badge.remaining=game.player.cooldown
 func exploration_interact() -> void:

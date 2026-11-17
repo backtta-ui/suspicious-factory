@@ -17,12 +17,14 @@ func _process(delta: float) -> void:
 func _draw() -> void:
  var radius:=minf(size.x,size.y)/2-3
  var center:=size/2
- draw_circle(center,radius,Color("111a29"));draw_arc(center,radius,0,TAU,48,Color("bca273"),2,true)
+ var pressed: bool=get_parent() is BaseButton and get_parent().button_pressed
+ var unavailable: bool=locked or (get_parent() is BaseButton and get_parent().disabled)
+ draw_circle(center,radius,Color("344e69") if pressed else preload("res://scripts/ui/design.gd").INK);draw_arc(center,radius,0,TAU,48,Color("fff0c9") if pressed else preload("res://scripts/ui/design.gd").GOLD,3 if pressed else 2,true)
  var index: int=INDEX.get(skill,-1)
  if index>=0:
   var cell:=Vector2(SHEET.get_width()/4.0,SHEET.get_height()/4.0)
   var extent:=radius*1.7
-  draw_texture_rect_region(SHEET,Rect2(center-Vector2.ONE*extent/2,Vector2.ONE*extent),Rect2(Vector2(index%4,floori(index/4.0))*cell,cell),Color(.4,.4,.5,.8) if remaining>0 or locked else Color.WHITE)
+  draw_texture_rect_region(SHEET,Rect2(center-Vector2.ONE*extent/2,Vector2.ONE*extent),Rect2(Vector2(index%4,floori(index/4.0))*cell,cell),Color(.4,.4,.5,.8) if remaining>0 or unavailable else Color.WHITE)
  if remaining>0:
   draw_arc(center,radius-2,-PI/2,-PI/2+TAU*clampf(remaining/maxf(maximum,.01),0,1),48,Color("7fbded"),4,true)
   draw_string_outline(FONT,center+Vector2(-13,8),"%.1f"%remaining,HORIZONTAL_ALIGNMENT_LEFT,-1,20,3,Color("121528"))

@@ -296,10 +296,7 @@ func nearest_extractable() -> String:
  return chosen
 func skill_button(label: String,pos: Vector2,dimensions: Vector2,callback: Callable) -> Button:
  var b: Button=game.button(label,callback,true);b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=pos;b.size=dimensions;game.ui.add_child(b)
- for child in b.get_children():child.hide()
- for mode in ["normal","hover","pressed","hover_pressed","disabled"]:b.add_theme_stylebox_override(mode,StyleBoxEmpty.new())
- for mode in ["font_color","font_hover_color","font_pressed_color","font_disabled_color"]:b.add_theme_color_override(mode,Color(0,0,0,0))
- var badge:=preload("res://scripts/woo/skill_badge.gd").new();badge.name="Badge";badge.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);b.add_child(badge)
+ preload("res://scripts/ui/design.gd").decorate(b,"locked","Badge")
  return b
 func closest(captured_only: bool=false) -> String:
  if state.is_empty():return ""
@@ -351,7 +348,10 @@ func open_popup(title: String) -> VBoxContainer:
  var shade:=ColorRect.new();shade.color=Color(.015,.02,.04,.90);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);popup.add_child(shade)
  var center:=CenterContainer.new();center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);popup.add_child(center)
  var panel:=PanelContainer.new();panel.custom_minimum_size.x=720;panel.add_theme_stylebox_override("panel",game.style(Color("171d2c"),12));center.add_child(panel)
- var stack:=VBoxContainer.new();panel.add_child(stack);stack.add_child(game.text(title,28,game.GOLD))
+ preload("res://scripts/ui/design.gd").popup_enter(popup)
+ var scroll:=ScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;panel.add_child(scroll)
+ var stack:=VBoxContainer.new();stack.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(stack);stack.add_child(game.text(title,28,game.GOLD))
+ var gesture:=preload("res://scripts/ui/popup_scroll.gd").new();gesture.scroll=scroll;popup.add_child(gesture);game.fit_popup.call_deferred(scroll,stack)
  popup_notice=game.text("",15,Color("e1bd86"));stack.add_child(popup_notice)
  return stack
 func close_popup() -> void:

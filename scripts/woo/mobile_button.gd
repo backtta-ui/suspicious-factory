@@ -14,7 +14,7 @@ func _ready() -> void:
 	focus_mode = Control.FOCUS_ALL
 	custom_minimum_size = Vector2(112,64) if custom_minimum_size==Vector2.ZERO else custom_minimum_size.max(Vector2(64,56))
 func usable() -> bool:
-	return is_visible_in_tree() and not disabled and (not allowed.is_valid() or allowed.call())
+	return is_visible_in_tree() and can_process() and not disabled and (not allowed.is_valid() or allowed.call())
 func cancel() -> void:
 	owner_finger = -1
 	owns_mouse = false

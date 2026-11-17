@@ -4,7 +4,7 @@ PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 GODOT_BIN="${GODOT_BIN:-godot}"
 mkdir -p "$PROJECT_DIR/builds"
 # Each suite has separate preferences; process-restart suite deliberately shares one.
-for suite in spell_integrity painting_worlds woo_core touch_ui save_recovery sound_performance plaza_v11 npc_title_v12 rpg_v13 v13_ai v13_touch action_v14 touch_v14 explore_v14 hero_v20 seal_rules wardrobe server_rewards seal_latest seal_tickets appearance_combinations practice practice_touch practice_return; do
+for suite in integrated_qa spell_integrity painting_worlds woo_core touch_ui save_recovery sound_performance plaza_v11 npc_title_v12 rpg_v13 v13_ai v13_touch action_v14 touch_v14 explore_v14 hero_v20 seal_rules wardrobe server_rewards seal_latest seal_tickets appearance_combinations practice practice_touch practice_return; do
   XDG_DATA_HOME="${TMPDIR:-/tmp}/jeon-woochi-test-$suite" \
     python3 "$PROJECT_DIR/tools/run_godot_checked.py" "$PROJECT_DIR/builds/$suite-results.txt" \
     "$GODOT_BIN" --headless --path "$PROJECT_DIR" --script "res://tests/$suite.gd"
@@ -42,3 +42,5 @@ done
 cat "$PROJECT_DIR/builds/world-moon_palace-write-results.txt" "$PROJECT_DIR/builds/world-moon_palace-read-results.txt" "$PROJECT_DIR/builds/world-red_sea-write-results.txt" "$PROJECT_DIR/builds/world-red_sea-read-results.txt" >> "$PROJECT_DIR/builds/test-results.txt"
 
 cat "$PROJECT_DIR/builds/spell_integrity-results.txt" >> "$PROJECT_DIR/builds/test-results.txt"
+
+cat "$PROJECT_DIR/builds/integrated_qa-results.txt" >> "$PROJECT_DIR/builds/test-results.txt"

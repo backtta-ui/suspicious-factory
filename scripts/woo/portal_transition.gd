@@ -1,5 +1,6 @@
 extends Control
-const FOX=preload("res://assets/woo/v13/fox_painting.png")
+var painting: Texture2D=preload("res://assets/woo/v13/fox_painting.png")
+var world_title:="여우의 숲"
 var clock:=0.0
 var reverse:=false
 var reduced:=false
@@ -15,7 +16,7 @@ func _draw() -> void:
  draw_rect(Rect2(Vector2.ZERO,size),Color(.02,.018,.04,clampf(p*1.5,0,1)*finish_alpha))
  var zoom:=smoothstep(0,1,1-p if reverse else p)
  var rect:=Rect2(size/2-(Vector2(730,290).lerp(size,zoom))/2,Vector2(730,290).lerp(size,zoom))
- draw_texture_rect(FOX,rect,false,Color(1,1,1,finish_alpha*(1-p*.75)))
+ draw_texture_rect(painting,rect,false,Color(1,1,1,finish_alpha*(1-p*.75)))
  draw_rect(rect,Color(1,.84,.45,(1-p)*finish_alpha),false,3+sin(clock*8)*1.5)
  var center:=size/2
  for i in range(6 if reduced else 12):
@@ -34,3 +35,5 @@ func _draw() -> void:
    points.append(center+Vector2(cos(angle),sin(angle)*.65)*radius)
   draw_polyline(points,Color(.025,.02,.045,p*finish_alpha),4+p*70,true)
  if p>.8:draw_rect(Rect2(Vector2.ZERO,size),Color(.025,.02,.045,(p-.8)*5*finish_alpha))
+
+ draw_string(preload("res://scripts/ui/design.gd").FONT,size/2+Vector2(-260,100),("광장으로 돌아갑니다" if reverse else world_title+" · 그림을 펼칩니다"),HORIZONTAL_ALIGNMENT_CENTER,520,22,Color(1,.9,.7,finish_alpha))

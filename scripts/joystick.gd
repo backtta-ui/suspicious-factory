@@ -10,6 +10,8 @@ const RADIUS := 73.0
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	resized.connect(queue_redraw)
+	get_viewport().size_changed.connect(arrange)
+	arrange.call_deferred()
 
 func _input(event: InputEvent) -> void:
 	if not input_enabled or not is_visible_in_tree(): return
@@ -67,3 +69,6 @@ func _draw() -> void:
 	draw_circle(knob,29,Color("82758a"))
 	draw_arc(knob,29,0,TAU,48,Color("b8a8b5"),2,true)
 	draw_circle(knob+Vector2(-3,-4),23,Color("92859a"))
+
+func arrange() -> void:
+	preload("res://scripts/ui/design.gd").position_stick(self)

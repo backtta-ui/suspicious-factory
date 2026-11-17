@@ -35,20 +35,12 @@ func _ready() -> void:
  var footer:=HBoxContainer.new();footer.alignment=BoxContainer.ALIGNMENT_CENTER;stack.add_child(footer)
  var use: Button=game.button("선택하여 수련",func()->void:practice.select(selected),true);use.custom_minimum_size=Vector2(330,66);footer.add_child(use)
  var close: Button=game.button("수련으로",game.close_modal);close.custom_minimum_size=Vector2(230,66);footer.add_child(close)
+ var gesture:=preload("res://scripts/ui/popup_scroll.gd").new();gesture.scroll=scroll;gesture.tap=pick_at;add_child(gesture)
  choose(selected)
 func choose(id: String) -> void:
  selected=id
  for key in cards:cards[key].add_theme_stylebox_override("panel",practice.game.style(Color("293c57") if key==id else Color("182538"),6))
  var info: Dictionary=C.all()[id];selected_icon.skill=info.icon;detail.text=info.name+"\n\n"+info.description+"\n\n재사용 %.1f초 · 유지 %.1f초\n\n서버 없는 체험입니다. 실제 습득·장착·재화 기록은 바뀌지 않습니다."%[info.cd,info.duration]
-func _input(event: InputEvent) -> void:
- if event is InputEventScreenTouch:
-  if event.pressed and finger<0 and scroll.get_global_rect().has_point(event.position):finger=event.index;origin=event.position;initial_scroll=scroll.scroll_vertical;dragged=false
-  elif not event.pressed and event.index==finger:
-   var clicked: bool=not dragged and event.position.distance_to(origin)<14;finger=-1
-   if clicked:
-    for id in cards:
-     if cards[id].get_global_rect().has_point(event.position) and scroll.get_global_rect().has_point(event.position):choose(id);break
-   get_viewport().set_input_as_handled()
- elif event is InputEventScreenDrag and event.index==finger:
-  if event.position.distance_to(origin)>12:dragged=true
-  if dragged:scroll.scroll_vertical=initial_scroll+roundi(origin.y-event.position.y);get_viewport().set_input_as_handled()
+func pick_at(point: Vector2) -> void:
+ for id in cards:
+  if cards[id].get_global_rect().has_point(point):choose(id);break
