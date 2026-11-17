@@ -21,7 +21,7 @@
     },
     {
       "path": "scripts/main.gd",
-      "sha256": "18f19a58e1ccb3f96f9214bc074ebe0ad068465eb374a03902d5160f501653c9",
+      "sha256": "db8f6988edcd54fe443a8829d024b257707a4a842a824758b42d7e7dc67eef34",
       "class": [],
       "methods": [
         "_ready",
@@ -40,6 +40,7 @@
         "set_paused",
         "open_modal",
         "fit_popup",
+        "retire_popup",
         "close_modal",
         "show_settings",
         "toggle_setting",
@@ -183,7 +184,7 @@
     },
     {
       "path": "scripts/practice/ui.gd",
-      "sha256": "036c39cbdec058bb49590c7e43345b1c60161130ac0e7a1a4386b7bf0ff44de2",
+      "sha256": "e2a343d236646255b3ebdd3b76fd7f30aed6420c642d45e5971eb80f33a069cb",
       "class": [
         "WooPracticeUI"
       ],
@@ -203,6 +204,7 @@
         "reset",
         "_physics_process",
         "sync",
+        "exit_to_plaza",
         "leave"
       ],
       "execution_claim": false
@@ -256,7 +258,7 @@
     },
     {
       "path": "scripts/seal/client_ui.gd",
-      "sha256": "8e5e9615e3e82178187dd8121cd215c7d2515d1ff8eda1b4f7cb644fec953ea6",
+      "sha256": "901e4287801f1eaeb84754df7131a57ec729c2a45eeade684754d967e75d433f",
       "class": [
         "SealClientUI"
       ],
@@ -552,7 +554,7 @@
     },
     {
       "path": "scripts/ui/design.gd",
-      "sha256": "fa15ed41b9b04bdebd19da7c24b974e3edf1e3182cac03f4453f916ccb27128a",
+      "sha256": "318e657897297d1a94abbdb04fc52e5fdf96cca9c99a19d003bd204597341e29",
       "class": [
         "WooUIDesign"
       ],
@@ -564,7 +566,9 @@
         "popup_exit",
         "position_stick",
         "retire_inputs",
-        "wrap_text"
+        "wrap_text",
+        "interaction",
+        "cancel_controls"
       ],
       "execution_claim": false
     },
@@ -583,7 +587,7 @@
     },
     {
       "path": "scripts/ui/nameplate.gd",
-      "sha256": "05a094a2ba1393490b8eac45f6724df17c7e36182c1925c9df327b89568f0558",
+      "sha256": "1315e5de225358456b5a5b0ef1757c03415911d41427f9ddf87d5d515b18f792",
       "class": [
         "WooNPCNameplate"
       ],
@@ -607,7 +611,7 @@
     },
     {
       "path": "scripts/ui/vital_bar.gd",
-      "sha256": "acd63148202ed42205c64f2570f4789ed8f7f1bfd251db544a948805c6505a2a",
+      "sha256": "2c723566dbc4b62703dda5c594ae4b97449cb6c95698c51f58f0bf4701216d99",
       "class": [
         "WooVitalBar"
       ],
@@ -717,7 +721,7 @@
     },
     {
       "path": "scripts/wardrobe/screen.gd",
-      "sha256": "d33b5901d0d70f8631c50673642a7d27aadc8f4b2e3160b582f4a1829a7e31fe",
+      "sha256": "4b22182602b6472bdf03121ed43576ed5c7e7879fafd6455f90be76df692e80e",
       "class": [
         "WooWardrobeScreen"
       ],
@@ -806,7 +810,7 @@
     },
     {
       "path": "scripts/woo/adventure.gd",
-      "sha256": "fed1d26231a667656dd88b6af6f4817664afce8c22dfa7ff2dbe35a341b6945c",
+      "sha256": "840d617e0fb80f185d39f515312e90cbca7d8720d4cb4badfe4a34441c65b8da",
       "class": [
         "WooAdventure"
       ],
@@ -1078,13 +1082,14 @@
     },
     {
       "path": "scripts/woo/mobile_button.gd",
-      "sha256": "7c8a977148b189b04c6e51e723c204bd6500e98f1e2b058d4f8db676f5ffbfe8",
+      "sha256": "90635a6b6f4a287230c874d80263c7512fd7ba445afb2e8713fac8329deeca74",
       "class": [
         "WooMobileButton"
       ],
       "methods": [
         "_ready",
         "usable",
+        "pointer_inside",
         "cancel",
         "down",
         "up",
@@ -1636,5 +1641,33 @@
       "village",
       "forest"
     ]
-  }
+  },
+  "deployment_files": [
+    {
+      "path": "render.yaml",
+      "sha256": "a55d47af74d30eb2206f5e27c35e00f57138f3f40256b311d0c1e11aa8624018",
+      "execution_claim": false
+    },
+    {
+      "path": "server/Dockerfile",
+      "sha256": "58573d2e3a9ea14646b63257aa50330f9bb527321abcfd27ee06909d799a0b9b",
+      "execution_claim": false
+    }
+  ],
+  "screen_groups": [
+    "title",
+    "settings/credits",
+    "wardrobe: character/hair/outfit/hat/accessory/color",
+    "plaza/dialogue/well",
+    "painting-gallery",
+    "fox-forest/combat/loot/retry/reward",
+    "moon-palace/glyphs",
+    "red-sea/glyphs",
+    "practice/skills/settings",
+    "inventory/item-detail/appreciation",
+    "character/spells/equipment/journal/map",
+    "online-login/loadout/study",
+    "online-lobby/game/mission/forms/meeting/vote/result/reconnect-error"
+  ],
+  "coverage_note": "Static feature/method inventory is not runtime or all-state visual approval. See ledger and limitations."
 }

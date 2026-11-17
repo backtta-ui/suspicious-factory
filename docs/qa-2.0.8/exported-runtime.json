@@ -1,0 +1,69 @@
+{
+  "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.8.apk",
+  "android_device_test": false,
+  "method": "Actual APK assets and compiled game scripts executed by Linux Godot; only test driver copied from source",
+  "results": [
+    {
+      "suite": "integrated_qa",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-integrated_qa.txt"
+    },
+    {
+      "suite": "extra_regression",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-extra_regression.txt"
+    },
+    {
+      "suite": "painting_worlds",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-painting_worlds.txt"
+    },
+    {
+      "suite": "appearance_combinations",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-appearance_combinations.txt"
+    },
+    {
+      "suite": "practice_return",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-practice_return.txt"
+    },
+    {
+      "suite": "practice",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-practice.txt"
+    },
+    {
+      "suite": "practice_touch",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-practice_touch.txt"
+    },
+    {
+      "suite": "spell_integrity",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-spell_integrity.txt"
+    },
+    {
+      "suite": "worlds_restart-write-moon_palace",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-worlds_restart-write-moon_palace.txt"
+    },
+    {
+      "suite": "worlds_restart-read-moon_palace",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-worlds_restart-read-moon_palace.txt"
+    },
+    {
+      "suite": "worlds_restart-write-red_sea",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-worlds_restart-write-red_sea.txt"
+    },
+    {
+      "suite": "worlds_restart-read-red_sea",
+      "exit_code": 0,
+      "log": "/workspace/suspicious-factory/builds/qa208-exported-worlds_restart-read-red_sea.txt"
+    }
+  ],
+  "apk_sha256": "7cf0db81eab27537916fb073b00f50abaaad1a2f9ae95bd492103553f05116b6",
+  "source_commit": "1d5dc4bb68e921c6578f45473e38ffc5d3dcbeb6"
+}
