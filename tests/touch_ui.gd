@@ -7,6 +7,7 @@ func _initialize() -> void:
 	run.call_deferred()
 func frames(n: int = 4) -> void:
 	for i in range(n): await physics_frame
+	await preload("res://tests/loading_wait.gd").settle(self,0)
 func check(ok: bool, detail: String) -> void:
 	checks += 1
 	if ok: print("PASS: "+detail)

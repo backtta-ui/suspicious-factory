@@ -11,7 +11,7 @@ func check(ok: bool,label: String) -> void:
 func advance(s: WooPracticeSession,seconds: float) -> void:
  for i in range(ceili(seconds/.05)):s.tick(.05,Vector2.ZERO)
 func frames(n: int=4) -> void:
- for i in range(n):await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,n)
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
  var look:=Appearance.DEFAULT.duplicate();look.character="yeonhwa";look.hair="silver";look.hat="hood";look.color="purple"

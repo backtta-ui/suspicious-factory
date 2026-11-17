@@ -6,7 +6,7 @@ func check(ok: bool,label: String) -> void:
  if ok:print("PASS: "+label)
  else:failures+=1;push_error(label)
 func frames(n: int=4) -> void:
- for i in range(n):await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,n)
 func touch(p: Vector2,on: bool,id: int) -> void:
  var e:=InputEventScreenTouch.new();e.index=id;e.position=root.get_final_transform()*p;e.pressed=on;Input.parse_input_event(e);Input.flush_buffered_events()
 func tap(button: Button) -> void:

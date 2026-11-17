@@ -148,14 +148,42 @@ func resume_session() -> void:
  if game.return_anchor.is_empty():game.rpg.data.session={};return
  if not load_world(str(game.rpg.data.session.get("map","fox_forest")),true):game.rpg.data.session={};game.restore_plaza_anchor()
 func enter_painting() -> void:
- if transitioning or in_mission:return
- transitioning=true
+ if transitioning or in_mission or game.content_loading:return
+ if not Worlds.known(selected_world):
+  if game.loading.begin("gallery"):game.loading.failure("존재하지 않는 그림입니다.")
+  return
+ if not game.loading.begin(selected_world,enter_painting,abort_world_load):return
+ transitioning=true;game.loading.overlay.portal_intro=true
+ var paths: Array=game.loading.world_assets(selected_world)
+ if not await game.loading.prepare([paths[0]]):transitioning=false;return
  await transition(false)
  if not is_inside_tree():return
+ game.loading.overlay.portal_intro=false
+ if not await game.loading.prepare(paths):
+  if is_instance_valid(transition_layer):transition_layer.queue_free()
+  transitioning=false;return
+ if not is_instance_valid(game.player) or not is_instance_valid(game.camera):game.loading.failure("캐릭터 또는 카메라를 찾지 못했습니다.");return
  if not load_world(selected_world,false):
-  game.rpg.data.session={};game.restore_plaza_anchor();game.hint.text="그림을 열지 못했습니다. 광장으로 돌아왔습니다."
+  game.loading.failure("그림을 열지 못했습니다.");transitioning=false;return
+ if not await game.loading.wait_ready(forest):return
+ if not is_instance_valid(game.player) or not is_instance_valid(game.camera) or not game.camera.is_current():game.loading.failure("그림의 카메라 준비에 실패했습니다.");return
+ game.loading.complete()
  await finish_transition()
  game.save_progress()
+func abort_world_load() -> void:
+ if not is_instance_valid(game.player) or not is_instance_valid(game.world):
+  transitioning=false;game.show_menu(false);return
+ if not is_instance_valid(game.camera):
+  game.camera=Camera2D.new();game.player.add_child(game.camera);game.camera.zoom=Vector2(2,2);game.camera.make_current()
+ if is_instance_valid(transition_layer):transition_layer.queue_free()
+ if is_instance_valid(game.player) and game.player.get_parent()!=game.world:game.player.reparent(game.world)
+ if is_instance_valid(forest):forest.queue_free()
+ forest=null;combat=null;in_mission=false;transitioning=false;game.rpg.data.session={}
+ game.world.process_mode=Node.PROCESS_MODE_INHERIT;game.world.show();game.world.set_process(true)
+ game.restore_plaza_anchor();game.camera.limit_right=int(game.Layout.SIZE.x);game.camera.limit_bottom=int(game.Layout.SIZE.y);game.camera.offset=Vector2.ZERO
+ game.player.collision_mask=1;game.player.reset_action();actions.cancel();game.sound.map_id=game.Layout.MAP_ID
+ game.build_hud();game.set_paused(true)
+
 func transition(reverse: bool) -> void:
  game.close_modal();game.set_paused(true)
  transition_layer=preload("res://scripts/woo/portal_transition.gd").new();transition_layer.painting=load(Worlds.find(active_world if reverse else selected_world).thumbnailAsset);transition_layer.world_title=Worlds.find(active_world if reverse else selected_world).title;transition_layer.reverse=reverse;transition_layer.reduced=game.settings.low_effects;transition_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);game.layer.add_child(transition_layer)
@@ -164,13 +192,13 @@ func finish_transition() -> void:
  if is_instance_valid(transition_layer):transition_layer.finishing=true
  await get_tree().create_timer(.7).timeout
  if is_instance_valid(transition_layer):transition_layer.queue_free()
- transitioning=false;game.set_paused(false)
+ transitioning=false;game.finish_loading_play();game.loading.input_ready()
  if in_mission and mission_done:show_completion.call_deferred()
 func load_forest(resume: bool) -> bool:
  active_world="fox_forest"
  if not is_instance_valid(game.player) or game.return_anchor.is_empty():return false
  if not resume:game.rpg.data.session={"map":"fox_forest","position":[ForestLayout.SPAWN.x,ForestLayout.SPAWN.y],"facing":0,"defeated":[],"completed":false}
- forest=preload("res://scripts/worlds/forest.gd").new();game.add_child(forest)
+ forest=preload("res://scripts/worlds/forest.gd").new();forest.staged_loading=game.content_loading;game.add_child(forest)
  in_mission=true;mission_done=game.rpg.data.session.completed;completion_opened=false
  game.player.reset_action()
  if not game.player.landed.is_connected(actions.landing):game.player.landed.connect(actions.landing)
@@ -195,8 +223,12 @@ func load_forest(resume: bool) -> bool:
  return true
 func return_to_plaza() -> void:
  if transitioning or not in_mission:return
- transitioning=true
+ if not game.loading.begin("return",return_to_plaza,abort_world_load):return
+ transitioning=true;game.loading.overlay.portal_intro=true
+ if not is_instance_valid(game.player) or not is_instance_valid(game.camera):game.loading.failure("광장 복귀를 준비하지 못했습니다.");return
  await transition(true)
+ game.loading.overlay.portal_intro=false
+ if not await game.loading.prepare([]):transitioning=false;return
  game.player.reparent(game.world);game.player.collision_mask=1
  game.world.process_mode=Node.PROCESS_MODE_INHERIT;game.world.show();game.world.set_process(true);game.world.set_completed_stories(game.completed_paintings)
  game.player.reset_action();actions.cancel()
@@ -207,6 +239,8 @@ func return_to_plaza() -> void:
  game.restore_plaza_anchor();game.player.facing=int(game.return_anchor.get("facing",2));game.player.intent=Vector2.ZERO;game.player.running=false
  game.sound.map_id=game.Layout.MAP_ID;game.sound.tracking=false
  game.build_hud()
+ if not is_instance_valid(game.camera) or not game.camera.is_current():game.loading.failure("광장 카메라 준비에 실패했습니다.");return
+ game.loading.complete()
  await finish_transition()
  game.save_progress()
 func show_effects() -> void:
@@ -310,9 +344,17 @@ func hurt_player(amount: int,direction: Vector2=Vector2.ZERO) -> void:
   game.set_paused(true)
   var stack: VBoxContainer=game.open_modal("defeat")
   if stack:
-   stack.add_child(game.button("임무 재시작",retry_mission,true))
+   stack.add_child(game.button("임무 재시작",request_retry,true))
    stack.add_child(game.text("도술의 기운이 다했습니다",27,game.GOLD));stack.add_child(game.text("광장에서 회복합니다. 미완료 임무는 다시 시작합니다.",19));stack.add_child(game.button("광장으로",func()->void:game.rpg.data.hp=game.rpg.max_hp();game.rpg.data.mp=game.rpg.max_mp();return_to_plaza(),true))
   game.save_progress()
+func request_retry() -> void:
+ if transitioning or game.content_loading or not in_mission or active_world!="fox_forest":return
+ game.close_modal();game.set_paused(true)
+ if not game.loading.begin("fox_forest",request_retry,abort_world_load):return
+ if not await game.loading.prepare(game.loading.world_assets("fox_forest")):return
+ retry_mission()
+ if not await game.loading.wait_ready(forest):return
+ game.loading.complete();game.finish_loading_play();game.loading.input_ready();game.save_progress()
 func retry_mission() -> void:
  if transitioning:return
  game.close_modal();game.set_paused(true)
@@ -321,7 +363,7 @@ func retry_mission() -> void:
  game.rpg.data.hp=game.rpg.max_hp();game.rpg.data.mp=game.rpg.max_mp()
  in_mission=false
  old.queue_free()
- load_forest(false);game.set_paused(false);game.save_progress()
+ load_forest(false);game.set_paused(game.content_loading);game.save_progress()
 func nearby_loot() -> Dictionary:
  if not in_mission:return {}
  for loot in ForestLayout.LOOT:
@@ -392,7 +434,7 @@ func load_world(id: String,resume: bool=false) -> bool:
  if not Worlds.known(id):return false
  if id=="fox_forest":return load_forest(resume)
  if not is_instance_valid(game.player) or game.return_anchor.is_empty():return false
- var scene:=preload("res://scripts/worlds/map.gd").new();scene.map_id=id;scene.low_effects=game.settings.low_effects;game.add_child(scene)
+ var scene:=preload("res://scripts/worlds/map.gd").new();scene.map_id=id;scene.low_effects=game.settings.low_effects;scene.staged_loading=game.content_loading;game.add_child(scene)
  if not resume:game.rpg.data.session={"map":id,"position":[ExploreLayout.spawn(id).x,ExploreLayout.spawn(id).y],"facing":6,"defeated":[],"completed":false}
  active_world=id;forest=scene;in_mission=true;mission_done=false;completion_opened=false
  actions.cancel();game.player.reset_action();game.player.combat_frozen=false;game.player.reparent(scene);game.player.collision_mask=1

@@ -65,7 +65,7 @@ func build_ui() -> void:
  vitality=preload("res://scripts/ui/vital_bar.gd").new();vitality.position=preload("res://scripts/ui/design.gd").VITALS_RECT.position;vitality.size=preload("res://scripts/ui/design.gd").VITALS_RECT.size;game.ui.add_child(vitality)
  stats_label=game.text("",15,game.GOLD);stats_label.position=preload("res://scripts/ui/design.gd").STATS_POSITION;game.ui.add_child(stats_label)
  notice=game.text("",16);notice.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM);notice.offset_left=-350;notice.offset_right=300;notice.offset_top=-62;notice.offset_bottom=-16;notice.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;notice.mouse_filter=Control.MOUSE_FILTER_IGNORE;game.ui.add_child(notice)
- control("광장 복귀" if not game.adventure.in_mission else "모험 복귀",Vector2(1096,14),Vector2(158,54),leave)
+ control("광장 복귀" if not game.adventure.in_mission else "모험 복귀",Vector2(1096,14),Vector2(158,54),request_leave)
  control("수련 설정",Vector2(926,14),Vector2(156,54),show_training_settings)
  control("도술 목록",Vector2(756,14),Vector2(156,54),show_spells)
  stick=preload("res://scripts/joystick.gd").new();stick.size=Vector2(174,174);stick.position=Vector2(74,498);game.ui.add_child(stick)
@@ -115,7 +115,7 @@ func reset() -> void:
  for clone in clones.values():clone.queue_free()
  clones.clear();camera.reset_smoothing()
 func _physics_process(delta: float) -> void:
- var active: bool=not leaving and not backgrounded and not is_instance_valid(game.modal)
+ var active: bool=not leaving and not backgrounded and not game.content_loading and not is_instance_valid(game.modal)
  stick.input_enabled=active
  if not active:stick.reset();return
  var input:=stick.vector
@@ -158,8 +158,17 @@ func sync(delta: float) -> void:
  var channel: Dictionary=rules.channels.get("student",{})
  interact_button.text="진행 %.1f초"%maxf(0,channel.until-rules.elapsed) if not channel.is_empty() else ("형상 추출" if session.selected=="transform" else "상호작용")
 func exit_to_plaza() -> void:
+ request_leave(true)
+
+func request_leave(to_plaza: bool=false) -> void:
+ if leaving or game.content_loading:return
+ if not game.loading.begin("return",request_leave.bind(to_plaza)):return
+ if not await game.loading.prepare([]):return
+ var nested: bool=game.adventure.in_mission
  leave()
- if game.adventure.in_mission:game.adventure.return_to_plaza()
+ game.loading.complete()
+ if to_plaza and nested:game.adventure.return_to_plaza()
+ else:game.finish_loading_play();game.loading.input_ready()
 
 func leave() -> void:
  if leaving:return

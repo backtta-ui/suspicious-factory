@@ -8,6 +8,7 @@ const Actor=preload("res://scripts/woo/actor.gd")
 const Village=preload("res://scripts/woo/village.gd")
 var game: Node
 var connection: SealConnection
+var connection_overlay: WooLoadingOverlay
 var profile: Dictionary
 var state: Dictionary={}
 var screen:="login"
@@ -56,6 +57,7 @@ func _ready() -> void:
  game.sound.context="village";game.sound.map_id="gyewol_village"
  build_login()
 func _exit_tree() -> void:
+ if is_instance_valid(connection_overlay):connection_overlay.queue_free()
  if is_instance_valid(connection):connection.stop()
 func panel(title: String) -> VBoxContainer:
  game.active_context="seal";game.new_ui()
@@ -70,6 +72,9 @@ func edit(placeholder: String,value: String) -> LineEdit:
  var line:=LineEdit.new();line.placeholder_text=placeholder;line.text=value;line.custom_minimum_size=Vector2(300,56);line.add_theme_font_size_override("font_size",20);return line
 func update_status(value: String) -> void:
  message=value
+ if is_instance_valid(connection_overlay) and value.contains("무료 서버를 깨우는 중"):connection_overlay.title=preload("res://scripts/ui/loading_manager.gd").MESSAGES.network+"\n"+value
+ if is_instance_valid(connection_overlay) and (connection.authenticated or not value.contains("무료 서버를 깨우는 중")):
+  connection_overlay.queue_free();connection_overlay=null
  if is_instance_valid(status_label):status_label.text=message
  if is_instance_valid(popup_notice):popup_notice.text=message
 func build_login() -> void:
@@ -94,6 +99,13 @@ func connect_server() -> void:
  if address.begins_with("https://"):address="wss://"+address.trim_prefix("https://")
  elif address.begins_with("http://"):address="ws://"+address.trim_prefix("http://")
  profile.nickname=Catalog.clean_name(name_input.text);profile.endpoint=address;Identity.save_profile(profile)
+ if is_instance_valid(connection_overlay):connection_overlay.queue_free()
+ connection_overlay=preload("res://scripts/ui/loading.gd").new();connection_overlay.title=preload("res://scripts/ui/loading_manager.gd").MESSAGES.network;connection_overlay.reduced=game.settings.low_effects;game.layer.add_child(connection_overlay)
+ var offered:=connection_overlay
+ var cancel: Button=game.button("연결 취소",func()->void:
+  if not is_instance_valid(connection_overlay) or connection_overlay!=offered:return
+  connection.stop();connection_overlay.queue_free();connection_overlay=null;update_status("연결을 취소했습니다")
+ );cancel.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM);cancel.position=Vector2(-110,-105);cancel.size=Vector2(220,60);connection_overlay.add_child(cancel)
  if connection.connect_to(address)!=OK:update_status("주소 형식 또는 네트워크를 확인하세요")
 func join_room(op: String) -> void:
  if not connection.authenticated:update_status("먼저 서버 연결을 완료하세요");return

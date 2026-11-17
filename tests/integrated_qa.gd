@@ -7,7 +7,7 @@ func check(ok: bool,id: String,detail: String,fixed: bool=false) -> void:
  if ok:print("PASS: "+id+" "+detail)
  else:failures+=1;push_error(id+" "+detail)
 func frames(n: int=5) -> void:
- for i in range(n):await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,n)
 func find(text: String,node: Node) -> Button:
  if node is Button and node.text==text:return node
  for child in node.get_children():

@@ -4,8 +4,7 @@ const StoryLayout=preload("res://scripts/worlds/plaza_layout.gd")
 func _init() -> void:
  graph.clear()
  for i in range(Data.POINTS.size()):graph.add_point(i,Data.POINTS[i])
- for edge in Data.EDGES:
-  if segment_clear(Data.POINTS[edge[0]],Data.POINTS[edge[1]]):graph.connect_points(edge[0],edge[1])
+ for edge in preload("res://scripts/worlds/plaza_nav_edges.gd").EDGES:graph.connect_points(edge[0],edge[1])
 func segment_clear(a: Vector2,b: Vector2) -> bool:
  var count:=ceili(a.distance_to(b)/10)
  for i in range(count+1):

@@ -2,6 +2,9 @@ class_name WooExplorationMap
 extends Node2D
 const Layout=preload("res://scripts/worlds/layout.gd")
 const ART=preload("res://assets/woo/worlds/props.png")
+var staged_loading:=false
+var build_budget:=preload("res://scripts/ui/build_budget.gd").new()
+var build_ready:=false
 var map_id:="moon_palace"
 var clock:=0.0
 var fx: Node2D
@@ -9,6 +12,7 @@ var progress:=0
 var low_effects:=false
 var use_baked_ground:=true
 func _ready() -> void:
+ build_budget.enabled=staged_loading;build_budget.slice_started=Time.get_ticks_usec()
  y_sort_enabled=true;texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
  var ground_path: String="res://assets/woo/worlds/"+map_id+"_ground.png"
  if use_baked_ground and ResourceLoader.exists(ground_path):
@@ -20,14 +24,19 @@ func _ready() -> void:
  for i in range(points.size()):
   var shape:=SegmentShape2D.new();shape.a=points[i];shape.b=points[(i+1)%points.size()];var collider:=CollisionShape2D.new();collider.shape=shape;boundary.add_child(collider)
  add_child(boundary)
+ var count:=0
  for object in Layout.objects(map_id):
   var body:=StaticBody2D.new();body.collision_layer=1;body.collision_mask=2|4;body.position=object.p;add_child(body)
   var collision:=CollisionShape2D.new();var shape:=RectangleShape2D.new();shape.size=Layout.footprint(object).size;collision.shape=shape;body.add_child(collision)
   var sprite:=Sprite2D.new();sprite.texture=ART;sprite.region_enabled=true;var cell:=Vector2(ART.get_width()/4.0,ART.get_height()/2.0);sprite.region_rect=Rect2(Vector2(object.index%4,floori(float(object.index)/4))*cell,cell);sprite.scale=Vector2.ONE*float(object.width)/cell.x;sprite.offset=Vector2(0,-cell.y*.36);body.add_child(sprite)
+  count+=1
+  await build_budget.checkpoint(get_tree())
  for p in ([Vector2(540,780),Vector2(1260,780),Vector2(700,480),Vector2(1100,480),Vector2(200,1000),Vector2(1600,1000)] if map_id=="moon_palace" else [Vector2(350,900),Vector2(600,650),Vector2(930,850),Vector2(980,460)]):
   var prop:=preload("res://scripts/woo/village_prop.gd").new();prop.kind="stone_lantern";prop.position=p;add_child(prop)
  fx=Node2D.new();fx.z_index=-90;fx.draw.connect(draw_motion.bind(fx));add_child(fx)
+ build_ready=true
 func _process(delta: float) -> void:
+ if not build_ready:return
  clock+=delta
  if int(clock*(10 if low_effects else 20))!=int((clock-delta)*(10 if low_effects else 20)):fx.queue_redraw()
 func draw_floor(c: Node2D) -> void:

@@ -11,7 +11,7 @@ func check(ok: bool,label: String) -> void:
  if ok:print("PASS: "+label)
  else:failures+=1;push_error("FAIL: "+label)
 func frames(n: int=3) -> void:
- for i in range(n):await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,n)
 func touch(p: Vector2,pressed: bool,index: int=0) -> void:
  var e:=InputEventScreenTouch.new();e.position=root.get_final_transform()*p;e.pressed=pressed;e.index=index;Input.parse_input_event(e)
 func tap(b: Control,index: int=0) -> void:

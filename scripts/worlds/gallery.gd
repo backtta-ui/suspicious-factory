@@ -9,12 +9,15 @@ var story: Label
 var counter: Label
 var enter_button: Button
 var busy:=false
+var prepared_thumbnails: Array[Texture2D]=[]
 var finger:=-1
 var start:=Vector2.ZERO
 var travel:=0.0
 func _ready() -> void:
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  var game=adventure.game
+ for resource in game.loading.held_resources:
+  if resource is Texture2D:prepared_thumbnails.append(resource)
  var shade:=ColorRect.new();shade.color=Color("101522");shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;add_child(shade)
  var layout:=VBoxContainer.new();layout.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);layout.offset_left=32;layout.offset_right=-32;layout.offset_top=12;layout.offset_bottom=-14;layout.add_theme_constant_override("separation",8);add_child(layout)
  var top:=HBoxContainer.new();layout.add_child(top)

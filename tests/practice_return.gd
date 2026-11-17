@@ -6,7 +6,7 @@ func check(ok: bool,label: String) -> void:
  if ok:print("PASS: "+label)
  else:failures+=1;push_error(label)
 func frames(n: int=4) -> void:
- for i in range(n):await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,n)
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
  var game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await frames();game.start_game(false);await frames()

@@ -9,7 +9,7 @@ func check(ok: bool,label: String) -> void:
  if ok:print("PASS: "+label)
  else:failures+=1;push_error(label)
 func frames(n: int=4) -> void:
- for i in range(n):await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,n)
 func swipe(a: Vector2,b: Vector2) -> void:
  var event:=InputEventScreenTouch.new();event.index=5;event.position=root.get_final_transform()*a;event.pressed=true;Input.parse_input_event(event);Input.flush_buffered_events();await frames(2)
  event=InputEventScreenTouch.new();event.index=5;event.position=root.get_final_transform()*b;event.pressed=false;Input.parse_input_event(event);Input.flush_buffered_events();await frames(2)

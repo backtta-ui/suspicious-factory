@@ -77,6 +77,7 @@ func _ready() -> void:
  layer = CanvasLayer.new()
  layer.layer = 1
  add_child(layer)
+ loading=preload("res://scripts/ui/loading_manager.gd").new();loading.game=self;add_child(loading)
  show_menu(false)
  touch_debug = DebugInput.new()
  touch_debug.target = self
@@ -189,12 +190,12 @@ func show_menu(save_before: bool = true) -> void:
  menu.offset_left=-485;menu.offset_right=-105;menu.offset_top=342;menu.offset_bottom=626
  ui.add_child(menu)
  menu.add_child(button("봉인의 밤 · 온라인",show_seal,true))
- var resume:=button("이어하기",start_game.bind(true))
+ var resume:=button("이어하기",request_start.bind(true))
  resume.disabled=Save.load_game().is_empty()
  menu.add_child(resume)
  menu.add_child(button("설정",show_settings))
  menu.add_child(button("종료",quit_game))
- var multiplayer_button:=button("그림 속 모험",start_game.bind(false),true)
+ var multiplayer_button:=button("그림 속 모험",request_start.bind(false),true)
  multiplayer_button.position=Vector2(30,594);multiplayer_button.custom_minimum_size=Vector2(360,64);ui.add_child(multiplayer_button)
  var dress:=button("도사 꾸미기",show_wardrobe)
  dress.position=Vector2(30,516);dress.custom_minimum_size=Vector2(360,64);ui.add_child(dress)
@@ -230,17 +231,21 @@ func start_game(continue_existing: bool = false) -> void:
  if continue_existing and saved.is_empty(): return
  screen_name = "playing"
  active_context = "hud"
- paused = false
+ paused = content_loading
+ if content_loading:loading.mark_phase("resources_ready")
  world = Village.new()
+ world.staged_loading=content_loading
  add_child(world)
  world.cycle_enabled = settings.day_cycle
  world.low_effects=settings.low_effects
+ if content_loading:loading.mark_phase("plaza_attached")
  sound.context="village"
  rpg=Rpg.new(saved.get("rpg",{}))
  adventure=Adventure.new();adventure.game=self;add_child(adventure)
  if saved.has("time_of_day"): world.time_of_day = clampf(float(saved.time_of_day),0,1)
  player = Actor.new()
  player.name = "JeonWoochi"
+ player.enabled=not content_loading
  wardrobe.refresh(rpg.data);player.cosmetic=wardrobe.data.appearance.duplicate()
  player.position = Vector2(saved.position[0],saved.position[1]) if not saved.is_empty() else Layout.SPAWN
  player.jar = bool(saved.get("jar",false))
@@ -255,6 +260,7 @@ func start_game(continue_existing: bool = false) -> void:
  for data in Layout.NPCS:
   var npc := Actor.new()
   npc.npc = true
+  npc.enabled=not content_loading
   npc.npc_name = data.name
   npc.position = data.position
   npc.tint = Color.WHITE
@@ -262,6 +268,7 @@ func start_game(continue_existing: bool = false) -> void:
   npc.npc_driver=preload("res://scripts/woo/npc_driver.gd").new(data,world.navigation)
   world.add_child(npc)
   actors.append(npc)
+  if content_loading:await get_tree().process_frame
  camera = Camera2D.new()
  camera.zoom = Vector2(2,2)
  camera.offset = Vector2.ZERO
@@ -275,6 +282,7 @@ func start_game(continue_existing: bool = false) -> void:
  player.add_child(camera)
  camera.make_current()
  build_hud()
+ if content_loading:loading.mark_phase("actors_camera_hud")
  save_elapsed = 0
  if not rpg.data.session.is_empty():adventure.resume_session()
  save_progress()
@@ -454,6 +462,7 @@ func toggle_setting(key: String) -> void:
  if is_instance_valid(world):
   world.cycle_enabled = settings.day_cycle
   world.low_effects=settings.low_effects
+ if content_loading:loading.mark_phase("plaza_attached")
  if is_instance_valid(menu_motion):menu_motion.reduced=settings.low_effects
  close_modal()
  show_settings()
@@ -468,21 +477,49 @@ func show_credits() -> void:
  stack.add_child(button("출처와 이용허락 보기",func() -> void: OS.shell_open("https://github.com/backtta-ui/suspicious-factory/blob/main/assets/audio/NOTICE.txt")))
  stack.add_child(button("돌아가기",func() -> void: close_modal();show_settings(),true))
 
+func request_gallery(index: int) -> void:
+ if content_loading or not is_instance_valid(adventure) or adventure.in_mission or is_instance_valid(modal):return
+ set_paused(true)
+ if not loading.begin("gallery",request_gallery.bind(index)):return
+ var paths: Array=[]
+ for info in preload("res://scripts/worlds/catalog.gd").WORLDS:paths.append(info.thumbnailAsset)
+ if not await loading.prepare(paths):return
+ show_painting_intro(index);loading.complete()
+
 func show_painting_intro(index: int) -> void:
  if is_instance_valid(adventure):adventure.show_painting(index)
 
 var content_loading:=false
+var loading: WooLoadingManager
+var loading_focus_hold:=false
+func request_start(continue_existing: bool=false) -> void:
+ if screen_name=="playing" or (continue_existing and Save.load_game().is_empty()):return
+ if not loading.begin("plaza" if continue_existing else "initial",request_start.bind(continue_existing),func()->void:if screen_name=="playing":show_menu(false)):return
+ var paths: Array=["res://assets/woo/worlds/plaza_ground.png","res://assets/woo/v11/stone_bridge.png"]
+ if continue_existing:
+  var saved_world: String=Save.load_game().get("rpg",{}).get("session",{}).get("map","")
+  paths.append_array(loading.world_assets(saved_world))
+ if not await loading.prepare(paths):return
+ await start_game(continue_existing);set_paused(true)
+ if not await loading.wait_ready(world):return
+ world.set_completed_stories(completed_paintings)
+ if adventure.in_mission and not await loading.wait_ready(adventure.forest):return
+ if not is_instance_valid(player) or not is_instance_valid(camera) or not camera.is_current():loading.failure("캐릭터 또는 카메라 준비에 실패했습니다.");return
+ loading.complete();finish_loading_play();loading.input_ready();save_progress()
+
+func finish_loading_play() -> void:
+ loading_focus_hold=sound.backgrounded
+ set_paused(loading_focus_hold)
+
 func enter_practice(skill: String="transform") -> void:
  if is_instance_valid(practice) or content_loading or screen_name!="playing" or not is_instance_valid(player) or adventure.transitioning:return
- content_loading=true;close_modal();set_paused(true)
- var loading:=preload("res://scripts/ui/loading.gd").new();loading.title="도술 익히기 · 수련장을 준비합니다";layer.add_child(loading)
- await get_tree().process_frame
- await get_tree().process_frame
- if not is_inside_tree():return
- if quitting or screen_name!="playing" or not is_instance_valid(player):
-  content_loading=false;loading.queue_free();return
+ save_progress();close_modal();set_paused(true)
+ if not loading.begin("practice",enter_practice.bind(skill)):return
+ if not await loading.prepare(["res://assets/woo/practice_ground.png"]):return
+ if quitting or screen_name!="playing" or not is_instance_valid(player):loading.release();return
  practice=preload("res://scripts/practice/ui.gd").new();practice.game=self;add_child(practice);practice.select(skill);practice.backgrounded=sound.backgrounded
- content_loading=false;loading.queue_free()
+ if not is_instance_valid(practice.hero) or not is_instance_valid(practice.camera):loading.failure("수련장 준비에 실패했습니다.");return
+ loading.complete();loading.input_ready()
 
 func show_rpg_menu() -> void:
  if is_instance_valid(adventure):adventure.show_menu()
@@ -514,7 +551,7 @@ func interact() -> void:
  if near_practice:
   enter_practice();return
  if nearest_painting>=0:
-  show_painting_intro(nearest_painting)
+  request_gallery(nearest_painting)
   return
  if nearest_npc>=0:
   var data: Dictionary = Layout.NPCS[nearest_npc]
@@ -560,6 +597,7 @@ func _exit_tree() -> void:
  finish_save()
 
 func save_progress(background: bool = false) -> void:
+ if content_loading:return
  if screen_name!="playing" or not is_instance_valid(player): return
  var data := {"schema":1,"map":Layout.MAP_ID,"position":(return_anchor.position.duplicate() if is_instance_valid(adventure) and adventure.in_mission else [player.position.x,player.position.y]),"settings":settings.duplicate(),"unlocked":unlocked.duplicate(),"jar":player.jar,"time_of_day":world.time_of_day,"talked_to_elder":talked_to_elder,"map_revision":Layout.REVISION,"completed_paintings":completed_paintings.duplicate(),"return_anchor":return_anchor.duplicate(true)}
  if is_instance_valid(adventure):adventure.capture_session()
@@ -612,6 +650,7 @@ func _physics_process(_delta: float) -> void:
   sound.update_steps(player.position,not paused and player.velocity.length()>2 and player.transforming<=0,player.jar)
 
 func _process(delta: float) -> void:
+ if content_loading:return
  if save_thread != null and not save_thread.is_alive(): finish_save()
  if screen_name!="playing" or not is_instance_valid(player): return
  if is_instance_valid(adventure) and adventure.in_mission:
@@ -656,10 +695,12 @@ func _process(delta: float) -> void:
  if save_elapsed>=8: save_progress(true)
 
 func go_back() -> void:
- if content_loading:return
+ if content_loading:
+  if loading.failed:loading.dismiss_failure()
+  return
  if screen_name=="practice" and is_instance_valid(practice):
   if is_instance_valid(modal):close_modal()
-  else:practice.leave()
+  else:practice.request_leave()
   return
  if screen_name=="seal" and is_instance_valid(seal_client):seal_client.back();return
  if is_instance_valid(adventure) and adventure.transitioning:return
@@ -683,9 +724,10 @@ func _notification(what: int) -> void:
   if is_instance_valid(practice):practice.backgrounded=true;practice.stick.reset()
   if screen_name=="playing":
    save_progress()
-   if not is_instance_valid(modal) and not (is_instance_valid(adventure) and adventure.transitioning): show_settings()
+   if not content_loading and not is_instance_valid(modal) and not (is_instance_valid(adventure) and adventure.transitioning): show_settings()
  elif what==NOTIFICATION_APPLICATION_FOCUS_IN or what==NOTIFICATION_APPLICATION_RESUMED:
   if is_instance_valid(sound):sound.set_backgrounded(false)
   if is_instance_valid(practice):practice.backgrounded=false
+  if loading_focus_hold and not content_loading and screen_name=="playing":loading_focus_hold=false;set_paused(false)
  elif what==NOTIFICATION_WM_GO_BACK_REQUEST: go_back()
  elif what==NOTIFICATION_WM_CLOSE_REQUEST: quit_game()
