@@ -136,10 +136,10 @@ func show_result() -> void:
  stack.add_child(game.button("광장 복귀",exit_to_main))
 func leave_room() -> void:exit_to_main()
 func exit_to_main() -> void:
- if game.loading.busy:game.loading.release()
+ if game.loading.busy and not game.loading.failed:game.loading.release()
  connection.stop();dispose_world();close_popup();game.world.show();game.world.process_mode=original_mode
  game.camera.enabled=original_camera;game.camera.make_current();game.camera.reset_smoothing();game.sound.map_id=original_sound
- game.seal_client=null;game.screen_name="playing";game.active_context="hud";game.paused=false;game.build_hud();queue_free()
+ game.seal_client=null;game.screen_name="playing";game.active_context="hud";game.set_paused(false);game.build_hud();queue_free()
 func _process(delta: float) -> void:
  super._process(delta)
  if state.is_empty():return

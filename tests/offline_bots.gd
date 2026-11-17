@@ -133,6 +133,11 @@ func ui_checks() -> void:
  client.show_spectators();await frames();check(is_instance_valid(client.popup),"spectator target picker");client.close_popup()
  client.exit_to_main();await frames(8)
  check(game.screen_name=="playing" and game.player.position.distance_to(before_position)<.01 and game.player.facing==before_face and game.camera.zoom==before_zoom,"exact plaza anchor and camera restored")
+ check(not game.sound.ducked,"plaza audio unducks on return")
  check(game.wardrobe.data==owned,"exit preserves profile")
  for file_name in store_before:check(FileAccess.get_file_as_bytes("user://"+file_name)==store_before[file_name],"persistent file unchanged: "+file_name)
+ game.enter_simulation();await frames(5);client=game.seal_client
+ game.loading.begin("simulation",Callable(),client.exit_to_main);game.loading.failure("injected missing-resource recovery test");await frames(5)
+ check(game.screen_name=="playing" and game.seal_client==null and game.loading.failed and is_instance_valid(game.loading.overlay),"failed load restores safe plaza and preserves error overlay")
+ game.loading.dismiss_failure();await frames();check(not game.loading.busy,"failed loading can be dismissed")
  game.queue_free();await frames()
