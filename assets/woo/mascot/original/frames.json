@@ -1,0 +1,310 @@
+{
+  "source": "res://art_sources/mascot/turnaround-original.png",
+  "source_sha256": "458cccc0f7ff09fdbce615921bb78dff9357408a615bb951fb6949ab9a3628b4",
+  "source_size": [
+    1262,
+    1246
+  ],
+  "characters": {
+    "woochi": {
+      "front": {
+        "path": "res://assets/woo/mascot/original/woochi-front.png",
+        "source_rect": [
+          18,
+          8,
+          287,
+          303
+        ],
+        "foot": [
+          143.5,
+          299
+        ],
+        "size": [
+          287,
+          303
+        ],
+        "rgba_sha256": "61cd4b083d61f66e297af576a434591c41fbf6c28eb05cbfaa6572dc66c9ee65"
+      },
+      "left": {
+        "path": "res://assets/woo/mascot/original/woochi-left.png",
+        "source_rect": [
+          335,
+          8,
+          276,
+          303
+        ],
+        "foot": [
+          129.5,
+          299
+        ],
+        "size": [
+          276,
+          303
+        ],
+        "rgba_sha256": "763218c0c49ee7e577544167b9480c829cc3088f8505be6df8cfe7a3bcf6e08a"
+      },
+      "back": {
+        "path": "res://assets/woo/mascot/original/woochi-back.png",
+        "source_rect": [
+          649,
+          8,
+          279,
+          303
+        ],
+        "foot": [
+          137.5,
+          299
+        ],
+        "size": [
+          279,
+          303
+        ],
+        "rgba_sha256": "d32a16dd1ac3768c93d6b5c2d04ef6fa25a6c17248c46b4d2cb024c884af361e"
+      },
+      "right": {
+        "path": "res://assets/woo/mascot/original/woochi-right.png",
+        "source_rect": [
+          966,
+          8,
+          274,
+          303
+        ],
+        "foot": [
+          138.5,
+          299
+        ],
+        "size": [
+          274,
+          303
+        ],
+        "rgba_sha256": "d175a04de0d4a698a7f0b6bdd86098355e00202d6e6a00907c5199d98380e00b"
+      },
+      "scale": 0.18305084745762712
+    },
+    "yeonhwa": {
+      "front": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-front.png",
+        "source_rect": [
+          56,
+          323,
+          217,
+          276
+        ],
+        "foot": [
+          105.0,
+          272
+        ],
+        "size": [
+          217,
+          276
+        ],
+        "rgba_sha256": "3d7ea01475bd9e733fcd8c5c944f76328090cd4257a574e4f9ea39b145d4d122"
+      },
+      "left": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-left.png",
+        "source_rect": [
+          377,
+          322,
+          206,
+          277
+        ],
+        "foot": [
+          88.0,
+          273
+        ],
+        "size": [
+          206,
+          277
+        ],
+        "rgba_sha256": "3ae61997b6943343159fc07dac9e7cee22692bf0a848ae0f1c3bf9b30c3bec72"
+      },
+      "back": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-back.png",
+        "source_rect": [
+          680,
+          330,
+          207,
+          269
+        ],
+        "foot": [
+          108.0,
+          264
+        ],
+        "size": [
+          207,
+          269
+        ],
+        "rgba_sha256": "7ca8815e4c14985e8da602862de946672a7ccb55d3bb97def88b329e113c214b"
+      },
+      "right": {
+        "path": "res://assets/woo/mascot/original/yeonhwa-right.png",
+        "source_rect": [
+          989,
+          322,
+          212,
+          278
+        ],
+        "foot": [
+          124.0,
+          273
+        ],
+        "size": [
+          212,
+          278
+        ],
+        "rgba_sha256": "73e1c4eb8ab874a8d5b5ef4447344cccdd1d549100d92100471d9c5c487e3bd2"
+      },
+      "scale": 0.20149253731343283
+    },
+    "muyeong": {
+      "front": {
+        "path": "res://assets/woo/mascot/original/muyeong-front.png",
+        "source_rect": [
+          55,
+          605,
+          234,
+          307
+        ],
+        "foot": [
+          107.5,
+          303
+        ],
+        "size": [
+          234,
+          307
+        ],
+        "rgba_sha256": "8cfa612fa1bffd61a2be6ea244e576cbe6fa050b38db1c4325912e6ed6cb842b"
+      },
+      "left": {
+        "path": "res://assets/woo/mascot/original/muyeong-left.png",
+        "source_rect": [
+          359,
+          606,
+          240,
+          306
+        ],
+        "foot": [
+          101.0,
+          301
+        ],
+        "size": [
+          240,
+          306
+        ],
+        "rgba_sha256": "3d63da97c818067ebdebda0e4c472eb6ed0f441a49d02823e2b8283006f77a8f"
+      },
+      "back": {
+        "path": "res://assets/woo/mascot/original/muyeong-back.png",
+        "source_rect": [
+          682,
+          605,
+          204,
+          306
+        ],
+        "foot": [
+          106.5,
+          302
+        ],
+        "size": [
+          204,
+          306
+        ],
+        "rgba_sha256": "233f7c7d6458a87e5b0a65a9fc592d9f9387e1b362924e0f040b051e3e63ed7d"
+      },
+      "right": {
+        "path": "res://assets/woo/mascot/original/muyeong-right.png",
+        "source_rect": [
+          976,
+          605,
+          239,
+          307
+        ],
+        "foot": [
+          136.0,
+          302
+        ],
+        "size": [
+          239,
+          307
+        ],
+        "rgba_sha256": "98ae1d9d0bf5523f1eb627bca9b3ed3a00c95fc7bc857ff21985c2a06d333f71"
+      },
+      "scale": 0.1806020066889632
+    },
+    "hongryeon": {
+      "front": {
+        "path": "res://assets/woo/mascot/original/hongryeon-front.png",
+        "source_rect": [
+          43,
+          918,
+          229,
+          313
+        ],
+        "foot": [
+          118.0,
+          309
+        ],
+        "size": [
+          229,
+          313
+        ],
+        "rgba_sha256": "aa7d8be1faf7aa4b6785c0ad7d908e4128c718f45b7378183642af268c8e1b92"
+      },
+      "left": {
+        "path": "res://assets/woo/mascot/original/hongryeon-left.png",
+        "source_rect": [
+          368,
+          919,
+          211,
+          312
+        ],
+        "foot": [
+          92.5,
+          308
+        ],
+        "size": [
+          211,
+          312
+        ],
+        "rgba_sha256": "d871c055798fbc527165d62d37d97b7267497257305b8cc15a8aafcfdcd44ea8"
+      },
+      "back": {
+        "path": "res://assets/woo/mascot/original/hongryeon-back.png",
+        "source_rect": [
+          681,
+          918,
+          213,
+          314
+        ],
+        "foot": [
+          106.5,
+          309
+        ],
+        "size": [
+          213,
+          314
+        ],
+        "rgba_sha256": "efbdff587848ab4aa5bcf5305127fa592573aff867305e0e4c339de38b7f08e1"
+      },
+      "right": {
+        "path": "res://assets/woo/mascot/original/hongryeon-right.png",
+        "source_rect": [
+          995,
+          919,
+          208,
+          313
+        ],
+        "foot": [
+          114.5,
+          308
+        ],
+        "size": [
+          208,
+          313
+        ],
+        "rgba_sha256": "dc3314022e2eca7808b639198e4bf44b1db49cc2816d49c76e6bb622845b004b"
+      },
+      "scale": 0.17704918032786884
+    }
+  }
+}

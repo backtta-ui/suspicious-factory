@@ -12,6 +12,6 @@ static func region(cell: int) -> Rect2:
 static func icon(cell: int) -> Texture2D:
  var atlas:=AtlasTexture.new()
  if cell<4:
-  atlas.atlas=preload("res://assets/woo/mascot/portraits.png");atlas.region=Rect2(0,cell*96,96,96)
+  atlas.atlas=load("res://assets/woo/mascot/original/"+["woochi","yeonhwa","muyeong","hongryeon"][cell]+"-front.png");atlas.region=Rect2(Vector2.ZERO,atlas.atlas.get_size())
  else:atlas.atlas=SHEET;atlas.region=region(cell)
  return atlas

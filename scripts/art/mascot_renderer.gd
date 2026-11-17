@@ -4,9 +4,14 @@ const DIAGONAL=preload("res://assets/woo/mascot/bodies-diagonal.png")
 const HAIR=preload("res://assets/woo/mascot/hair.png")
 const HATS=preload("res://assets/woo/mascot/hats.png")
 var motion_key:=""
+var original_sprite: Sprite2D
+var original_frames: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/woo/mascot/original/frames.json")).characters
+var original_direction:="front"
+var uses_original:=false
 const IDS=["woochi","yeonhwa","muyeong","hongryeon"]
 func _ready() -> void:
  super._ready()
+ original_sprite=Sprite2D.new();original_sprite.name="OriginalCharacter";original_sprite.centered=false;original_sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS;add_child(original_sprite)
  for key in ["sd_head","sd_left_arm","sd_right_arm","sd_left_foot","sd_right_foot"]:
   var node:=Polygon2D.new();node.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;var material:=ShaderMaterial.new();material.shader=SHADER;node.material=material;add_child(node);pieces[key]=node
 func patch(key: String,source: Rect2,offset: Vector2=Vector2.ZERO,angle: float=0,pivot: Vector2=Vector2.ZERO) -> void:
@@ -21,6 +26,17 @@ func patch(key: String,source: Rect2,offset: Vector2=Vector2.ZERO,angle: float=0
  rendered_layers.append({"texture":texture,"points":points,"uv":uvs})
 func rebuild() -> void:
  clear();effective=Art.effective(appearance);uses_baked=false
+ uses_original=original_frames.has(effective.character) and appearance==C.base_appearance(effective.character)
+ original_sprite.visible=uses_original
+ if uses_original:
+  actor.sprite.hide()
+  original_direction=["front","back","left","right","right","left","back","back"][direction]
+  var data: Dictionary=original_frames[effective.character]
+  var frame: Dictionary=data[original_direction]
+  original_sprite.texture=load(frame.path)
+  original_sprite.offset=-Vector2(frame.foot[0],frame.foot[1])
+  original_sprite.scale=Vector2.ONE*float(data.scale)
+  return
  head_rect=Rect2(-14,-40,28,22)
  var walking: bool=actor.gait_weight>.15 or (actor.npc and actor.npc_walking)
  var phase: float=actor.npc_stride*.22 if actor.npc else actor.gait_phase
