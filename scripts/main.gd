@@ -99,11 +99,8 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
  var context := active_context
  var generation := ui_generation
  node.allowed = func() -> bool: return context==active_context and generation==ui_generation and not content_loading and not (is_instance_valid(adventure) and adventure.transitioning)
- node.add_theme_stylebox_override("normal",style(preload("res://scripts/ui/design.gd").PANEL.lightened(.035) if primary else preload("res://scripts/ui/design.gd").PANEL))
- node.add_theme_stylebox_override("hover",style(preload("res://scripts/ui/design.gd").PANEL.lightened(.12)))
- node.add_theme_stylebox_override("pressed",style(Color("344e69")))
- node.add_theme_stylebox_override("hover_pressed",style(Color("344e69")))
- node.add_theme_stylebox_override("disabled",style(Color("1a2d34")))
+ for mode in ["normal","hover","pressed","hover_pressed","disabled"]:node.add_theme_stylebox_override(mode,preload("res://scripts/ui/design.gd").button_style(mode,primary))
+ node.custom_minimum_size.y=preload("res://scripts/ui/design.gd").BUTTON_HEIGHT
  node.add_theme_color_override("font_color",Color("f4d99d") if primary else Color("e8e1cc"))
  node.add_theme_color_override("font_pressed_color",Color("fff4cd"))
  node.observed.connect(func(event: InputEvent) -> void:
@@ -114,6 +111,7 @@ func button(value: String, callback: Callable, primary: bool = false) -> WooMobi
   perform_action.call_deferred(weakref(node),callback))
  var ornament := Ornament.new()
  ornament.primary = primary
+ ornament.visible = primary
  ornament.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  node.add_child(ornament)
  return node
@@ -363,7 +361,7 @@ func place_action(node: WooMobileButton, top: int, icon: String) -> void:
   box.set_border_width_all(0)
   node.add_theme_stylebox_override(mode,box)
  for child in node.get_children():
-  if child is WooOrnament: child.circular=true;child.icon=icon
+  if child is WooOrnament: child.show();child.circular=true;child.icon=icon
  ui.add_child(node)
  preload("res://scripts/ui/design.gd").place_action(node,{"spell":"spell","talk":"interact","run":"run"}[icon])
  if icon=="talk":preload("res://scripts/ui/design.gd").interaction(node)

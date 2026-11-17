@@ -9,6 +9,16 @@ const HP=Color("be5467")
 const MANA=Color("538cc1")
 const PAD=18
 const POPUP_TIME=.12
+const BUTTON_HEIGHT=54
+const SECONDARY_BORDER=Color("43516a")
+const SCREEN_MARGIN=24
+const SCREEN_GAP=18
+static func button_style(state: String,primary: bool=false) -> StyleBoxFlat:
+ var box:=panel(PANEL.lightened(.12) if state=="hover" else (Color("344e69") if state in ["pressed","hover_pressed"] else PANEL),6)
+ box.border_color=GOLD if primary else SECONDARY_BORDER
+ if state=="disabled":box.bg_color=INK;box.border_color=SECONDARY_BORDER.darkened(.4)
+ return box
+
 const VITALS_RECT=Rect2(30,235,242,12)
 const STATS_POSITION=Vector2(30,205)
 const STICK_SIZE=Vector2(174,174)

@@ -132,6 +132,10 @@ func equip(slot: int,id: String) -> bool:
  data.slots[slot]=id
  return true
 
+func unequip(slot: int) -> bool:
+ if slot<0 or slot>=3:return false
+ data.slots[slot]="";return true
+
 func discard_item(id: String,amount: int=1) -> bool:
  if not ITEMS.has(id) or ITEMS[id].kind=="귀중품" or amount<=0 or count(id)<amount:return false
  data.inventory[id]=count(id)-amount
