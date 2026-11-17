@@ -1,0 +1,12 @@
+{
+  "area": [
+    200,
+    220,
+    140,
+    132
+  ],
+  "head_hat_pixels_identical": {
+    "ribbon-reproduction-fixed.png": true,
+    "unsupported-look-explicit.png": true
+  }
+}

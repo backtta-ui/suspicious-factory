@@ -51,8 +51,13 @@ func refresh() -> void:
  for id in table:
   if slot=="color" and not C.OUTFITS[draft.outfit].colors.has(id):continue
   var owned:=wardrobe.owned(slot,id)
-  var supported: bool=preload("res://scripts/wardrobe/directional_art.gd").supported(slot,id)
+  var supported: bool=preload("res://scripts/wardrobe/directional_art.gd").supported(slot,id,draft.character)
   var name: String=C.COLOR_NAMES[id] if slot=="color" else table[id].name
+  var base: Dictionary=C.base_appearance(draft.character)
+  if slot=="hair" and id==base.hair:name="원본 머리"
+  if slot=="hat" and id==base.hat:name={"woochi":"원본 갓","yeonhwa":"원본 꽃 장식","muyeong":"원본 차림","hongryeon":"원본 두건"}[draft.character]
+  if slot=="color" and id==base.color:name="원본 색상"
+  if slot=="accessory" and id=="none":name="추가 장식 없음"
   var b: Button=game.button(("✓ " if draft[slot]==id else "")+name+(" 🔒" if not owned else "")+(" · 방향 준비 중" if not supported else ""),select.bind(id));b.custom_minimum_size=Vector2(150,128);b.add_theme_font_size_override("font_size",16)
   for mode in ["font_color","font_hover_color","font_pressed_color","font_disabled_color","font_hover_pressed_color"]:b.add_theme_color_override(mode,Color.TRANSPARENT)
   preload("res://scripts/ui/screen_layout.gd").button_state(b,draft[slot]==id)
@@ -62,13 +67,14 @@ func refresh() -> void:
   elif slot!="color" and table[id].cell>=0:
    var image:=TextureRect.new();image.texture=Art.icon(table[id].cell);image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;image.position=Vector2(45,8);image.size=Vector2(60,60);image.mouse_filter=Control.MOUSE_FILTER_IGNORE;b.add_child(image)
   elif slot=="color":
-   var swatch:=ColorRect.new();swatch.color=C.COLORS[id];swatch.position=Vector2(45,14);swatch.size=Vector2(60,48);swatch.mouse_filter=Control.MOUSE_FILTER_IGNORE;b.add_child(swatch)
+   var swatch:=ColorRect.new();swatch.color=Color({"woochi":"415b96","yeonhwa":"ce8caa","muyeong":"574364","hongryeon":"943c4a"}[draft.character]) if id==base.color else C.COLORS[id];swatch.position=Vector2(45,14);swatch.size=Vector2(60,48);swatch.mouse_filter=Control.MOUSE_FILTER_IGNORE;b.add_child(swatch)
   var label: Label=game.text(name,16,game.GOLD if draft[slot]==id else Color("e8e1cc"));label.position=Vector2(4,78);label.size=Vector2(142,24);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;b.add_child(label)
   var status: Label=game.text(("✓ 선택" if draft[slot]==id else ("보유" if owned else "잠금 · 미리보기")) if supported else "리소스 준비 중",13);status.position=Vector2(3,103);status.size=Vector2(144,20);status.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;b.add_child(status)
  preview.cosmetic=draft.duplicate();preview.update_sprite()
  description.text=C.CHARACTERS[draft.character].name+"\n"+C.CHARACTERS[draft.character].description
  var value: Dictionary={} if slot=="color" else table[draft[slot]]
  detail.text=(C.COLOR_NAMES[draft.color]+" · 의상에 적용" if slot=="color" else value.name+" · "+("보유" if wardrobe.owned(slot,draft[slot]) else "미보유 / 미리보기만 가능")+"\n"+C.RULES[value.rule])
+ if slot in ["hair","hat","color"] and draft[slot]==C.base_appearance(draft.character)[slot]:detail.text="원본 기본 차림 · 선택한 도사의 원본 외형입니다.\n원본용 교체 리소스가 준비된 항목만 변경할 수 있습니다."
  var pending: String=preload("res://scripts/wardrobe/directional_art.gd").pending(draft)
  if pending!="":detail.text+="\n"+pending
  save_button.disabled=not wardrobe.valid_selection(draft)

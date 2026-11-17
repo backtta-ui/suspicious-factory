@@ -19,7 +19,7 @@ func run() -> void:
  for character in C.CHARACTERS:
   for hair in C.HAIRS:
    for hat in C.HATS:
-    for outfit in Art.READY_OUTFITS:
+    for outfit in C.OUTFITS:
      var look:=C.base_appearance(character);look.hair=hair;look.hat=hat;look.outfit=outfit;look.color=C.OUTFITS[outfit].colors[0];actor.cosmetic=look.duplicate()
      for direction in range(8):
       actor.facing=Direction.FACING[direction]
@@ -29,6 +29,7 @@ func run() -> void:
         var context: String=character+"/"+hair+"/"+hat+"/"+outfit+"/"+str(direction)+kind+str(row)
         check(visual.appearance==look and actor.cosmetic==look,"pose never mutates look "+context)
         check(visual.direction==direction and visual.pose_set==kind and visual.pose_row==row and visual.position.y==-actor.jump_height,"whole body direction and ground height "+context)
+        check(visual.uses_original,"all saved combinations use original renderer "+context)
         if visual.uses_original:
          var sprite: Sprite2D=visual.original_sprite
          check(sprite.visible and str(sprite.texture.resource_path).contains(character+"-"),"approved complete original source "+context)
@@ -97,4 +98,4 @@ func run() -> void:
  check(game.adventure.load_forest(false),"real painting anchor permits forest entry");await frames()
  check(game.adventure.in_mission and game.player.get_parent()==game.adventure.forest and game.player.cosmetic==legacy and game.player.wardrobe_visual.appearance==legacy,"actual forest instance shares appearance renderer")
  game.show_menu(false);game.queue_free();await frames()
- print("APPEARANCE COMBINATIONS: %d ready combinations / %d checks / %d failures"%[combos,checks,failures]);quit(1 if failures else 0)
+ print("APPEARANCE COMBINATIONS: %d stored combinations / %d checks / %d failures"%[combos,checks,failures]);quit(1 if failures else 0)
