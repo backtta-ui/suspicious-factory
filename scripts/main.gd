@@ -486,7 +486,7 @@ func request_gallery(index: int) -> void:
  if not await loading.prepare(paths):return
  show_painting_intro(index)
  await get_tree().process_frame
- loading.complete();loading.input_ready()
+ loading.complete();loading.input_ready();save_progress()
 
 func show_painting_intro(index: int) -> void:
  if is_instance_valid(adventure):adventure.show_painting(index)

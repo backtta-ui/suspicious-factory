@@ -10,7 +10,8 @@ var player: Node2D
 var layer: CanvasLayer
 var loading: WooLoadingManager
 func _ready() -> void:
- layer=CanvasLayer.new();add_child(layer)
+ settings=preload("res://scripts/woo/save_game.gd").settings()
+ layer=CanvasLayer.new();layer.layer=20;add_child(layer)
  loading=preload("res://scripts/ui/loading_manager.gd").new();loading.game=self;add_child(loading)
  launch()
 func launch() -> void:

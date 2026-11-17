@@ -36,6 +36,7 @@ func run() -> void:
  for id in ["fox_forest","moon_palace","red_sea"]:
   for repeat_id in range(2):
    game.request_gallery(0);await ready_game(game);check(game.modal_kind=="painting","gallery prepares before displaying UI")
+   if id=="fox_forest" and repeat_id==0:check(game.Save.load_game().get("return_anchor",{}).get("position",[])==[anchor.x,anchor.y],"gallery commits its completed return anchor before world entry")
    game.adventure.selected_world=id;game.adventure.enter_painting();game.adventure.enter_painting();await ready_game(game)
    check(game.adventure.in_mission and game.adventure.active_world==id and game.adventure.forest.build_ready,id+" actual first/repeat destination ready")
    check(game.player.cosmetic==look and game.camera.is_current(),id+" appearance and camera retained")
