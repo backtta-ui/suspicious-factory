@@ -100,7 +100,12 @@ func show_journal() -> void:
  stack.add_child(game.text("여우의 숲 · 도깨비 퇴치 (%d/3)" % defeated().size(),22))
  stack.add_child(game.text("그림 완료: "+("여우의 숲" if game.rpg.data.completed.has("fox_forest") else "없음"),21))
  stack.add_child(game.text("첫 완료 보상: 경험치 120 · 엽전 50 · 회복약 2 · 신비한 잎 3\n수령 상태: "+("수령 완료" if game.rpg.data.claims.has("fox_forest") else "미수령"),18))
- stack.add_child(game.text("탐관오리의 관아 · 도깨비의 밤: 준비 중",17))
+ for world in Worlds.WORLDS:
+  if world.id=="fox_forest":continue
+  var visited:=0
+  for site in ExploreLayout.sites(world.id):
+   if game.rpg.data.visited.has(site.id):visited+=1
+  stack.add_child(game.text("%s · 문양 탐험 %d/%d"%[world.title,visited,ExploreLayout.sites(world.id).size()],18))
  footer(stack)
 func show_map() -> void:
  var stack:=page("map", Worlds.find(active_world).get("title","여우의 숲") if in_mission else "계월촌 전체 지도")

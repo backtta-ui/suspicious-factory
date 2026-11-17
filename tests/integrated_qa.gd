@@ -14,6 +14,10 @@ func find(text: String,node: Node) -> Button:
   var b:=find(text,child)
   if b:return b
  return null
+func labels(node: Node) -> String:
+ var text: String=node.text if node is Label else ""
+ for child in node.get_children():text+="\n"+labels(child)
+ return text
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
  var game=load("res://scenes/main.tscn").instantiate();root.add_child(game);await frames();game.start_game(false);await frames()
@@ -38,6 +42,12 @@ func run() -> void:
   check(game.adventure.transition_layer.painting.resource_path==preload("res://scripts/worlds/catalog.gd").find(world).thumbnailAsset,"ART-"+world,"transition uses actual painting resource",true)
   await create_timer(2.5).timeout;await frames()
   check(not game.adventure.in_mission and game.player.position.distance_to(anchor)<.2,"RETURN-ANCHOR-"+world,"original plaza position restored")
+ var visited_before: Array=game.rpg.data.visited.duplicate()
+ game.adventure.show_journal();await frames()
+ var journal_text:=labels(game.modal)
+ check(journal_text.contains("달빛 궁궐") and journal_text.contains("붉은 달의 바다") and not journal_text.contains("탐관오리의 관아"),"JOURNAL-CATALOG","journal reads current world catalog rather than obsolete painting names",true)
+ check(game.rpg.data.visited==visited_before,"JOURNAL-NO-GRANT","opening current-world journal grants no progress/reward",true)
+ game.close_modal();await frames()
  var child_count: int=game.ui.get_child_count()
  for i in range(12):
   game.adventure.show_menu();var old: Control=game.modal;var old_button:=find("돌아가기",old);game.close_modal()
