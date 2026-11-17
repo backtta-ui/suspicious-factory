@@ -1,0 +1,460 @@
+extends Node
+const D=preload("res://scripts/ui/design.gd")
+const C=preload("res://scripts/survival/characters.gd")
+const Rules=preload("res://scripts/survival/rules.gd")
+const Storage=preload("res://scripts/survival/storage.gd")
+const Actor=preload("res://scripts/woo/actor.gd")
+const ButtonType=preload("res://scripts/woo/mobile_button.gd")
+const L=preload("res://scripts/survival/layout.gd")
+var storage: RefCounted
+var sound: WooSound
+var layer: CanvasLayer
+var ui: Control
+var content: Control
+var modal: Control
+var screen:="title"
+var generation:=0
+var changing:=false
+var room: Dictionary={}
+var rules: RefCounted
+var world: Node2D
+var nav: RefCounted
+var camera: Camera2D
+var avatars: Dictionary={}
+var clones: Dictionary={}
+var bots: Array=[]
+var stick: TouchJoystick
+var timer_label: Label
+var status_label: Label
+var count_label: Label
+var circle_label: Label
+var stamina_label: Label
+var action_button: WooMobileButton
+var run_button: WooMobileButton
+var jump_button: WooMobileButton
+var skill_button: WooMobileButton
+var skill_badge: WooSkillBadge
+var minimap: Control
+var paused:=false
+var backgrounded:=false
+var bot_clock:=0.0
+var fixed_clock:=0.0
+var spectate:="human"
+var aim:=Vector2.ZERO
+var aim_cancelled:=false
+var render_clock:=0.0
+var last_count:=-1
+var selection_team:="daoist"
+var selection_id:=""
+var selection_return:="lobby"
+var status_message:=""
+var sequence:=0
+var result_seen:=false
+func _ready() -> void:
+ process_mode=Node.PROCESS_MODE_ALWAYS
+ storage=Storage.new();sound=preload("res://scripts/woo/sound.gd").new();add_child(sound)
+ layer=CanvasLayer.new();layer.layer=3;add_child(layer)
+ for bus in ["DosaMusic","DosaSfx"]:
+  if AudioServer.get_bus_index(bus)<0:AudioServer.add_bus();AudioServer.set_bus_name(AudioServer.bus_count-1,bus)
+ sound.music.bus="DosaMusic"
+ for voice in sound.voices:voice.bus="DosaSfx"
+ apply_settings();build("title")
+ if storage.error!="":call_deferred("notice",storage.error)
+ get_viewport().size_changed.connect(safe_layout)
+func apply_settings() -> void:
+ for spec in [["DosaMusic",storage.data.music],["DosaSfx",storage.data.sfx]]:
+  var index:=AudioServer.get_bus_index(spec[0]);AudioServer.set_bus_mute(index,float(spec[1])<=.001);AudioServer.set_bus_volume_db(index,linear_to_db(maxf(.001,float(spec[1]))))
+func text(value: String,font_size: int=22,color: Color=D.TEXT) -> Label:
+ var node:=Label.new();node.text=value;node.mouse_filter=Control.MOUSE_FILTER_IGNORE;node.add_theme_font_override("font",D.FONT);node.add_theme_font_size_override("font_size",font_size);node.add_theme_color_override("font_color",color);return node
+func button(value: String,callback: Callable,primary: bool=false,parent: Node=null,type: Script=ButtonType) -> WooMobileButton:
+ var b: WooMobileButton=type.new();b.text=value;b.custom_minimum_size=Vector2(130,58);b.add_theme_font_override("font",D.FONT);b.add_theme_font_size_override("font_size",22)
+ for state in ["normal","hover","pressed","hover_pressed","disabled"]:
+  var style:=D.button_style(state,primary)
+  style.bg_color=Color("43305d") if primary and state=="normal" else style.bg_color
+  style.set_corner_radius_all(14);style.set_border_width_all(2 if primary else 1);b.add_theme_stylebox_override(state,style)
+ b.add_theme_color_override("font_color",Color("fff0ce") if primary else D.TEXT)
+ var ticket:=generation;var scope: Control=modal
+ b.allowed=func()->bool:return ticket==generation and not changing and (modal==scope) and not backgrounded
+ b.button_down.connect(func()->void:b.modulate=Color(1.2,1.15,1.25);if_vibrate())
+ b.button_up.connect(func()->void:b.modulate=Color.WHITE)
+ b.pressed.connect(func()->void:
+  if b.usable():sound.play_clip("button");callback.call())
+ if parent!=null:parent.add_child(b)
+ return b
+func if_vibrate() -> void:
+ if storage.data.vibration and OS.get_name()=="Android":Input.vibrate_handheld(15)
+func full(node: Control,parent: Node) -> void:parent.add_child(node);node.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+func background() -> void:
+ var image:=TextureRect.new();image.texture=load("res://assets/woo/worlds/moon_palace.png");image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;image.modulate=Color(.45,.4,.65);image.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(image,ui)
+ var shade:=ColorRect.new();shade.color=Color(.03,.035,.09,.38);shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(shade,ui)
+ var motion:=preload("res://scripts/survival/backdrop.gd").new();motion.low=storage.data.quality=="낮음";full(motion,ui)
+ ui.move_child(image,0);ui.move_child(shade,1);ui.move_child(motion,2)
+func clear_ui() -> void:
+ generation+=1
+ if is_instance_valid(ui):D.retire_inputs(ui);ui.hide();ui.queue_free()
+ modal=null;ui=Control.new();full(ui,layer);ui.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ var margin:=MarginContainer.new();full(margin,ui);margin.add_theme_constant_override("margin_left",32);margin.add_theme_constant_override("margin_right",32);margin.add_theme_constant_override("margin_top",22);margin.add_theme_constant_override("margin_bottom",22);margin.mouse_filter=Control.MOUSE_FILTER_IGNORE;content=margin
+func page(title: String) -> VBoxContainer:
+ background()
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",14);content.add_child(box)
+ var heading:=text(title,34,D.GOLD);heading.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));box.add_child(heading)
+ return box
+func panel(parent: Node) -> VBoxContainer:
+ var frame:=PanelContainer.new();frame.add_theme_stylebox_override("panel",D.panel(Color("171b35"),14));parent.add_child(frame);frame.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",12);frame.add_child(box);return box
+func portrait(parent: Node,id: String,extent: Vector2=Vector2(330,360)) -> Control:
+ var holder:=Control.new();holder.custom_minimum_size=extent;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;holder.size_flags_horizontal=Control.SIZE_EXPAND_FILL;holder.mouse_filter=Control.MOUSE_FILTER_IGNORE;parent.add_child(holder)
+ var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.8,extent.y/65);holder.add_child(actor)
+ holder.resized.connect(func()->void:actor.position=Vector2(holder.size.x/2,holder.size.y*.85));actor.position=Vector2(extent.x/2,extent.y*.85)
+ return holder
+func transition(destination: String) -> void:
+ if changing:return
+ changing=true;D.cancel_controls(ui)
+ var ticket:=generation
+ var tween:=create_tween();tween.tween_property(ui,"modulate:a",0.0,.15);await tween.finished
+ if not is_inside_tree() or ticket!=generation:changing=false;return
+ build(destination);ui.modulate.a=0
+ var intro:=create_tween();intro.tween_property(ui,"modulate:a",1.0,.15);await intro.finished;changing=false
+func build(destination: String) -> void:
+ clear_ui();screen=destination
+ match destination:
+  "title":title_screen()
+  "lobby":lobby_screen()
+  "rooms":rooms_screen()
+  "room":room_screen()
+  "characters":characters_screen()
+  "loading":loading_screen()
+  "match":hud()
+  "result":result_screen()
+ safe_layout()
+func title_screen() -> void:
+ background()
+ var start:=button("",func()->void:transition("lobby"));full(start,ui)
+ for state in ["normal","pressed","hover","hover_pressed"]:start.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ var box:=VBoxContainer.new();content.add_child(box)
+ var logo:=text("우울할 땐 도사",64,Color("fff1d1"));logo.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;logo.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));box.add_child(logo)
+ var sub:=text("월하의 생존전",24,Color("bcb0df"));sub.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(sub)
+ portrait(box,storage.data.daoist,Vector2(340,340))
+ var prompt:=text("화면을 터치하여 시작",26);prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(prompt)
+ var pulse:=prompt.create_tween().set_loops();pulse.tween_property(prompt,"modulate:a",.5,.9);pulse.tween_property(prompt,"modulate:a",1,.9)
+ var settings:=button("설정",show_settings);ui.add_child(settings);settings.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);settings.offset_left=-145;settings.offset_right=-28;settings.offset_top=25;settings.offset_bottom=83
+ # Keep the full-screen native touch target behind the real settings control.
+ ui.move_child(start,0)
+func lobby_screen() -> void:
+ var box:=page("우울할 땐 도사 · 메인 로비")
+ var row:=HBoxContainer.new();row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
+ portrait(row,storage.data.daoist,Vector2(480,380))
+ var menu:=panel(row);menu.add_child(text("오프라인 생존전",30,D.GOLD));menu.add_child(text("플레이어 1명 + 봇 5~7명\n10분 동안 생존하거나 모든 도사를 봉인하세요.",21))
+ menu.add_child(button("캐릭터 선택",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"),false))
+ menu.add_child(button("빠른 매치 · 봇 6인",func()->void:confirm("오프라인 봇 6인 방을 만듭니다.",func()->void:create_room("달빛 모의전",6,true)),true))
+ menu.add_child(button("게임 방",func()->void:transition("rooms"),true));menu.add_child(button("설정",show_settings))
+func rooms_screen() -> void:
+ var box:=page("게임 방 · 로컬 테스트 방만 표시")
+ var list:=panel(box);list.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ if room.is_empty():list.add_child(text("현재 생성된 테스트 방이 없습니다.",24))
+ else:
+  list.add_child(button("%s · 월하의 서원 · %d인 · %s"%[room.name,room.count,"경기 중" if rules!=null and rules.phase not in ["room","result"] else "대기 중"],func()->void:
+   if rules!=null and rules.phase not in ["room","result"]:notice("이미 경기가 진행 중입니다.")
+   else:transition("room"),true))
+ var row:=HBoxContainer.new();box.add_child(row)
+ row.add_child(button("방 만들기",room_dialog,true));row.add_child(button("빠른 입장",func()->void:
+  if room.is_empty():notice("입장할 테스트 방이 없습니다. 방을 만들어 주세요.")
+  else:transition("room")))
+ row.add_child(button("새로고침",func()->void:build("rooms")));row.add_child(button("뒤로가기",func()->void:transition("lobby")))
+func room_dialog() -> void:
+ var box:=popup("게임 방 만들기")
+ var name_input:=LineEdit.new();name_input.placeholder_text="방 이름";name_input.text="월하의 모의전";name_input.max_length=16;name_input.custom_minimum_size.y=56;name_input.add_theme_font_override("font",D.FONT);box.add_child(name_input)
+ var count:=OptionButton.new();count.add_item("6인전 · 도사4 / 요괴2");count.add_item("8인전 · 도사6 / 요괴2");count.custom_minimum_size.y=56;count.add_theme_font_override("font",D.FONT);box.add_child(count)
+ var bots_check:=CheckBox.new();bots_check.text="봇 자동 채우기";bots_check.button_pressed=true;bots_check.custom_minimum_size.y=56;bots_check.add_theme_font_override("font",D.FONT);box.add_child(bots_check)
+ box.add_child(text("맵: 월하의 서원 · 오프라인",20))
+ box.add_child(button("확인",func()->void:create_room(name_input.text,6 if count.selected==0 else 8,bots_check.button_pressed),true));box.add_child(button("취소",close_popup))
+func create_room(name_value: String,count: int,fill_bots: bool) -> void:
+ close_popup();cleanup_match();room={"name":name_value.strip_edges() if name_value.strip_edges()!="" else "도술 모의전","count":count,"fill":fill_bots};setup_participants();transition("room")
+func setup_participants(seed_value: int=0) -> void:
+ rules=Rules.new(seed_value);rules.add("human","나",storage.data.daoist,storage.data.yokai)
+ if room.fill:
+  for i in range(1,room.count):rules.add("bot-%d"%i,"도사 %d · 봇"%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[(i+1)%4].id)
+ result_seen=false;spectate="human";fixed_clock=0;bot_clock=0
+func room_screen() -> void:
+ if room.is_empty():build("rooms");return
+ var box:=page(room.name+" · 중립 대기실")
+ var body:=HBoxContainer.new();body.add_theme_constant_override("separation",22);body.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(body)
+ var preview:=panel(body);preview.add_child(text("월하의 서원",29,D.GOLD))
+ var image:=TextureRect.new();image.texture=load("res://assets/woo/worlds/moon_palace.png");image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;image.custom_minimum_size=Vector2(380,180);preview.add_child(image)
+ preview.add_child(text("도사팀 vs 요괴팀 · 10분\n역할은 시작 시 무작위 배정\n오프라인 · 서버 접속 없음",20))
+ preview.add_child(button("도사 / 요괴 캐릭터 사전 선택",func()->void:selection_return="room";selection_team="daoist";selection_id=storage.data.daoist;transition("characters")))
+ var members:=panel(body);members.add_child(text("참가자 %d/%d"%[rules.players.size(),room.count],25,D.GOLD))
+ for p in rules.players.values():
+  var row:=HBoxContainer.new();members.add_child(row)
+  var thumb:=TextureRect.new();thumb.texture=load(C.find(p.choices.daoist).sprite);thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;thumb.custom_minimum_size=Vector2(40,40);row.add_child(thumb)
+  row.add_child(text(p.name+" · "+("준비 완료" if p.ready else "대기"),19))
+ if not room.fill:members.add_child(button("빈 칸을 봇으로 채우기",func()->void:room.fill=true;setup_participants();build("room"),true))
+ var buttons:=HBoxContainer.new();box.add_child(buttons)
+ buttons.add_child(button("준비 취소" if rules.players.human.ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),true))
+ buttons.add_child(button("게임 시작",start_match,true));buttons.add_child(button("방 나가기",leave_room))
+func characters_screen() -> void:
+ var box:=page("캐릭터 선택 · 임시 데이터")
+ var tabs:=HBoxContainer.new();box.add_child(tabs)
+ for team in ["daoist","yokai"]:tabs.add_child(button("도사 · 생존/지원" if team=="daoist" else "요괴 · 추적/봉인",func()->void:selection_team=team;selection_id=storage.data[team];build("characters"),selection_team==team))
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",24);row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
+ var list:=panel(row)
+ for entry in C.catalog(selection_team):
+  var b:=button(("✓ " if selection_id==entry.id else "")+entry.name,func()->void:selection_id=entry.id;build("characters"),selection_id==entry.id);list.add_child(b)
+ var detail:=panel(row);var display:=HBoxContainer.new();detail.add_child(display);portrait(display,selection_id,Vector2(270,310));var selected:=C.find(selection_id)
+ var info:=VBoxContainer.new();info.custom_minimum_size.x=290;info.size_flags_horizontal=Control.SIZE_EXPAND_FILL;display.add_child(info)
+ info.add_child(text(selected.name,28,D.GOLD))
+ var passive:=text(selected.passive,18);passive.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;info.add_child(passive);info.add_child(text(selected.skill.name+" · %d초"%selected.skill.cd,23))
+ var desc:=text(selected.skill.description,19);desc.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;info.add_child(desc)
+ var bottom:=HBoxContainer.new();box.add_child(bottom)
+ bottom.add_child(button("선택하기",func()->void:
+  storage.data[selection_team]=selection_id
+  if storage.save()!=OK:notice("선택 상태 저장에 실패했습니다.");return
+  if rules!=null and rules.phase=="room":rules.players.human.choices[selection_team]=selection_id;rules.players.human.ready=false
+  transition(selection_return),true))
+ bottom.add_child(button("뒤로가기 · 취소",func()->void:transition(selection_return)))
+func start_match() -> void:
+ if changing or screen!="room":return
+ if rules.players.size()!=room.count:notice("필요한 인원이 없습니다. 빈 칸을 봇으로 채워 주세요.");return
+ if not rules.players.human.ready:notice("먼저 준비 완료를 눌러 주세요.");return
+ if not rules.start():notice("캐릭터·봇 참가 상태를 확인하세요.");return
+ sequence+=1;changing=true;load_match(sequence)
+func loading_screen() -> void:
+ var box:=page("월하의 서원 · 경기 준비")
+ var row:=HBoxContainer.new();row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
+ for team in ["daoist","yokai"]:
+  var team_box:=panel(row);team_box.add_child(text("도사팀" if team=="daoist" else "요괴팀",30,D.GOLD))
+  var names: Array[String]=[]
+  for p in rules.players.values():
+   if p.role==team:names.append(p.name+" · "+C.find(p.character).name)
+  var lead: Dictionary=rules.players.values().filter(func(p: Dictionary)->bool:return p.role==team)[0]
+  portrait(team_box,lead.character,Vector2(340,220));team_box.add_child(text("\n".join(names),18))
+  if team=="daoist":row.add_child(text("VS",64,D.GOLD))
+ status_label=text("리소스 준비 중…",22);box.add_child(status_label)
+ var bar:=ProgressBar.new();bar.name="ResourceProgress";bar.max_value=100;bar.custom_minimum_size.y=26;box.add_child(bar)
+ box.add_child(text("TIP · 구조 버튼을 4초 유지하세요. 서클은 양 팀 모두에게 적용됩니다.",18))
+func load_match(ticket: int) -> void:
+ build("loading");changing=true
+ await get_tree().process_frame;await get_tree().process_frame
+ var paths: Array=["res://scripts/survival/world.gd","res://assets/woo/worlds/plaza_ground.png"]
+ for path in paths:
+  var error:=ResourceLoader.load_threaded_request(path)
+  if error!=OK and error!=ERR_BUSY:load_error("맵 리소스 요청에 실패했습니다.");return
+ var bar: ProgressBar=ui.find_child("ResourceProgress",true,false)
+ for i in range(paths.size()):
+  while ticket==sequence:
+   var progress: Array=[];var state:=ResourceLoader.load_threaded_get_status(paths[i],progress)
+   if state==ResourceLoader.THREAD_LOAD_FAILED or state==ResourceLoader.THREAD_LOAD_INVALID_RESOURCE:load_error("리소스 로딩에 실패했습니다.");return
+   bar.value=(i+(float(progress[0]) if not progress.is_empty() else 0))/paths.size()*100
+   if state==ResourceLoader.THREAD_LOAD_LOADED:ResourceLoader.load_threaded_get(paths[i]);break
+   await get_tree().process_frame
+ if ticket!=sequence:return
+ bar.value=100;status_label.text="리소스 100% · 이동 경로와 충돌을 준비하는 중…"
+ var arena:=preload("res://scripts/seal/arena.gd").new("seowon");arena.assets.clear();arena.cache.clear()
+ nav=preload("res://scripts/simulation/navigation.gd").new(arena,false);await nav.build(get_tree())
+ if ticket!=sequence:return
+ status_label.text="캐릭터·카메라·경기 HUD 준비 중…"
+ world=load("res://scripts/survival/world.gd").new();world.rules=rules;add_child(world)
+ camera=Camera2D.new();camera.zoom=Vector2(2,2);camera.position=L.SPAWN;camera.position_smoothing_enabled=true;camera.position_smoothing_speed=7;camera.limit_left=0;camera.limit_top=0;camera.limit_right=int(L.SIZE.x);camera.limit_bottom=int(L.SIZE.y);world.add_child(camera);camera.make_current()
+ bots.clear()
+ for p in rules.players.values():
+  if p.id!="human":bots.append(preload("res://scripts/survival/bot.gd").new(rules,nav,p.id,int(p.color)))
+ update_avatars();await get_tree().process_frame
+ if not is_instance_valid(camera) or avatars.size()!=rules.players.size():load_error("참가자·카메라 초기화에 실패했습니다.");return
+ rules.ready_map();build("match");changing=false;paused=false;last_count=-1
+func load_error(message: String) -> void:
+ changing=false;cleanup_match();build("lobby");notice(message+"\n안전한 로비로 돌아왔습니다.")
+func hud() -> void:
+ var top:=PanelContainer.new();top.add_theme_stylebox_override("panel",D.panel(Color("15172d"),12));ui.add_child(top);top.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP);top.offset_left=-250;top.offset_right=250;top.offset_top=12;top.offset_bottom=100
+ timer_label=text("월하의 서원 · 10:00",25,D.GOLD);timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;top.add_child(timer_label)
+ status_label=text("",19);status_label.position=Vector2(28,100);ui.add_child(status_label)
+ stamina_label=text("",19);stamina_label.position=Vector2(28,138);ui.add_child(stamina_label)
+ var menu:=button("메뉴",pause_menu);ui.add_child(menu);menu.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);menu.offset_left=-330;menu.offset_right=-200;menu.offset_top=18;menu.offset_bottom=76
+ minimap=preload("res://scripts/survival/minimap.gd").new();minimap.rules=rules;ui.add_child(minimap);minimap.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);minimap.offset_left=-190;minimap.offset_right=-20;minimap.offset_top=15;minimap.offset_bottom=155
+ circle_label=text("",17);ui.add_child(circle_label);circle_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);circle_label.offset_left=-260;circle_label.offset_right=-20;circle_label.offset_top=160;circle_label.offset_bottom=230
+ stick=preload("res://scripts/joystick.gd").new();ui.add_child(stick);D.position_stick(stick)
+ var movement:=text("이동",20);stick.add_child(movement);movement.position=Vector2(64,158)
+ run_button=action("달리기","dodge",Vector2(-282,-126),Vector2(100,102))
+ run_button.button_down.connect(func()->void:rules.command("human","run",{"held":true}));run_button.button_up.connect(func()->void:rules.command("human","run",{"held":false}))
+ jump_button=action("점프","jump",Vector2(-392,-126),Vector2(100,102),func()->void:rules.command("human","jump"))
+ var spec: Dictionary=C.find(rules.players.human.character)
+ skill_button=action(spec.skill.name,spec.skill.icon,Vector2(-156,-330),Vector2(132,132),Callable(),preload("res://scripts/survival/aim_button.gd"));skill_button.directional=spec.skill.aim
+ skill_button.ability.connect(func(direction: Vector2)->void:rules.command("human","skill",{"aim":direction if direction!=Vector2.ZERO else Vector2.from_angle(rules.players.human.facing*PI/4)});aim=Vector2.ZERO)
+ skill_button.aimed.connect(func(direction: Vector2,cancelled: bool)->void:aim=direction;aim_cancelled=cancelled)
+ skill_button.tip_requested.connect(func()->void:skill_tip(spec.skill.name+" — "+spec.skill.description));skill_badge=skill_button.get_node("Badge")
+ action_button=action("봉인" if rules.players.human.role=="yokai" else "구조","capture" if rules.players.human.role=="yokai" else "rescue",Vector2(-170,-168),Vector2(146,146))
+ if rules.players.human.role=="yokai":action_button.pressed.connect(func()->void:rules.command("human","seal"))
+ else:
+  action_button.button_down.connect(func()->void:rules.command("human","rescue",{"target":rescue_target()}));action_button.button_up.connect(func()->void:rules.command("human","cancel_rescue"))
+ count_label=text("3",80,D.GOLD);ui.add_child(count_label);count_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER);count_label.offset_left=-220;count_label.offset_right=220;count_label.offset_top=-80;count_label.offset_bottom=80;count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ var spectator:=button("관전 대상",spectator_menu);spectator.name="Spectator";spectator.position=Vector2(28,185);ui.add_child(spectator)
+func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,callback: Callable=Callable(),type: Script=ButtonType) -> WooMobileButton:
+ var b:=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type);b.custom_minimum_size=extent;ui.add_child(b);b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=offset;b.size=extent
+ for state in ["normal","hover","pressed","hover_pressed"]:b.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:b.add_theme_color_override(state,Color(0,0,0,0))
+ var caption:=text(name_value,19);caption.name="Caption";caption.position=Vector2(0,extent.y-28);caption.size=Vector2(extent.x,28);caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;b.add_child(caption)
+ var badge:=preload("res://scripts/woo/skill_badge.gd").new();badge.name="Badge";badge.skill=icon;badge.position=Vector2(4,0);badge.size=Vector2(extent.x-8,extent.y-28);b.add_child(badge)
+ return b
+func rescue_target() -> String:
+ var p: Dictionary=rules.players.human;var found:="";var best:=58.0
+ for q in rules.players.values():
+  if q.captured and not q.eliminated and p.position.distance_to(q.position)<best and L.line(p.position,q.position):best=p.position.distance_to(q.position);found=q.id
+ return found
+func popup(title: String) -> VBoxContainer:
+ close_popup();D.cancel_controls(ui)
+ modal=Control.new();full(modal,ui);modal.mouse_filter=Control.MOUSE_FILTER_STOP
+ var shade:=ColorRect.new();shade.color=Color(.015,.015,.04,.85);full(shade,modal)
+ var center:=CenterContainer.new();full(center,modal)
+ var frame:=PanelContainer.new();frame.custom_minimum_size=Vector2(610,120);frame.add_theme_stylebox_override("panel",D.panel(Color("171b32"),16));center.add_child(frame)
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",14);frame.add_child(box);box.add_child(text(title,27,D.GOLD));return box
+func close_popup() -> void:
+ if is_instance_valid(modal):D.retire_inputs(modal);modal.queue_free()
+ modal=null
+func notice(message: String) -> void:
+ var box:=popup(message);box.add_child(button("확인",close_popup,true))
+func confirm(message: String,callback: Callable) -> void:
+ var box:=popup(message);var row:=HBoxContainer.new();box.add_child(row);row.add_child(button("취소",func()->void:
+  if screen=="match" and paused:pause_menu()
+  else:close_popup()));row.add_child(button("확인",func()->void:close_popup();callback.call(),true))
+func show_settings() -> void:
+ var box:=popup("설정")
+ for spec in [["배경음악","music"],["효과음","sfx"]]:
+  box.add_child(text(spec[0],20));var slider:=HSlider.new();slider.min_value=0;slider.max_value=1;slider.step=.05;slider.value=storage.data[spec[1]];slider.custom_minimum_size=Vector2(560,48);box.add_child(slider)
+  var key: String=spec[1];slider.value_changed.connect(func(value: float)->void:storage.data[key]=value;apply_settings())
+ var vibrate:=CheckBox.new();vibrate.text="진동 켜기";vibrate.button_pressed=storage.data.vibration;vibrate.add_theme_font_override("font",D.FONT);vibrate.custom_minimum_size.y=48;box.add_child(vibrate);vibrate.toggled.connect(func(value: bool)->void:storage.data.vibration=value)
+ var quality:=OptionButton.new();quality.add_item("보통 · 벚꽃 효과");quality.add_item("낮음 · 효과 축소");quality.selected=1 if storage.data.quality=="낮음" else 0;quality.custom_minimum_size.y=48;quality.add_theme_font_override("font",D.FONT);box.add_child(quality);quality.item_selected.connect(func(index: int)->void:storage.data.quality="낮음" if index==1 else "보통")
+ box.add_child(button("저장 및 닫기",func()->void:
+  if storage.save()!=OK:notice("설정을 저장하지 못했습니다.")
+  elif screen=="match" and paused:pause_menu()
+  else:close_popup(),true))
+func leave_room() -> void:confirm("게임 방에서 나가시겠습니까?",func()->void:cleanup_match();room={};transition("rooms"))
+func pause_menu() -> void:
+ if screen!="match":return
+ paused=true;world.process_mode=Node.PROCESS_MODE_DISABLED;rules.command("human","move",{"vector":Vector2.ZERO});rules.command("human","cancel_rescue")
+ var box:=popup("일시정지 · 오프라인 경기 전체 정지")
+ box.add_child(button("계속하기",resume_match,true));box.add_child(button("설정",show_settings));box.add_child(button("경기 나가기",func()->void:confirm("경기를 나가시겠습니까?",func()->void:cleanup_match();room={};paused=false;transition("lobby"))))
+func resume_match() -> void:
+ close_popup();paused=false
+ if is_instance_valid(world):world.process_mode=Node.PROCESS_MODE_INHERIT
+func skill_tip(message: String) -> void:
+ paused=true
+ if is_instance_valid(world):world.process_mode=Node.PROCESS_MODE_DISABLED
+ var box:=popup(message);box.add_child(button("닫기 · 경기 계속",resume_match))
+func spectator_menu() -> void:
+ if not rules.players.human.eliminated:return
+ paused=true
+ if is_instance_valid(world):world.process_mode=Node.PROCESS_MODE_DISABLED
+ var box:=popup("관전 대상")
+ for p in rules.players.values():
+  if not p.eliminated:box.add_child(button(p.name,func()->void:spectate=p.id;minimap.observer=p.id;resume_match()))
+ box.add_child(button("돌아가기",resume_match))
+func result_screen() -> void:
+ var box:=page(("승리" if rules.winner==rules.players.human.role else "패배")+" · "+("도사팀 승리 / 요괴팀 패배" if rules.winner=="daoist" else "요괴팀 승리 / 도사팀 패배"))
+ var center:=HBoxContainer.new();center.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(center);portrait(center,rules.players.human.character,Vector2(370,330))
+ var stats:=panel(center);stats.add_child(text("월하의 서원 · %02d:%02d"%[int(rules.elapsed)/60,int(rules.elapsed)%60],27,D.GOLD))
+ var me: Dictionary=rules.players.human
+ stats.add_child(text("내 역할: "+("도사" if me.role=="daoist" else "요괴"),24));stats.add_child(text("봉인 %d회 · 구조 %d회 · 생존 %.0f초"%[me.stats.seals,me.stats.rescues,me.alive_seconds],22))
+ for p in rules.players.values():stats.add_child(text(p.name+" · "+("도사" if p.role=="daoist" else "요괴")+" · "+("탈락" if p.eliminated else "생존"),18))
+ var row:=HBoxContainer.new();box.add_child(row);row.add_child(button("재경기",func()->void:cleanup_match();setup_participants();transition("room"),true));row.add_child(button("메인 로비",func()->void:cleanup_match();room={};transition("lobby")))
+func cleanup_match() -> void:
+ sequence+=1
+ if is_instance_valid(world):world.queue_free()
+ world=null;camera=null;avatars.clear();clones.clear();bots.clear();nav=null;paused=false;fixed_clock=0;bot_clock=0;aim=Vector2.ZERO
+func update_avatars() -> void:
+ if not is_instance_valid(world) or rules==null:return
+ var me: Dictionary=rules.players.human
+ if me.eliminated:
+  if not rules.players.has(spectate) or rules.players[spectate].eliminated:
+   var alive: Array=rules.players.values().filter(func(p: Dictionary)->bool:return not p.eliminated);spectate=alive[0].id if not alive.is_empty() else "human"
+ else:spectate="human"
+ var visible: Array=rules.visible(spectate);var seen: Array=[]
+ for info in visible:
+  var id: String=info.id if info.id!="" else "shape:"+str(info.position)
+  seen.append(id)
+  if not avatars.has(id):
+   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;world.add_child(actor);avatars[id]=actor
+   var label:=text("",10);label.name="Name";label.position=Vector2(-45,-66);label.size.x=90;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
+   var mark:=preload("res://scripts/seal/color_marker.gd").new();mark.actor=actor;mark.name="Identity";actor.add_child(mark)
+  var actor: WooActor=avatars[id];var previous:=actor.position;actor.position=info.position+Vector2(0,-L.elevation(info.position));actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=minf(20,actor.position.distance_to(previous))*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;actor.appearance_form="asset:"+info.form if info.form!="" else "human";actor.running=rules.players.get(info.id,{}).get("running",false)
+  actor.get_node("Name").text=info.name+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=info.form=="";actor.get_node("Identity").color_id=info.color
+  actor.modulate=Color("e2b2ff") if info.captured else (Color("c9ecff") if info.immune else Color.WHITE)
+ for id in avatars.keys():
+  if not seen.has(id):avatars[id].queue_free();avatars.erase(id)
+ var live_effects: Array=[]
+ for effect in rules.effects:
+  if effect.kind!="clone":continue
+  var key: String=str(effect.id);live_effects.append(key)
+  if not clones.has(key):
+   var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic;clone.collision_layer=0;clone.collision_mask=0;world.add_child(clone);clones[key]=clone
+  var clone: WooActor=clones[key];clone.position=effect.position;clone.facing=effect.facing;clone.velocity=Vector2(36,0);clone.gait_phase+=.15;clone.gait_weight=1
+ for key in clones.keys():
+  if not live_effects.has(key):clones[key].queue_free();clones.erase(key)
+ if is_instance_valid(camera):camera.position=rules.players[spectate].position+Vector2(0,-30-L.elevation(rules.players[spectate].position));world.observer=rules.players[spectate].position
+func safe_layout() -> void:
+ if not is_instance_valid(content):return
+ var left:=26;var right:=26;var bottom:=18
+ if OS.get_name()=="Android":
+  var area:=DisplayServer.get_display_safe_area();var display:=DisplayServer.screen_get_size();var view:=get_viewport().get_visible_rect().size
+  if display.x>0:left=maxi(left,int(area.position.x*view.x/display.x));right=maxi(right,int((display.x-area.end.x)*view.x/display.x));bottom=maxi(bottom,int((display.y-area.end.y)*view.y/display.y))
+ content.add_theme_constant_override("margin_left",left);content.add_theme_constant_override("margin_right",right);content.add_theme_constant_override("margin_bottom",bottom)
+ if screen=="match" and is_instance_valid(stick):D.position_stick(stick)
+func _process(delta: float) -> void:
+ render_clock+=delta
+ if screen!="match" or rules==null or not is_instance_valid(world):return
+ var me: Dictionary=rules.players.human
+ if not paused and not backgrounded and modal==null:
+  if rules.available(me):rules.command("human","move",{"vector":stick.vector})
+  fixed_clock+=minf(delta,.25)
+  while fixed_clock>=.05:
+   rules.tick(.05);fixed_clock-=.05;bot_clock+=.05
+   if bot_clock>=.35 and rules.phase=="live":
+    var spent:=bot_clock;bot_clock=0
+    for bot in bots:bot.think(spent)
+ if rules.phase=="result" and not result_seen:result_seen=true;build("result");return
+ world.aim=aim;world.aim_cancelled=aim_cancelled;world.aim_active=skill_button.held and skill_button.directional and aim!=Vector2.ZERO
+ update_avatars();update_hud()
+func update_hud() -> void:
+ var me: Dictionary=rules.players.human;var live: bool=rules.available(me) and not paused and not backgrounded and modal==null
+ stick.input_enabled=live
+ run_button.disabled=not live or me.exhausted;jump_button.disabled=not live or me.jump>0
+ var spec: Dictionary=C.find(me.character);var remaining: float=maxf(0,me.cd.get(spec.active,0)-rules.elapsed)
+ skill_badge.remaining=remaining;skill_badge.maximum=spec.skill.cd;skill_button.disabled=not live or (remaining>0 and not (spec.active=="transform" and me.form!=""))
+ action_button.visible=me.role=="yokai" or rescue_target()!="" or me.progress>0
+ action_button.disabled=not live or (me.role=="yokai" and me.cd.get("seal",0)>rules.elapsed)
+ var action_badge: WooSkillBadge=action_button.get_node("Badge");action_badge.remaining=maxf(0,me.cd.get("seal",0)-rules.elapsed) if me.role=="yokai" else maxf(0,4-me.progress) if me.progress>0 else 0.0;action_badge.maximum=12 if me.role=="yokai" else 4
+ var dao: int=rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.eliminated).size()
+ timer_label.text="월하의 서원 · %02d:%02d\n생존 도사 %d · 요괴 2"%[int(ceil(600-rules.elapsed))/60,int(ceil(600-rules.elapsed))%60,dao]
+ var zone: Dictionary=rules.circle();circle_label.text="안전구역 %d단계\n다음 축소 %02d:%02d"%[zone.stage,int(zone.until)/60,int(zone.until)%60]
+ status_label.text=("봉인 · 탈락까지 %.0f초"%maxf(0,me.deadline-rules.elapsed)) if me.captured else ("최종 탈락 · 관전 중" if me.eliminated else ("서클 밖 · 안으로 이동하세요" if me.outside>0 else ("재봉인 면역 %.1f초"%maxf(0,me.immune-rules.elapsed) if me.immune>rules.elapsed else "내 역할: "+("도사" if me.role=="daoist" else "요괴"))))
+ if skill_button.held and skill_button.directional:status_label.text="위로 멀리 끌면 취소" if not aim_cancelled else "취소 · 쿨타임 없음"
+ stamina_label.text="달리기 %d%%"%int(me.stamina)+(" · 회복 중" if me.exhausted else "")
+ if rules.phase=="countdown":
+  var number:=ceili(rules.countdown)
+  if number!=last_count:sound.play_clip("button");last_count=number
+  count_label.text=str(number);count_label.show()
+ else:count_label.visible=rules.elapsed<.55;count_label.text="시작!"
+ ui.get_node_or_null("Spectator").visible=me.eliminated
+func back() -> void:
+ if changing:return
+ if modal!=null:
+  if screen=="match":resume_match()
+  else:close_popup()
+  return
+ match screen:
+  "title","lobby":confirm("게임을 종료하시겠습니까?",func()->void:get_tree().quit())
+  "rooms":transition("lobby")
+  "room":leave_room()
+  "characters":transition(selection_return)
+  "match":pause_menu()
+  "result":cleanup_match();room={};transition("lobby")
+func _notification(what: int) -> void:
+ if what==NOTIFICATION_WM_GO_BACK_REQUEST:back()
+ if what in [NOTIFICATION_APPLICATION_PAUSED,NOTIFICATION_APPLICATION_FOCUS_OUT]:
+  backgrounded=true
+  if is_instance_valid(sound):sound.set_backgrounded(true)
+  if screen=="match":
+   paused=true;D.cancel_controls(ui)
+   if is_instance_valid(world):world.process_mode=Node.PROCESS_MODE_DISABLED
+ elif what in [NOTIFICATION_APPLICATION_RESUMED,NOTIFICATION_APPLICATION_FOCUS_IN]:
+  backgrounded=false
+  if is_instance_valid(sound):sound.set_backgrounded(false)
+  if screen=="match" and modal==null:pause_menu()

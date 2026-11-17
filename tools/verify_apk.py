@@ -85,7 +85,7 @@ def main():
         permissions = tool('aapt', 'dump', 'permissions', args.apk)
         declared = set(re.findall(r"uses-permission: name='([^']+)'", permissions))
         check(declared == {'android.permission.INTERNET'}, 'Only Internet permission for dedicated multiplayer; offline adventure preserved')
-        check("application-label:'도사: 전우치'" in badging, 'New game display title')
+        check("application-label:'우울할 땐 도사'" in badging, 'New game display title')
         tool('zipalign', '-c', '-P', '16', '4', args.apk)
         check(True, '4-byte ZIP / 16 KiB native library alignment')
         version = re.search(r"versionName='([^']+)'", badging)
