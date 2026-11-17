@@ -1,0 +1,32 @@
+{
+  "platform": "Linux headless; warm process, not Android or cold boot",
+  "samples": [
+    {
+      "pass": 0,
+      "plaza_ms": 4720.502,
+      "world_ms": {
+        "fox_forest": 16.366,
+        "moon_palace": 57.685,
+        "red_sea": 49.595
+      }
+    },
+    {
+      "pass": 1,
+      "plaza_ms": 4704.001,
+      "world_ms": {
+        "fox_forest": 16.079,
+        "moon_palace": 13.468,
+        "red_sea": 7.159
+      }
+    },
+    {
+      "pass": 2,
+      "plaza_ms": 4684.165,
+      "world_ms": {
+        "fox_forest": 16.264,
+        "moon_palace": 13.491,
+        "red_sea": 7.271
+      }
+    }
+  ]
+}

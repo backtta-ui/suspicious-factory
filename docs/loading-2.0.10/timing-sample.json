@@ -1,0 +1,277 @@
+{
+  "checks": 68,
+  "failures": 0,
+  "platform": "Linux headless; not Android hardware",
+  "requests": [
+    {
+      "destination": "initial",
+      "elapsed_ms": 401.911,
+      "frames": 24,
+      "max_frame_ms": 43.246,
+      "phases": [
+        {
+          "elapsed_ms": 133.338,
+          "name": "resources_ready"
+        },
+        {
+          "elapsed_ms": 16.08,
+          "name": "plaza_attached"
+        },
+        {
+          "elapsed_ms": 149.519,
+          "name": "actors_camera_hud"
+        }
+      ],
+      "playable_ms": 401.974,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 91.945,
+      "frames": 4,
+      "max_frame_ms": 16.74,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "fox_forest",
+      "elapsed_ms": 1974.407,
+      "frames": 120,
+      "max_frame_ms": 21.22,
+      "phases": [],
+      "playable_ms": 2674.75,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.085,
+      "frames": 101,
+      "max_frame_ms": 19.461,
+      "phases": [],
+      "playable_ms": 2367.257,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 43.581,
+      "frames": 3,
+      "max_frame_ms": 13.363,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "fox_forest",
+      "elapsed_ms": 1986.8,
+      "frames": 120,
+      "max_frame_ms": 20.628,
+      "phases": [],
+      "playable_ms": 2687.174,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.429,
+      "frames": 101,
+      "max_frame_ms": 17.705,
+      "phases": [],
+      "playable_ms": 2383.395,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 62.141,
+      "frames": 3,
+      "max_frame_ms": 16.833,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "moon_palace",
+      "elapsed_ms": 1737.541,
+      "frames": 105,
+      "max_frame_ms": 18.355,
+      "phases": [],
+      "playable_ms": 2437.87,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1707.805,
+      "frames": 101,
+      "max_frame_ms": 17.358,
+      "phases": [],
+      "playable_ms": 2383.513,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 62.076,
+      "frames": 3,
+      "max_frame_ms": 16.832,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "moon_palace",
+      "elapsed_ms": 1737.574,
+      "frames": 105,
+      "max_frame_ms": 18.182,
+      "phases": [],
+      "playable_ms": 2437.824,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1707.942,
+      "frames": 101,
+      "max_frame_ms": 18.662,
+      "phases": [],
+      "playable_ms": 2383.468,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 62.16,
+      "frames": 3,
+      "max_frame_ms": 16.802,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "red_sea",
+      "elapsed_ms": 1737.661,
+      "frames": 105,
+      "max_frame_ms": 18.323,
+      "phases": [],
+      "playable_ms": 2437.795,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.571,
+      "frames": 101,
+      "max_frame_ms": 17.956,
+      "phases": [],
+      "playable_ms": 2383.512,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 62.413,
+      "frames": 3,
+      "max_frame_ms": 16.882,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "red_sea",
+      "elapsed_ms": 1737.238,
+      "frames": 105,
+      "max_frame_ms": 20.989,
+      "phases": [],
+      "playable_ms": 2437.527,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.294,
+      "frames": 101,
+      "max_frame_ms": 18.149,
+      "phases": [],
+      "playable_ms": 2383.618,
+      "status": "PASS"
+    },
+    {
+      "destination": "gallery",
+      "elapsed_ms": 62.086,
+      "frames": 3,
+      "max_frame_ms": 16.87,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "moon_palace",
+      "elapsed_ms": 1737.549,
+      "frames": 105,
+      "max_frame_ms": 18.184,
+      "phases": [],
+      "playable_ms": 2437.802,
+      "status": "PASS"
+    },
+    {
+      "destination": "plaza",
+      "elapsed_ms": 449.542,
+      "frames": 27,
+      "max_frame_ms": 40.318,
+      "phases": [
+        {
+          "elapsed_ms": 166.8,
+          "name": "resources_ready"
+        },
+        {
+          "elapsed_ms": 10.958,
+          "name": "plaza_attached"
+        },
+        {
+          "elapsed_ms": 150.428,
+          "name": "actors_camera_hud"
+        }
+      ],
+      "playable_ms": 449.691,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1707.507,
+      "frames": 101,
+      "max_frame_ms": 16.888,
+      "phases": [],
+      "playable_ms": 2383.863,
+      "status": "PASS"
+    },
+    {
+      "destination": "practice",
+      "elapsed_ms": 107.051,
+      "frames": 4,
+      "max_frame_ms": 16.751,
+      "phases": [],
+      "playable_ms": 107.08,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 67.309,
+      "frames": 2,
+      "max_frame_ms": 41.07,
+      "phases": [],
+      "playable_ms": 67.349,
+      "status": "PASS"
+    },
+    {
+      "destination": "practice",
+      "elapsed_ms": 0.413,
+      "frames": 0,
+      "max_frame_ms": 0.0,
+      "phases": [],
+      "status": "PASS"
+    },
+    {
+      "destination": "practice",
+      "elapsed_ms": 208.308,
+      "reason": "필요한 리소스를 찾을 수 없습니다.",
+      "status": "FAIL"
+    },
+    {
+      "destination": "practice",
+      "elapsed_ms": 33.512,
+      "reason": "필요한 리소스를 찾을 수 없습니다.",
+      "status": "FAIL"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 25.095,
+      "reason": "카메라 테스트 오류",
+      "status": "FAIL"
+    }
+  ]
+}

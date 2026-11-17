@@ -1,0 +1,197 @@
+{
+  "platform": "Linux headless; warm process; foreground; no other local Godot jobs during sample; not Android",
+  "requests": [
+    {
+      "destination": "initial",
+      "elapsed_ms": 502.64,
+      "frames": 30,
+      "max_frame_ms": 44.135,
+      "phases": [
+        {
+          "elapsed_ms": 233.555,
+          "name": "resources_ready"
+        },
+        {
+          "elapsed_ms": 15.598,
+          "name": "plaza_attached"
+        },
+        {
+          "elapsed_ms": 150.102,
+          "name": "actors_camera_hud"
+        }
+      ],
+      "playable_ms": 502.708,
+      "status": "PASS"
+    },
+    {
+      "destination": "initial",
+      "elapsed_ms": 500.14,
+      "frames": 30,
+      "max_frame_ms": 39.56,
+      "phases": [
+        {
+          "elapsed_ms": 233.338,
+          "name": "resources_ready"
+        },
+        {
+          "elapsed_ms": 12.014,
+          "name": "plaza_attached"
+        },
+        {
+          "elapsed_ms": 149.748,
+          "name": "actors_camera_hud"
+        }
+      ],
+      "playable_ms": 500.193,
+      "status": "PASS"
+    },
+    {
+      "destination": "initial",
+      "elapsed_ms": 516.77,
+      "frames": 31,
+      "max_frame_ms": 39.743,
+      "phases": [
+        {
+          "elapsed_ms": 250.06,
+          "name": "resources_ready"
+        },
+        {
+          "elapsed_ms": 11.622,
+          "name": "plaza_attached"
+        },
+        {
+          "elapsed_ms": 150.349,
+          "name": "actors_camera_hud"
+        }
+      ],
+      "playable_ms": 516.819,
+      "status": "PASS"
+    },
+    {
+      "destination": "fox_forest",
+      "elapsed_ms": 1914.475,
+      "frames": 115,
+      "max_frame_ms": 20.745,
+      "phases": [],
+      "playable_ms": 2614.774,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.045,
+      "frames": 101,
+      "max_frame_ms": 16.802,
+      "phases": [],
+      "playable_ms": 2383.501,
+      "status": "PASS"
+    },
+    {
+      "destination": "fox_forest",
+      "elapsed_ms": 1965.17,
+      "frames": 118,
+      "max_frame_ms": 20.94,
+      "phases": [],
+      "playable_ms": 2665.555,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.551,
+      "frames": 101,
+      "max_frame_ms": 18.597,
+      "phases": [],
+      "playable_ms": 2383.679,
+      "status": "PASS"
+    },
+    {
+      "destination": "moon_palace",
+      "elapsed_ms": 1748.654,
+      "frames": 105,
+      "max_frame_ms": 18.363,
+      "phases": [],
+      "playable_ms": 2448.771,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1707.972,
+      "frames": 101,
+      "max_frame_ms": 19.521,
+      "phases": [],
+      "playable_ms": 2383.734,
+      "status": "PASS"
+    },
+    {
+      "destination": "moon_palace",
+      "elapsed_ms": 1748.815,
+      "frames": 105,
+      "max_frame_ms": 18.542,
+      "phases": [],
+      "playable_ms": 2449.002,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1714.988,
+      "frames": 101,
+      "max_frame_ms": 42.61,
+      "phases": [],
+      "playable_ms": 2372.607,
+      "status": "PASS"
+    },
+    {
+      "destination": "red_sea",
+      "elapsed_ms": 1748.711,
+      "frames": 105,
+      "max_frame_ms": 18.394,
+      "phases": [],
+      "playable_ms": 2448.945,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1708.804,
+      "frames": 101,
+      "max_frame_ms": 17.576,
+      "phases": [],
+      "playable_ms": 2383.579,
+      "status": "PASS"
+    },
+    {
+      "destination": "red_sea",
+      "elapsed_ms": 1748.909,
+      "frames": 105,
+      "max_frame_ms": 18.392,
+      "phases": [],
+      "playable_ms": 2449.124,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 1707.953,
+      "frames": 101,
+      "max_frame_ms": 16.83,
+      "phases": [],
+      "playable_ms": 2383.485,
+      "status": "PASS"
+    },
+    {
+      "destination": "practice",
+      "elapsed_ms": 109.248,
+      "frames": 4,
+      "max_frame_ms": 16.733,
+      "phases": [],
+      "playable_ms": 109.302,
+      "status": "PASS"
+    },
+    {
+      "destination": "return",
+      "elapsed_ms": 58.647,
+      "frames": 2,
+      "max_frame_ms": 29.897,
+      "phases": [],
+      "playable_ms": 58.69,
+      "status": "PASS"
+    }
+  ]
+}

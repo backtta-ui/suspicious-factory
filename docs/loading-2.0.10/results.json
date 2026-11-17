@@ -1,0 +1,590 @@
+{
+  "source": "873b2775187e0eeb88429d7ec64deb86f6cac321",
+  "executed_cases": 83,
+  "counts": {
+    "PASS": 83,
+    "FAIL": 0
+  },
+  "android_device": false,
+  "cases": [
+    {
+      "id": "loading_boot:2",
+      "status": "PASS",
+      "detail": "configured bootstrap immediately displays common loading",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_boot:3",
+      "status": "PASS",
+      "detail": "threaded bootstrap hands over to existing title scene",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_boot:4",
+      "status": "PASS",
+      "detail": "title menu remains the first playable screen",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_boot:5",
+      "status": "PASS",
+      "detail": "bootstrap fade stays above the ready title canvas",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_boot:6",
+      "status": "PASS",
+      "detail": "background state carries from bootstrap into original title audio",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:2",
+      "status": "PASS",
+      "detail": "invalid server address clears connection overlay",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:3",
+      "status": "PASS",
+      "detail": "connection failure remains as visible actionable status",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:4",
+      "status": "PASS",
+      "detail": "network connection never masquerades as local map preparation",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:5",
+      "status": "PASS",
+      "detail": "valid connection attempt uses shared animated art and network message",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:6",
+      "status": "PASS",
+      "detail": "cancel stops actual connection and removes waiting overlay",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:7",
+      "status": "PASS",
+      "detail": "Android back exits connection UI safely",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_network_ui:8",
+      "status": "PASS",
+      "detail": "connection errors and cancellation preserve single-player save",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:2",
+      "status": "PASS",
+      "detail": "baked story graph matches every original geometry-validated connection",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:3",
+      "status": "PASS",
+      "detail": "initial input immediately creates shared loading overlay",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:4",
+      "status": "PASS",
+      "detail": "duplicate start and Android back cannot create or expose another scene",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:5",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:6",
+      "status": "PASS",
+      "detail": "world, actor and camera ready before input resumes",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:7",
+      "status": "PASS",
+      "detail": "backgrounded load keeps player paused",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:8",
+      "status": "PASS",
+      "detail": "foreground resumes loaded world without a stuck pause",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:9",
+      "status": "PASS",
+      "detail": "one plaza exists and temporary resource holds are released",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:10",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:11",
+      "status": "PASS",
+      "detail": "gallery prepares before displaying UI",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:12",
+      "status": "PASS",
+      "detail": "gallery commits its completed return anchor before world entry",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:13",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:14",
+      "status": "PASS",
+      "detail": "fox_forest actual first/repeat destination ready",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:15",
+      "status": "PASS",
+      "detail": "fox_forest appearance and camera retained",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:16",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:17",
+      "status": "PASS",
+      "detail": "actual retry route prepares a fresh mission before restoring controls",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:18",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:19",
+      "status": "PASS",
+      "detail": "fox_forest return restores plaza anchor",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:20",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:21",
+      "status": "PASS",
+      "detail": "gallery prepares before displaying UI",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:22",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:23",
+      "status": "PASS",
+      "detail": "fox_forest actual first/repeat destination ready",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:24",
+      "status": "PASS",
+      "detail": "fox_forest appearance and camera retained",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:25",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:26",
+      "status": "PASS",
+      "detail": "fox_forest return restores plaza anchor",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:27",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:28",
+      "status": "PASS",
+      "detail": "gallery prepares before displaying UI",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:29",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:30",
+      "status": "PASS",
+      "detail": "moon_palace actual first/repeat destination ready",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:31",
+      "status": "PASS",
+      "detail": "moon_palace appearance and camera retained",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:32",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:33",
+      "status": "PASS",
+      "detail": "moon_palace return restores plaza anchor",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:34",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:35",
+      "status": "PASS",
+      "detail": "gallery prepares before displaying UI",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:36",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:37",
+      "status": "PASS",
+      "detail": "moon_palace actual first/repeat destination ready",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:38",
+      "status": "PASS",
+      "detail": "moon_palace appearance and camera retained",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:39",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:40",
+      "status": "PASS",
+      "detail": "moon_palace return restores plaza anchor",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:41",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:42",
+      "status": "PASS",
+      "detail": "gallery prepares before displaying UI",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:43",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:44",
+      "status": "PASS",
+      "detail": "red_sea actual first/repeat destination ready",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:45",
+      "status": "PASS",
+      "detail": "red_sea appearance and camera retained",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:46",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:47",
+      "status": "PASS",
+      "detail": "red_sea return restores plaza anchor",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:48",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:49",
+      "status": "PASS",
+      "detail": "gallery prepares before displaying UI",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:50",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:51",
+      "status": "PASS",
+      "detail": "red_sea actual first/repeat destination ready",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:52",
+      "status": "PASS",
+      "detail": "red_sea appearance and camera retained",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:53",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:54",
+      "status": "PASS",
+      "detail": "red_sea return restores plaza anchor",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:55",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:56",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:57",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:58",
+      "status": "PASS",
+      "detail": "continue waits for both plaza and saved adventure preparation",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:59",
+      "status": "PASS",
+      "detail": "continue restores saved adventure position",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:60",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:61",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:62",
+      "status": "PASS",
+      "detail": "duplicate training entry cannot replace selected skill",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:63",
+      "status": "PASS",
+      "detail": "transition reaches ready state",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:64",
+      "status": "PASS",
+      "detail": "training return does not mutate real progression",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:65",
+      "status": "PASS",
+      "detail": "saving during preparation preserves the last committed save",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:66",
+      "status": "PASS",
+      "detail": "overlay animation continues across waiting frames",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:67",
+      "status": "PASS",
+      "detail": "missing resource produces explicit recoverable failure",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:68",
+      "status": "PASS",
+      "detail": "failure retry releases old request and runs once",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:69",
+      "status": "PASS",
+      "detail": "Android back exits failure to preserved safe scene",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:70",
+      "status": "PASS",
+      "detail": "error recovery preserves appearance and equipment",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:71",
+      "status": "PASS",
+      "detail": "missing camera recovery recreates a safe plaza camera",
+      "method": "Godot runtime; not Android hardware"
+    },
+    {
+      "id": "loading_system:72",
+      "status": "PASS",
+      "detail": "camera failure can return to safe playable plaza",
+      "method": "Godot runtime; not Android hardware"
+    }
+  ],
+  "fixed_issues": [
+    {
+      "status": "FIXED",
+      "detail": "Repeated plaza geometry validation removed and equivalence checked"
+    },
+    {
+      "status": "FIXED",
+      "detail": "Threaded destination resources and cooperative scene setup"
+    },
+    {
+      "status": "FIXED",
+      "detail": "Gallery input release after layout"
+    },
+    {
+      "status": "FIXED",
+      "detail": "Bootstrap fade priority and saved return anchor transaction"
+    }
+  ],
+  "blocked": [
+    {
+      "status": "BLOCKED",
+      "detail": "Physical Android touch/lock/OS-kill tests"
+    },
+    {
+      "status": "BLOCKED",
+      "detail": "Android loading/GPU/FPS/thermal/memory measurements"
+    },
+    {
+      "status": "BLOCKED",
+      "detail": "Public-server match on 6–8 Android devices"
+    }
+  ],
+  "apk": {
+    "status": "passed",
+    "apk": "/workspace/suspicious-factory/builds/jeon-woochi-2.0.10.apk",
+    "checked_at": "2026-11-17T08:20:52.279983+00:00",
+    "device_test": "not_performed",
+    "checks": [
+      "APK exists and is nonempty",
+      "ZIP integrity",
+      "Android manifest and executable bytecode present",
+      "Godot ARM64 engine present",
+      "Bundled font license present",
+      "Splash image present",
+      "HD hero, environment atlas and title art packaged",
+      "Baked low-draw-call terrain packaged",
+      "All five offline sound effects packaged",
+      "Licensed Korean music and attribution bundled",
+      "Expanded plaza art atlases bundled",
+      "V1.2 NPC animation atlas and local title shader bundled",
+      "V1.3 painting, forest, goblin, combat and RPG resources bundled",
+      "V1.3 terrain and combat audio bundled",
+      "V1.4 action poses, unique item art, controller, bundle UI and ambience bundled",
+      "V2.0 canonical hero, skill atlas and real multiplayer protocol bundled",
+      "Layered wardrobe, persistence, live preview and attack VFX bundled",
+      "Clean head atlas, per-character attachments and hair/headwear coverage bundled",
+      "Offline practice map, isolated session and shared spell rules bundled",
+      "Random arenas, verified acquisition, signed progress and shape extraction bundled",
+      "Four complete base characters and real directional customization motion atlases bundled",
+      "Three-world gallery and playable palace/coast resources bundled",
+      "Factory/network game resources removed",
+      "Development files excluded",
+      "APK cryptographic signature valid",
+      "Signing certificate fingerprint readable",
+      "Expected package ID",
+      "Minimum Android 10 / API 29",
+      "Target API at least 35",
+      "ARM64-only build",
+      "Landscape orientation",
+      "Android automatic data backup disabled",
+      "Only Internet permission for dedicated multiplayer; offline adventure preserved",
+      "New game display title",
+      "4-byte ZIP / 16 KiB native library alignment",
+      "Version name readable"
+    ],
+    "signer_sha256": "ee267fff32215cc3d914a4c96a2e2f4a87e640490e471c820128deff48ff5b39",
+    "version": "2.0.10",
+    "target_api": 36,
+    "bytes": 121864925,
+    "sha256": "e06fc1e403c405bdd520cd9ce8ea39754cef40c2fda3970166d3b02a248561f2"
+  }
+}

@@ -1,22 +1,24 @@
-# 도사: 전우치 — V2.0 RPG UI/UX 개편·통합 QA 2.0.9
+# 도사: 전우치 — V2.0 공통 로딩·화면 전환 개선 2.0.10
 
 Godot 4.6.3 / GDScript로 만든 Android 도술 어드벤처와 서버 권한 6~8인 추리·추격 게임입니다. 계월촌의 다섯 구역을 탐험하고 그림 속 ‘여우의 숲’에서 도깨비 세 마리와 전투한 뒤 보상을 얻어 돌아옵니다. 기존 GitHub 저장소와 Android 패키지·서명·내보내기 기반을 유지하고 게임을 전면 개편했습니다.
 
-[최신 갤럭시 APK 다운로드 · Actions](https://github.com/backtta-ui/suspicious-factory/actions/runs/44034709289)
+[최신 갤럭시 APK 다운로드 · Actions](https://github.com/backtta-ui/suspicious-factory/actions/runs/44047880536)
 
-GitHub 로그인 → 아래 **Artifacts → jeon-woochi-verified-apk** → ZIP 압축 풀기 → APK를 기존 앱 위에 설치합니다. 직접 분할 파일을 합칠 필요는 없습니다. [2.0.9 UI 개편·QA·실제 화면·변경 파일·미완료](docs/QA-2.0.9.md).
+GitHub 로그인 → 아래 **Artifacts → jeon-woochi-verified-apk** → ZIP 압축 풀기 → APK를 기존 앱 위에 설치합니다. 직접 분할 파일을 합칠 필요는 없습니다. [2.0.10 로딩 원인·측정·화면·변경 파일·미검증 항목](docs/LOADING-2.0.10.md).
 
-1,099개 최신 QA 상태: PASS1,039 / 수정 후 통과41 / FAIL0 / MISSING12 / BLOCKED4 / 기획 검토3. 범위 내 재검사 결과이며 갤럭시 실기기나 모든 에셋의 상용 품질 합격을 뜻하지 않습니다. [이전 도술14개 비교](docs/TRAINING-2.0.7.md).
+로딩 관련83사례 PASS, 기존29개 기본 스위트 및 저장 재시작·로컬 소켓 회귀 검사와 APK 검증36항목 통과. 갤럭시 실기기 합격을 뜻하지 않습니다. [이전2.0.9 전체 UI/QA 원장](docs/QA-2.0.9.md)은 보존했습니다. [이전 도술14개 비교](docs/TRAINING-2.0.7.md).
+
+부적·도력이 움직이는 공통 로딩, 비동기 목적지 리소스 준비, 프레임 분산 생성, 중복 입력 잠금과 실패 복구를 적용했습니다. 광장 입장 때 반복하던 길찾기 지형 검사를 제거했습니다. 전후 수치는 Linux 관측이며 Android 실기기 FPS로 주장하지 않습니다.
 
 새 UI는 **5개 아이콘 메인 메뉴 → 도사의 옷장 → 3영역 도술 도감**으로 연결됩니다. 실제 캐릭터와 저장/장착 데이터를 사용하며, 수련 체험으로 실제 해금 기록은 바뀌지 않습니다. [옷장](docs/qa-2.0.9/wardrobe.png) · [도감](docs/qa-2.0.9/menu-spells.png) · [메뉴](docs/qa-2.0.9/main-menu.png).
 
 **통합 개선 전체 완료판은 아닙니다.** 일부 방향별 장식/의상 원화, 추가 동물 동작, 모든 도술의 상용 수준 이펙트와 갤럭시 실기기 검증은 남아 있습니다.
 
-[이전 2.0.8 설치용 APK 보존 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/44009435612) · [이전 2.0.8 QA](docs/QA-2.0.8.md)
+[이전2.0.9 설치용 APK 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/44034709289) · [이전 2.0.8 설치용 APK 보존 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/44009435612) · [이전 2.0.8 QA](docs/QA-2.0.8.md)
 
 [이전 2.0.6 APK 보존 링크](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/b7c5e0536c85b0c88a6aba34d3d85fb7e84e7b65/jeon-woochi-2.0.6.apk)
 
-Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.9, versionCode는 20입니다.
+Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.10, versionCode는 21입니다.
 
 [V2.0 구현·검증·미완료 보고](docs/V2.0.md) · [휴대폰에서 무료 Render 서버 배포](docs/V2.0-SERVER.md)
 
@@ -40,7 +42,7 @@ Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 →
 
 [오프라인 도술 익히기: 입장·도술 14개·화면·검증](docs/PRACTICE-2.0.4.md)
 
-광장 동쪽 **도술 익히기** 현판 앞에서 입장하거나 **메뉴 → 도술 → 체험하기**를 누르세요. 서버 없이 모든 등록 도술을 시험하며 실제 습득/장착/아이템/승리 기록은 변경하지 않습니다.
+광장 동쪽 **도술 익히기** 현판 앞에서 입장하거나 **메뉴 → 도술 도감 → 체험하기**를 누르세요. 서버 없이 모든 등록 도술을 시험하며 실제 습득/장착/아이템/승리 기록은 변경하지 않습니다.
 
 ## 플레이
 

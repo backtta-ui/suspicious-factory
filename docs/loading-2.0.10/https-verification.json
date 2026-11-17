@@ -1,0 +1,19 @@
+{
+  "download_ref": "4f57d3dff86186b989e2c7ec83606e2fc27b581a",
+  "source": "873b2775187e0eeb88429d7ec64deb86f6cac321",
+  "parts": [
+    {
+      "name": "jeon-woochi-2.0.10.apk.part01",
+      "bytes": 83886080,
+      "sha256": "3373bd903d995984393d63637671df251bc1c6bc79be717b42ca76e89d371308"
+    },
+    {
+      "name": "jeon-woochi-2.0.10.apk.part02",
+      "bytes": 37978845,
+      "sha256": "fa7731b190125ba28d7a5538b30b377a920298d4eedefcca1058df3aec67d571"
+    }
+  ],
+  "sha256": "e06fc1e403c405bdd520cd9ce8ea39754cef40c2fda3970166d3b02a248561f2",
+  "status": "passed",
+  "method": "Actual public HTTPS redownload, streamed in manifest order"
+}
