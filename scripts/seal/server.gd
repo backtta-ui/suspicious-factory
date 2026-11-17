@@ -30,7 +30,7 @@ const Loadout=preload("res://scripts/seal/loadout.gd")
 func account_for(identity: String) -> Dictionary:
  var entry: Dictionary=identities[identity]
  var tier: String=str(entry.get("tier","free")) if OS.get_environment("SEAL_TEST_ENTITLEMENTS")=="1" else "free"
- if tier not in ["free","paid","vip"]:tier="free"
+ if tier not in ["free","paid","vip","pass"]:tier="free"
  return {"owned_spells":Loadout.known(entry.get("owned_spells",[])),"tier":tier,"reserve":str(entry.get("reserve",""))}
 func send_account(conn: Dictionary) -> void:
  var account:=account_for(conn.identity);account.career_wins=int(identities[conn.identity].get("wins",0))

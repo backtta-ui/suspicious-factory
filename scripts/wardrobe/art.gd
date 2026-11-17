@@ -10,4 +10,8 @@ const REGIONS=[[13, 9, 200, 189], [232, 23, 199, 185], [452, 10, 204, 195], [676
 static func region(cell: int) -> Rect2:
  var r: Array=REGIONS[clampi(cell,0,31)];return Rect2(r[0],r[1],r[2],r[3])
 static func icon(cell: int) -> Texture2D:
- var atlas:=AtlasTexture.new();atlas.atlas=SHEET;atlas.region=region(cell);return atlas
+ var atlas:=AtlasTexture.new()
+ if cell<4:
+  atlas.atlas=preload("res://assets/woo/mascot/portraits.png");atlas.region=Rect2(0,cell*96,96,96)
+ else:atlas.atlas=SHEET;atlas.region=region(cell)
+ return atlas

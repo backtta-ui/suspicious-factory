@@ -94,7 +94,7 @@ func _ready() -> void:
 		add_child(sprite)
 		appearance_back=Node2D.new();add_child(appearance_back)
 		hero_rig=preload("res://scripts/woo/hero_rig.gd").new();hero_rig.actor=self;add_child(hero_rig)
-		wardrobe_visual=preload("res://scripts/wardrobe/visual.gd").new();wardrobe_visual.actor=self;add_child(wardrobe_visual)
+		wardrobe_visual=preload("res://scripts/art/mascot_renderer.gd").new();wardrobe_visual.actor=self;add_child(wardrobe_visual)
 		extracted_visual=preload("res://scripts/seal/environment_asset.gd").new();extracted_visual.hide();add_child(extracted_visual)
 	npc_origin = position
 func jump() -> bool:

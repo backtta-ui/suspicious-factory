@@ -1,0 +1,23 @@
+{
+  "body_cell": [
+    64,
+    64
+  ],
+  "body_foot": [
+    32,
+    60
+  ],
+  "body_height": 40,
+  "directions": 8,
+  "prop_cell": [
+    160,
+    160
+  ],
+  "prop_foot": [
+    80,
+    154
+  ],
+  "pixel_filter": "nearest",
+  "source_art": "art_sources/mascot",
+  "gameplay_geometry_changed": false
+}

@@ -48,7 +48,7 @@ func add(uid: String,nick: String,loadout: Array,account: Dictionary={}) -> bool
  var used: Array=players.values().map(func(p: Dictionary)->int:return int(p.color))
  var color:=0
  while used.has(color):color+=1
- players[uid]={"color":color,"owned_spells":owned,"tier":selected.tier,"reserve":selected.reserve,"forms":[],"selected_form":"","cosmetic":preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate(),"career_wins":0,"uid":uid,"name":C.clean_name(nick),"role":"","connected":true,"ready":false,"position":arena.safe(Vector2(900+players.size()*24,680)),"facing":2,"intent":Vector2.ZERO,"slots":slots,"cd":{},"buff":{},"captured":false,"sealed":false,"penalty":0.0,"disconnected_at":0.0,"protected":0.0,"carry":"","fragments":[],"form_choice":"jar","fake_progress":{},"escape":1,"escape_until":0.0,"challenge":{},"trail":[],"trail_at":0.0,"chat_at":-10.0,"joined":players.size()}
+ players[uid]={"color":color,"owned_spells":owned,"tier":selected.tier,"reserve":selected.reserve,"forms":[],"selected_form":"","cosmetic":preload("res://scripts/wardrobe/catalog.gd").DEFAULT.duplicate(),"career_wins":0,"uid":uid,"name":C.clean_name(nick),"role":"","connected":true,"ready":false,"position":arena.safe(Vector2(900+players.size()*24,680)),"facing":2,"intent":Vector2.ZERO,"slots":slots,"cd":{},"buff":{},"captured":false,"capture_until":0.0,"sealed":false,"penalty":0.0,"disconnected_at":0.0,"protected":0.0,"carry":"","fragments":[],"form_choice":"jar","fake_progress":{},"escape":1,"escape_until":0.0,"challenge":{},"trail":[],"trail_at":0.0,"chat_at":-10.0,"joined":players.size()}
  if host=="":host=uid
  event(players[uid].name+" 입장")
  return true
@@ -75,10 +75,10 @@ func finalize_loadout(p: Dictionary) -> void:
  if p.tier=="free":p.slots=Loadout.select_spells(owned,"free",[],"",rng).slots;p.reserve="";return
  var selected: Array=[]
  for skill in p.slots:
-  if owned.has(skill) and not selected.has(skill):selected.append(skill)
+  if selected.size()<Loadout.capacity(p.tier) and owned.has(skill) and not selected.has(skill):selected.append(skill)
  for skill in owned:
-  if selected.size()<2 and not selected.has(skill):selected.append(skill)
- while selected.size()<2:selected.append("")
+  if selected.size()<Loadout.capacity(p.tier) and not selected.has(skill):selected.append(skill)
+ while selected.size()<Loadout.capacity(p.tier):selected.append("")
  p.slots=selected
  if not owned.has(p.reserve) or selected.has(p.reserve):p.reserve=""
 func start(uid: String) -> bool:
@@ -106,7 +106,7 @@ func start(uid: String) -> bool:
   var j:=rng.randi_range(0,i);var swap=spawn_ids[i];spawn_ids[i]=spawn_ids[j];spawn_ids[j]=swap
  round_number+=1;elapsed=0;phase="prepare";phase_until=C.PREPARATION;resources=0;meetings=0;meeting_ready=0;fallback_at=0;votes.clear();effects.clear();channels.clear();winner=""
  for i in range(ids.size()):
-  var p: Dictionary=players[ids[i]];p.role="yokai" if i<2 else "daoist";p.position=arena.spawn_points[spawn_ids.find(p.uid)];p.captured=false;p.sealed=false;p.penalty=0;p.cd={};p.buff={};p.forms=[];p.selected_form="";p.escape=1;p.escape_until=0;p.carry="";p.fragments=[];p.challenge={};p.intent=Vector2.ZERO;p.protected=0
+  var p: Dictionary=players[ids[i]];p.role="yokai" if i<2 else "daoist";p.position=arena.spawn_points[spawn_ids.find(p.uid)];p.captured=false;p.capture_until=0.0;p.sealed=false;p.penalty=0;p.cd={};p.buff={};p.forms=[];p.selected_form="";p.escape=1;p.escape_until=0;p.carry="";p.fragments=[];p.challenge={};p.intent=Vector2.ZERO;p.protected=0
   finalize_loadout(p)
  var points: Array=arena.data.stations.duplicate()
  for i in range(points.size()-1,0,-1):
@@ -207,7 +207,7 @@ func cast(p: Dictionary,skill: String,target: String) -> Dictionary:
   var q: Dictionary=players[target]
   if q.role!="daoist" or not available(q) or not near(p,q.position,48) or q.protected>elapsed:return {"error":"포획 범위 또는 보호 상태를 확인하세요"}
   if consume_shield(q,elapsed):p.cd[skill]=elapsed+info.cd;return {"notice":"호신부가 포획을 막았습니다"}
-  q.captured=true;q.position=arena.safe(arena.jail+Vector2(rng.randf_range(-24,24),rng.randf_range(-18,18)));q.intent=Vector2.ZERO;q.escape_until=elapsed+12 if q.escape>0 else 0;channels.erase(q.uid)
+  q.captured=true;q.capture_until=elapsed+float(options.capture_seconds);q.position=arena.safe(arena.jail+Vector2(rng.randf_range(-24,24),rng.randf_range(-18,18)));q.intent=Vector2.ZERO;q.escape_until=elapsed+12 if q.escape>0 else 0;channels.erase(q.uid)
  elif skill in ["blink","shadow"]:
   p.position=arena.move(p.position,p.position+Vector2.from_angle(p.facing*PI/4)*(150 if skill=="shadow" else 110))
  elif skill=="mimic":
@@ -279,6 +279,8 @@ func tick(delta: float) -> void:
    if phase=="lobby":remove.append(uid)
    else:p.sealed=true;p.escape=0
   if p.captured and elapsed>=p.escape_until:p.escape=0
+  if p.captured and elapsed>=p.get("capture_until",INF):
+   p.captured=false;p.sealed=true;p.escape=0;channels.erase(uid);event(p.name+" · 구출 시간이 지나 최종 탈락")
   var before: Vector2=p.position
   if roam(p):p.position=arena.move(p.position,p.position+p.intent*move_speed(p)*delta)
   var walked: Vector2=p.position-before
@@ -311,10 +313,10 @@ func tick(delta: float) -> void:
     if not p.forms.has(asset.kind) and p.forms.size()<int(options.form_capacity):p.forms.append(asset.kind)
     p.selected_form=asset.kind
   elif channel.kind=="escape" and p.captured and p.escape>0:
-   p.escape=0;p.captured=false;p.position=arena.safe(arena.jail+Vector2(-90,0));p.protected=elapsed+4
+   p.escape=0;p.captured=false;p.position=arena.safe(arena.jail+Vector2(-90,0));p.protected=elapsed+float(options.protected_seconds)
   elif channel.kind=="rescue" and p.role=="daoist" and players.has(channel.target):
    var q: Dictionary=players[channel.target]
-   if q.captured and near(p,q.position,75):q.captured=false;q.position=arena.safe(arena.jail+Vector2(-90,0));q.protected=elapsed+4;q.buff["casting"]=elapsed+.8
+   if q.captured and near(p,q.position,75):q.captured=false;q.position=arena.safe(arena.jail+Vector2(-90,0));q.protected=elapsed+float(options.protected_seconds);q.buff["casting"]=elapsed+.8
   elif channel.kind=="fallback" and p.role=="daoist" and resources==0 and elapsed>=fallback_at:resources+=1;fallback_at=elapsed+float(options.fallback_cooldown);event("봉인진 기도로 기회 +1")
   channels.erase(uid)
  if phase=="prepare" and elapsed>=phase_until:phase="roam";event("요괴의 이동 제한이 풀렸습니다")
@@ -341,7 +343,7 @@ func check_win() -> void:
   if p.role=="yokai" and not p.sealed:evil+=1
   if p.role=="daoist" and not p.sealed:
    if not p.captured:free_dao+=1
-   elif p.escape>0 and elapsed<p.escape_until:rescuable=true
+   elif elapsed<p.get("capture_until",INF):rescuable=true
  if evil==0:result("daoist","요괴 두 명이 모두 봉인되었습니다")
  elif free_dao==0 and not rescuable:result("yokai","모든 도사가 포획되고 남은 구출 기회가 없습니다")
  elif elapsed>=C.MATCH_TIME:result("yokai","제한 시간 동안 최종 봉인을 막았습니다")
@@ -373,7 +375,7 @@ func view(uid: String) -> Dictionary:
  if self_p.role=="yokai":
   for p in players.values():
    if p.role=="yokai" and p.uid!=uid:buddies.append(p.uid)
- snapshot.self={"loadout_final":phase!="lobby","eligible_spells":eligible(self_p),"move_speed":move_speed(self_p),"color":self_p.color,"tier":self_p.tier,"owned_spells":self_p.owned_spells.duplicate(),"reserve":self_p.reserve,"forms":self_p.forms.duplicate(),"selected_form":self_p.selected_form,"career_wins":self_p.career_wins,"uid":uid,"role":self_p.role,"teammates":buddies,"position":[self_p.position.x,self_p.position.y],"facing":self_p.facing,"slots":self_p.slots.duplicate(),"cooldowns":remaining,"captured":self_p.captured,"sealed":self_p.sealed,"penalty":maxf(0,self_p.penalty-elapsed),"protection":maxf(0,self_p.protected-elapsed),"carry":self_p.carry,"fragments":self_p.fragments.duplicate(),"escape":self_p.escape,"escape_time":maxf(0,self_p.escape_until-elapsed),"channel":maxf(0,float(channels.get(uid,{}).get("until",elapsed))-elapsed),"voted":votes.has(uid)}
+ snapshot.self={"loadout_final":phase!="lobby","eligible_spells":eligible(self_p),"move_speed":move_speed(self_p),"color":self_p.color,"tier":self_p.tier,"owned_spells":self_p.owned_spells.duplicate(),"reserve":self_p.reserve,"forms":self_p.forms.duplicate(),"selected_form":self_p.selected_form,"career_wins":self_p.career_wins,"uid":uid,"role":self_p.role,"teammates":buddies,"position":[self_p.position.x,self_p.position.y],"facing":self_p.facing,"slots":self_p.slots.duplicate(),"cooldowns":remaining,"captured":self_p.captured,"sealed":self_p.sealed,"penalty":maxf(0,self_p.penalty-elapsed),"protection":maxf(0,self_p.protected-elapsed),"carry":self_p.carry,"fragments":self_p.fragments.duplicate(),"escape":self_p.escape,"capture_time":maxf(0,self_p.get("capture_until",0)-elapsed) if self_p.captured else 0.0,"escape_time":maxf(0,self_p.escape_until-elapsed),"channel":maxf(0,float(channels.get(uid,{}).get("until",elapsed))-elapsed),"voted":votes.has(uid)}
  if self_p.buff.get("track",0)>elapsed:
   for p in players.values():
    if p.uid!=uid:

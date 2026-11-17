@@ -47,6 +47,7 @@ func _ready() -> void:
  sprite.offset=Vector2(0,cell.y/2-foot)
  sprite.position.y=8
  if variant==1 and kind in ["magic_shop","tavern"]:sprite.modulate=Color("d9dec3")
+ preload("res://scripts/art/mascot_props.gd").apply(sprite,kind,width)
  add_child(sprite)
  if kind=="lantern" or kind=="painting":
   light=Sprite2D.new();light.texture=preload("res://assets/woo/light.png")

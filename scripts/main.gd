@@ -212,9 +212,7 @@ func apply_appearance_ui() -> void:
  var look: Dictionary=wardrobe.data.appearance
  if is_instance_valid(hero_name):hero_name.text=preload("res://scripts/wardrobe/catalog.gd").CHARACTERS[look.character].name
  if is_instance_valid(hero_portrait):
-  if look.character!="woochi":hero_portrait.texture=preload("res://scripts/wardrobe/art.gd").icon(preload("res://scripts/wardrobe/catalog.gd").CHARACTERS[look.character].cell)
-  else:
-   var atlas:=AtlasTexture.new();atlas.atlas=Actor.SHEET;var f: Array=ArtFrames.HERO[34];atlas.region=Rect2(f[0],f[1],f[2],f[3]);hero_portrait.texture=atlas
+  hero_portrait.texture=preload("res://scripts/wardrobe/art.gd").icon(preload("res://scripts/wardrobe/catalog.gd").CHARACTERS[look.character].cell)
 
 func show_wardrobe() -> void:
  if is_instance_valid(modal):return

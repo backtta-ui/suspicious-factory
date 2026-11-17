@@ -117,7 +117,7 @@ func start_study() -> void:
  if not connection.authenticated:update_status("먼저 서버 주소를 입력하고 연결하세요");return
  connection.send({"op":"study_start"})
 func show_loadout() -> void:
- var stack:=open_popup("습득 도술 · 주 장착2 / VIP 예비1")
+ var stack:=open_popup("습득 도술 · 기본2 / 확인된 패스3 / VIP 예비1")
  if stack==null:return
  var tier: String=account.get("tier","free")
  stack.add_child(game.text("무료: 역할 배정 후 준비30초에 보유 중 무작위2개 확정. 요괴는 사물 둔갑 제외.\n결제 미연동: 운영 계정은 무료. 유료/VIP 규칙은 서버 테스트 전용.",17))
@@ -126,7 +126,7 @@ func show_loadout() -> void:
   var learned: bool=(state.self.eligible_spells if not state.is_empty() and state.phase!="lobby" else account.get("owned_spells",[])).has(id)
   var b: Button=game.button(Catalog.COMMON[id].name+(" ✓" if profile.slots.has(id) else "")+(" 🔒" if not learned else ""),func()->void:
    if profile.slots.has(id):profile.slots.erase(id)
-   elif profile.slots.size()<2:profile.slots.append(id)
+   elif profile.slots.size()<preload("res://scripts/seal/loadout.gd").capacity(tier):profile.slots.append(id)
    else:profile.slots.pop_front();profile.slots.append(id)
    Identity.save_profile(profile)
    if connection.room!="":connection.send({"op":"loadout","slots":profile.slots,"reserve":profile.get("reserve","")})
@@ -291,8 +291,8 @@ func build_hud() -> void:
  mini=preload("res://scripts/seal/minimap.gd").new();mini.client=self;mini.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);mini.offset_left=-150;mini.offset_right=-18;mini.offset_top=10;mini.offset_bottom=142;game.ui.add_child(mini)
  stick=preload("res://scripts/joystick.gd").new();stick.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT);stick.position=Vector2(74,-222);stick.size=Vector2(174,174);game.ui.add_child(stick)
  skill_buttons=[]
- for i in range(2):
-  var b:=skill_button("도술%d"%i,Vector2(-280+i*126,-260),Vector2(112,112),cast_common.bind(i));skill_buttons.append(b)
+ for i in range(state.self.slots.size()):
+  var b:=skill_button("도술%d"%i,Vector2(-280-(126 if state.self.slots.size()==3 else 0)+i*126,-260),Vector2(112,112),cast_common.bind(i));skill_buttons.append(b)
  role_button=skill_button("역할 능력",Vector2(-162,-146),Vector2(128,128),role_action)
  interact_button=skill_button("상호작용",Vector2(-306,-132),Vector2(112,112),interact)
  meeting_button=game.button("봉인 회의",func()->void:connection.send({"op":"meeting"}));meeting_button.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);meeting_button.offset_left=-180;meeting_button.offset_right=-28;meeting_button.offset_top=-350;meeting_button.offset_bottom=-286;game.ui.add_child(meeting_button)
@@ -327,7 +327,7 @@ func closest(captured_only: bool=false) -> String:
   if d<distance:distance=d;found=p.uid
  return found
 func cast_common(index: int) -> void:
- if state.is_empty():return
+ if state.is_empty() or index<0 or index>=state.self.slots.size():return
  var id: String=state.self.slots[index]
  if not Catalog.COMMON.has(id):return
  if id=="transform" and state.self.forms.size()>1 and state.self.get("selected_form","")=="":show_forms();return
@@ -480,11 +480,11 @@ func _process(delta: float) -> void:
   for p in state.roster:
    if p.uid==id:allies.append(p.name)
  role_label.text=("내 역할: 요괴 · 동료 "+", ".join(allies)) if self_state.role=="yokai" else "내 역할: 도사 · 정체를 추리하고 두 요괴를 봉인하세요"
- if self_state.captured:role_label.text="포획됨 · 감옥에서 구출을 기다리거나 12초 안에 자력해봉(1회)을 시작하세요"
+ if self_state.captured:role_label.text="포획됨 · 최종 탈락까지 %.0f초 · 동료 구출 대기"%float(self_state.get("capture_time",0))
  if self_state.sealed:role_label.text="봉인 / 기권 상태 · 현재 판 관전 제한"
  timer_label.text="%02d:%02d · 봉인 기회 %d · %s"%[int(state.time)/60,int(state.time)%60,state.resources,state.phase]
  if not state.events.is_empty():event_label.text=state.events.back().text
- for i in range(2):
+ for i in range(skill_buttons.size()):
   var id: String=self_state.slots[i];var b:=skill_buttons[i];var badge: WooSkillBadge=b.get_node("Badge");badge.skill=Catalog.COMMON[id].icon if Catalog.COMMON.has(id) else "locked";badge.maximum=Catalog.COMMON[id].cd if Catalog.COMMON.has(id) else 1;badge.remaining=float(self_state.cooldowns.get(id,0));badge.locked=not Catalog.COMMON.has(id);b.disabled=not can_move or badge.remaining>0 or badge.locked
  var display_slots: Array=[]
  for skill in self_state.slots:display_slots.append(Catalog.COMMON[skill].name if Catalog.COMMON.has(skill) else "빈 칸")

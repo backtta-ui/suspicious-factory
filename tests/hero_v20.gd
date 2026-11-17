@@ -14,11 +14,11 @@ func run() -> void:
  var actor: WooActor=game.player;actor.facing=2;actor.update_sprite()
  var visual: WooWardrobeVisual=actor.wardrobe_visual;visual._process(0)
  var original: Dictionary=actor.cosmetic.duplicate()
- check(visual.uses_baked and not actor.sprite.visible,"complete native character atlas is the actual renderer")
+ check(visual.pieces.sd_head.visible and not actor.sprite.visible,"SD layered character is the actual renderer")
  for pose in range(8):
   actor.action_pose=pose;actor.action_left=.3;actor.pose_duration=.4;actor.update_sprite()
   visual._process(0)
-  check(actor.cosmetic==original and visual.appearance==original and visual.pieces.body.scale==Vector2.ONE and str(visual.pieces.body.texture.resource_path).contains("woochi"),"pose%d keeps canonical identity and scale"%pose)
+  check(actor.cosmetic==original and visual.appearance==original and visual.pieces.body.scale==Vector2.ONE and str(visual.pieces.body.texture.resource_path).contains("mascot/bodies-") and int(visual.pieces.body.uv[0].y/64)==0,"pose%d keeps canonical identity and scale"%pose)
  actor.action_left=0;actor.jump();await create_timer(.025).timeout
  check(actor.jump_phase=="preparation" and actor.jump_height==0,"jump has a real short preparation phase")
  await create_timer(.15).timeout;check(actor.jump_phase=="rising" and actor.jump_height>0,"jump rises without reducing character scale")

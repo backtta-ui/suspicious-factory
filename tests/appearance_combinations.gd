@@ -31,9 +31,9 @@ func run() -> void:
         check(visual.direction==direction and visual.pose_set==kind and visual.pose_row==row and visual.position.y==-actor.jump_height,"whole body direction and ground height "+context)
         var body: Polygon2D=visual.pieces.body
         check(body.visible and body.texture!=null and body.polygon.size()>=4 and body.uv.size()==body.polygon.size(),"real directional body geometry "+context)
-        check(str(body.texture.resource_path).contains(character+"_"+kind),"native selected-character face/body source "+context)
+        check(str(body.texture.resource_path).contains("mascot/bodies-") and int(body.uv[0].y/64)==["woochi","yeonhwa","muyeong","hongryeon"].find(character),"selected-character SD atlas row "+context)
         if not visual.uses_baked:
-         check(visual.pieces.hair_back.visible and (visual.pieces.hair_front.visible or direction in [1,6,7]),"directional hair attached "+context)
+         check((visual.pieces.hair_back.visible if direction in [1,6,7] else visual.pieces.hair_front.visible),"directional hair attached "+context)
          if outfit!="basic":check(visual.pieces.outfit.visible and str(visual.pieces.outfit.texture.resource_path).contains(outfit+"_"+kind),"real garment motion source "+context)
         check(actor.scale==Vector2.ONE and body.scale==Vector2.ONE,"pose never shrinks actor "+context)
      combos+=1
@@ -44,7 +44,7 @@ func run() -> void:
     var look:=C.base_appearance(character);look.accessory=accessory;look.color=color;actor.cosmetic=look;visual._process(0)
     check(visual.appearance==C.normalize(look),"accessory/color preserves character identity")
   actor.cosmetic=C.base_appearance(character);actor.facing=2;visual.row_override=0;visual.pose_override="core";visual._process(0)
-  check(visual.uses_baked and Art.texture("base_"+character+"_actions")!=null,"complete native four-direction atlases exist "+character)
+  check(not visual.uses_baked and visual.pieces.sd_head.visible and str(visual.pieces.sd_head.texture.resource_path).contains("mascot/bodies-cardinal"),"shared SD head/body renderer retains selected character "+character)
   for outfit in C.OUTFITS:
    if Art.READY_OUTFITS.has(outfit):continue
    var look:=C.base_appearance(character);look.outfit=outfit;actor.cosmetic=look;visual._process(0)

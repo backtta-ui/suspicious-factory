@@ -63,7 +63,7 @@ func run() -> void:
  r.command(evil.uid,{"op":"cast","skill":"capture","target":dao.uid})
  check(dao.captured and dao.position.distance_to(Map.JAIL)<60,"capture teleports to actual sealing prison")
  var helper: Dictionary=r.players[daos[1]];helper.position=Map.safe(Map.JAIL+Vector2(-35,0))
- r.command(helper.uid,{"op":"rescue","target":dao.uid});advance(r,3.2)
+ r.command(helper.uid,{"op":"rescue","target":dao.uid});advance(r,4.2)
  check(not dao.captured and dao.protected>r.elapsed,"channelled ally rescue restores play and protection")
  evil.cd.capture=0;evil.position=dao.position+Vector2(10,0);r.command(evil.uid,{"op":"cast","skill":"capture","target":dao.uid})
  check(not dao.captured,"post-rescue protection rejects immediate recapture")
@@ -119,13 +119,23 @@ func run() -> void:
  r.players[daos[1]].position=Map.ALTAR;r.command(daos[1],{"op":"fallback"});advance(r,4.2)
  check(r.resources==1,"altar channel provides a real fallback when sealing resources run out")
  r=room();advance(r,31);evils=teams(r,"yokai");daos=teams(r,"daoist")
- for uid in daos:r.players[uid].captured=true;r.players[uid].escape=1;r.players[uid].escape_until=r.elapsed+10
+ for uid in daos:r.players[uid].captured=true;r.players[uid].escape=1;r.players[uid].escape_until=r.elapsed+10;r.players[uid].capture_until=r.elapsed+45
  r.check_win();check(r.phase!="result","all captured does not win while rescue/escape opportunity remains")
  r.command(daos[0],{"op":"escape"});advance(r,5.2);check(not r.players[daos[0]].captured,"last chance escape can actually free a daoist")
- for uid in daos:r.players[uid].captured=true;r.players[uid].escape=0
+ for uid in daos:r.players[uid].captured=true;r.players[uid].escape=0;r.players[uid].capture_until=r.elapsed
  r.check_win();check(r.winner=="yokai","all captured without remaining rescue opportunity wins for yokai")
  r=room();r.phase="roam";r.elapsed=C.MATCH_TIME;r.check_win();check(r.winner=="yokai","server enforces overall timeout win")
  r=room();var previous_host: String=r.host;r.mark_disconnected(previous_host)
  check(r.host!=previous_host and r.host!="","host disconnect migrates control to a connected participant")
  check(r.add(previous_host,"",[]) and r.players[previous_host].connected,"authenticated reconnect retains same participant and role")
+ r=room();r.phase="roam"
+ var victim: Dictionary=r.players[teams(r,"daoist")[0]]
+ victim.captured=true;victim.capture_until=r.elapsed+45;victim.escape=0
+ advance(r,44.9);check(victim.captured and not victim.sealed,"captured daoist remains rescuable before 45 seconds")
+ advance(r,.2);check(victim.sealed and not victim.captured,"server finally eliminates at the 45-second deadline")
+ var loadout=preload("res://scripts/seal/loadout.gd")
+ var random:=RandomNumberGenerator.new()
+ check(loadout.select_spells(["blink","shield","clone"],"pass",["blink","shield","clone"],"",random).slots.size()==3,"server pass entitlement permits three acquired common spells")
+ check(loadout.select_spells(["blink","shield","clone"],"paid",["blink","shield","clone"],"",random).has("error"),"ordinary paid tier cannot forge pass third slot")
+ check(r.options.rescue_seconds==4 and r.options.protected_seconds==3,"confirmed rescue and protection timings are 4 and 3 seconds")
  print("SEAL RULES: %d checks, %d failures" % [checks,failures]);quit(0 if failures==0 else 1)
