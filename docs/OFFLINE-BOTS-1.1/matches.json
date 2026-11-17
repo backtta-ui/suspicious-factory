@@ -6,7 +6,7 @@
     "players": 6,
     "rescues": 1,
     "simulation_seconds": 213.100000000014,
-    "wall_ms": 2830,
+    "wall_ms": 2986,
     "winner": "daoist"
   },
   {
@@ -16,7 +16,7 @@
     "players": 7,
     "rescues": 4,
     "simulation_seconds": 213.100000000014,
-    "wall_ms": 697,
+    "wall_ms": 701,
     "winner": "daoist"
   },
   {
@@ -26,7 +26,7 @@
     "players": 8,
     "rescues": 1,
     "simulation_seconds": 480.000000000075,
-    "wall_ms": 4842,
+    "wall_ms": 4853,
     "winner": "yokai"
   }
 ]

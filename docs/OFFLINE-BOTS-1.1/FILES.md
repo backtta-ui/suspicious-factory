@@ -1,8 +1,13 @@
 # 변경·추가 파일
 
+- `docs/OFFLINE-BOTS-1.1/FILES.md`
 - `docs/OFFLINE-BOTS-1.1/REPORT.md`
+- `docs/OFFLINE-BOTS-1.1/apk-verification.json`
+- `docs/OFFLINE-BOTS-1.1/artifact-download-verification.json`
 - `docs/OFFLINE-BOTS-1.1/capture.gd`
 - `docs/OFFLINE-BOTS-1.1/characters.png`
+- `docs/OFFLINE-BOTS-1.1/edge-results.json`
+- `docs/OFFLINE-BOTS-1.1/edge_cases.gd`
 - `docs/OFFLINE-BOTS-1.1/lobby-eight.png`
 - `docs/OFFLINE-BOTS-1.1/lobby.png`
 - `docs/OFFLINE-BOTS-1.1/map-loading.png`
@@ -10,12 +15,18 @@
 - `docs/OFFLINE-BOTS-1.1/matches.json`
 - `docs/OFFLINE-BOTS-1.1/plaza-entrance.png`
 - `docs/OFFLINE-BOTS-1.1/plaza-return.png`
+- `docs/OFFLINE-BOTS-1.1/public-download-verification.json`
 - `docs/OFFLINE-BOTS-1.1/rematch.png`
 - `docs/OFFLINE-BOTS-1.1/result.png`
 - `docs/OFFLINE-BOTS-1.1/role-and-game.png`
 - `docs/OFFLINE-BOTS-1.1/spectator.png`
 - `docs/OFFLINE-BOTS-1.1/spells-last.png`
 - `docs/OFFLINE-BOTS-1.1/spells.png`
+- `export_presets.cfg`
+- `project.godot`
+- `scripts/main.gd`
+- `scripts/seal/arena.gd`
+- `scripts/seal/rules.gd`
 - `scripts/simulation/bot.gd`
 - `scripts/simulation/bot.gd.uid`
 - `scripts/simulation/client.gd`
@@ -28,12 +39,7 @@
 - `scripts/simulation/navigation.gd.uid`
 - `scripts/simulation/transport.gd`
 - `scripts/simulation/transport.gd.uid`
+- `scripts/worlds/plaza.gd`
 - `tests/offline_bots.gd`
 - `tests/offline_bots.gd.uid`
-- `export_presets.cfg`
-- `project.godot`
-- `scripts/main.gd`
-- `scripts/seal/arena.gd`
-- `scripts/seal/rules.gd`
-- `scripts/worlds/plaza.gd`
 - `tools/test.sh`

@@ -1,0 +1,5 @@
+{
+  "checks": 7,
+  "environment": "desktop headless common authority fixtures",
+  "failures": 0
+}
