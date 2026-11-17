@@ -11,7 +11,7 @@ func check(ok: bool,label: String) -> void:
  if ok:print("PASS: "+label)
  else:failures+=1;push_error("FAIL: "+label)
 func frames(n: int=3) -> void:
- await preload("res://tests/loading_wait.gd").settle(self,n)
+ for i in range(n):await process_frame
 func touch(p: Vector2,pressed: bool,index: int=0) -> void:
  var e:=InputEventScreenTouch.new();e.position=root.get_final_transform()*p;e.pressed=pressed;e.index=index;Input.parse_input_event(e)
 func tap(b: Control,index: int=0) -> void:
@@ -66,7 +66,7 @@ func run() -> void:
  await tap(find_button("그림 속으로"))
  check(adv.transitioning and game.paused,"portal locks inputs immediately")
  adv.enter_painting();check(adv.transitioning,"duplicate portal request ignored")
- await create_timer(2.5).timeout;await frames()
+ await create_timer(2.5).timeout;await preload("res://tests/loading_wait.gd").settle(self,3)
  check(adv.in_mission and not game.paused and not adv.transitioning,"portal finishes loading playable forest")
  check(enemies().size()==3,"forest contains exactly three live goblins")
  check(adv.combat_buttons.all(func(b: Button)->bool:return b.visible),"combat buttons activate only inside painting")
@@ -121,7 +121,7 @@ func run() -> void:
  check(game.rpg.data.claims==["fox_forest"] and not game.rpg.claim_fox_reward(),"persistent claim blocks duplicate rewards")
  var saved: Dictionary=Save.load_game()
  check(saved.rpg.claims==["fox_forest"],"reward claim committed before completion UI")
- await tap(find_button("광장으로 돌아가기"));await create_timer(2.5).timeout;await frames()
+ await tap(find_button("광장으로 돌아가기"));await create_timer(2.5).timeout;await preload("res://tests/loading_wait.gd").settle(self,3)
  check(not adv.in_mission and not game.paused and not adv.transitioning,"reverse portal returns to plaza safely")
  check(game.player.position.distance_to(original)<.1 and game.player.facing==facing,"exact plaza entry position and direction restored")
  check(adv.combat_buttons.all(func(b: Button)->bool:return not b.visible),"plaza combat controls hidden again")
