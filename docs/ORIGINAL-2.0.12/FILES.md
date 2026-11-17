@@ -1,4 +1,4 @@
-# 수정 파일
+# 실제 수정 파일
 
 - `assets/woo/mascot/original/frames.json`
 - `assets/woo/mascot/original/hongryeon-back.png`
@@ -33,9 +33,14 @@
 - `assets/woo/mascot/original/yeonhwa-left.png.import`
 - `assets/woo/mascot/original/yeonhwa-right.png`
 - `assets/woo/mascot/original/yeonhwa-right.png.import`
+- `docs/ORIGINAL-2.0.12/FILES.md`
 - `docs/ORIGINAL-2.0.12/REPORT.md`
+- `docs/ORIGINAL-2.0.12/after-plaza.png`
+- `docs/ORIGINAL-2.0.12/after-wardrobe.png`
+- `docs/ORIGINAL-2.0.12/apk-verification.json`
 - `docs/ORIGINAL-2.0.12/before-plaza.png`
 - `docs/ORIGINAL-2.0.12/before-wardrobe.png`
+- `docs/ORIGINAL-2.0.12/download-verification.json`
 - `docs/ORIGINAL-2.0.12/four-characters-four-directions.png`
 - `docs/ORIGINAL-2.0.12/gallery.gd`
 - `docs/ORIGINAL-2.0.12/woochi-original-plaza.png`
@@ -47,5 +52,6 @@
 - `tests/appearance_combinations.gd`
 - `tests/hero_v20.gd`
 - `tests/original_sprite.gd`
+- `tests/original_sprite.gd.uid`
 - `tools/build_original_sprites.py`
 - `tools/test.sh`

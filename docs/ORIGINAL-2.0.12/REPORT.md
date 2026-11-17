@@ -71,3 +71,12 @@
 - SHA256: `b5e9ee4fc91840f150c01f6e0782cab60b2b9ae70a0ec846082bf97fc91fb247`.
 - 기존 서명키·패키지 유지. 삭제 없이 업데이트 설치해야 기존 기기 데이터를 유지할 수 있다.
 - [네 캐릭터 적용 후 실제 꾸미기 화면](after-wardrobe.png), [실제 광장](after-plaza.png).
+
+## GitHub 및 갤럭시 다운로드
+
+- 구현 커밋: [d0f569f](https://github.com/backtta-ui/suspicious-factory/commit/d0f569f06d797f9094ac17a723158fc2e5f48fd3), main 푸시 완료. 작업 전 백업 브랜치도 원격에 보존했다.
+- [서명 APK 다운로드용 Actions 실행 — 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/44081049338).
+- 실제 HTTPS 조각 다운로드와 Actions ZIP 재다운로드 모두 APK SHA256 일치 확인. Artifact ID 14327231585, `jeon-woochi-verified-apk`.
+- [소스 빌드 Actions](https://github.com/backtta-ui/suspicious-factory/actions/runs/44080916551)는 별도 실행이다.
+
+휴대폰에서 GitHub 로그인 → 위 다운로드 실행 링크 → **Artifacts → jeon-woochi-verified-apk** → ZIP 다운로드 → 갤럭시 내 파일에서 압축 풀기 → `jeon-woochi-2.0.12.apk` 실행 → 기존 앱에 업데이트 설치한다. 기존 앱을 삭제하지 않는다. Artifact 보관 기간은 14일이다.
