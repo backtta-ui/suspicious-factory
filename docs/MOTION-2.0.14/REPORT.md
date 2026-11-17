@@ -56,3 +56,28 @@
 ## 최종 검증
 
 발 추출 수정 후 전체 `bash tools/checkpoint.sh` 빌드 및 검증 통과. 신규 검사 514건/실패 0, 기존 회귀 검사 통과. APK 2.0.14, 136,583,809 bytes, SHA256 `7b62c5fe20137316f0dc0ebac2c5b6b0e086263fbb3df302eea92fde6be71dc7`. 기존 서명을 유지했다. 실기기 검증은 수행하지 않았다.
+
+## GitHub 및 갤럭시 다운로드
+
+- 소스 커밋: [22cf633](https://github.com/backtta-ui/suspicious-factory/commit/22cf6339e8c414ea6cc3d23ea3a59e012f813097), main 푸시 완료. 이전 상태는 `backup/dosa-2.0.13-before-motion-customization`에 보존했다.
+- [서명 APK 다운로드 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/44132883188): 성공. 이 실행은 로컬에서 빌드한 기존 서명키 APK를 재검증해 전달한다.
+- [소스 빌드 실행](https://github.com/backtta-ui/suspicious-factory/actions/runs/44132753405): 상태는 아래 최종 확인 참고.
+- 공개 HTTPS 분할 파일 전체를 다시 받아 SHA256 일치를 확인했다. [확인 결과](public-download-verification.json).
+
+갤럭시에서 다운로드 실행 링크를 브라우저로 열고 GitHub에 로그인한다. 아래 Artifacts의 `jeon-woochi-verified-apk`를 눌러 ZIP을 받는다. ‘내 파일’에서 압축을 풀고 `jeon-woochi-2.0.14.apk`를 실행해 업데이트한다. 기존 앱을 삭제하거나 데이터를 지우지 않는다. 필요하면 Android가 안내하는 해당 브라우저/내 파일의 앱 설치 권한만 허용한다. Artifact 보관 기간은 14일이다.
+
+[수정 파일 전체 목록](FILES.md). 신규 제작 방향 원화 16개 및 원본 파생 몸체/신발 레이어는 GitHub에 포함했다. 원본 정면·후면·좌우 16개 및 원본 마스터 이미지는 유지했다.
+
+Actions Artifact ZIP도 재다운로드해 내부 APK의 SHA256과 136,583,809 bytes를 확인했다. [Artifact 검증 결과](artifact-download-verification.json).
+
+## 검사 상태 구분
+
+- FIXED: 캐릭터별 기본색, 수동 색상 표시·저장, 꾸미기 획득 조건, 작은 대각선 입력, 카드 마지막 열 잘림, 발 추출 가장자리 오인.
+- PASS: 신규 자동 검사 514건, 기존 회귀 검사, 데스크톱 Godot 4캐릭터×8방향 걷기/달리기 렌더링, APK 서명·Manifest·정렬, 공개 파일 및 Artifact 재다운로드 해시.
+- MISSING: 원본 스타일에 맞는 모든 교체 헤어·모자·의상 레이어 및 그 조합의 실제 렌더링 검수.
+- BLOCKED: 물리적 갤럭시 단말 테스트, 모바일 GPU/FPS/메모리 및 여러 휴대폰 온라인 시험.
+- 미완료: 세부 보행 접지·옷자락 미술 검수. 기존 원본의 연속 스키닝 구조이며 손그림 걷기 프레임 전체 제작으로 보고하지 않는다.
+
+기존 커밋 `344991e`와 비교해 캐릭터 4종×기본 4방향 원본 PNG 16개가 바이트 단위로 동일함을 확인했다. 추가 대각선은 별도 원화로 보관한다.
+
+최종 GitHub 확인: 소스 빌드 실행 `44132753405` **success**, 서명 APK 전달 실행 `44132883188` **success**. 소스 CI의 중간 APK와 별도로, 위 다운로드 링크는 기존 설치 키로 서명한 APK를 제공한다.
