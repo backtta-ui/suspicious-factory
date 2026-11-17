@@ -80,3 +80,5 @@
 - [소스 빌드 Actions](https://github.com/backtta-ui/suspicious-factory/actions/runs/44080916551)는 별도 실행이다.
 
 휴대폰에서 GitHub 로그인 → 위 다운로드 실행 링크 → **Artifacts → jeon-woochi-verified-apk** → ZIP 다운로드 → 갤럭시 내 파일에서 압축 풀기 → `jeon-woochi-2.0.12.apk` 실행 → 기존 앱에 업데이트 설치한다. 기존 앱을 삭제하지 않는다. Artifact 보관 기간은 14일이다.
+
+최종 확인: 소스 빌드 Actions **44080916551 성공**, 다운로드 Actions **44081049338 성공**. 소스 실행의 build 작업은 2026-11-17에 완료됐다. 다운로드 ZIP의 APK도 위 SHA256과 일치한다. 원본 파일은 수정 전 커밋과 바이트 단위로 동일하다.
