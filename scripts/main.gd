@@ -383,6 +383,7 @@ func set_paused(value: bool) -> void:
 
 func open_modal(kind: String) -> VBoxContainer:
  if is_instance_valid(modal): return null
+ preload("res://scripts/ui/design.gd").cancel_controls(ui)
  if screen_name=="playing": set_paused(true)
  active_context = "modal"
  modal_kind = kind

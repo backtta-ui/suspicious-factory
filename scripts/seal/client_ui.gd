@@ -61,8 +61,11 @@ func panel(title: String) -> VBoxContainer:
  game.active_context="seal";game.new_ui()
  var shade:=ColorRect.new();shade.color=Color("121927");shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);game.ui.add_child(shade)
  var margin:=MarginContainer.new();margin.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);margin.offset_left=38;margin.offset_right=-38;margin.offset_top=24;margin.offset_bottom=-24;game.ui.add_child(margin)
- var stack:=VBoxContainer.new();stack.add_theme_constant_override("separation",8);margin.add_child(stack)
- stack.add_child(game.text(title,32,game.GOLD));return stack
+ var frame:=VBoxContainer.new();margin.add_child(frame);frame.add_child(game.text(title,32,game.GOLD))
+ var scroll:=ScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;frame.add_child(scroll)
+ var stack:=VBoxContainer.new();stack.size_flags_horizontal=Control.SIZE_EXPAND_FILL;stack.add_theme_constant_override("separation",8);scroll.add_child(stack)
+ var gesture:=preload("res://scripts/ui/popup_scroll.gd").new();gesture.scroll=scroll;game.ui.add_child(gesture)
+ return stack
 func edit(placeholder: String,value: String) -> LineEdit:
  var line:=LineEdit.new();line.placeholder_text=placeholder;line.text=value;line.custom_minimum_size=Vector2(300,56);line.add_theme_font_size_override("font_size",20);return line
 func update_status(value: String) -> void:
@@ -340,6 +343,7 @@ func interact() -> void:
  if origin.distance_to(arena.altar)<110:connection.send({"op":"fallback"})
  else:update_status("봉인 미션, 감옥 또는 중앙 봉인진 가까이 접근하세요")
 func open_popup(title: String) -> VBoxContainer:
+ preload("res://scripts/ui/design.gd").cancel_controls(game.ui)
  if is_instance_valid(popup):close_popup()
  game.active_context="seal_modal"
  if is_instance_valid(stick):stick.reset();stick.input_enabled=false

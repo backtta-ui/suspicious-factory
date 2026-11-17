@@ -15,6 +15,13 @@ func _ready() -> void:
 	custom_minimum_size = Vector2(112,64) if custom_minimum_size==Vector2.ZERO else custom_minimum_size.max(Vector2(64,56))
 func usable() -> bool:
 	return is_visible_in_tree() and can_process() and not disabled and (not allowed.is_valid() or allowed.call())
+func pointer_inside(point: Vector2) -> bool:
+	if not get_global_rect().has_point(point):return false
+	var ancestor:=get_parent()
+	while ancestor!=null:
+		if ancestor is Control and ancestor.clip_contents and not ancestor.get_global_rect().has_point(point):return false
+		ancestor=ancestor.get_parent()
+	return true
 func cancel() -> void:
 	owner_finger = -1
 	owns_mouse = false
@@ -36,25 +43,25 @@ func _input(event: InputEvent) -> void:
 		return
 	var rect := get_global_rect()
 	if event is InputEventScreenTouch:
-		if event.pressed and owner_finger==-1 and rect.has_point(event.position):
+		if event.pressed and owner_finger==-1 and pointer_inside(event.position):
 			owner_finger = event.index
 			observed.emit(event)
 			down()
 			get_viewport().set_input_as_handled()
 		elif not event.pressed and event.index==owner_finger:
 			observed.emit(event)
-			up(rect.has_point(event.position) and not event.canceled)
+			up(pointer_inside(event.position) and not event.canceled)
 			get_viewport().set_input_as_handled()
 	elif event is InputEventScreenDrag and event.index==owner_finger:
-		set_pressed_no_signal(rect.has_point(event.position))
+		set_pressed_no_signal(pointer_inside(event.position))
 		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseButton and event.device != InputEvent.DEVICE_ID_EMULATION and event.button_index==MOUSE_BUTTON_LEFT:
-		if event.pressed and rect.has_point(event.position):
+		if event.pressed and pointer_inside(event.position):
 			owns_mouse = true
 			down()
 			get_viewport().set_input_as_handled()
 		elif not event.pressed and owns_mouse:
-			up(rect.has_point(event.position))
+			up(pointer_inside(event.position))
 			get_viewport().set_input_as_handled()
 func _notification(what: int) -> void:
 	if what==NOTIFICATION_APPLICATION_FOCUS_OUT: cancel()

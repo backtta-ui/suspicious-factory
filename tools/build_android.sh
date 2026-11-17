@@ -20,8 +20,10 @@ mkdir -p "$PROJECT_DIR/builds"
 rm -f "$PROJECT_DIR/builds/apk-verification.json" "$PROJECT_DIR/builds/apk-verification.txt"
 python3 "$PROJECT_DIR/tools/prepare_android_template.py" "$GODOT_ANDROID_TEMPLATE"
 "$GODOT_BIN" --headless --editor --path "$PROJECT_DIR" --import --quit
+python3 "$PROJECT_DIR/tools/source_snapshot.py" capture "$PROJECT_DIR/builds/source-snapshot.json"
 # Mandatory native touch, gameplay, saving and real process-restart checks.
 bash "$PROJECT_DIR/tools/test.sh"
+python3 "$PROJECT_DIR/tools/source_snapshot.py" check "$PROJECT_DIR/builds/source-snapshot.json"
 # Export to a temporary directory; preserve the last working APK on failure.
 STAGING_DIR="$(mktemp -d "$PROJECT_DIR/builds/.android-export.XXXXXX")"
 trap 'rm -rf "$STAGING_DIR"' EXIT
@@ -36,6 +38,7 @@ cfg.read(Path(sys.argv[1]) / 'export_presets.cfg')
 if cfg['preset.0.options']['version/name'].strip('"') != sys.argv[2]:
     raise SystemExit('Version mismatch: update export_presets.cfg to match project.godot')
 PY
+python3 "$PROJECT_DIR/tools/source_snapshot.py" check "$PROJECT_DIR/builds/source-snapshot.json"
 mv "$STAGING_DIR/game.apk" "$APK_PATH"
 if [[ -f "$STAGING_DIR/game.apk.idsig" ]]; then
   mv "$STAGING_DIR/game.apk.idsig" "$APK_PATH.idsig"

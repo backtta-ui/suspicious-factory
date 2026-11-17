@@ -67,3 +67,7 @@ static func interaction(button: Button) -> void:
   var box:=panel(Color("344e69") if mode in ["pressed","hover_pressed"] else INK,56);box.content_margin_left=4;box.content_margin_right=4;box.content_margin_top=52;box.content_margin_bottom=4;box.set_border_width_all(0);button.add_theme_stylebox_override(mode,box)
  for mode in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:button.add_theme_color_override(mode,TEXT if mode!="font_disabled_color" else TEXT.darkened(.5))
  button.add_theme_font_size_override("font_size",17)
+static func cancel_controls(node: Node) -> void:
+ if node is WooMobileButton:node.cancel()
+ if node is TouchJoystick:node.reset()
+ for child in node.get_children():cancel_controls(child)
