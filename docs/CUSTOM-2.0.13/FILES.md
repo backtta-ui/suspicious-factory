@@ -1,4 +1,4 @@
-# 수정 파일
+# 실제 수정 파일
 
 - `assets/woo/mascot/original/hongryeon-back-dye.png`
 - `assets/woo/mascot/original/hongryeon-back-dye.png.import`
@@ -32,8 +32,11 @@
 - `assets/woo/mascot/original/yeonhwa-left-dye.png.import`
 - `assets/woo/mascot/original/yeonhwa-right-dye.png`
 - `assets/woo/mascot/original/yeonhwa-right-dye.png.import`
+- `docs/CUSTOM-2.0.13/FILES.md`
 - `docs/CUSTOM-2.0.13/REPORT.md`
+- `docs/CUSTOM-2.0.13/apk-verification.json`
 - `docs/CUSTOM-2.0.13/capture.gd`
+- `docs/CUSTOM-2.0.13/download-verification.json`
 - `docs/CUSTOM-2.0.13/headwear-compatibility.png`
 - `docs/CUSTOM-2.0.13/native-baseline.png`
 - `docs/CUSTOM-2.0.13/plaza-saved-look.png`
