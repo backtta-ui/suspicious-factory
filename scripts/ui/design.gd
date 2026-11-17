@@ -55,3 +55,15 @@ static func wrap_text(node: Node) -> void:
  if node is Label and node.text.length()>45:
   node.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;node.custom_minimum_size.x=0;node.size_flags_horizontal=Control.SIZE_EXPAND_FILL
  for child in node.get_children():wrap_text(child)
+static func interaction(button: Button) -> void:
+ var ornament: WooOrnament
+ for child in button.get_children():
+  if child is WooSkillBadge:child.hide()
+  if child is WooOrnament:ornament=child
+ if ornament==null:
+  ornament=preload("res://scripts/woo/ornament.gd").new();ornament.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);button.add_child(ornament)
+ ornament.show();ornament.circular=true;ornament.icon="talk"
+ for mode in ["normal","hover","pressed","hover_pressed","disabled"]:
+  var box:=panel(Color("344e69") if mode in ["pressed","hover_pressed"] else INK,56);box.content_margin_left=4;box.content_margin_right=4;box.content_margin_top=52;box.content_margin_bottom=4;box.set_border_width_all(0);button.add_theme_stylebox_override(mode,box)
+ for mode in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:button.add_theme_color_override(mode,TEXT if mode!="font_disabled_color" else TEXT.darkened(.5))
+ button.add_theme_font_size_override("font_size",17)

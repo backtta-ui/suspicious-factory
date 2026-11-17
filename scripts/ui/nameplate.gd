@@ -8,6 +8,8 @@ var hostile:=false
 var focused:=false
 var color:=Color("d2c4a6")
 func _draw() -> void:
+ var screen:=get_global_transform_with_canvas().origin
+ if screen.y<100 or (screen.x<300 and screen.y<255):return
  var width:=36.0
  draw_string_outline(FONT,Vector2(-45,-6),title,HORIZONTAL_ALIGNMENT_CENTER,90,9,2,Color("111b2c"))
  draw_string(FONT,Vector2(-45,-6),title,HORIZONTAL_ALIGNMENT_CENTER,90,9,color)

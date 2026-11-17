@@ -366,6 +366,7 @@ func place_action(node: WooMobileButton, top: int, icon: String) -> void:
   if child is WooOrnament: child.circular=true;child.icon=icon
  ui.add_child(node)
  preload("res://scripts/ui/design.gd").place_action(node,{"spell":"spell","talk":"interact","run":"run"}[icon])
+ if icon=="talk":preload("res://scripts/ui/design.gd").interaction(node)
 
 func set_paused(value: bool) -> void:
  paused = value

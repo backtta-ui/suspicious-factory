@@ -76,8 +76,7 @@ func build_ui() -> void:
  preload("res://scripts/ui/design.gd").place_action(hit,"attack")
  preload("res://scripts/ui/design.gd").place_action(interact_button,"interact")
  release_button=control("변신 해제",Vector2(920,374),Vector2(140,50),release)
- for spec in [[interact_button,"상호작용"],[hit,"공격"],[cast_button,"도술"]]:
-  var label: Label=game.text(spec[1],15,game.GOLD);label.mouse_filter=Control.MOUSE_FILTER_IGNORE;label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_WIDE);label.offset_top=-14;label.offset_bottom=10;spec[0].add_child(label)
+ preload("res://scripts/ui/design.gd").interaction(interact_button)
  cast_button.button_down.connect(func()->void:aiming=true)
  cast_button.button_up.connect(func()->void:aiming=false)
  adjust_safe.call_deferred()
