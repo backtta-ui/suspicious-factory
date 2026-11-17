@@ -484,7 +484,9 @@ func request_gallery(index: int) -> void:
  var paths: Array=[]
  for info in preload("res://scripts/worlds/catalog.gd").WORLDS:paths.append(info.thumbnailAsset)
  if not await loading.prepare(paths):return
- show_painting_intro(index);loading.complete()
+ show_painting_intro(index)
+ await get_tree().process_frame
+ loading.complete();loading.input_ready()
 
 func show_painting_intro(index: int) -> void:
  if is_instance_valid(adventure):adventure.show_painting(index)

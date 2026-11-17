@@ -14,6 +14,7 @@ func frames(n: int=3) -> void:
  for i in range(n):
   await physics_frame
   await process_frame
+ await preload("res://tests/loading_wait.gd").settle(self,0)
 func button_named(title: String,node: Node) -> Button:
  if node is Button and node.text==title:return node
  for child in node.get_children():
