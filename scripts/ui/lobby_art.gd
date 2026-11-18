@@ -501,3 +501,271 @@ class Bar extends Control:
 		var fill:=Rect2(Vector2(1,1),Vector2(maxf(size.y-2.0,(size.x-2.0)*ratio),size.y-2.0))
 		T.rounded(self,fill,Color(tint.r,tint.g,tint.b,.9),radius-1)
 		draw_rect(Rect2(fill.position+Vector2(0,0),Vector2(fill.size.x,fill.size.y*.5)),Color(1,0.96,0.85,.28))
+
+# ================================================================ 친구 방 대기실(2.0.20)
+## 대기실 배경: 달빛 한옥 원화를 크게 깔고, 가운데를 눌러 글자를 읽게 하고,
+## 아래 모서리의 등불 빛과 달빛을 노드로 얹는다. 그림과 어둡게 누르는 층이 분리되어 있다.
+class RoomBackdrop extends Control:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	var mood:=1.0
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(_rebuild)
+	func _rebuild() -> void:
+		if size.x<4.0:return
+		for child in get_children():
+			remove_child(child)
+			child.queue_free()
+		var image:=TextureRect.new()
+		image.texture=T.BG
+		image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		image.modulate=Color(1.04*mood,.96*mood,1.16*mood)
+		image.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_child(image);image.position=Vector2.ZERO;image.size=size
+		# 달빛(오른쪽 위)과 등불(아래 두 모서리)의 빛 번짐
+		var moon:=TextureRect.new()
+		moon.texture=T.GLOW
+		moon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		moon.stretch_mode=TextureRect.STRETCH_SCALE
+		moon.modulate=Color(.78,.80,1.0,.42)
+		moon.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_child(moon)
+		var moon_size:=maxf(size.x,size.y)*.62
+		moon.position=Vector2(size.x*.70-moon_size*.5,-size.y*.34)
+		moon.size=Vector2(moon_size,moon_size)
+		for side in [0.04,0.96]:
+			var lantern:=TextureRect.new()
+			lantern.texture=T.GLOW
+			lantern.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+			lantern.stretch_mode=TextureRect.STRETCH_SCALE
+			lantern.modulate=Color(1.0,.72,.38,.34)
+			lantern.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			add_child(lantern)
+			var glow_size:=size.y*.46
+			lantern.position=Vector2(size.x*side-glow_size*.5,size.y-glow_size*.62)
+			lantern.size=Vector2(glow_size,glow_size)
+		var lattice:=Lattice.new()
+		lattice.color=Color(0.85,0.72,0.47,0.012)
+		add_child(lattice);lattice.position=Vector2.ZERO;lattice.size=size
+		var embers:=Embers.new()
+		embers.count=30;embers.speed=5.0;embers.tint=Color(1.0,.86,.66,.42)
+		add_child(embers);embers.position=Vector2.ZERO;embers.size=size
+		var scrim:=Scrim.new()
+		add_child(scrim);scrim.position=Vector2.ZERO;scrim.size=size
+		var vignette:=TextureRect.new()
+		vignette.texture=T.VIGNETTE
+		vignette.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		vignette.stretch_mode=TextureRect.STRETCH_SCALE
+		vignette.modulate=Color(1,1,1,.55)
+		vignette.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_child(vignette);vignette.position=Vector2.ZERO;vignette.size=size
+		var frame:=ScreenFrame.new()
+		frame.color=Color(0.85,0.72,0.47,0.30)
+		add_child(frame);frame.position=Vector2.ZERO;frame.size=size
+
+## 대기실 배경 위에 얹는 어둡게 누르는 층. 가운데는 더 짙게, 가장자리는 살짝.
+class Scrim extends Control:
+	func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE
+	func _draw() -> void:
+		var w:=size.x
+		var h:=size.y
+		# 위·아래 그라데이션(상단 바·하단 버튼 뒤를 눌러 준다)
+		var rows:=28
+		for i in range(rows):
+			var t:=float(i)/float(rows)
+			var alpha:=.30*(1.0-t)*(1.0-t)
+			draw_rect(Rect2(0,h*float(i)/rows,w,h/rows+1.0),Color(.02,.018,.045,alpha))
+		for i in range(rows):
+			var t:=float(i)/float(rows)
+			draw_rect(Rect2(0,h-h*float(i+1)/rows,w,h/rows+1.0),Color(.02,.018,.045,.34*t*t))
+		# 중앙을 부드럽게 눌러 준다
+		var steps:=8
+		for i in range(steps):
+			var k:=1.0-float(i)/float(steps)
+			var inset:=w*.10*(1.0-k)
+			draw_rect(Rect2(w*.06+inset*.5,h*.10,w*.88-inset,h*.80),Color(.015,.012,.035,.020))
+		draw_rect(Rect2(0,h*.08,w,h*.84),Color(.02,.018,.05,.06))
+
+## 금빛 모서리 장식이 있는 먹색 판. 자식은 이 판 위에 그려진다.
+class RoomPanel extends MarginContainer:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	var fill_top:=Color(0.095,0.080,0.165,0.91)
+	var fill_bottom:=Color(0.028,0.024,0.058,0.94)
+	var edge:=Color(0.85,0.72,0.47,0.62)
+	var radius:=14.0
+	var arm:=24.0
+	var ornate:=true
+	var pad:=Vector2(14,12)
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_theme_constant_override("margin_left",int(pad.x))
+		add_theme_constant_override("margin_right",int(pad.x))
+		add_theme_constant_override("margin_top",int(pad.y))
+		add_theme_constant_override("margin_bottom",int(pad.y))
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		if size.x<8.0 or size.y<8.0:return
+		var box:=Rect2(Vector2.ZERO,size)
+		for i in range(4):
+			var grow:=2.0+float(i)*2.0
+			T.rounded_outline(self,box.grow(grow),Color(0,0,0,.16-float(i)*.035),radius+grow,3.0)
+		T.gradient_rounded(self,box,fill_top,fill_bottom,radius)
+		# 위쪽 금속 광택
+		draw_rect(Rect2(Vector2(radius*.6,1.0),Vector2(size.x-radius*1.2,1.2)),Color(.78,.72,.95,.10))
+		T.rounded_outline(self,box,Color(0,0,0,.45),radius,2.2)
+		T.rounded_outline(self,box.grow(-1.4),edge,radius-1.4,1.4)
+		T.rounded_outline(self,box.grow(-5.0),Color(edge.r,edge.g,edge.b,.16),radius-5.0,1.0)
+		if not ornate:return
+		# 네 모서리 황동 장식
+		for spec in [[box.position+Vector2(1,1),Vector2(1,1)],[Vector2(box.end.x-1,box.position.y+1),Vector2(-1,1)],[Vector2(box.position.x+1,box.end.y-1),Vector2(1,-1)],[box.end-Vector2(1,1),Vector2(-1,-1)]]:
+			T.corner_flourish(self,spec[0],spec[1],arm,Color(edge.r,edge.g,edge.b,.92))
+		# 위·아래 가운데 장식
+		for spec in [[Vector2(size.x*.5,0),1.0],[Vector2(size.x*.5,size.y),-1.0]]:
+			var at: Vector2=spec[0]
+			var dir:=float(spec[1])
+			T.diamond(self,at+Vector2(0,dir*7.0),4.6,Color(edge.r,edge.g,edge.b,.9))
+			draw_line(at+Vector2(0,dir*13.0),at+Vector2(0,dir*20.0),Color(edge.r,edge.g,edge.b,.45),1.2)
+			for side in [-1.0,1.0]:
+				draw_line(at+Vector2(0,dir*13.0),at+Vector2(side*26.0,dir*13.0),Color(edge.r,edge.g,edge.b,.22),1.0)
+				T.diamond(self,at+Vector2(side*30.0,dir*13.0),2.2,Color(edge.r,edge.g,edge.b,.55))
+
+## 참가자 카드 한 장의 바탕. 보랏빛 세로 그라데이션 + 오른쪽 아래 꽃·구름 문양.
+class Card extends MarginContainer:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	const Glyph=preload("res://scripts/ui/room_glyphs.gd")
+	var filled:=true
+	var is_ready:=false
+	var host:=false
+	var edge:=Color(0.85,0.72,0.47,0.30)
+	var radius:=11.0
+	var pad:=Vector2(12,8)
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_theme_constant_override("margin_left",int(pad.x))
+		add_theme_constant_override("margin_right",int(pad.x))
+		add_theme_constant_override("margin_top",int(pad.y))
+		add_theme_constant_override("margin_bottom",int(pad.y))
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		if size.x<8.0 or size.y<8.0:return
+		var box:=Rect2(Vector2.ZERO,size)
+		var top:=Color(.245,.185,.395,.95) if filled else Color(.095,.086,.165,.88)
+		var bottom:=Color(.085,.062,.155,.97) if filled else Color(.048,.045,.095,.92)
+		T.gradient_rounded(self,box,top,bottom,radius)
+		# 왼쪽 위 보랏빛 빛무리
+		for i in range(3):
+			T.rounded(self,Rect2(Vector2(1,1),Vector2(size.x*.55,size.y*.55)),Color(.55,.42,.95,.018),radius)
+		# 오른쪽 아래 꽃·구름 문양
+		var mark:=Vector2(size.x-26.0,size.y-18.0)
+		Glyph.draw_glyph(self,"cloud",Rect2(mark-Vector2(46,20),Vector2(64,30)),Color(.70,.58,1.0,.10),1.2)
+		Glyph.draw_glyph(self,"flower",Rect2(mark-Vector2(20,20),Vector2(26,26)),Color(.85,.68,1.0,.16),1.0)
+		draw_rect(Rect2(Vector2(radius*.5,1.0),Vector2(size.x-radius,1.0)),Color(1,.95,1,.10))
+		var line:=Color(.90,.95,.98,.42) if (is_ready and not filled) else edge
+		T.rounded_outline(self,box,line,radius,1.3)
+		if is_ready:T.rounded_outline(self,box.grow(-3.4),Color(.55,.95,.72,.30),radius-3.4,1.2)
+		T.rounded_outline(self,box.grow(-3.0),Color(line.r,line.g,line.b,.12),radius-3.0,1.0)
+		# 왼쪽 위 모서리 장식
+		draw_arc(Vector2(radius+3.0,radius+3.0),7.0,PI,PI*1.5,10,Color(line.r,line.g,line.b,.55),1.2,true)
+		draw_line(Vector2(radius+3.0,3.0),Vector2(radius+16.0,3.0),Color(line.r,line.g,line.b,.55),1.2)
+		draw_line(Vector2(3.0,radius+3.0),Vector2(3.0,radius+16.0),Color(line.r,line.g,line.b,.55),1.2)
+		if host:T.rounded_outline(self,box.grow(-6.0),Color(.95,.80,.48,.24),radius-6.0,1.0)
+
+## 원형 금테 초상화. 초상화는 셰이더로 둥글게 잘라 판 위에 얹는다.
+class Portrait extends Control:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	var path:=""
+	var ring:=Color("ecd39a")
+	var crown:=false
+	var ghost:=false
+	var role:="daoist"
+	var _art: TextureRect
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(_rebuild)
+		_rebuild.call_deferred()
+	func _rebuild() -> void:
+		if _art!=null:
+			_art.queue_free();_art=null
+		var extent:=Vector2(maxf(size.x,custom_minimum_size.x),maxf(size.y,custom_minimum_size.y))
+		if path=="" or extent.x<8.0:return
+		var image:=TextureRect.new()
+		image.texture=load(path)
+		image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		image.material=T.mask_material(.44,.545,.045)
+		image.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_child(image)
+		var d:=minf(extent.x,extent.y)-4.0
+		image.position=Vector2((size.x-d)*.5,(size.y-d)*.5)
+		image.size=Vector2(d,d)
+	func _draw() -> void:
+		var d:=minf(size.x,size.y)
+		if d<8.0:return
+		var c:=Vector2(size.x*.5,size.y*.5)
+		var r:=d*.5-2.0
+		for i in range(4):
+			draw_circle(c,r+float(i)*1.6,Color(ring.r,ring.g,ring.b,.05-float(i)*.011))
+		draw_circle(c,r,Color(.055,.05,.105,.98))
+		draw_circle(c,r-3.0,Color(.10,.09,.18,1.0))
+		if ghost:
+			for i in range(20):
+				if i%2==1:continue
+				var a0:=i*TAU/20.0
+				draw_arc(c,r,a0,a0+TAU/20.0*.7,4,Color(ring.r,ring.g,ring.b,.75),1.6,true)
+			draw_arc(c,r-4.0,0,TAU,40,Color(ring.r,ring.g,ring.b,.18),1.0,true)
+			preload("res://scripts/ui/room_glyphs.gd").draw_glyph(self,"invite",Rect2(c-Vector2(11,11),Vector2(22,22)),Color(ring.r,ring.g,ring.b,.65),1.6)
+		else:
+			draw_arc(c,r,0,TAU,48,ring,2.0,true)
+			draw_arc(c,r-4.0,0,TAU,48,Color(ring.r,ring.g,ring.b,.32),1.0,true)
+		# 8방위 작은 점 장식
+		for i in range(8):
+			var at:=c+Vector2.from_angle(i*TAU/8.0+PI/8.0)*r
+			draw_circle(at,1.7 if i%2==0 else 1.2,Color(ring.r,ring.g,ring.b,.75))
+		if crown:
+			var badge:=c+Vector2(-r*.70,-r*.70)
+			var br:=maxf(8.5,r*.36)
+			draw_circle(badge,br,Color(.055,.048,.095,.97))
+			draw_arc(badge,br,0,TAU,24,Color(ring.r,ring.g,ring.b,.92),1.5,true)
+			preload("res://scripts/ui/room_glyphs.gd").draw_glyph(self,"crown",Rect2(badge-Vector2(br*.74,br*.60),Vector2(br*1.48,br*1.22)),Color("ffe09a"),1.3)
+
+## 지도 미리보기처럼 그림을 넣는 액자. 안쪽에 얇은 금선과 모서리 괄호를 그린다.
+class Preview extends Control:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	var texture: Texture2D
+	var radius:=9.0
+	var _art: TextureRect
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(_rebuild)
+	func _rebuild() -> void:
+		if _art!=null:
+			_art.queue_free();_art=null
+		if texture==null or size.x<8.0:return
+		_art=TextureRect.new()
+		_art.texture=texture
+		_art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		_art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+		_art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_child(_art)
+		_art.position=Vector2(3,3);_art.size=size-Vector2(6,6)
+		queue_redraw()
+	func _draw() -> void:
+		if size.x<8.0:return
+		var box:=Rect2(Vector2.ZERO,size)
+		draw_rect(box,Color(.02,.02,.045,.9))
+		T.rounded_outline(self,box,Color(.85,.72,.47,.55),radius,1.4)
+		T.rounded_outline(self,box.grow(-2.0),Color(.85,.72,.47,.14),radius-2.0,1.0)
+		for spec in [[box.position+Vector2(2,2),Vector2(1,1)],[Vector2(box.end.x-2,box.position.y+2),Vector2(-1,1)],[Vector2(box.position.x+2,box.end.y-2),Vector2(1,-1)],[box.end-Vector2(2,2),Vector2(-1,-1)]]:
+			T.corner_flourish(self,spec[0],spec[1],14.0,Color(.92,.80,.52,.85))
+
+## 제목 아래 장식선.
+class Rule extends Control:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	var color:=Color(0.85,0.72,0.47,0.55)
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		if size.x<8.0:return
+		T.title_flourish(self,Vector2(0,size.y*.5),Vector2(size.x,size.y*.5),color)
