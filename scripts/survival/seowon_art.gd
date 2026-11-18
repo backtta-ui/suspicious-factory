@@ -4,6 +4,8 @@ extends RefCounted
 const ATLAS=preload("res://assets/woo/v11/village_atlas.png")
 const DECOR=preload("res://assets/woo/v11/decor_atlas.png")
 const GROUND=preload("res://assets/woo/worlds/plaza_ground.png")
+const TILE=preload("res://assets/woo/seowon/ground_tile.png")
+const WALL_TEX=preload("res://assets/woo/seowon/wall_h.png")
 const L=preload("res://scripts/survival/layout.gd")
 const HANOK_CELL=Rect2(0,0,512,512)
 const HANOK_B_CELL=Rect2(512,0,512,512)
@@ -47,27 +49,40 @@ static func draw_moon(node: Node2D) -> void:
  for i in range(7):
   var p:=Vector2(1330+i*62,205+cos(i*1.3)*10);node.draw_circle(p,16+shade(i,41)*10,Color(.48,.5,.72,.12))
 static func draw_base(node: Node2D) -> void:
- node.draw_rect(Rect2(Vector2(-40,-40),L.SIZE+Vector2(80,80)),Color("0b1420"))
- # A painted courtyard floor keeps the stonework organic; it is drawn once.
- node.draw_texture_rect_region(GROUND,Rect2(Vector2(0,0),L.SIZE),Rect2(700,300,1800,1400),Color(.52,.55,.74))
- node.draw_rect(Rect2(Vector2(0,0),L.SIZE),Color(.05,.07,.16,.34))
- # Moonlight pools and warm lantern spill.
- for p in [Vector2(860,720),Vector2(430,1060),Vector2(1200,860)]:glow(node,p,300,Color(.5,.58,.95,.14))
- for p in LANTERNS:glow(node,p+Vector2(0,-20),150,Color(1,.68,.34,.10))
- glow(node,Vector2(1470,150),230,Color(.62,.66,1,.14))
- star_field(node)
- draw_moon(node)
- # 서원 담장(북·서·동)과 마당을 나누는 기와담.
- wall(node,Rect2(60,120,820,14));wall(node,Rect2(930,120,810,14))
- for rect in L.WALLS:tiled_wall(node,rect)
- courtyard_medallion(node,Vector2(860,720),138)
- # 문 앞 디딤돌만 남기고, 바닥은 원본 석재 텍스처에 맡긴다.
- for i in range(5):
-  var p:=Vector2(410+shade(i,1)*52,596+i*13)
-  node.draw_circle(p,9+shade(i,2)*4,Color(.28,.27,.33,.5))
- draw_petals(node,260,Rect2(500,480,760,760),Color(.95,.55,.75,.5))
- draw_petals(node,90,Rect2(240,240,400,420),Color(.95,.6,.8,.4))
- draw_ground_decor(node)
+ node.draw_rect(Rect2(Vector2(-40,-40),L.SIZE+Vector2(80,80)),Color("070d18"))
+ for gy in range(0,int(L.SIZE.y)+1,512):
+  for gx in range(0,int(L.SIZE.x)+1,512):
+   node.draw_texture_rect(TILE,Rect2(gx,gy,512,512),false)
+ node.draw_rect(Rect2(Vector2(0,0),L.SIZE),Color(.04,.06,.15,.34))
+ for p in [Vector2(860,720),Vector2(430,1060),Vector2(1180,860)]:glow(node,p,320,Color(.5,.58,.95,.07))
+ courtyard_medallion(node,Vector2(860,720),120)
+ draw_petals(node,180,Rect2(500,470,760,720),Color(.95,.6,.78,.45))
+ # 팔각 문양 주변의 디딤돌
+ for i in range(8):
+  var angle:=i*TAU/8
+  var p:=Vector2(860,720)+Vector2.from_angle(angle)*(136+14)
+  node.draw_circle(p,7,Color(.32,.31,.4,.5));node.draw_circle(p+Vector2(-1,-2),4.5,Color(.45,.44,.52,.45))
+static func draw_walls(node: Node2D) -> void:
+ var segments: Array=[Rect2(60,120,820,14),Rect2(930,120,810,14)]
+ for seg in segments:wall_sprite(node,seg)
+ for i in range(8):wall_sprite(node,L.WALLS[i])
+static func wall_sprite(node: Node2D,rect: Rect2) -> void:
+ var horizontal:=rect.size.x>=rect.size.y
+ if horizontal:
+  var x:=rect.position.x-4
+  while x<rect.end.x:
+   var width:=minf(120.0,rect.end.x-x+4)
+   node.draw_texture_rect_region(WALL_TEX,Rect2(x,rect.position.y-36,width,62),Rect2(0,0,760,443))
+   node.draw_circle(Vector2(x+2,rect.position.y+2),3,Color(.05,.05,.08,.35))
+   x+=width
+ else:
+  node.draw_set_transform(Vector2(rect.get_center().x,-4),PI/2,Vector2(1,1))
+  var local: float=-rect.size.y*.5
+  while local<rect.size.y*.5:
+   var width: float=minf(120.0,rect.size.y*.5-local)
+   node.draw_texture_rect_region(WALL_TEX,Rect2(local,-31,width,62),Rect2(0,0,760,443))
+   local+=width
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 static func wall(node: Node2D,rect: Rect2) -> void:
  node.draw_rect(rect.grow(4),Color(.02,.03,.06,.5))
  node.draw_rect(rect,Color("332f42"))

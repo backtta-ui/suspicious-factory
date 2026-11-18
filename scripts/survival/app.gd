@@ -32,6 +32,8 @@ var lobby_hotspots: Dictionary={}
 var storage: RefCounted
 var sound: WooSound
 var layer: CanvasLayer
+var fog_layer: CanvasLayer
+var fog: TextureRect
 var ui: Control
 var content: Control
 var modal: Control
@@ -87,6 +89,8 @@ func _ready() -> void:
  process_mode=Node.PROCESS_MODE_ALWAYS
  storage=Storage.new();sound=preload("res://scripts/woo/sound.gd").new();add_child(sound)
  layer=CanvasLayer.new();layer.layer=3;add_child(layer)
+ fog_layer=CanvasLayer.new();fog_layer.layer=2;add_child(fog_layer)
+ fog=TextureRect.new();fog.texture=preload("res://assets/woo/seowon/vignette.png");fog.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;fog.stretch_mode=TextureRect.STRETCH_SCALE;fog.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(fog,fog_layer);fog.visible=false
  for bus in ["DosaMusic","DosaSfx"]:
   if AudioServer.get_bus_index(bus)<0:AudioServer.add_bus();AudioServer.set_bus_name(AudioServer.bus_count-1,bus)
  sound.music.bus="DosaMusic"
@@ -154,6 +158,7 @@ func transition(destination: String) -> void:
  var intro:=create_tween();intro.tween_property(ui,"modulate:a",1.0,.15);await intro.finished;changing=false
 func build(destination: String) -> void:
  clear_ui();screen=destination
+ if is_instance_valid(fog):fog.visible=destination=="match"
  if is_instance_valid(sound):sound.set_context("match" if destination=="match" else "menu")
  match destination:
   "title":title_screen()
@@ -556,7 +561,7 @@ func update_avatars() -> void:
    var label:=text("",8);label.name="Name";label.position=Vector2(-46,-58);label.size=Vector2(92,12);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
    var mark:=preload("res://scripts/seal/color_marker.gd").new();mark.actor=actor;mark.name="Identity";actor.add_child(mark)
    var aura:=preload("res://scripts/survival/actor_aura.gd").new();aura.name="Aura";actor.add_child(aura)
-  var actor: WooActor=avatars[id];var previous:=actor.position;actor.position=info.position+Vector2(0,-L.elevation(info.position));actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=minf(20,actor.position.distance_to(previous))*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;actor.appearance_form="asset:"+info.form if info.form!="" else "human";actor.running=rules.players.get(info.id,{}).get("running",false)
+  var actor: WooActor=avatars[id];var previous:=actor.position;actor.position=info.position+Vector2(0,-L.elevation(info.position));actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=minf(20,actor.position.distance_to(previous))*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;actor.appearance_form="seowon:"+info.form if info.form!="" else "human";actor.running=rules.players.get(info.id,{}).get("running",false)
   var tint: Color=C.tint(String(info.get("character","")))
   actor.tint=tint
   var aura: Node2D=actor.get_node_or_null("Aura")
