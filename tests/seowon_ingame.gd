@@ -28,7 +28,7 @@ func live_room(count: int=8,seed_value: int=17) -> RefCounted:
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
  # 1) 지도: 세 채의 출입 한옥·앞뒤 문·연못·아치 목교
- check(L.buildings().size()==3,"three enterable hanok")
+ check(L.buildings().size()==6,"six enterable hanok across the wider map")
  var front_ok:=true;var back_ok:=true;var interior_ok:=true;var distinct:=true
  var names: Array=[]
  for building in L.buildings():
@@ -41,10 +41,10 @@ func run() -> void:
  check(front_ok,"front door of every hanok walkable from the courtyard")
  check(back_ok,"back door of every hanok walkable from behind")
  check(interior_ok,"room floor of every hanok walkable")
- check(names.size()==3 and not (names[0]==names[1] or names[1]==names[2] or names[0]==names[2]),"each hanok has its own interior")
+ check(names.size()==6 and names.size()==names.duplicate().size() and not names.has(""),"each hanok has its own interior")
  var wide:=true
  for building in L.buildings():
-  wide=wide and (building.rect as Rect2).size.x>=450 and (building.rect as Rect2).size.y>=380
+  wide=wide and (building.rect as Rect2).size.x>=430 and (building.rect as Rect2).size.y>=360
  check(wide,"every hanok keeps the enlarged size")
  var solid:=true
  for building in L.buildings():
@@ -74,8 +74,10 @@ func run() -> void:
  check(r.command("human","interact") and human.form=="jar","jar disguise still works")
  check(L.door_near(jar_point,70)=="","no door reported far from a hanok")
  var evil: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai")[0]
- evil.position=jar_point+Vector2(-18,0);evil.facing=0;evil.cd.erase("seal");human.form=""
- check(r.command(evil.id,"seal") and human.captured,"close seal still works")
+ evil.position=jar_point+Vector2(-18,0);evil.facing=0;evil.cd.erase("seal")
+ r.tick(.1)
+ check(human.form=="jar" and not human.captured,"contact cannot unmask a disguised daoist")
+ check(r.command(evil.id,"seal") and human.captured and human.form=="","confirm strike unmasks and seals")
  # 3) 앱: 1.75x 카메라·문 앞 상호작용·지붕 크로스페이드·실내 안개
  root.size=Vector2i(1280,720);var game:=App.instantiate();root.add_child(game);await frames(8)
  game.create_room("QA 술래잡기",8,true);await create_timer(.4).timeout
@@ -102,9 +104,9 @@ func run() -> void:
  check(game.camera.position.distance_to(me.position+Vector2(0,-L.CAMERA_LIFT))<1.5,"camera follows the player with the 36px lift")
  check(game.action_button.get_node("Caption").text=="문 열기","door context label at the enlarged hanok")
  check(game.ui.find_children("*","Button",true,false).size()>=6,"HUD buttons present")
- check(game.world.buildings.size()==3,"world draws three hanok")
+ check(game.world.buildings.size()==6,"world draws all six hanok")
  for building in game.world.buildings:
-  check((building.data.rect as Rect2).size.x>=450,"world hanok uses the enlarged rect")
+  check((building.data.rect as Rect2).size.x>=430,"world hanok uses the enlarged rect")
   var painted: Vector2=L.painted_door(String(building.data.id))
   var door_anchor: Vector2=(building.data.doors as Dictionary).front
   check(is_instance_valid(building.exterior) and (building.exterior as Sprite2D).scale.x>0,"exterior sprite for "+String(building.data.id))

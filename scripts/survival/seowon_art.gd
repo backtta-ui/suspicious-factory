@@ -4,7 +4,7 @@ extends RefCounted
 const ATLAS=preload("res://assets/woo/v11/village_atlas.png")
 const DECOR=preload("res://assets/woo/v11/decor_atlas.png")
 const GROUND=preload("res://assets/woo/worlds/plaza_ground.png")
-## 2.0.19: 격자·타일 블록 없이 통으로 그린 바닥 원화(1800x1400).
+## 2.0.26: 격자·타일 블록 없이 통으로 그린 바닥 원화(3400x2600).
 ## 이동 가능 마스크·충돌은 tools/bake_seowon_ground.py가 layout.gd 수치로 1:1 합성한다.
 const GROUND_ART=preload("res://assets/woo/seowon/seowon_ground.png")
 const WALL_TEX=preload("res://assets/woo/seowon/wall_h.png")
@@ -20,8 +20,8 @@ const DECOR_LANTERN=7
 const DECOR_BRIDGE=8
 const TREE_BASE=472.0
 ## 벚꽃나무·석등·대나무 숲의 실제 배치(충돌은 layout.gd가 담당).
-const TREES=[Vector2(1040,330),Vector2(1690,880),Vector2(120,1160),Vector2(640,1100),Vector2(1470,1210),Vector2(950,300)]
-const LANTERNS=[Vector2(330,700),Vector2(990,640),Vector2(1140,1070),Vector2(770,470),Vector2(560,930),Vector2(1240,1130),Vector2(700,600),Vector2(1120,530),Vector2(1240,760),Vector2(900,1030),Vector2(240,800),Vector2(640,1180)]
+const TREES=[Vector2(380,560),Vector2(1000,760),Vector2(1420,1180),Vector2(2060,880),Vector2(2340,1900),Vector2(1760,2200),Vector2(760,1660),Vector2(320,1560),Vector2(2820,880),Vector2(3180,1560),Vector2(1240,2020),Vector2(600,860),Vector2(1980,300),Vector2(3120,2080)]
+const LANTERNS=[Vector2(560,780),Vector2(760,900),Vector2(2160,640),Vector2(2360,660),Vector2(2800,1020),Vector2(2960,1040),Vector2(2760,1880),Vector2(3060,1900),Vector2(1080,2320),Vector2(1220,2320),Vector2(500,1880),Vector2(640,1890),Vector2(1160,980),Vector2(1420,900),Vector2(1980,980),Vector2(2260,1260),Vector2(2400,1600),Vector2(1620,1760),Vector2(1780,1760),Vector2(1060,1520),Vector2(760,2160),Vector2(2200,2260),Vector2(2600,2260),Vector2(1900,600)]
 static func shade(x: int,y: int,salt: int=0) -> float:
  var n: int=(x*73856093)^(y*19349663)^(salt*83492791)
  n=(n^(n>>13))*1274126177
@@ -50,15 +50,15 @@ static func draw_moon(node: Node2D) -> void:
   var p:=Vector2(1210+i*70,120+sin(i*1.7)*16);node.draw_circle(p,20+shade(i,31)*14,Color(.52,.55,.78,.16))
  for i in range(7):
   var p:=Vector2(1330+i*62,205+cos(i*1.3)*10);node.draw_circle(p,16+shade(i,41)*10,Color(.48,.5,.72,.12))
-## 바닥은 1800x1400 통 원화 한 장. 격자선·사각 패치·디버그 타일을 그리지 않는다.
+## 바닥은 3400x2600 통 원화 한 장. 격자선·사각 패치·디버그 타일을 그리지 않는다.
 ## 돌길/화단 경계·돌 턱·이끼 펄·등불 빛웅덩이는 원화에 이미 구워져 있고,
 ## 그 경계는 layout.gd의 이동 가능 영역과 1:1로 맞춰져 있다.
 static func draw_base(node: Node2D) -> void:
  node.draw_rect(Rect2(Vector2(-40,-40),L.SIZE+Vector2(80,80)),Color("04070d"))
  node.draw_texture_rect(GROUND_ART,Rect2(Vector2.ZERO,L.SIZE),false)
 static func draw_walls(node: Node2D) -> void:
- var segments: Array=[Rect2(60,120,820,14),Rect2(930,120,810,14)]
- for seg in segments:wall_sprite(node,seg)
+ # 외곽 담장(HARD 앞 6개)과 마을 골목 담장을 모두 원화 기와로 그린다.
+ for i in range(mini(6,L.HARD.size())):wall_sprite(node,L.HARD[i])
  for rect in L.WALLS:wall_sprite(node,rect)
 static func wall_sprite(node: Node2D,rect: Rect2) -> void:
  var horizontal:=rect.size.x>=rect.size.y

@@ -12,6 +12,8 @@ var events: Array=[]
 var circle_penalty_after:=INF
 var circle_speed_factor:=1.0
 var serial:=0
+## 기력 회복 구슬 상태({p, ready}). ready<=elapsed 이면 다시 생긴 구슬이다.
+var orbs: Array=[]
 var selection_left:=25.0
 ## 자동 배정이 고를 수 있는 캐릭터 목록(참가자별). 비어 있으면 전체 로스터.
 var restricted: Dictionary={}
@@ -35,10 +37,32 @@ func _init(seed_value: int=0) -> void:
  else:rng.seed=seed_value
 func add(id: String,name: String,daoist: String,yokai: String) -> bool:
  if phase!="room" or players.size()>=8 or C.find(daoist).is_empty() or C.find(yokai).is_empty():return false
- players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"wobble":0.0,"form_origin":L.SPAWN,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stats":{"seals":0,"misses":0,"rescues":0},"confirmed":false,"ready":id!="human","color":players.size()}
+ players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"home":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"wobble":0.0,"form_origin":L.SPAWN,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stagger":0.0,"lives":3,"stats":{"seals":0,"misses":0,"rescues":0,"lost":0},"confirmed":false,"ready":id!="human","color":players.size()}
  return true
 ## 시작 직후 요괴가 바로 봉인하지 못하도록 주는 유예(초).
 const SEAL_GRACE=6.0
+## ---------------------------------------------------------------- 봉인 판정
+## 《도망가 친구들》 방식: 미둔갑 도사는 몸이 닿는 순간 봉인되고(버튼 없음),
+## 사물로 둔갑한 도사만 요괴의 '확인' 타격으로 잡힌다.
+## 접촉 봉인 반경(px). 몸이 겹치는 거리라야 추격이 성립한다.
+const CONTACT_RADIUS=27.0
+## '확인' 타격 사거리(px). 근처 사물/둔갑 도사에 닿는 거리.
+const CONFIRM_REACH=62.0
+## 봉인 1명 직후 요괴의 짧은 후딜(초). 연속 싹쓸이를 막되 다음 추격은 바로 가능하다.
+const SEAL_RECOVER=1.5
+## 빈 사물·허공을 확인했을 때의 헛방 후딜(초).
+const MISS_RECOVER=2.0
+## 호신부가 막아준 뒤 도사가 받는 짧은 재봉인 면역(초)과 밀려나는 거리(px).
+const SHIELD_IMMUNE=1.2
+const SHIELD_KNOCK=62.0
+## 봉인되면 이 시간(초) 안에 구조받아야 하고, 지나면 목숨 1개를 잃는다.
+## 구조 시간(초). 10초 안에 들어오도록 짧게 잡는다.
+const SEAL_DEADLINE=10.0
+const RESCUE_TIME=2.5
+## 도사는 목숨 3개. 세 번째 봉인은 기다림 없이 즉시 탈락이다.
+const LIVES=3
+## 목숨을 잃고 시작 자리로 돌아왔을 때 주는 재봉인 면역(초).
+const REVIVE_IMMUNE=2.5
 func start() -> bool:
  if phase!="room" or players.size() not in [6,8]:return false
  if not players.values().all(func(p: Dictionary)->bool:return p.ready):return false
@@ -53,8 +77,10 @@ func start() -> bool:
   var spot: Vector2=L.spawns_for(p.role,seat)
   if p.role=="yokai":yokai_index+=1
   else:daoist_index+=1
-  p.position=spot;p.ground=spot;p.origin=spot;p.form_origin=spot;p.intent=Vector2.ZERO;p.facing=6 if p.role=="daoist" else 2
+  p.position=spot;p.ground=spot;p.origin=spot;p.home=spot;p.form_origin=spot;p.intent=Vector2.ZERO;p.facing=6 if p.role=="daoist" else 2
  apply_preference()
+ orbs=[]
+ for spot in L.ORBS:orbs.append({"p":spot,"ready":0.0})
  phase="selection";selection_left=25;selection_elapsed=0;return true
 ## 희망 진영이 있으면 휴먼과 반대편 한 명의 역할·자리를 맞바꾼다(구성 비율 유지).
 func apply_preference() -> void:
@@ -110,13 +136,14 @@ func command(id: String,op: String,data: Dictionary={}) -> bool:
   p.jump=.8;p.ground=p.position;return true
  if op=="seal":return seal(p)
  if op=="interact":
+  # 둔갑 해제는 어디서든 다시 누르면 풀린다(사물 근처일 필요 없음).
+  if p.form!="":
+   p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.5);event("untransform",p.id);return true
   var door:=L.door_near(p.position,70)
   if door!="":doors[door]=elapsed+1.4;burst(L.door(door).center,"fx_door",.6);event("door",p.id,door);return true
   var near:=L.object_near(p.position,84)
   if near.is_empty():return false
   # 형상 추출: 누구나 사물 무리에 섞여 숨을 수 있는 공용 둔갑.
-  if p.form!="":
-   p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.5);event("untransform",p.id);return true
   if float(p.cd.get("transform",0))>elapsed:return false
   p.form=near.kind;p.form_origin=near.p;p.wobble=0;p.buff.transform=elapsed+9;p.cd.transform=elapsed+12
   burst(p.position,"fx_poof",.6);event("transform",p.id,near.kind);return true
@@ -129,21 +156,60 @@ func command(id: String,op: String,data: Dictionary={}) -> bool:
   p.intent=Vector2.ZERO;return true
  if op=="skill":return skill(p,data.get("aim",Vector2.from_angle(p.facing*PI/4)))
  return false
+## 요괴의 '확인' 타격: 근처 사물 중 둔갑한 도사를 쳐서 잡는다.
+## 미둔갑 도사는 접촉 판정(contact_seal)이 담당하므로 이 타격으로는 잡히지 않는다.
 func seal(p: Dictionary) -> bool:
  if p.role!="yokai" or float(p.cd.get("seal",0))>elapsed:return false
- var q: Dictionary={};var best:=61.0;var forward:=Vector2.from_angle(p.facing*PI/4)
+ var q: Dictionary={};var best:=CONFIRM_REACH;var forward:=Vector2.from_angle(p.facing*PI/4)
  for candidate in players.values():
-  var delta: Vector2=candidate.position-p.position;var distance:=delta.length()
   if candidate.role!="daoist" or candidate.captured or candidate.eliminated or candidate.immune>elapsed:continue
-  # 둔갑한 도사는 아주 가까이에서만 봉인된다(은신 규칙과 같은 판정).
-  if candidate.form!="" and distance>30:continue
-  if distance<best and (distance<5 or forward.dot(delta.normalized())>.64) and L.line(p.position,candidate.position):q=candidate;best=distance
- if not q.is_empty() and q.buff.get("shield",0)>elapsed:q.buff.erase("shield");q={}
- serial+=1;effects.append({"id":serial,"kind":"seal" if not q.is_empty() else "miss","position":p.position,"until":elapsed+.5,"cosmetic":C.look(p.character),"facing":p.facing})
- p.cd.seal=elapsed+(12.0 if not q.is_empty() else 6.0)
- if q.is_empty():p.stats.misses+=1;event("miss",p.id);return true
- q.form="";q.buff.erase("transform");burst(q.position,"fx_poof",.45)
- q.captured=true;q.deadline=elapsed+45;q.intent=Vector2.ZERO;q.running=false;q.jump=0;q.height=0;q.rescue="";q.progress=0;p.stats.seals+=1;event("seal",p.id,q.id);return true
+  if candidate.form=="":continue
+  var delta: Vector2=candidate.position-p.position;var distance:=delta.length()
+  if distance>best:continue
+  if distance>=8 and forward.dot(delta.normalized())<.5:continue
+  if not L.line(p.position,candidate.position):continue
+  q=candidate;best=distance
+ if q.is_empty():
+  # 빈 사물·허공을 쳤다: 2초 헛방 후딜과 이펙트.
+  p.cd.seal=elapsed+MISS_RECOVER;p.stagger=elapsed+.25;p.stats.misses+=1
+  serial+=1;effects.append({"id":serial,"kind":"miss","position":p.position,"born":elapsed,"until":elapsed+.5,"cosmetic":C.look(p.character),"facing":p.facing})
+  event("miss",p.id);return true
+ # 둔갑한 도사를 맞혔다: 즉시 둔갑 해제 + 봉인.
+ serial+=1;effects.append({"id":serial,"kind":"seal","position":q.position,"born":elapsed,"until":elapsed+.5,"cosmetic":C.look(p.character),"facing":p.facing})
+ seal_hit(p,q);return true
+## 몸이 닿은 미둔갑 도사를 버튼 입력 없이 즉시 봉인한다.
+func contact_seal() -> void:
+ for p in players.values():
+  if p.role!="yokai" or not available(p):continue
+  if float(p.cd.get("seal",0))>elapsed:continue
+  var q: Dictionary={};var best:=CONTACT_RADIUS
+  for candidate in players.values():
+   if candidate.role!="daoist" or candidate.captured or candidate.eliminated or candidate.immune>elapsed:continue
+   # 둔갑 중인 도사는 스쳐 지나가도 잡히지 않는다(확인 타격 대상).
+   if candidate.form!="":continue
+   var distance: float=p.position.distance_to(candidate.position)
+   if distance>best or not L.line(p.position,candidate.position):continue
+   q=candidate;best=distance
+  if q.is_empty():continue
+  serial+=1;effects.append({"id":serial,"kind":"seal","position":q.position,"born":elapsed,"until":elapsed+.5,"cosmetic":C.look(p.character),"facing":p.facing})
+  seal_hit(p,q)
+## 봉인 1회 공통 처리: 호신부 방어 → 둔갑 해제 → 봉인 + 요괴 후딜.
+func seal_hit(p: Dictionary,q: Dictionary) -> bool:
+ p.cd.seal=elapsed+SEAL_RECOVER;p.stagger=elapsed+.35
+ if q.buff.get("shield",0)>elapsed:
+  # 호신부가 한 번 막아낸다: 버프 소멸 + 짧은 면역 + 넉백.
+  q.buff.erase("shield");q.immune=elapsed+SHIELD_IMMUNE;q.intent=Vector2.ZERO
+  var push: Vector2=q.position-p.position
+  if push.length()<.01:push=Vector2.from_angle(p.facing*PI/4)
+  q.position=L.move(q.position,q.position+push.normalized()*SHIELD_KNOCK);q.ground=q.position
+  burst(q.position,"fx_talisman",.6,{"facing":q.facing});event("blocked",p.id,q.id)
+  return false
+ if q.form!="":q.form="";q.buff.erase("transform");burst(q.position,"fx_poof",.45)
+ q.intent=Vector2.ZERO;q.running=false;q.jump=0;q.height=0;q.rescue="";q.progress=0
+ q.form="";q.buff.erase("transform")
+ p.stats.seals+=1;event("seal",p.id,q.id)
+ # 목숨은 봉인 순간이 아니라 구조에 실패한 순간에 줄어든다.
+ q.captured=true;q.deadline=elapsed+SEAL_DEADLINE;return true
 func skill(p: Dictionary,aim: Vector2) -> bool:
  var spec: Dictionary=C.find(p.character);var id: String=spec.active
  if id=="transform" and p.form!="":
@@ -174,8 +240,8 @@ func skill(p: Dictionary,aim: Vector2) -> bool:
  elif id=="smoke":burst(p.position,"fx_flame",.7)
  p.cd[id]=elapsed+spec.skill.cd;event("skill",p.id,id);return true
 func circle() -> Dictionary:
- var centers: Array[Vector2]=[Vector2(860,720),Vector2(870,730),Vector2(900,700),Vector2(880,720)]
- var radii: Array[float]=[1400,880,600,360]
+ var centers: Array[Vector2]=[Vector2(1700,1360),Vector2(1700,1360),Vector2(1700,1370),Vector2(1710,1380)]
+ var radii: Array[float]=[2700,1750,1150,620]
  var stage:=0 if elapsed<180 else (1 if elapsed<360 else (2 if elapsed<480 else 3))
  var next:=mini(3,stage+1);var due:=180.0 if stage==0 else (360.0 if stage==1 else (480.0 if stage==2 else 600.0))
  var blend:=clampf((elapsed-([0,180,360,480][stage]))/30.0,0,1) if stage>0 else 1.0
@@ -207,17 +273,22 @@ func tick(delta: float) -> void:
  for p in players.values():
   if p.eliminated:continue
   p.alive_seconds=elapsed
-  if p.captured and elapsed>=p.deadline:p.captured=false;p.eliminated=true;p.rescue="";event("eliminate",p.id);continue
+  if p.captured and elapsed>=p.deadline:
+   # 10초 안에 구조받지 못했다: 목숨 1개 차감.
+   p.captured=false;p.deadline=0.0;p.rescue="";p.progress=0
+   p.lives=maxi(0,int(p.lives)-1);p.stats.lost=maxi(0,int(p.stats.get("lost",0)))+1;event("lose_life",p.id)
+   if p.lives<=0:
+    p.eliminated=true;event("eliminate",p.id);continue
+   # 목숨이 남았으면 시작한 자리로 풀려나 잠시 재봉인 면역을 받는다.
+   p.position=p.home if L.can_stand(p.home) else L.safe(L.SPAWN)
+   p.ground=p.position;p.origin=p.position;p.immune=elapsed+REVIVE_IMMUNE
+   p.intent=Vector2.ZERO;p.running=false;p.jump=0;p.height=0;p.stamina=100;p.exhausted=false
+   event("revive",p.id);continue
   if p.captured:continue
   if p.form!="" and p.buff.get("transform",0)<=elapsed:
    p.form="";p.buff.erase("transform");event("untransform",p.id)
-  if p.form!="":
-   var form: Dictionary=L.form(p.form)
-   if p.intent.length()>.05 and not form.get("moving",false):
-    # 고정 사물 둔갑은 제자리 은신. 움직이려 하면 잠깐 흔들리다 풀린다.
-    p.wobble+=delta
-    if p.wobble>=.45:p.form="";p.buff.erase("transform");burst(p.position,"fx_poof",.4);event("untransform",p.id)
-   else:p.wobble=maxf(0,p.wobble-delta)
+  # 2.0.26: 사물로 둔갑한 채로도 걸어 다닐 수 있다. 둔갑은 지속시간·다시 누르기·
+  # 점프·봉인으로만 풀린다(움직여도 풀리지 않는다).
   var previous: Vector2=p.position
   p.outside=p.outside+delta if p.position.distance_to(zone.center)>zone.radius else 0.0
   if p.exhausted and p.stamina>=25:p.exhausted=false
@@ -228,20 +299,30 @@ func tick(delta: float) -> void:
    p.jump=maxf(0,p.jump-delta);p.height=sin((.8-p.jump)/.8*PI)*36
   else:p.height=0
   var speed: float=C.find(p.character).run_speed if fast else C.find(p.character).speed
+  if p.stagger>elapsed:speed=0.0
   if p.outside>circle_penalty_after:speed*=circle_speed_factor
-  if p.form!="":speed*=(.62 if L.form(p.form).get("moving",false) else 0.0)
+  # 둔갑 중 이동: 사물답게 조금 느리게(고양이는 가장 빠름).
+  if p.form!="":speed*=(.95 if String(p.form)=="cat" else .87)
   p.position=L.move(p.position,p.position+p.intent*speed*delta,p.height>12)
   if p.jump<=0 and not L.can_stand(p.position):p.position=L.safe(p.position)
   if L.can_stand(p.position):p.ground=p.position
   var distance: float=p.position.distance_to(previous);p.stride+=distance
   if distance>0 and (p.trail.is_empty() or p.position.distance_to(p.trail[-1].position)>=18):p.trail.append({"position":p.position,"time":elapsed,"facing":p.facing})
   while not p.trail.is_empty() and elapsed-p.trail[0].time>6:p.trail.pop_front()
+ contact_seal()
+ # 기력 구슬: 스쳐 지나가면 자동으로 달리기 기력이 회복된다.
+ for orb in orbs:
+  if float(orb.ready)>elapsed:continue
+  for p in players.values():
+   if not available(p) or p.position.distance_to(orb.p)>L.ORB_RADIUS:continue
+   p.stamina=100.0;p.exhausted=false;orb.ready=elapsed+L.ORB_RESPAWN
+   burst(orb.p,"fx_ghost",.7);event("orb",p.id);break
  for p in players.values():
   if p.rescue=="":continue
   var q: Dictionary=players.get(p.rescue,{})
   if not available(p) or q.is_empty() or not q.captured or q.eliminated or p.position.distance_to(p.origin)>.5 or p.position.distance_to(q.position)>58:p.rescue="";p.progress=0;continue
   p.progress+=delta
-  if p.progress>=4-0.00001:q.captured=false;q.immune=elapsed+3;p.stats.rescues+=1;event("rescue",p.id,q.id);p.rescue="";p.progress=0
+  if p.progress>=RESCUE_TIME-0.00001:q.captured=false;q.immune=elapsed+3;p.stats.rescues+=1;event("rescue",p.id,q.id);p.rescue="";p.progress=0
  for e in effects:
   if e.kind=="clone":e.position=L.move(e.position,e.position+Vector2.from_angle(e.facing*PI/4)*36*delta)
  effects=effects.filter(func(e: Dictionary)->bool:return e.until>elapsed)

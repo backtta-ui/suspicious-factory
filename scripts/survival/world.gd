@@ -25,6 +25,7 @@ var aim_cancelled:=false
 var ground: Node2D
 var water: Node2D
 var effects: Node2D
+var orbs: Node2D
 var buildings: Array=[]
 var door_open: Dictionary={}
 var water_tick:=0.0
@@ -45,6 +46,7 @@ func _ready() -> void:
  build_garden()
  water=Node2D.new();water.z_index=-88;water.draw.connect(func()->void:Art.draw_water_glints(water,L.POND,clock));add_child(water)
  effects=Node2D.new();effects.z_index=8;effects.draw.connect(draw_effects);add_child(effects)
+ orbs=Node2D.new();orbs.z_index=-70;orbs.draw.connect(draw_orbs);add_child(orbs)
 func draw_ground() -> void:
  Art.draw_base(ground)
  Art.draw_walls(ground)
@@ -151,7 +153,7 @@ func build_garden() -> void:
  var pavilion:=Sprite2D.new();pavilion.texture=Art.ATLAS;pavilion.region_enabled=true;pavilion.region_rect=Art.PAVILION_CELL
  var pav_scale:=220.0/512.0;pavilion.scale=Vector2(pav_scale,pav_scale);pavilion.centered=false
  pavilion.position=Vector2(-110,-470*pav_scale);pavilion.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
- var pav_holder:=Node2D.new();pav_holder.position=Vector2(1330,930);pav_holder.add_child(pavilion)
+ var pav_holder:=Node2D.new();pav_holder.position=Vector2(2260,1120);pav_holder.add_child(pavilion)
  var pav_glow:=Node2D.new();pav_glow.draw.connect(func()->void:Art.glow(pav_glow,Vector2(0,-60),110,Color(1,.66,.32,.2)));pav_holder.add_child(pav_glow)
  add_child(pav_holder)
  # 석등(장식)
@@ -205,7 +207,7 @@ func _process(delta: float) -> void:
  clock+=delta
  update_cull()
  water_tick+=delta
- if water_tick>=.1:water_tick=0;water.queue_redraw()
+ if water_tick>=.1:water_tick=0;water.queue_redraw();if is_instance_valid(orbs):orbs.queue_redraw()
  update_buildings(delta)
  var near:=L.object_near(observer,150)
  fx_tick+=delta
@@ -242,6 +244,17 @@ func update_buildings(delta: float) -> void:
    door_open[entry.id]=move_toward(float(door_open.get(entry.id,0.0)),1.0 if near else 0.0,delta*4)
    open=maxf(open,float(door_open[entry.id]))
   building.door=open
+## 기력 회복 구슬(영혼불): 푸른 빛덩이와 옅은 고리. 다시 생긴 구슬만 그린다.
+func draw_orbs() -> void:
+ if rules==null:return
+ var pulse:=.5+.5*sin(clock*2.0)
+ for orb in rules.orbs:
+  if float(orb.ready)>rules.elapsed:continue
+  var at: Vector2=orb.p+Vector2(0,-16-sin(clock*1.6+orb.p.x*.01)*3)
+  Art.glow(orbs,at,26,Color(.55,.85,1,.30+pulse*.18))
+  orbs.draw_circle(at,7.0,Color(.72,.94,1,.95))
+  orbs.draw_circle(at,3.4,Color(1,1,1,.92))
+  orbs.draw_arc(at,11+pulse*3,0,TAU,18,Color(.62,.9,1,.34),1.4,true)
 func draw_effects() -> void:
  if aim_active:
   var origin: Vector2=rules.players.human.position

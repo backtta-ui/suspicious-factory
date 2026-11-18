@@ -6,93 +6,154 @@ extends RefCounted
 ## 출입 한옥은 외관 원화(hanok_exterior.png)의 문 위치(DOOR_ANCHOR)에서
 ## 외곽·실내·충돌·문 좌표를 역산한다. 그래서 문 앞에 서면 그림의 문과
 ## 충돌 문이 정확히 같은 자리이고, 건물을 키워도 어긋나지 않는다.
-const SIZE=Vector2(1800,1400)
-const SPAWN=Vector2(860,760)
+##
+## 2.0.26: 《도망가 친구들》처럼 넓게 돌며 따돌리는 추격전을 위해
+## 1800x1400 → 3400x2600(면적 약 3.5배)으로 확장했다. 중앙 돌마당을
+## 회랑 골목이 한 바퀴 감싸고, 그 바깥에 한옥 6채·연못·대나무 숲·
+## 둔갑 사물 50여 개가 고르게 흩어져 어디서든 숨고 돌 수 있다.
+const SIZE=Vector2(3400,2600)
+const SPAWN=Vector2(1700,1400)
 ## 인게임 기본 시점(2.5D 줌). 카메라는 내 캐릭터를 화면 중앙보다 아래에 둔다.
 ## 2.0.23 사용자 피드백("좀 더 가까워야지 어몽어스처럼"): 20:9 와이드에서
 ## 캐릭터·한옥·동료가 큼직하고 밀도 있게 보이도록 1.68 → 1.90으로 더 당긴다.
 ## ACTOR_SCALE(1.05)은 그대로 두어 주변 건물·길과의 비율을 유지한다.
 const CAMERA_ZOOM=1.90
 const CAMERA_LIFT=36.0
-## 시작 배치. 도사는 서원 중앙~서남쪽 안전 지대 6곳, 요괴는 도사와 600px 이상
-## 떨어진 북동·동남쪽 외곽 2곳에서 시작한다. 모두 safe()를 거쳐 설 수 있는 자리다.
-const DAOIST_SPAWN_POINTS=[Vector2(820,780),Vector2(700,820),Vector2(880,880),Vector2(680,760),Vector2(640,730),Vector2(890,820)]
-const YOKAI_SPAWN_POINTS=[Vector2(1560,420),Vector2(1480,1180)]
+## 시작 배치. 도사는 중앙 마당 6곳, 요괴는 서북·동남 외곽 2곳에서 시작한다.
+## 모두 safe()를 거쳐 설 수 있는 자리다.
+const DAOIST_SPAWN_POINTS=[Vector2(1640,1360),Vector2(1760,1450),Vector2(1550,1440),Vector2(1830,1330),Vector2(1600,1270),Vector2(1720,1540)]
+const YOKAI_SPAWN_POINTS=[Vector2(300,250),Vector2(3120,2400)]
 ## 외곽 스폰이 구조물에 걸리더라도 도사 무리와 이만큼은 떨어지게 잡는다.
-const SPAWN_SEPARATION=600.0
+const SPAWN_SEPARATION=900.0
 static var _spawn_cache: Dictionary={}
-const POND=Rect2(950,680,300,230)
+const POND=Rect2(2520,1180,460,320)
 ## 연못을 비스듬히 가로지르는 아치 목교. 걸어서 오르면 표고가 오른다.
-const BRIDGE_A=Vector2(885,965)
-const BRIDGE_B=Vector2(1175,655)
+const BRIDGE_A=Vector2(2490,1340)
+const BRIDGE_B=Vector2(2830,1120)
 const BRIDGE_HALF=36.0
 const BRIDGE_RISE=27.0
-const STONE=Rect2(700,600,440,400)
-const MEDALLION=Vector2(860,720)
-const MEDALLION_RADIUS=118.0
+## 중앙 돌마당(회랑 안쪽). 팔각 문양이 깔린 넓은 광장.
+const STONE=Rect2(1080,1020,1240,680)
+const MEDALLION=Vector2(1700,1360)
+const MEDALLION_RADIUS=150.0
 ## hanok_exterior.png 안에서 문(계단 끝, 걸어 들어가는 지점)이 있는 비율.
 const DOOR_ANCHOR=Vector2(.80,.965)
 const HANOK_ART=Vector2(760,727)
 const WALL=16.0
 const DOOR_WIDTH=104.0
+## 출입 한옥 6채: 청월당·서고·별채·객사·약방·서당.
 const BUILDING_SPECS=[
- {"id":"cheongwol","name":"청월당","sub":"서원의 큰 강당","door":Vector2(560,650),"width":540.0,"warmth":Color(1,.86,.68)},
- {"id":"seogo","name":"서고","sub":"오래된 책의 방","door":Vector2(1300,590),"width":470.0,"warmth":Color(.9,.9,.8)},
- {"id":"byeolchae","name":"별채","sub":"손님의 방","door":Vector2(470,1200),"width":470.0,"warmth":Color(1,.82,.72)}]
-const NAMES=["청월당","서고","별채"]
+ {"id":"cheongwol","name":"청월당","sub":"서원의 큰 강당","door":Vector2(620,940),"width":640.0,"warmth":Color(1,.86,.68)},
+ {"id":"seogo","name":"서고","sub":"오래된 책의 방","door":Vector2(2260,700),"width":500.0,"warmth":Color(.9,.9,.8)},
+ {"id":"byeolchae","name":"별채","sub":"손님의 방","door":Vector2(560,1980),"width":500.0,"warmth":Color(1,.82,.72)},
+ {"id":"gaeksa","name":"객사","sub":"먼 길손의 숙소","door":Vector2(3040,2000),"width":540.0,"warmth":Color(1,.88,.7)},
+ {"id":"yakbang","name":"약방","sub":"약초와 탕약","door":Vector2(1180,2420),"width":440.0,"warmth":Color(.96,.9,.74)},
+ {"id":"seodang","name":"서당","sub":"아이들의 글방","door":Vector2(2900,1080),"width":460.0,"warmth":Color(1,.84,.68)}]
+const NAMES=["청월당","서고","별채","객사","약방","서당"]
 ## 대표 한옥(하위 호환). 세부는 buildings()가 계산한다.
 static var BUILDINGS: Array=_make_buildings()
 static var DOORS: Array=_make_doors()
 static var HARD: Array=_make_hard()
 ## 뛰어넘을 수 있는 낮은 담·평상.
-const LOW=[Rect2(760,700,140,14),Rect2(620,690,120,14),Rect2(660,1060,160,14),Rect2(760,860,110,14)]
-## 마당을 나누는 기와 담장(충돌은 HARD에 포함, 그림은 이 목록을 쓴다).
-const WALLS=[Rect2(700,330,200,100),Rect2(980,560,150,14),Rect2(1560,600,14,150),Rect2(1560,600,130,14),Rect2(330,700,180,14),Rect2(600,760,14,110),Rect2(1240,980,174,14),Rect2(1660,700,14,180),Rect2(600,1240,150,14),Rect2(900,1180,170,14)]
+const LOW=[Rect2(1180,1240,140,14),Rect2(1400,1560,130,14),Rect2(1900,1120,150,14),Rect2(2010,1600,140,14),Rect2(1480,940,120,14)]
+## 중앙 마당을 한 바퀴 감싸는 회랑 골목의 담장(사방에 넓은 출입구를 둔다).
+## 충돌은 HARD에 포함되고, 그림은 이 목록을 쓴다.
+const WALLS=[
+ Rect2(940,860,600,14),Rect2(1740,860,720,14),
+ Rect2(940,1846,620,14),Rect2(1740,1846,720,14),
+ Rect2(940,874,14,420),Rect2(940,1450,14,410),
+ Rect2(2446,874,14,400),Rect2(2446,1430,14,430),
+ # 바깥 마을 골목: 건물 사이를 잇는 담장으로 순환 동선을 만든다.
+ Rect2(800,960,14,290),Rect2(820,1600,250,14),
+ Rect2(150,1400,420,14),Rect2(620,1080,14,300),
+ Rect2(1380,2100,320,14),Rect2(1400,1980,14,240),
+ Rect2(1900,760,14,220),Rect2(2470,1120,230,14),
+ Rect2(2700,2010,14,270),
+ Rect2(2050,2080,400,14),Rect2(2200,2160,14,300),
+ Rect2(160,2260,320,14),Rect2(700,2260,110,14),Rect2(1600,2300,480,14),
+ Rect2(2450,2320,380,14)]
 ## 대나무 숲: 시야를 가리고 추격로를 끊는 은신 지대.
-const BAMBOO=[Rect2(1620,520,80,260),Rect2(1580,1080,90,240),Rect2(90,560,80,200),Rect2(680,980,80,150),Rect2(1580,240,70,160),Rect2(1180,1160,90,160)]
+const BAMBOO=[Rect2(3140,420,80,300),Rect2(3220,2200,70,200),Rect2(150,1050,80,240),Rect2(860,1240,80,200),Rect2(1300,340,90,240),Rect2(1560,240,90,200),Rect2(1900,2020,80,180),Rect2(560,2280,80,160),Rect2(3050,640,80,180),Rect2(700,1120,80,180)]
 ## 형상 추출(둔갑) 대상 5종. 항아리·나무 상자·등불·고양이·비석.
+## 처마 밑·마당·골목·연못가·구석마다 고르게 두어 어디서든 숨을 수 있게 한다.
 const OBJECTS=[
- # 마당 서남쪽 항아리 무리
- {"kind":"jar","p":Vector2(646,742)},
- {"kind":"jar","p":Vector2(680,754)},
- {"kind":"crate","p":Vector2(708,798)},
- {"kind":"lantern","p":Vector2(640,808)},
- # 청월당 처마 아래 상자·항아리·등불
- {"kind":"crate","p":Vector2(790,500)},
- {"kind":"crate","p":Vector2(828,512)},
- {"kind":"jar","p":Vector2(862,524)},
- {"kind":"lantern","p":Vector2(748,516)},
+ # 청월당 처마 아래
+ {"kind":"crate","p":Vector2(200,980)},{"kind":"jar","p":Vector2(240,994)},
+ {"kind":"lantern","p":Vector2(470,966)},{"kind":"jar","p":Vector2(660,996)},
+ {"kind":"cat","p":Vector2(720,1010)},
+ # 청월당 서쪽 담장 아래
+ {"kind":"jar","p":Vector2(170,1330)},{"kind":"stele","p":Vector2(215,1360)},
+ {"kind":"crate","p":Vector2(258,1176)},
  # 서고 문 앞
- {"kind":"crate","p":Vector2(1150,600)},
- {"kind":"jar","p":Vector2(1430,556)},
- {"kind":"lantern","p":Vector2(1206,600)},
- # 별채 문 앞
- {"kind":"jar","p":Vector2(486,1250)},
- {"kind":"crate","p":Vector2(536,1250)},
+ {"kind":"crate","p":Vector2(2080,760)},{"kind":"lantern","p":Vector2(2160,752)},
+ {"kind":"jar","p":Vector2(2320,744)},{"kind":"stele","p":Vector2(2380,772)},
+ # 서고 북동 골목
+ {"kind":"jar","p":Vector2(2500,760)},{"kind":"cat","p":Vector2(2560,742)},
+ # 서당 문 앞
+ {"kind":"lantern","p":Vector2(2740,1120)},{"kind":"crate","p":Vector2(2820,1132)},
+ {"kind":"jar","p":Vector2(2960,1116)},{"kind":"stele","p":Vector2(3010,1160)},
+ # 동쪽 외곽
+ {"kind":"cat","p":Vector2(3180,960)},{"kind":"jar","p":Vector2(3200,1040)},
  # 연못 남쪽 둔갑 군집
- {"kind":"jar","p":Vector2(980,975)},
- {"kind":"jar","p":Vector2(1018,985)},
- {"kind":"stele","p":Vector2(1056,957)},
- {"kind":"lantern","p":Vector2(1130,980)},
- # 동쪽 담장 아래 비석·항아리
- {"kind":"stele","p":Vector2(980,620)},
- {"kind":"stele","p":Vector2(1016,634)},
- {"kind":"jar","p":Vector2(950,646)},
- {"kind":"cat","p":Vector2(1040,662)},
- {"kind":"lantern","p":Vector2(820,800)},
- {"kind":"crate","p":Vector2(432,724)},
- {"kind":"cat","p":Vector2(700,880)},
- # 방 안의 둔갑 사물
- {"kind":"jar","p":Vector2(360,540)},
- {"kind":"crate","p":Vector2(1150,470)}]
+ {"kind":"jar","p":Vector2(2400,1470)},{"kind":"jar","p":Vector2(2380,1530)},
+ {"kind":"stele","p":Vector2(2400,1600)},{"kind":"lantern","p":Vector2(2400,1700)},
+ # 연못 북쪽
+ {"kind":"crate","p":Vector2(2620,1150)},{"kind":"cat","p":Vector2(2745,1160)},
+ {"kind":"jar","p":Vector2(2900,1140)},
+ # 객사 문 앞
+ {"kind":"crate","p":Vector2(2860,2040)},{"kind":"jar","p":Vector2(2940,2056)},
+ {"kind":"lantern","p":Vector2(3010,2030)},{"kind":"stele","p":Vector2(3110,2050)},
+ # 객사 북쪽 골목
+ {"kind":"jar","p":Vector2(2760,2050)},{"kind":"crate","p":Vector2(2810,1950)},
+ # 약방 문 앞
+ {"kind":"jar","p":Vector2(1010,2450)},{"kind":"crate","p":Vector2(1090,2455)},
+ {"kind":"lantern","p":Vector2(1240,2448)},{"kind":"cat","p":Vector2(1290,2452)},
+ # 약방 서쪽
+ {"kind":"stele","p":Vector2(800,2210)},{"kind":"jar","p":Vector2(770,2230)},
+ # 별채 문 앞
+ {"kind":"jar","p":Vector2(470,2030)},{"kind":"crate","p":Vector2(560,2046)},
+ {"kind":"lantern","p":Vector2(650,2024)},{"kind":"stele","p":Vector2(700,2060)},
+ # 남서 대나무 숲 입구
+ {"kind":"cat","p":Vector2(690,2380)},{"kind":"jar","p":Vector2(760,2400)},
+ # 중앙 마당 남쪽 회랑
+ {"kind":"jar","p":Vector2(1560,1800)},{"kind":"crate","p":Vector2(1620,1816)},
+ {"kind":"stele","p":Vector2(1700,1800)},{"kind":"lantern","p":Vector2(2200,1790)},
+ # 중앙 마당 북쪽(서당 골목과 이어짐)
+ {"kind":"jar","p":Vector2(1430,556)},{"kind":"crate","p":Vector2(1470,576)},
+ {"kind":"lantern","p":Vector2(1530,548)},{"kind":"cat","p":Vector2(1380,600)},
+ # 동남 구석
+ {"kind":"jar","p":Vector2(2600,2400)},{"kind":"crate","p":Vector2(2680,2420)},
+ {"kind":"stele","p":Vector2(2760,2396)},{"kind":"lantern","p":Vector2(2840,2420)},
+ {"kind":"cat","p":Vector2(2920,2400)},
+ # 북동 구석
+ {"kind":"jar","p":Vector2(2600,300)},{"kind":"crate","p":Vector2(2680,320)},
+ {"kind":"lantern","p":Vector2(2960,320)},{"kind":"stele","p":Vector2(3020,300)},
+ # 서남 구석
+ {"kind":"jar","p":Vector2(240,2380)},{"kind":"crate","p":Vector2(320,2410)},
+ {"kind":"stele","p":Vector2(400,2380)},{"kind":"cat","p":Vector2(480,2420)}]
 const FORMS={
  "jar":{"name":"항아리","radius":7.0,"moving":false,"size":Vector2(20,26)},
  "crate":{"name":"나무 상자","radius":9.0,"moving":false,"size":Vector2(26,24)},
  "lantern":{"name":"등불","radius":7.0,"moving":false,"size":Vector2(22,34)},
  "cat":{"name":"고양이","radius":5.0,"moving":true,"size":Vector2(22,23)},
  "stele":{"name":"비석","radius":10.0,"moving":false,"size":Vector2(26,38)}}
-const FURNITURE=[Rect2(190,300,16,150),Rect2(250,430,110,54),Rect2(560,240,46,130),Rect2(300,520,40,36)]
-const PATH=[Vector2(560,620),Vector2(560,700),Vector2(760,760),Vector2(860,760)]
+## 둔갑 사물의 월드 크기(스프라이트 높이·발밑 그림자). world의 사물 그림과
+## actor의 둔갑 그림이 이 한 값만 보므로, 둔갑하면 같은 사물과 100% 같은 크기가 된다.
+const FORM_VISUALS={
+ "jar":{"height":46.0,"shadow":16.0},
+ "crate":{"height":46.0,"shadow":16.0},
+ "lantern":{"height":46.0,"shadow":16.0},
+ "cat":{"height":44.0,"shadow":11.0},
+ "stele":{"height":52.0,"shadow":16.0}}
+static func form_visual(kind: String) -> Dictionary:return FORM_VISUALS.get(kind,FORM_VISUALS.jar)
+## 기력 회복 구슬(영혼불): 스쳐 지나가면 달리기 기력이 가득 차고 잠시 뒤 다시 생긴다.
+## 순환 골목·마당·외곽 길목에 두어 끊임없이 달릴 수 있게 한다.
+const ORBS=[Vector2(1150,1100),Vector2(2250,1100),Vector2(1150,1620),Vector2(2200,1650),Vector2(900,900),Vector2(2500,900),Vector2(900,1800),Vector2(2500,1800),Vector2(900,600),Vector2(1700,700),Vector2(1700,2050),Vector2(600,1400),Vector2(3150,1400),Vector2(1400,2400)]
+const ORB_RADIUS=20.0
+## 구슬 하나를 먹은 뒤 다시 생기는 시간(초).
+const ORB_RESPAWN=14.0
+const FURNITURE=[Rect2(190,470,16,150),Rect2(240,560,110,54),Rect2(560,430,46,130),Rect2(300,650,40,36)]
+const PATH=[Vector2(620,960),Vector2(760,1040),Vector2(1080,1200),Vector2(1200,1360)]
 ## 방 안의 병풍·서안·서가·화로는 대표 한옥(청월당) 실내에만 둔다.
 static func _make_buildings() -> Array:
  var out: Array=[]
@@ -103,7 +164,7 @@ static func _make_buildings() -> Array:
   var rect:=Rect2(Vector2(door.x-DOOR_ANCHOR.x*width,door.y-height),Vector2(width,height))
   var interior:=rect.grow(-WALL-10)
   var doors: Dictionary={"front":door,"back":Vector2(door.x,rect.position.y+8)}
-  # 그림 속 문(문틀) 위치: 계단 끝(anchor)에서 위로 올라간 지점.
+  # 그림 속 문(문틀) 위치: 계단 끝(anchor)에서 위로 올라간 점.
   var painted:=door+Vector2(-.05*width,-.315*height)
   out.append({"id":spec.id,"name":spec.name,"sub":spec.sub,"warmth":spec.warmth,
    "rect":rect,"interior":interior,"doors":doors,"anchor":DOOR_ANCHOR,"art":HANOK_ART,"painted_door":painted})
@@ -118,8 +179,9 @@ static func _make_doors() -> Array:
 ## 담장·건물 벽. 문이 난 곳은 비워 실제로 걸어 들어간다.
 static func _make_hard() -> Array:
  var out: Array=[
-  Rect2(60,120,820,14),Rect2(930,120,810,14),
-  Rect2(60,120,14,1220),Rect2(1726,120,14,1220)]
+  Rect2(80,110,1500,14),Rect2(1720,110,1500,14),
+  Rect2(80,110,14,2400),Rect2(3306,110,14,2400),
+  Rect2(80,2480,1490,14),Rect2(1720,2480,1580,14)]
  for rect in WALLS:out.append(rect)
  for building in _make_buildings():
   var rect: Rect2=building.rect
@@ -199,7 +261,7 @@ static func can_stand(p: Vector2,margin: float=9,jumping: bool=false) -> bool:
  return true
 static func safe(p: Vector2) -> Vector2:
  if can_stand(p):return p
- for radius in range(10,180,10):
+ for radius in range(10,220,10):
   for i in range(16):
    var q:=p+Vector2.from_angle(i*TAU/16)*radius
    if can_stand(q):return q
@@ -217,11 +279,11 @@ static func _settle(candidates: Array,keep: Array=[]) -> Array:
    spot=safe(spot+Vector2.from_angle(attempt*TAU/16+0.4)*(28.0+attempt*6.0))
   out.append(spot)
  return out
-## 도사 6명 시작 지점(서원 중앙~서남쪽 안전 지대).
+## 도사 6명 시작 지점(중앙 마당 안전 지대).
 static func daoist_spawns() -> Array:
  if not _spawn_cache.has("daoist"):_spawn_cache["daoist"]=_settle(DAOIST_SPAWN_POINTS)
  return _spawn_cache["daoist"]
-## 요괴 시작 지점(도사 무리와 SPAWN_SEPARATION 이상 떨어진 북동·동남 외곽).
+## 요괴 시작 지점(도사 무리와 SPAWN_SEPARATION 이상 떨어진 서북·동남 외곽).
 static func yokai_spawns() -> Array:
  if not _spawn_cache.has("yokai"):
   var daoists:=daoist_spawns()

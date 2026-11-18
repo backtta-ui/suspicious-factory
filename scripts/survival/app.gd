@@ -73,6 +73,12 @@ var form_label: Label
 var hint_label: Label
 var action_caption: Label
 var action_badge: WooSkillBadge
+## 상단 HUD(초상화·하트·기력·참가자 목록·알림 배너).
+var hud_view: Control
+var banner_left:=0.0
+var banner_name:=""
+var banner_kind:=""
+var zone_stage_seen:=-1
 var event_cursor:=0
 var paused:=false
 var backgrounded:=false
@@ -838,6 +844,13 @@ func load_error(message: String) -> void:
  changing=false;cleanup_match();build("lobby");notice(message+"\n안전한 로비로 돌아왔습니다.")
 func hud() -> void:
  var decor:=preload("res://scripts/survival/hud_decor.gd").new();full(decor,ui)
+ hud_view=preload("res://scripts/survival/hud_status.gd").new();full(hud_view,ui)
+ var hud_me: Dictionary=rules.players.human
+ var hud_spec: Dictionary=C.find(hud_me.character)
+ hud_view.portrait=load(String(hud_spec.get("portrait",""))) if String(hud_spec.get("portrait",""))!="" else null
+ hud_view.character_name=String(hud_spec.get("name",""))
+ hud_view.role=hud_me.role;hud_view.max_lives=rules.LIVES;hud_view.rules=rules
+ hud_view.banner="술래잡기 시작! 도사 6·요괴 2 · 10분 생존";hud_view.banner_alpha=1.0;banner_left=3.0
  timer_label=text("월하의 서원 · 10:00",23,Color("f0d7a2"))
  ui.add_child(timer_label)
  timer_label.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
@@ -857,7 +870,7 @@ func hud() -> void:
  status_label=text("",17,Color("ffb3bb"))
  ui.add_child(status_label)
  status_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
- status_label.offset_left=20;status_label.offset_right=340;status_label.offset_top=72;status_label.offset_bottom=104
+ status_label.offset_left=14;status_label.offset_right=330;status_label.offset_top=122;status_label.offset_bottom=152
  pill(status_label,Color(.03,.04,.09,.55),10)
  status_label.add_theme_color_override("font_color",Color("ffd0d4"))
  var menu:=button("메뉴",pause_menu);menu.name="Menu";ui.add_child(menu)
@@ -891,22 +904,24 @@ func hud() -> void:
  circle_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
  pill(circle_label,Color(.03,.04,.09,.5),9)
  stick=preload("res://scripts/joystick.gd").new();ui.add_child(stick);D.position_stick(stick)
- stamina_label=text("달리기 100%",16,Color("cfd7ea"));ui.add_child(stamina_label)
+ stamina_label=text("달리기 100%",16,Color("cfd7ea"));ui.add_child(stamina_label);stamina_label.visible=false
  stamina_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
  stamina_label.offset_left=26;stamina_label.offset_right=206;stamina_label.offset_top=-424;stamina_label.offset_bottom=-396
  pill(stamina_label,Color(.03,.04,.09,.5),9)
- run_button=action("달리기","dodge",Vector2(-424,-152),Vector2(92,92))
+ run_button=action("달리기","dodge",Vector2(-440,-150),Vector2(120,120))
  run_button.button_down.connect(func()->void:rules.command("human","run",{"held":true}));run_button.button_up.connect(func()->void:rules.command("human","run",{"held":false}))
- jump_button=action("점프","jump",Vector2(-320,-152),Vector2(92,92),func()->void:
+ jump_button=action("점프","jump",Vector2(-316,-150),Vector2(96,96),func()->void:
   if rules.command("human","jump"):sound.play_clip("jump"))
  var spec: Dictionary=C.find(rules.players.human.character)
- skill_button=action(spec.skill.name,spec.skill.icon,Vector2(-112,-152),Vector2(92,92),Callable(),preload("res://scripts/survival/aim_button.gd"));skill_button.directional=spec.skill.aim
+ skill_button=action(spec.skill.name,spec.skill.icon,Vector2(-316,-258),Vector2(96,96),Callable(),preload("res://scripts/survival/aim_button.gd"));skill_button.directional=spec.skill.aim
  skill_button.ability.connect(func(direction: Vector2)->void:
   if rules.command("human","skill",{"aim":direction if direction!=Vector2.ZERO else Vector2.from_angle(rules.players.human.facing*PI/4)}):pass
   aim=Vector2.ZERO)
  skill_button.aimed.connect(func(direction: Vector2,cancelled: bool)->void:aim=direction;aim_cancelled=cancelled)
+ var skill_caption: Label=skill_button.get_node_or_null("Caption")
+ if skill_caption!=null:skill_caption.position=Vector2(-6,-20)
  skill_button.tip_requested.connect(func()->void:skill_tip(spec.skill.name+" — "+spec.skill.description));skill_badge=skill_button.get_node("Badge")
- action_button=action("상호작용","talisman",Vector2(-216,-152),Vector2(92,92))
+ action_button=action("상호작용","talisman",Vector2(-200,-150),Vector2(96,96))
  if rules.players.human.role=="yokai":action_button.pressed.connect(func()->void:rules.command("human","seal"))
  else:
   action_button.button_down.connect(func()->void:
@@ -1035,7 +1050,7 @@ func pause_menu() -> void:
  paused=true;world.process_mode=Node.PROCESS_MODE_DISABLED;rules.command("human","move",{"vector":Vector2.ZERO});rules.command("human","cancel_rescue")
  var box:=popup("일시정지 · 월하의 서원")
  box.add_child(text("도사 6명 vs 요괴 2명 · 10분간 술래잡기",19,Color("f0dcae")))
- box.add_child(text("요괴에게 봉인된 도사는 45초 뒤 탈락합니다. 동료가 4초간 구조하면 풀려납니다.\n항아리·나무 상자·등불·고양이·비석 5종에 둔갑해 숨을 수 있습니다.",16,Color("cfd7ea")))
+ box.add_child(text("도사는 목숨 3개. 봉인되면 10초 안에 동료가 2.5초 구조하면 목숨을 지키고,\n구조받지 못하면 목숨 1개를 잃은 뒤 시작 자리에서 다시 일어납니다. 목숨을 모두 잃으면 탈락합니다.\n항아리·나무 상자·등불·고양이·비석 5종에 둔갑해 움직이며 숨을 수 있습니다.",16,Color("cfd7ea")))
  box.add_child(button("계속하기",resume_match,true));box.add_child(button("설정",show_settings));box.add_child(button("로비로 나가기",func()->void:confirm("경기를 나가시겠습니까?",func()->void:cleanup_match();room={};paused=false;transition("lobby"))))
 func resume_match() -> void:
  close_popup();paused=false
@@ -1058,7 +1073,7 @@ func result_screen() -> void:
  var center:=HBoxContainer.new();center.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(center);portrait(center,rules.players.human.character,Vector2(370,330))
  var stats:=panel(center);stats.add_child(text("월하의 서원 · %02d:%02d"%[int(rules.elapsed)/60,int(rules.elapsed)%60],27,D.GOLD))
  var me: Dictionary=rules.players.human
- stats.add_child(text("내 역할: "+("도사" if me.role=="daoist" else "요괴"),24));stats.add_child(text("봉인 %d회 · 구조 %d회 · 생존 %.0f초"%[me.stats.seals,me.stats.rescues,me.alive_seconds],22))
+ stats.add_child(text("내 역할: "+("도사" if me.role=="daoist" else "요괴")+(" · 목숨 %s"%hearts(int(me.get("lives",rules.LIVES))) if me.role=="daoist" else ""),24));stats.add_child(text("봉인 %d회 · 구조 %d회 · 생존 %.0f초"%[me.stats.seals,me.stats.rescues,me.alive_seconds],22))
  for p in rules.players.values():stats.add_child(text(p.name+" · "+("도사" if p.role=="daoist" else "요괴")+" · "+("탈락" if p.eliminated else "생존"),18))
  var row:=HBoxContainer.new();box.add_child(row);row.add_child(button("재경기",func()->void:cleanup_match();setup_participants();transition("room"),true));row.add_child(button("메인 로비",func()->void:cleanup_match();room={};transition("lobby")))
 func enter_practice() -> void:
@@ -1084,7 +1099,7 @@ func update_avatars() -> void:
   seen.append(id)
   var target: Vector2=info.position+Vector2(0,-L.elevation(info.position))
   if not avatars.has(id):
-   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(actor);actor.ingame_art=true;actor.art_id=String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
+   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.costume_scale=ACTOR_SCALE;actor.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(actor);actor.ingame_art=true;actor.art_id=String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
    if info.id=="human":actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
    actor.position=target;actor.set_meta("target",target)
    avatars[id]=actor
@@ -1099,19 +1114,32 @@ func update_avatars() -> void:
   var frame: float=clampf(get_process_delta_time(),0.001,0.05)
   if target.distance_to(actor.position)>AVATAR_SNAP:actor.position=target
   else:actor.position=actor.position.lerp(target,1.0-exp(-AVATAR_FOLLOW*frame))
-  actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=moved/22.0*PI;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;actor.appearance_form="seowon:"+info.form if info.form!="" else "human";actor.running=rules.players.get(info.id,{}).get("running",false)
+  actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=moved/22.0*PI;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;  var disguised: bool=info.form!=""
+  if disguised:
+   # 둔갑하면 맵에 놓인 같은 사물과 100% 같은 크기·원화·그림자로 그린다.
+   var shape: Dictionary=L.form_visual(String(info.form))
+   actor.form_height=float(shape.get("height",46.0));actor.form_shadow=float(shape.get("shadow",16.0))
+  actor.appearance_form="seowon:"+info.form if disguised else "human"
+  actor.running=rules.players.get(info.id,{}).get("running",false)
   var tint: Color=C.tint(String(info.get("character","")))
+  # 둔갑한 도사는 이름·색기운·발밑 표시를 모두 떼어 진짜 사물과 같게 둔다.
+  if disguised:tint=Color.WHITE
   actor.tint=tint
   var aura: Node2D=actor.get_node_or_null("Aura")
   # 발밑 색 링은 쓰지 않는다. 기운을 장착한 내 캐릭터만 옅은 빛무리를 더한다.
   var lit_effect: String=storage.equipped("effect") if info.id=="human" else ""
   var aura_color:=Market.effect_color(lit_effect) if lit_effect!="" else tint
-  if aura!=null and (aura.color!=aura_color or aura.yokai!=(info.role=="yokai") or aura.lit!=(lit_effect!="")):
-   aura.color=aura_color;aura.yokai=info.role=="yokai";aura.lit=lit_effect!="";aura.queue_redraw()
+  if aura!=null and (aura.form_shadow!=float(actor.form_shadow if disguised else 0.0) or aura.color!=aura_color or aura.yokai!=(info.role=="yokai" and not disguised) or aura.lit!=(lit_effect!="")):
+   aura.form_shadow=actor.form_shadow if disguised else 0.0
+   aura.color=aura_color;aura.yokai=info.role=="yokai" and not disguised;aura.lit=lit_effect!="" and not disguised;aura.queue_redraw()
   var tag: String=info.name
   if info.id=="human" and rules.players.has("human"):tag=("도사" if rules.players.human.role=="daoist" else "요괴")+" · "+C.find(rules.players.human.character).name
-  actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=info.form=="";actor.get_node("Identity").color_id=info.color
-  actor.modulate=Color("e2b2ff") if info.captured else (Color("c9ecff") if info.immune else Color.WHITE)
+  if info.role=="daoist" and info.id!="":
+   var lives_left: int=int(rules.players.get(info.id,{}).get("lives",rules.LIVES))
+   tag+=" · "+hearts(lives_left)
+  actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=not disguised;actor.get_node("Identity").color_id=info.color
+  actor.get_node("Identity").visible=not disguised
+  actor.modulate=Color.WHITE if disguised else (Color("e2b2ff") if info.captured else (Color("c9ecff") if info.immune else Color.WHITE))
  for id in avatars.keys():
   if not seen.has(id):avatars[id].queue_free();avatars.erase(id)
  var live_effects: Array=[]
@@ -1179,16 +1207,23 @@ func interaction_context() -> Dictionary:
  var me: Dictionary=rules.players.human
  if me.eliminated or me.captured:return {"label":"상호작용","icon":"talisman","enabled":false,"hint":""}
  if me.role=="yokai":
-  return {"label":"봉인","icon":"capture","enabled":float(me.cd.get("seal",0))<=rules.elapsed,"hint":"가까운 도사를 향해 봉인"}
- if me.form!="":return {"label":"둔갑 중","icon":"jar","enabled":false,"hint":""}
+  return {"label":"확인","icon":"capture","enabled":float(me.cd.get("seal",0))<=rules.elapsed,"hint":"사물로 둔갑한 도사를 쳐서 찾아냅니다 · 미둔갑 도사는 몸이 닿으면 봉인"}
+ if me.form!="":return {"label":"둔갑 해제","icon":"jar","enabled":true,"hint":"둔갑 중 · 다시 누르면 사물에서 풀려납니다"}
  var target:=rescue_target()
- if target!="":return {"label":"구출","icon":"rescue","enabled":true,"hint":"구조 버튼을 4초간 유지하면 동료가 풀려납니다"}
+ if target!="":return {"label":"구출","icon":"rescue","enabled":true,"hint":"구조 버튼을 2.5초간 유지하면 동료가 풀려납니다"}
  if L.door_near(me.position,70)!="":return {"label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 상호작용 버튼으로 문을 엽니다"}
  var near_object: Dictionary=L.object_near(me.position,84)
  if not near_object.is_empty():
   var ready: bool=float(me.cd.get("transform",0))<=rules.elapsed
   return {"label":"둔갑","icon":"jar","enabled":ready,"hint":("사물에 둔갑해 숨습니다 · %s"%L.form(near_object.kind).get("name","사물")) if ready else "둔갑 준비 중입니다"}
  return {"label":"상호작용","icon":"talisman","enabled":false,"hint":""}
+## 남은 목숨을 하트로 보여 준다(도사 전용).
+## 상단 중앙 알림 배너.
+func show_banner(message: String,color: Color=Color("ffe0a8")) -> void:
+ if hud_view!=null:hud_view.banner=message;hud_view.banner_color=color
+ banner_left=3.0
+func hearts(count: int) -> String:
+ return "♥".repeat(maxi(0,count)) + "♡".repeat(maxi(0,rules.LIVES-maxi(0,count))) if rules!=null else ""
 func set_text(node: Label,value: String) -> void:
  if node.text!=value:node.text=value
 func update_hud() -> void:
@@ -1210,33 +1245,46 @@ func update_hud() -> void:
  if action_badge.skill!=String(context.icon):
   action_badge.skill=String(context.icon);action_badge.queue_redraw()
  action_button.disabled=not live or not bool(context.enabled)
- action_badge.remaining=maxf(0,me.cd.get("seal",0)-rules.elapsed) if me.role=="yokai" else (maxf(0,4.0-me.progress) if me.progress>0 else 0.0)
- action_badge.maximum=12.0 if me.role=="yokai" else 4.0
+ action_badge.remaining=maxf(0,me.cd.get("seal",0)-rules.elapsed) if me.role=="yokai" else (maxf(0,rules.RESCUE_TIME-me.progress) if me.progress>0 else 0.0)
+ action_badge.maximum=2.0 if me.role=="yokai" else rules.RESCUE_TIME
  var dao: int=rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.eliminated).size()
  var left:=maxf(0,600-rules.elapsed);var seconds:=int(ceil(left))
  set_text(timer_label,"월하의 서원 · %02d:%02d"%[seconds/60,seconds%60])
  set_text(survivor_label,"생존 도사 %d · 요괴 2"%dao)
  var captured: int=rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and p.captured).size()
- set_text(seal_label,"봉인 %d / 5"%mini(5,captured))
+ set_text(seal_label,"봉인 %d / 5"%mini(5,captured));seal_label.visible=false
+ if hud_view!=null:hud_view.survivor_count=dao;hud_view.sealed_count=captured
  var zone: Dictionary=rules.circle()
  set_text(circle_label,"안전구역 %d단계 · 축소 %02d:%02d"%[zone.stage,int(zone.until)/60,int(zone.until)%60])
+ if int(zone.stage)!=zone_stage_seen:
+  if zone_stage_seen>=0:show_banner("안전구역 축소 시작! %d단계"%int(zone.stage),Color("ffd08a"))
+  zone_stage_seen=int(zone.stage)
+ # 상단 HUD(초상화·하트·기력·참가자 목록) 동기화
+ if hud_view!=null:
+  hud_view.rules=rules;hud_view.role=me.role
+  hud_view.lives=int(me.get("lives",rules.LIVES));hud_view.max_lives=rules.LIVES
+  hud_view.stamina=me.stamina;hud_view.captured=me.captured;hud_view.eliminated=me.eliminated
+  hud_view.character_name=String(spec.get("name",""))
+  if hud_view.portrait==null and String(spec.get("portrait",""))!="":hud_view.portrait=load(String(spec.portrait))
+  banner_left=maxf(0,banner_left-get_process_delta_time())
+  hud_view.banner_alpha=clampf(minf((3.0-banner_left)/0.2,banner_left/0.7),0,1)
+  hud_view.queue_redraw()
  var status:=""
- if me.captured:status="탈락까지 %d초"%maxi(0,int(ceil(me.deadline-rules.elapsed)))
+ if me.captured:status="구조 대기 %d초 · 목숨 %s" % [maxi(0,int(ceil(me.deadline-rules.elapsed))),hearts(int(me.get("lives",rules.LIVES)))]
  elif me.eliminated:status="탈락 · 관전 중"
  elif me.immune>rules.elapsed:status="재봉인 면역 %.1f초"%maxf(0,me.immune-rules.elapsed)
  elif me.outside>0:status="서클 밖 · 안으로 이동"
- else:status="내 역할 · "+("도사" if me.role=="daoist" else "요괴")+" / "+spec.name
+ else:status="내 역할 · "+("도사" if me.role=="daoist" else "요괴")+" / "+spec.name+(" · 목숨 %s"%hearts(int(me.get("lives",rules.LIVES))) if me.role=="daoist" else "")
  set_text(status_label,status)
  if skill_button.held and skill_button.directional:set_text(status_label,"위로 멀리 끌면 취소" if not aim_cancelled else "취소 · 쿨타임 없음")
  set_text(stamina_label,"달리기 %d%%"%int(me.stamina)+(" · 회복 중" if me.exhausted else ""))
  if transformed:
   var form: Dictionary=L.form(me.form)
-  var line:="%s 둔갑 · %.1f초 · 다시 누르면 해제"%[form.get("name","사물"),form_left]
-  if not form.get("moving",false):line+=" · 움직이면 풀림"
+  var line:="%s 둔갑 · %.1f초 · 움직이며 숨기 · 다시 누르면 해제"%[form.get("name","사물"),form_left]
   set_text(form_label,line);form_label.visible=true
  else:form_label.visible=false
  var hint: String=String(context.hint)
- if me.captured:hint="봉인됨 · 동료가 구조 버튼을 4초 유지하면 풀려납니다"
+ if me.captured:hint="봉인됨 · 남은 목숨 %d · 동료가 2.5초 구조하면 목숨을 지킵니다(10초 지나면 목숨 1개 차감)" % int(me.get("lives",3))
  elif me.eliminated:hint="탈락 · 남은 경기를 관전합니다"
  elif me.outside>0:hint="안전구역 밖입니다 · 원 안으로 이동하세요"
  # 하단 힌트 바는 그리지 않는다(가림 방지). 상호작용 안내는 버튼 캡션에만 남긴다.
@@ -1255,10 +1303,18 @@ func update_hud() -> void:
    var clip: String=""
    match String(e.kind):
     "seal","miss":clip="seal"
-    "rescue":clip="rescue"
+    "rescue","revive":clip="rescue"
     "door":clip="door"
     "transform","untransform":clip="transform"
+    "lose_life":clip="seal"
     "skill":clip="spell"
+   var target_name: String=String(rules.players[e.target].name) if rules.players.has(String(e.get("target",""))) else ""
+   match String(e.kind):
+    "seal":show_banner(target_name+"님이 봉인되었습니다! (10초)",Color("ffb0bf"))
+    "rescue":show_banner(target_name+"님이 구출되었습니다!",Color("a8f0d0"))
+    "lose_life":show_banner(target_name+"님 목숨 -1 (남은 %d)" % int(rules.players[e.target].get("lives",0)),Color("ffd08a"))
+    "revive":show_banner(target_name+"님이 시작 자리에서 다시 일어났습니다",Color("cfe4ff"))
+    "eliminate":show_banner(target_name+"님 최종 탈락!",Color("f0a8b8"))
    if clip!="" and rules.players.has(e.actor):
     if me.position.distance_to(rules.players[e.actor].position)<520:sound.play_clip(clip)
     var caster: Node=avatars.get(String(e.actor))

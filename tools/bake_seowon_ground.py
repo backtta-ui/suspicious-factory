@@ -12,6 +12,7 @@ layout.gd가 내보낸 geometry JSON으로 이동 가능 마스크를 만들어
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import cv2
@@ -163,7 +164,8 @@ def build_masks(geometry: dict, size: tuple[int, int]) -> dict:
     pond = np.zeros((height, width), np.uint8)
     fill_rect(pond, geometry["pond"], grow=2.0)
     courtyard = np.zeros((height, width), np.uint8)
-    fill_rect(courtyard, [60.0, 120.0, 1680.0, 1220.0])
+    # 마을 안쪽(걸을 수 있는 범위)만 달빛 마당으로 밝히고 바깥은 밤 숲 그늘.
+    fill_rect(courtyard, geometry["walk"])
     return {"walk": walk, "blocked": (walk == 0).astype(np.uint8), "on_bridge": on_bridge, "deck": deck,
             "pond": pond, "courtyard": courtyard, "beds": beds, "walls": walls, "margin": margin}
 
@@ -188,35 +190,96 @@ def draw_blob(size, center, radius, falloff: float = 2.2) -> np.ndarray:
 
 
 # ---------------------------------------------------------------- 메인 베이크
+def scale_geometry(geometry: dict, k: float) -> dict:
+    """월드 좌표계 geometry를 베이크 픽셀 좌표로 줄인다(메모리 절약용)."""
+    def r(rect):
+        return [rect[0] * k, rect[1] * k, rect[2] * k, rect[3] * k]
+
+    def v(point):
+        return [point[0] * k, point[1] * k]
+
+    out = json.loads(json.dumps(geometry))
+    out["size"] = v(geometry["size"])
+    out["walk"] = r(geometry["walk"])
+    out["pond"] = r(geometry["pond"])
+    out["stone"] = r(geometry["stone"])
+    out["stand_margin"] = float(geometry.get("stand_margin", 9.0)) * k
+    for key in ("hard", "low", "bamboo", "furniture", "walls"):
+        out[key] = [r(item) for item in geometry.get(key, [])]
+    out["bridge"] = {"a": v(geometry["bridge"]["a"]), "b": v(geometry["bridge"]["b"]),
+                     "half": float(geometry["bridge"]["half"]) * k, "rise": float(geometry["bridge"]["rise"])}
+    out["medallion"] = v(geometry["medallion"])
+    out["medallion_radius"] = float(geometry["medallion_radius"]) * k
+    out["buildings"] = []
+    for b in geometry.get("buildings", []):
+        entry = dict(b)
+        entry["rect"] = r(b["rect"])
+        entry["interior"] = r(b["interior"])
+        entry["door"] = v(b["door"])
+        entry["back"] = v(b["back"])
+        entry["painted_door"] = v(b["painted_door"])
+        out["buildings"].append(entry)
+    out["doors"] = [{"id": d["id"], "center": v(d["center"]), "side": d["side"]} for d in geometry.get("doors", [])]
+    out["lanterns"] = [v(p) for p in geometry.get("lanterns", [])]
+    out["trees"] = [v(p) for p in geometry.get("trees", [])]
+    out["objects"] = [{"kind": o["kind"], "p": v(o["p"])} for o in geometry.get("objects", [])]
+    out["path"] = [v(p) for p in geometry.get("path", [])]
+    return out
+
+
 def bake() -> None:
     geometry = load_geometry()
-    width, height = int(geometry["size"][0]), int(geometry["size"][1])
+    full_width, full_height = int(geometry["size"][0]), int(geometry["size"][1])
+    # 메모리가 좁은 환경에서도 베이크되도록 축소 픽셀로 합성한 뒤 마지막에 원래 크기로 늘린다.
+    bake_scale = float(os.environ.get("BAKE_SCALE", "1"))
+    width, height = int(full_width * bake_scale), int(full_height * bake_scale)
     size = (width, height)
-    print(f"ground {width}x{height}")
+    if abs(bake_scale - 1.0) > 0.001:
+        geometry = scale_geometry(geometry, bake_scale)
+    print(f"ground {width}x{height} (scale {bake_scale})")
 
     stone_src = read_rgb(SRC / "stone_src.png")
     stone_warm = read_rgb(SRC / "stone_warm_src.png")
     moss_src = read_rgb(SRC / "moss_src.png")
 
-    # 재질: 서로 다른 두 돌 원화를 다른 회전·배율로 크게 깔고 저주파 얼룩으로 섞는다.
-    # 타일 반복을 쓰지 않으므로 격자나 같은 무늬 반복이 생기지 않는다.
-    stone_a = cover(stone_src, size, angle=0.0, zoom=1.45)
+    # 재질: 서로 다른 돌 원화를 큰 배율로 깔고 저주파 얼룩으로 섞는다.
+    # 3채널 float 배열 한 장이 100MB가 넘으므로 모두 in-place로 합성한다.
+    stone = cover(stone_src, size, angle=0.0, zoom=1.45)
     stone_b = cover(stone_warm, size, angle=17.0, zoom=1.22)
     mix = smoothstep(blob_noise(size, 2.6, 11), 0.22, 0.78)[..., None]
-    stone = stone_a * (1.0 - mix) + stone_b * mix
-    stone *= (0.90 + 0.26 * blob_noise(size, 4.0, 12))[..., None]
-    # 달빛이 드는 마당: 차가운 회청색을 조금 밝게 끌어올린다.
-    stone = stone * 1.34 + np.array([0.040, 0.040, 0.046], np.float32)
-    stone = np.clip(stone, 0.0, 1.0)
+    tmp = stone_b * mix
+    del stone_b
+    stone *= (1.0 - mix)
+    stone += tmp
+    del tmp, mix
+    shade_noise = blob_noise(size, 4.0, 12)
+    shade_noise *= 0.26
+    shade_noise += 0.90
+    stone *= shade_noise[..., None]
+    del shade_noise
+    stone *= 1.40
+    stone += np.array([0.040, 0.040, 0.046], np.float32)
+    np.clip(stone, 0.0, 1.0, out=stone)
 
-    moss_a = cover(moss_src, size, angle=0.0, zoom=1.0)
+    moss = cover(moss_src, size, angle=0.0, zoom=1.0)
     moss_b = cover(moss_src, size, angle=-24.0, zoom=1.1)
     moss_mix = smoothstep(blob_noise(size, 3.0, 21), 0.25, 0.75)[..., None]
-    moss = moss_a * (1.0 - moss_mix) + moss_b * moss_mix
+    tmp = moss_b * moss_mix
+    del moss_b
+    moss *= (1.0 - moss_mix)
+    moss += tmp
+    del tmp, moss_mix
     # 화단은 밤 그늘: 어둡고 차갑게, 초록은 살짝 남긴다.
-    moss = moss * np.array([0.26, 0.36, 0.30], np.float32) + np.array([0.010, 0.024, 0.026], np.float32)
-    moss *= (0.70 + 0.45 * blob_noise(size, 6.0, 22))[..., None]
-    moss = np.clip(moss, 0.0, 1.0)
+    moss *= np.array([0.26, 0.36, 0.30], np.float32)
+    moss += np.array([0.010, 0.024, 0.026], np.float32)
+    moss_noise = blob_noise(size, 6.0, 22)
+    moss_noise *= 0.45
+    moss_noise += 0.70
+    moss *= moss_noise[..., None]
+    del moss_noise
+    np.clip(moss, 0.0, 1.0, out=moss)
+    del moss_src, stone_src, stone_warm
+    print(f"materials ready")
 
     masks = build_masks(geometry, size)
     walk = masks["walk"].astype(np.float32)
@@ -227,44 +290,61 @@ def bake() -> None:
     ys, xs = np.mgrid[0:height, 0:width].astype(np.float32)
     warped = cv2.remap(walk, (xs + warp_x).astype(np.float32), (ys + warp_y).astype(np.float32),
                        interpolation=cv2.INTER_LINEAR, borderMode=cv2.BORDER_REPLICATE)
+    del xs, ys, warp_x, warp_y, walk
     warped = cv2.GaussianBlur(warped, (0, 0), 2.2)
     soft = smoothstep(warped, 0.36, 0.64)
+    del warped
 
-    ground = stone * soft[..., None] + moss * (1.0 - soft[..., None])
+    # 3채널 float 배열은 한 장이 100MB가 넘는다. 임시 배열을 바로 비우며 in-place로 합성한다.
+    def over(base: np.ndarray, top: np.ndarray, alpha: np.ndarray) -> None:
+        """base = base*(1-alpha) + top*alpha (alpha는 3채널 float32)."""
+        tmp = top * alpha
+        base *= (1.0 - alpha)
+        base += tmp
+        del tmp
+
+    ground = stone
+    # soft = 걸을 수 있는 돌마당(1) / 화단(0). 화단 쪽에만 이끼를 섞는다.
+    moss_alpha = (1.0 - soft)[..., None]
+    over(ground, moss, moss_alpha)
+    del soft, moss_alpha
 
     # ---------- 화단(대나무·연못) 경계: 돌 턱 → 그림자 → 이끼
     beds = masks["beds"].astype(np.uint8)
     dist_bed = cv2.distanceTransform(1 - beds, cv2.DIST_L2, 5)      # 화단에서 떨어진 거리(화단=0)
     dist_walk = cv2.distanceTransform(masks["walk"].astype(np.uint8), cv2.DIST_L2, 5)
     bed_soft = cv2.GaussianBlur(beds.astype(np.float32), (0, 0), 2.0)
-    # 화단 자체는 원화(이끼·양치)를 더 어둡게 깔아 길과 확실히 갈라 놓는다.
-    ground = ground * (1.0 - bed_soft[..., None] * 0.55) + moss * (bed_soft[..., None] * 0.55)
+    bed_alpha = (bed_soft * 0.55)[..., None]
+    over(ground, moss, bed_alpha)
+    del bed_alpha
     ground *= (1.0 - bed_soft[..., None] * 0.22)
 
     # 화단 바로 바깥(걸을 수 있는 쪽)을 밝은 화강석 턱으로 세운다.
-    curb = np.clip(1.0 - dist_bed / 11.0, 0.0, 1.0) ** 0.8 * walk
+    curb = np.clip(1.0 - dist_bed / 11.0, 0.0, 1.0) ** 0.8 * masks["walk"]
     curb_stone = np.clip(stone * 1.22 + 0.055, 0.0, 1.0)
-    ground = ground * (1.0 - curb[..., None] * 0.85) + curb_stone * (curb[..., None] * 0.85)
+    over(ground, curb_stone, (curb * 0.85)[..., None])
+    del curb_stone
     # 턱과 화단 사이 한 줄 어두운 틈(경계를 또렷하게)
-    seam = np.clip(1.0 - np.abs(dist_bed - 0.8) / 1.6, 0.0, 1.0) * walk
-    ground = ground * (1.0 - seam[..., None] * 0.55)
+    seam = np.clip(1.0 - np.abs(dist_bed - 0.8) / 1.6, 0.0, 1.0) * masks["walk"]
+    ground *= (1.0 - (seam * 0.55)[..., None])
     # 턱 바깥 접지 그림자
-    cast = np.clip(1.0 - np.abs(dist_bed - 16.0) / 10.0, 0.0, 1.0) * walk
-    ground = ground * (1.0 - cast[..., None] * 0.20)
+    cast = np.clip(1.0 - np.abs(dist_bed - 16.0) / 10.0, 0.0, 1.0) * masks["walk"]
+    ground *= (1.0 - (cast * 0.20)[..., None])
     # 화단에서 길로 흘러나온 이끼 펄
-    fringe = np.clip(1.0 - dist_bed / 34.0, 0.0, 1.0) ** 1.6 * walk
+    fringe = np.clip(1.0 - dist_bed / 34.0, 0.0, 1.0) ** 1.6 * masks["walk"]
     fringe *= (0.25 + 0.9 * blob_noise(size, 46.0, 41))
     fringe = np.clip(cv2.GaussianBlur(fringe, (0, 0), 1.6), 0.0, 0.8)
-    ground = ground * (1.0 - fringe[..., None] * 0.85) + moss * (fringe[..., None] * 0.85)
+    over(ground, moss, (fringe * 0.85)[..., None])
+    del fringe, curb, seam, cast, dist_bed
 
     # ---------- 담장 밑 그늘
     walls = masks["walls"].astype(np.uint8)
     dist_wall = cv2.distanceTransform(1 - walls, cv2.DIST_L2, 5)
     wall_shade = np.clip(1.0 - dist_wall / 26.0, 0.0, 1.0) ** 1.3
-    ground = ground * (1.0 - wall_shade[..., None] * 0.10)
-    # 담장이 놓인 자리는 돌 대신 어두운 기단
+    ground *= (1.0 - (wall_shade * 0.10)[..., None])
     wall_base = cv2.GaussianBlur(walls.astype(np.float32), (0, 0), 1.2)
-    ground = ground * (1.0 - wall_base[..., None] * 0.12)
+    ground *= (1.0 - (wall_base * 0.12)[..., None])
+    del dist_wall, wall_shade, wall_base, walls
 
     # ---------- 평상·마루(낮은 장애물): 어두운 네모 대신 나무 판자로 깐다.
     wood = np.array([0.325, 0.245, 0.165], np.float32)
@@ -275,7 +355,6 @@ def bake() -> None:
         x0 = max(0, x0); y0 = max(0, y0); x1 = min(width, x1); y1 = min(height, y1)
         if x1 <= x0 or y1 <= y0:
             continue
-        # 바닥 그림자
         pad = 5
         sx0, sy0 = max(0, x0 - pad), max(0, y0 - pad + 4)
         sx1, sy1 = min(width, x1 + pad), min(height, y1 + pad + 4)
@@ -283,53 +362,59 @@ def bake() -> None:
         plank = np.ones((y1 - y0, x1 - x0, 3), np.float32) * wood
         grain = blob_noise((x1 - x0, y1 - y0), 18.0, 51)
         plank *= (0.85 + 0.35 * grain)[..., None]
-        # 판자 이음매
         for step in range(6, x1 - x0, 18):
             plank[:, step:step + 1] *= 0.72
         plank[-2:, :] *= 0.75
         plank[:2, :] *= 1.35
         ground[y0:y1, x0:x1] = plank
-        # 마루 위로 내리쬐는 달빛
         ground[y0:y1, x0:x1] += np.array([0.05, 0.045, 0.038], np.float32)
+        del plank, grain
 
     # ---------- 길의 마모(롤처럼 또렷한 동선)
     medallion = (float(geometry["medallion"][0]), float(geometry["medallion"][1]))
-    buildings = {b["id"]: b for b in geometry["buildings"]}
     routes = []
-    for bid, via in (("cheongwol", [(600, 700), (745, 760)]),
-                     ("seogo", [(1190, 690), (1010, 700)]),
-                     ("byeolchae", [(520, 1090), (690, 960), (785, 835)])):
-        door = tuple(buildings[bid]["door"])
-        routes.append([door] + via + [medallion])
+    for building in geometry["buildings"]:
+        routes.append([tuple(building["door"]), medallion])
     bridge_a = tuple(geometry["bridge"]["a"])
     bridge_b = tuple(geometry["bridge"]["b"])
     routes.append([medallion, bridge_a])
-    routes.append([bridge_b, (1275, 690), (1330, 640)])
-    routes.append([medallion, (1100, 800), (1330, 800), (1500, 820)])
-    routes.append([medallion, (900, 900), (900, 1060), (860, 1180)])
+    routes.append([bridge_b, (3000, 1000), (2900, 1080)])
+    routes.append([medallion, (1700, 1040), (1700, 990)])
+    routes.append([medallion, (1700, 1700), (1700, 1780)])
+    routes.append([medallion, (1100, 1360), (1040, 1360)])
+    routes.append([medallion, (2300, 1360), (2420, 1360)])
+    routes.append([(1700, 990), (2420, 990), (2420, 500)])
+    routes.append([(1700, 1780), (2420, 1780), (2420, 2200)])
+    routes.append([(1040, 1360), (700, 1360), (620, 1000)])
     wear = np.zeros((height, width), np.float32)
     for route in routes:
-        wear = np.maximum(wear, draw_polyline_band(size, route, 96, 27))
-    wear = smoothstep(wear * walk, 0.05, 0.85)
-    ground = ground + wear[..., None] * np.array([0.085, 0.070, 0.044], np.float32)
-    ground = ground * (1.0 + wear[..., None] * 0.16)
+        band = draw_polyline_band(size, route, 92, 34)
+        np.maximum(wear, band, out=wear)
+        del band
+    wear = smoothstep(wear * masks["walk"], 0.10, 0.90)
+    ground += wear[..., None] * np.array([0.055, 0.046, 0.030], np.float32)
+    ground *= (1.0 + wear[..., None] * 0.10)
+    del wear
 
     # ---------- 연못가 돌 테두리 (물 위로 고인 달빛)
     pond = masks["pond"]
-    ring_band = np.clip(1.0 - dist_walk / 12.0, 0.0, 1.0) * walk
+    ring_band = (np.clip(1.0 - dist_walk / 12.0, 0.0, 1.0) * masks["walk"] * 0.6)[..., None]
     rim_stone = np.clip(stone * 1.16 + 0.03, 0.0, 1.0)
-    ground = ground * (1.0 - ring_band[..., None] * 0.6) + rim_stone * (ring_band[..., None] * 0.5)
+    over(ground, rim_stone, ring_band)
+    del rim_stone, ring_band, dist_walk
     pond_soft = cv2.GaussianBlur(pond.astype(np.float32), (0, 0), 3.0)
     water = np.array([0.028, 0.060, 0.080], np.float32)
-    ground = ground * (1.0 - pond_soft[..., None] * 0.9) + water * (pond_soft[..., None] * 0.9)
+    over(ground, np.broadcast_to(water, ground.shape).copy(), (pond_soft * 0.9)[..., None])
+    del pond_soft
 
     # ---------- 담장 밖: 밤 숲 그늘(지도 가장자리)
     courtyard = masks["courtyard"]
     outside = np.clip(1.0 - cv2.GaussianBlur(courtyard.astype(np.float32), (0, 0), 6.0), 0.0, 1.0) ** 0.8
-    forest = moss * 0.5 + np.array([0.020, 0.034, 0.030], np.float32)
+    forest = moss * 0.72 + np.array([0.030, 0.046, 0.040], np.float32)
+    del moss
     silhouettes = np.zeros((height, width), np.float32)
     gen = rng(77)
-    for _ in range(260):
+    for _ in range(420):
         x = gen.uniform(0, width)
         y = gen.uniform(0, height)
         if courtyard[int(y), int(x)]:
@@ -338,35 +423,45 @@ def bake() -> None:
         lean = gen.uniform(-10, 10)
         cv2.line(silhouettes, (int(x), int(y)), (int(x + lean), int(y - stalk)), 1.0, int(gen.integers(1, 3)))
     silhouettes = cv2.GaussianBlur(silhouettes, (0, 0), 1.2)
-    forest = forest + silhouettes[..., None] * np.array([0.05, 0.09, 0.06], np.float32)
-    ground = ground * (1.0 - outside[..., None]) + forest * outside[..., None]
+    forest += silhouettes[..., None] * np.array([0.05, 0.09, 0.06], np.float32)
+    del silhouettes
+    over(ground, forest, outside[..., None])
+    del forest, outside, courtyard
 
     # ---------- 등불·문간 빛웅덩이
-    light = np.zeros((height, width, 3), np.float32)
-    warm_light = np.array([1.0, 0.70, 0.38], np.float32)
+    light = np.zeros((height, width), np.float32)
     for lx, ly in geometry["lanterns"]:
-        light += draw_blob(size, (lx, ly - 8), 128, 2.3)[..., None] * warm_light * 0.34
+        light += draw_blob(size, (lx, ly - 8), 150, 2.3) * 0.34
     for building in geometry["buildings"]:
         door = building["door"]
-        light += draw_blob(size, (door[0], door[1] - 24), 240, 2.0)[..., None] * warm_light * 0.20
-    light *= walk[..., None] * 0.9 + 0.10
-    ground = ground + light
+        light += draw_blob(size, (door[0], door[1] - 24), 260, 2.0) * 0.20
+    light *= masks["walk"] * 0.9 + 0.10
+    ground += light[..., None] * np.array([1.0, 0.70, 0.38], np.float32)
+    del light
 
     # ---------- 달빛 그라데이션·밤 색보정
     moon = draw_blob(size, (width * 0.78, height * 0.08), width * 1.0, 1.2)
-    ground = ground * (0.95 + 0.13 * moon[..., None])
+    ground *= (0.95 + 0.13 * moon)[..., None]
+    del moon
     ground[..., 2] *= 1.04
     ground[..., 0] *= 1.02
     glow_center = draw_blob(size, (width * 0.5, height * 0.52), width * 0.92, 3.0)
-    ground = ground * (0.55 + 0.45 * glow_center[..., None])
+    ground *= (0.74 + 0.28 * glow_center)[..., None]
+    del glow_center
 
     # ---------- 결 디테일: 큰 붓터치 위에 잔결을 얹어 또렷하게
-    fine = blob_noise(size, 90.0, 61, 2)
-    ground = ground * (0.95 + 0.10 * fine[..., None])
+    fine = blob_noise(size, 120.0, 61, 2)
+    ground *= (0.95 + 0.10 * fine)[..., None]
+    del fine
     # ---------- 미세 입자로 띠(banding) 제거
     grain = (rng(99).random((height, width, 1)).astype(np.float32) - 0.5) * 0.022
-    ground = np.clip(ground + grain, 0.0, 1.0)
+    ground += grain
+    del grain
+    np.clip(ground, 0.0, 1.0, out=ground)
     out = (ground ** 1.02 * 255.0).astype(np.uint8)
+    del ground
+    if (width, height) != (full_width, full_height):
+        out = cv2.resize(out, (full_width, full_height), interpolation=cv2.INTER_LANCZOS4)
     image = cv2.cvtColor(out, cv2.COLOR_RGB2BGR)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     cv2.imwrite(str(OUT), image, [int(cv2.IMWRITE_PNG_COMPRESSION), 9])

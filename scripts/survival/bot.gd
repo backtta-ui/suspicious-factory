@@ -43,19 +43,19 @@ func think(delta: float) -> void:
    return
   if wait<=0 and rules.C.find(me.character).active=="transform":
    if command("skill"):wait=5;command("move",{"vector":Vector2.ZERO});return
-  var points: Array=[Vector2(435,700),Vector2(860,720),Vector2(1260,1010),Vector2(620,1000),Vector2(1040,520),Vector2(480,1100),Vector2(1250,880)]
+  var points: Array=[Vector2(620,1000),Vector2(1080,1360),Vector2(2260,760),Vector2(2820,1000),Vector2(3040,1880),Vector2(2400,2350),Vector2(1200,2380),Vector2(400,2300),Vector2(300,900),Vector2(1700,600),Vector2(2900,1400),Vector2(1700,1800)]
   var target: Vector2=rules.L.safe(points[(index+patrol)%points.size()])
   if target.distance_to(zone.center)>zone.radius-70:target=rules.L.safe(zone.center+Vector2.from_angle(index*TAU/8)*zone.radius*.55)
   if p.distance_to(target)<50:patrol+=1
   go(p,target)
  else:
+  # 미둔갑 도사는 몸이 닿는 순간 봉인되므로 버튼 없이 그대로 밀어붙인다.
   var targets: Array=actors.filter(func(a: Dictionary)->bool:return a.id!=id and a.role=="daoist" and not a.captured and a.form=="")
   targets.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return p.distance_to(a.position)<p.distance_to(b.position))
   if not targets.is_empty():
    var q: Dictionary=targets[0];go(p,q.position)
-   if p.distance_to(q.position)<58:
-    command("move",{"vector":p.direction_to(q.position)});command("seal")
-   elif wait<=0:command("skill",{"aim":p.direction_to(q.position)});wait=1.1
+   if wait<=0 and p.distance_to(q.position)<220:
+    command("skill",{"aim":p.direction_to(q.position)});wait=1.1
    return
   # Search real props/decoys without consulting hidden transformed player IDs.
   var objects: Array=rules.L.OBJECTS
@@ -63,6 +63,7 @@ func think(delta: float) -> void:
   for e in rules.effects:
    if e.kind=="clone" and p.distance_to(e.position)<200 and not inspected.has(e.id):target=e.position
   if p.distance_to(target)<55:
+   # 의심스러운 사물 근처에서는 '확인' 타격(seal)으로 둔갑 도사를 찾아낸다.
    command("move",{"vector":p.direction_to(target)});command("seal");patrol+=1
    for e in rules.effects:
     if e.kind=="clone" and p.distance_to(e.position)<70:inspected[e.id]=true
