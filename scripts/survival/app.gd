@@ -9,6 +9,9 @@ const L=preload("res://scripts/survival/layout.gd")
 const Market=preload("res://scripts/survival/market.gd")
 const LC=preload("res://scripts/ui/lobby_theme.gd")
 const LArt=preload("res://scripts/ui/lobby_art.gd")
+const RoomIcon=preload("res://scripts/ui/room_icon.gd")
+const RoomButton=preload("res://scripts/ui/metal_button.gd")
+const Glyphs=preload("res://scripts/ui/room_glyphs.gd")
 const TITLE_ART="res://assets/woo/title_bg.png"
 const TITLE_IMAGE=Vector2(1846,852)
 ## The settings capsule already painted into the key art (relative to the image).
@@ -331,116 +334,236 @@ func setup_participants(seed_value: int=0) -> void:
  if room.fill:
   for i in range(1,room.count):rules.add("bot-%d"%i,("요괴 %d" if i<3 else "도사 %d")%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[(i+1)%4].id)
  result_seen=false;recorded=false;spectate="human";fixed_clock=0;bot_clock=0
-## 친구와 함께 · 대기실: 상단 장식 배너 + 좌측 맵 프리뷰·희망 진영 + 우측 2열 참가자 카드.
-## 20:9 와이드에서도 잘리지 않도록 컨테이너 비율로만 배치한다.
 ## 카드·배너용 둥근 테두리 박스(내용 여백은 카드 크기에 맞춰 작게).
 func box_style(fill: Color,radius: int,border: Color,width: int=1) -> StyleBoxFlat:
  var style:=StyleBoxFlat.new();style.bg_color=fill;style.border_color=border;style.set_border_width_all(width);style.set_corner_radius_all(radius)
  style.content_margin_left=10;style.content_margin_right=10;style.content_margin_top=6;style.content_margin_bottom=6
  return style
-func room_screen() -> void:
- if room.is_empty():build("rooms");return
- background()
- var margin:=MarginContainer.new();full(margin,ui)
- for side in ["left","right","top","bottom"]:margin.add_theme_constant_override("margin_"+side,20)
- var column:=VBoxContainer.new();column.add_theme_constant_override("separation",10);margin.add_child(column)
- # ── 상단 배너
- var banner:=PanelContainer.new();banner.add_theme_stylebox_override("panel",box_style(Color(.035,.043,.09,.94),14,D.GOLD))
- column.add_child(banner)
- var banner_row:=HBoxContainer.new();banner_row.add_theme_constant_override("separation",12);banner.add_child(banner_row)
- var title:=text("월하의 서원 · 친구 방",24,Color("f4dfae"));title.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
- title.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;banner_row.add_child(title)
- var name_label:=text(String(room.get("name","")),17,Color("cdd4e6"));name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;banner_row.add_child(name_label)
- var code_chip:=text("방 코드 "+String(room.get("code","")),18,Color("ffe6a8"))
- code_chip.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- code_chip.add_theme_stylebox_override("normal",box_style(Color(.10,.08,.05,.9),10,Color(.90,.76,.48,.8)))
- banner_row.add_child(code_chip)
- var copy:=button("코드 복사",func()->void:Copycode(),false);copy.custom_minimum_size.y=42;banner_row.add_child(copy)
- var invite:=button("친구 초대",func()->void:Copyinvite(),false);invite.custom_minimum_size.y=42;banner_row.add_child(invite)
- var spacer:=Control.new();spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;banner_row.add_child(spacer)
- var back_button:=button("← 뒤로",func()->void:leave_room());back_button.name="RoomBack";back_button.custom_minimum_size.y=42;banner_row.add_child(back_button)
- # ── 본문
- var body:=HBoxContainer.new();body.add_theme_constant_override("separation",14);body.size_flags_vertical=Control.SIZE_EXPAND_FILL;column.add_child(body)
- var left:=PanelContainer.new();left.add_theme_stylebox_override("panel",box_style(Color(.03,.038,.08,.9),14,Color(.85,.72,.47,.6)))
- left.size_flags_horizontal=Control.SIZE_EXPAND_FILL;left.size_flags_stretch_ratio=1.05;body.add_child(left)
- var left_box:=VBoxContainer.new();left_box.add_theme_constant_override("separation",8);left.add_child(left_box)
- left_box.add_child(text("《월하의 서원》",20,Color("f4dfae")))
- var preview:=TextureRect.new()
+## 친구와 함께 · 대기실(2.0.20): 달빛 한옥 배경 위에 상단 바, 좌측 지도·희망 진영,
+## 우측 2열 참가자 카드, 아래 준비/시작/나가기를 실제 노드로 배치한다.
+## 그림은 lobby_art·room_glyphs가 그리는 노드이고, 버튼·복사·토글은 그대로 작동한다.
+func room_button(value: String,callback: Callable,variant: String="metal",glyph_name: String="",width: int=0,height: int=54,parent: Node=null) -> Control:
+ var b=RoomButton.new()
+ b.text=value;b.variant=variant;b.glyph=glyph_name
+ b.font_size=19 if variant!="gold" else 23
+ b.use_title_font=variant=="gold"
+ b.accent=LC.GOLD
+ if width<=0:
+  var measure: Font=LC.TITLE_FONT if b.use_title_font else LC.FONT
+  width=int(measure.get_string_size(value,HORIZONTAL_ALIGNMENT_LEFT,-1,b.font_size).x)+(30 if glyph_name!="" else 0)+30
+ b.custom_minimum_size=Vector2(width,height)
+ var ticket:=generation;var scope: Control=modal
+ b.allowed=func()->bool:return ticket==generation and not changing and (modal==scope) and not backgrounded
+ b.pressed.connect(func()->void:
+  if b.usable():sound.play_clip("button");callback.call())
+ if parent!=null:parent.add_child(b)
+ return b
+func room_icon(glyph_name: String,extent: float,color: Color=Color("e8d5a6"),line: float=1.8) -> Control:
+ var node=RoomIcon.new()
+ node.glyph=glyph_name;node.tint=color;node.line=line
+ node.custom_minimum_size=Vector2(extent,extent)
+ node.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ return node
+func room_rule(color: Color=Color(.85,.72,.47,.5)) -> Control:
+ var line:=LArt.Rule.new();line.color=color
+ line.custom_minimum_size=Vector2(0,9);line.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ return line
+## 아이콘 + 글자 한 묶음(전황·머리글).
+func room_info(glyph_name: String,label: String,extent: float=16,color: Color=Color(.78,.76,.90)) -> Control:
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",5);row.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ row.add_child(room_icon(glyph_name,extent,Color(.88,.77,.52),1.7))
+ row.add_child(text(label,14,color))
+ return row
+## 초록 체크 알약 `✓ 준비 완료`.
+func room_ready_pill() -> Control:
+ var pill:=PanelContainer.new()
+ var style:=StyleBoxFlat.new()
+ style.bg_color=Color(.13,.45,.28,.96);style.border_color=Color(.66,.96,.78,.75)
+ style.set_border_width_all(1);style.set_corner_radius_all(11)
+ style.content_margin_left=7;style.content_margin_right=9;style.content_margin_top=2;style.content_margin_bottom=2
+ pill.add_theme_stylebox_override("panel",style)
+ pill.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",4);pill.add_child(row)
+ row.add_child(room_icon("check",12,Color(.88,1,.92),2.0))
+ row.add_child(text("준비 완료",11,Color(.92,1,.95)))
+ return pill
+## 방장 표시 `[방장]`.
+func room_host_badge() -> Control:
+ var badge:=PanelContainer.new()
+ var style:=StyleBoxFlat.new()
+ style.bg_color=Color(.32,.23,.09,.92);style.border_color=Color(.95,.80,.45,.85)
+ style.set_border_width_all(1);style.set_corner_radius_all(5)
+ style.content_margin_left=5;style.content_margin_right=5;style.content_margin_top=0;style.content_margin_bottom=0
+ badge.add_theme_stylebox_override("panel",style)
+ badge.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ badge.add_child(text("[방장]",11,Color("ffe4a4")))
+ return badge
+## 상단 바: 등불 아이콘 · 붓글씨 제목 · 방 코드 금빛 알약 · 복사/초대/뒤로.
+func room_header() -> Control:
+ var bar:=LArt.RoomPanel.new()
+ bar.fill_top=Color(.10,.085,.155,.94);bar.fill_bottom=Color(.032,.028,.062,.96)
+ bar.radius=12.0;bar.arm=16.0;bar.pad=Vector2(14,8)
+ bar.custom_minimum_size.y=68
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",9);bar.add_child(row)
+ row.add_child(room_icon("lantern",32,Color("f7d99a"),1.8))
+ var titles:=HBoxContainer.new();titles.add_theme_constant_override("separation",10)
+ titles.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ var title:=text("월하의 서원 · 친구 방",27,Color("f7e4b6"))
+ title.add_theme_font_override("font",LC.TITLE_FONT)
+ title.add_theme_color_override("font_outline_color",Color(0,0,0,.55));title.add_theme_constant_override("outline_size",5)
+ titles.add_child(title)
+ var subtitle:=text(String(room.get("name","")) if String(room.get("name",""))!="" else "달빛 모의전",13,Color(.80,.74,.92))
+ subtitle.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ subtitle.add_theme_color_override("font_outline_color",Color(0,0,0,.45));subtitle.add_theme_constant_override("outline_size",3)
+ titles.add_child(subtitle)
+ row.add_child(titles)
+ var gap:=Control.new();gap.custom_minimum_size.x=12;gap.mouse_filter=Control.MOUSE_FILTER_IGNORE;row.add_child(gap)
+ var code=room_button("방 코드  "+String(room.get("code","")),func()->void:Copycode(),"capsule","copy",0,44,row)
+ code.name="RoomCodeChip"
+ code.font_size=17
+ var copy=room_button("코드 복사",func()->void:Copycode(),"metal","copy",104,44,row)
+ copy.name="RoomCopy"
+ copy.font_size=17
+ var invite=room_button("친구 초대",func()->void:Copyinvite(),"metal","invite",112,44,row)
+ invite.name="RoomInvite"
+ invite.font_size=17
+ var spacer:=Control.new();spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;row.add_child(spacer)
+ var back_button=room_button("뒤로",func()->void:leave_room(),"metal","back",96,44,row)
+ back_button.name="RoomBack"
+ back_button.font_size=17
+ return bar
+## 좌측: 《월하의 서원》 지도 프리뷰 + 전황 + 희망 진영 3버튼.
+func room_map_panel() -> Control:
+ var panel:=LArt.RoomPanel.new()
+ panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;panel.size_flags_stretch_ratio=1.0
+ panel.pad=Vector2(14,12)
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",8);panel.add_child(box)
+ var head:=HBoxContainer.new();head.add_theme_constant_override("separation",6);head.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ head.add_child(room_icon("lotus",20,Color(.94,.80,.52),1.6))
+ var title:=text("《월하의 서원》",21,LC.GOLD_SOFT)
+ title.add_theme_font_override("font",LC.TITLE_FONT)
+ head.add_child(title)
+ box.add_child(head)
+ box.add_child(room_rule())
+ var preview:=LArt.Preview.new()
  preview.texture=load("res://assets/woo/seowon/map_preview.png")
- preview.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;preview.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
- preview.custom_minimum_size=Vector2(0,220);preview.size_flags_vertical=Control.SIZE_EXPAND_FILL
- preview.clip_contents=true;left_box.add_child(preview)
- left_box.add_child(text("도사 %d : 요괴 %d · 10분 생존전" % [int(room.count)-int(room.get("yokai",2)),int(room.get("yokai",2))],16,Color("cdd4e6")))
- var side_heading:=text("희망 진영",16,Color("e9dfc6"));left_box.add_child(side_heading)
- var sides:=HBoxContainer.new();sides.add_theme_constant_override("separation",8);left_box.add_child(sides)
- for spec in [["도사 희망","daoist",Color("f2c878")],["요괴 희망","yokai",Color("b18cff")],["상관없음","any",Color("9aa4c4")]]:
+ preview.custom_minimum_size=Vector2(0,200)
+ preview.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ box.add_child(preview)
+ var meta:=HBoxContainer.new();meta.add_theme_constant_override("separation",9);meta.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ meta.add_child(room_info("swords","도사 %d : 요괴 %d" % [int(room.count)-int(room.get("yokai",2)),int(room.get("yokai",2))],16,Color(.90,.86,.76)))
+ var divider:=ColorRect.new();divider.color=Color(.85,.72,.47,.35);divider.custom_minimum_size=Vector2(1,16);divider.size_flags_vertical=Control.SIZE_SHRINK_CENTER;divider.mouse_filter=Control.MOUSE_FILTER_IGNORE;meta.add_child(divider)
+ meta.add_child(room_info("clock","10분 생존전",16,Color(.90,.86,.76)))
+ box.add_child(meta)
+ var side_head:=HBoxContainer.new();side_head.add_theme_constant_override("separation",5);side_head.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ side_head.add_child(room_icon("lotus",15,Color(.92,.80,.54),1.6))
+ side_head.add_child(text("희망 진영",15,Color("e9dfc6")))
+ box.add_child(side_head)
+ var sides:=HBoxContainer.new();sides.add_theme_constant_override("separation",8);box.add_child(sides)
+ for spec in [["도사 희망","daoist","lotus"],["요괴 희망","yokai","fox"],["상관없음","any","shuffle"]]:
   var value:=String(spec[1])
   var picked:=preferred_role==value
-  var picked_color: Color=spec[2]
-  var target:=button(String(spec[0]),func()->void:set_preferred_role(value),picked)
+  var target=room_button(String(spec[0]),func()->void:set_preferred_role(value),"lit" if picked else "metal",String(spec[2]),0,72,sides)
   target.name="Side_"+value
   target.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-  if picked:
-   target.add_theme_color_override("font_color",picked_color)
-  sides.add_child(target)
- left_box.add_child(text("도사 6명 중 1명 · 요괴 2명 중 1명으로 배정됩니다",13,Color(.72,.76,.88,.85)))
- var right:=PanelContainer.new();right.add_theme_stylebox_override("panel",box_style(Color(.03,.038,.08,.9),14,Color(.85,.72,.47,.6)))
- right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;right.size_flags_stretch_ratio=1.45;body.add_child(right)
- var right_box:=VBoxContainer.new();right_box.add_theme_constant_override("separation",8);right.add_child(right_box)
- var members_head:=HBoxContainer.new();right_box.add_child(members_head)
- members_head.add_child(text("참가자 %d/%d" % [rules.players.size(),int(room.count)],20,Color("f4dfae")))
- var head_spacer:=Control.new();head_spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;head_spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;members_head.add_child(head_spacer)
- members_head.add_child(text("초록 배지 = 준비 완료",13,Color("8fd3a8")))
- var grid:=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",8);grid.add_theme_constant_override("v_separation",8)
- grid.size_flags_vertical=Control.SIZE_EXPAND_FILL;right_box.add_child(grid)
+  target.font_size=17
+  if picked:target.accent=Color("f2c878")
+ box.add_child(text("※ 도사 6명 중 1명 · 요괴 2명 중 1명으로 배정됩니다",11,Color(.68,.70,.84,.85)))
+ return panel
+## 우측: 참가자 머리글 + 2열 4행 카드 8장.
+func room_participants_panel() -> Control:
+ var panel:=LArt.RoomPanel.new()
+ panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL;panel.size_flags_stretch_ratio=1.55
+ panel.pad=Vector2(14,12)
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",8);panel.add_child(box)
+ var head:=HBoxContainer.new();head.add_theme_constant_override("separation",6);head.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ head.add_child(room_icon("users",20,Color(.92,.80,.54),1.6))
+ head.add_child(text("참가자 %d/%d" % [rules.players.size(),int(room.count)],20,Color("f7e4b6")))
+ var head_spacer:=Control.new();head_spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;head_spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;head.add_child(head_spacer)
+ head.add_child(room_icon("check",13,Color(.62,.92,.72),2.0))
+ head.add_child(text("초록 배지 = 준비 완료",11,Color(.68,.90,.74)))
+ box.add_child(head)
+ box.add_child(room_rule())
+ var grid:=GridContainer.new();grid.columns=2
+ grid.add_theme_constant_override("h_separation",8);grid.add_theme_constant_override("v_separation",8)
+ grid.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ box.add_child(grid)
  var order: Array=rules.players.values().duplicate()
  for index in range(int(room.count)):
   var entry: Dictionary={}
   if index<order.size():entry=order[index]
   grid.add_child(room_member_card(entry,index))
- var buttons:=HBoxContainer.new();buttons.add_theme_constant_override("separation",10);column.add_child(buttons)
- var ready_button:=button("준비 취소" if rules.players.human.ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),true)
- ready_button.name="RoomReady";ready_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL;buttons.add_child(ready_button)
- var start_button:=button("게임 시작",start_match,true);start_button.name="RoomStart";start_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
- # 금빛 시작 버튼(롤의 '게임 시작' 자리)
- for state in ["normal","hover","pressed","hover_pressed"]:
-  var fill:=Color(.96,.80,.46,1) if state=="normal" else (Color(1,.87,.58,1) if state=="hover" else Color(.84,.68,.38,1))
-  start_button.add_theme_stylebox_override(state,box_style(fill,12,Color(1,.95,.75,.95),2))
-  start_button.add_theme_color_override("font_color" if state=="normal" else "font_"+state+"_color",Color(.07,.05,.02,1))
- buttons.add_child(start_button)
- var leave_button:=button("방 나가기",leave_room);leave_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL;buttons.add_child(leave_button)
+ return panel
+## 아래: 준비 취소 · 게임 시작(금빛 CTA) · 방 나가기.
+func room_actions() -> Control:
+ var bar:=LArt.RoomPanel.new()
+ bar.fill_top=Color(.075,.062,.12,.90);bar.fill_bottom=Color(.024,.020,.048,.94)
+ bar.radius=12.0;bar.arm=14.0;bar.pad=Vector2(10,8)
+ bar.custom_minimum_size.y=78
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",12);bar.add_child(row)
+ var human_ready:=bool(rules.players.human.ready)
+ var ready_button=room_button("준비 취소" if human_ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),"metal","cross" if human_ready else "check",0,58,row)
+ ready_button.name="RoomReady"
+ ready_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ var start_button=room_button("게임 시작",start_match,"gold","swords",0,60,row)
+ start_button.name="RoomStart"
+ start_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL;start_button.size_flags_stretch_ratio=1.45
+ var leave_button=room_button("방 나가기",leave_room,"metal","exit",0,58,row)
+ leave_button.name="RoomLeave"
+ leave_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ return bar
+func room_screen() -> void:
+ if room.is_empty():build("rooms");return
+ var art:=LArt.RoomBackdrop.new()
+ full(art,ui)
+ ui.move_child(art,0)
+ var margin:=MarginContainer.new();full(margin,ui)
+ for side in ["left","right","top","bottom"]:margin.add_theme_constant_override("margin_"+side,16)
+ var column:=VBoxContainer.new();column.add_theme_constant_override("separation",10);margin.add_child(column)
+ column.add_child(room_header())
+ var body:=HBoxContainer.new();body.add_theme_constant_override("separation",12);body.size_flags_vertical=Control.SIZE_EXPAND_FILL;column.add_child(body)
+ body.add_child(room_map_panel())
+ body.add_child(room_participants_panel())
+ column.add_child(room_actions())
 
-## 참가자 카드 한 장: 초상화 · 이름 · 희망 진영 · 준비 배지.
+## 참가자 카드 한 장: 원형 금테 초상화 · 이름 · [방장] · 희망 진영 · 준비 배지.
 func room_member_card(entry: Dictionary,index: int) -> Control:
- var frame:=PanelContainer.new()
- frame.size_flags_horizontal=Control.SIZE_EXPAND_FILL;frame.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ var frame:=LArt.Card.new()
+ frame.name="RoomCard_%d"%index
  var filled:=not entry.is_empty()
  var ready:=filled and bool(entry.get("ready",false))
- var edge:=Color(.85,.72,.47,.45) if filled else Color(.5,.55,.7,.22)
- if ready:edge=Color(.55,.85,.65,.75)
- frame.add_theme_stylebox_override("panel",box_style(Color(.045,.052,.1,.92),12,edge))
- var row:=HBoxContainer.new();row.add_theme_constant_override("separation",10);frame.add_child(row)
- var thumb:=TextureRect.new()
- thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;thumb.clip_contents=true
- thumb.custom_minimum_size=Vector2(56,56);thumb.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ var host:=filled and String(entry.get("id",""))=="human"
+ frame.filled=filled;frame.is_ready=ready;frame.host=host
+ frame.edge=Color(.85,.72,.47,.34) if filled else Color(.58,.55,.72,.20)
+ frame.size_flags_horizontal=Control.SIZE_EXPAND_FILL;frame.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",9);frame.add_child(row)
+ var portrait:=LArt.Portrait.new()
+ portrait.custom_minimum_size=Vector2(68,68)
+ portrait.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ portrait.crown=host
  if filled:
   var look: String=String(entry.get("choices",{}).get("daoist","daoist:woochi"))
   var spec: Dictionary=C.find(look)
-  if String(spec.get("portrait",""))!="":thumb.texture=load(String(spec.portrait))
- row.add_child(thumb)
- var info:=VBoxContainer.new();info.size_flags_horizontal=Control.SIZE_EXPAND_FILL;info.add_theme_constant_override("separation",2)
+  if String(spec.get("portrait",""))!="":portrait.path=String(spec.portrait)
+ else:
+  portrait.ring=Color(.62,.58,.78,.55);portrait.ghost=true
+ row.add_child(portrait)
+ var info:=VBoxContainer.new();info.size_flags_horizontal=Control.SIZE_EXPAND_FILL;info.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ info.add_theme_constant_override("separation",1)
  row.add_child(info)
- var name_row:=HBoxContainer.new();name_row.add_theme_constant_override("separation",6);info.add_child(name_row)
- var nick:=text(String(entry.get("name","빈 자리")) if filled else "빈 자리",16,Color("f0e6cf") if filled else Color(.55,.58,.7))
+ var name_row:=HBoxContainer.new();name_row.add_theme_constant_override("separation",5);name_row.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ info.add_child(name_row)
+ var nick:=text(String(entry.get("name","")) if filled else "빈 자리",18,Color("f5ead2") if filled else Color(.62,.60,.74))
+ nick.add_theme_color_override("font_outline_color",Color(0,0,0,.5));nick.add_theme_constant_override("outline_size",3)
  name_row.add_child(nick)
- var badge_spacer:=Control.new();badge_spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;badge_spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;name_row.add_child(badge_spacer)
+ if host:name_row.add_child(room_host_badge())
+ var side_text:="초대를 기다리는 중"
+ if filled:
+  side_text=side_name(preferred_role) if String(entry.get("id",""))=="human" else "상관없음"
+ var side:=text(side_text,12,Color(.76,.74,.90) if filled else Color(.60,.58,.72,.85))
+ info.add_child(side)
  if ready:
-  var badge:=text("준비 완료",12,Color(.06,.14,.09))
-  badge.add_theme_stylebox_override("normal",box_style(Color(.55,.85,.65,1),8,Color(.75,1,.82,.8)))
-  name_row.add_child(badge)
- var side_text:="상관없음"
- if filled and String(entry.get("id",""))=="human":side_text=side_name(preferred_role)
- var side:=text(side_text,13,Color(.74,.78,.9));info.add_child(side)
+  row.add_child(room_ready_pill())
  return frame
 
 func side_name(value: String) -> String:

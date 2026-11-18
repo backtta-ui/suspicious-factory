@@ -164,6 +164,60 @@ static func mask_material(focus_y: float=0.46,radius: float=0.47,feather: float=
 	material.set_shader_parameter("tint",tint)
 	return material
 
+## 대기실(친구 방)이 함께 쓰는 황동·보랏빛·옥색. 기존 화면 색은 건드리지 않고 더한다.
+const BRASS=Color("c9a25e")
+const BRASS_LIGHT=Color("f6e2ae")
+const INK_DEEP=Color(0.024,0.027,0.052,0.94)
+const VIOLET_DEEP=Color("241a3c")
+const VIOLET_MID=Color("3a2b60")
+const JADE=Color("74d69e")
+const JADE_DEEP=Color("123a24")
+const STEEL=Color("8c93a8")
+
+## 둥근 사각형의 닫힌 외곽선 경로(그리기용).
+static func rounded_points(rect: Rect2,radius: float) -> PackedVector2Array:
+	var r:=maxf(0.0,minf(radius,minf(rect.size.x,rect.size.y)*.5))
+	var points:=PackedVector2Array()
+	var corners: Array=[[rect.position+Vector2(r,r),PI,PI*1.5],[Vector2(rect.end.x-r,rect.position.y+r),PI*1.5,TAU],[rect.end-Vector2(r,r),0.0,PI*.5],[Vector2(rect.position.x+r,rect.end.y-r),PI*.5,PI]]
+	for corner in corners:
+		var center: Vector2=corner[0]
+		for step in range(7):
+			var angle:=float(corner[1])+(float(corner[2])-float(corner[1]))*step/6.0
+			points.append(center+Vector2.from_angle(angle)*r)
+	return points
+
+## 둥근 사각형 테두리 한 겹.
+static func rounded_outline(ci: CanvasItem,rect: Rect2,color: Color,radius: float,width: float=1.0) -> void:
+	if rect.size.x<=1.0 or rect.size.y<=1.0:return
+	var points:=rounded_points(rect,radius)
+	points.append(points[0])
+	ci.draw_polyline(points,color,width,true)
+
+## 위에서 아래로 흐르는 둥근 사각 그라데이션. StyleBoxFlat이 못 하는 세로 결을 픽셀 줄로 그린다.
+static func gradient_rounded(ci: CanvasItem,rect: Rect2,top: Color,bottom: Color,radius: float,steps: int=0) -> void:
+	if rect.size.x<=1.0 or rect.size.y<=1.0:return
+	var r:=maxf(0.0,minf(radius,minf(rect.size.x,rect.size.y)*.5))
+	var rows:=steps if steps>0 else int(clampf(rect.size.y*.55,18.0,96.0))
+	for i in range(rows):
+		var y0:=rect.position.y+rect.size.y*float(i)/float(rows)
+		var y1:=rect.position.y+rect.size.y*float(i+1)/float(rows)
+		var color:=top.lerp(bottom,(float(i)+.5)/float(rows))
+		var inset:=0.0
+		if y0<rect.position.y+r:
+			var dy:=r-(y0-rect.position.y)-.5
+			inset=r-sqrt(maxf(0.0,r*r-dy*dy))
+		elif y1>rect.end.y-r:
+			var dy:=r-(rect.end.y-y1)-.5
+			inset=r-sqrt(maxf(0.0,r*r-dy*dy))
+		ci.draw_rect(Rect2(Vector2(rect.position.x+inset,y0),Vector2(rect.size.x-inset*2.0,maxf(.6,y1-y0))),color)
+
+## 판 뒤로 번지는 부드러운 빛. 여러 겹의 둥근 테두리로 만든다.
+static func halo(ci: CanvasItem,rect: Rect2,color: Color,radius: float,spread: float=10.0,steps: int=5) -> void:
+	for i in range(steps):
+		var grow:=spread*(1.0-float(i)/float(steps))
+		var alpha:=color.a*(float(i+1)/float(steps))*.30
+		rounded_outline(ci,rect.grow(grow),Color(color.r,color.g,color.b,alpha),radius+grow,spread/float(steps)*1.6)
+
 ## 금빛/보랏빛 광원.
 static func soft_glow(parent: Node,color: Color,rect: Rect2) -> TextureRect:
 	var node:=TextureRect.new()
