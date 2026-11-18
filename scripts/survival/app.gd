@@ -447,6 +447,7 @@ func hud() -> void:
  spectator.visible=false
 func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,callback: Callable=Callable(),type: Script=preload("res://scripts/survival/skill_button.gd")) -> WooMobileButton:
  var b: WooMobileButton=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type)
+ b.text=""
  b.custom_minimum_size=extent
  ui.add_child(b)
  b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
