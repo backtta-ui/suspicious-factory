@@ -1,9 +1,5 @@
 extends Node2D
+## 캐릭터는 원화와 이름표로 구분한다. 발밑에 색깔 링을 그리지 않는다(사용자 요청).
+## color_id는 서버·연출 코드가 계속 사용하므로 값만 보관한다.
 var color_id:=0
 var actor: WooActor
-func _process(_delta: float) -> void:
- visible=is_instance_valid(actor) and actor.appearance_form=="human" and not actor.jar and not actor.identity_concealed
- queue_redraw()
-func _draw() -> void:
- var colors=preload("res://scripts/seal/settings.gd").COLORS
- draw_arc(Vector2(0,1),10,0,TAU,28,Color(colors[posmod(color_id,8)]),2,true)

@@ -13,6 +13,10 @@ var circle_penalty_after:=INF
 var circle_speed_factor:=1.0
 var serial:=0
 var selection_left:=25.0
+## 자동 배정이 고를 수 있는 캐릭터 목록(참가자별). 비어 있으면 전체 로스터.
+var restricted: Dictionary={}
+func restrict_choices(id: String,ids: Array) -> void:
+ restricted[id]=ids.duplicate()
 ## 요괴 수(기본 2). 8인 방에서 도사2:요괴6 구성을 고르면 6이 된다.
 var yokai_count:=2
 var selection_elapsed:=0.0
@@ -158,7 +162,10 @@ func tick(delta: float) -> void:
   for p in players.values():
    if p.confirmed:continue
    if selection_left<=.00001 or (p.id!="human" and selection_elapsed>=1.2+p.color*.35):
-    if C.find(p.character).is_empty():p.character=C.catalog(p.role)[rng.randi_range(0,C.catalog(p.role).size()-1)].id
+    if C.find(p.character).is_empty():
+     var pool: Array=restricted.get(p.id,[])
+     if pool.is_empty():p.character=C.catalog(p.role)[rng.randi_range(0,C.catalog(p.role).size()-1)].id
+     else:p.character=String(pool[rng.randi_range(0,pool.size()-1)])
     confirm_character(p.id)
   return
  if phase=="countdown":
