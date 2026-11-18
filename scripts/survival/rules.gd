@@ -19,6 +19,9 @@ func restrict_choices(id: String,ids: Array) -> void:
  restricted[id]=ids.duplicate()
 ## 요괴 수(기본 2). 8인 방에서 도사2:요괴6 구성을 고르면 6이 된다.
 var yokai_count:=2
+## 플레이어(휴먼)의 희망 진영: any / daoist / yokai. 비율(도사6:요괴2)은 그대로 두고
+## 자리만 바꿔 배정한다.
+var preferred_role:="any"
 var selection_elapsed:=0.0
 ## 문이 열린 시각(초). world.gd는 이 값으로 문짝과 지붕을 움직인다.
 var doors: Dictionary={"front":0.0,"back":0.0}
@@ -51,7 +54,21 @@ func start() -> bool:
   if p.role=="yokai":yokai_index+=1
   else:daoist_index+=1
   p.position=spot;p.ground=spot;p.origin=spot;p.form_origin=spot;p.intent=Vector2.ZERO;p.facing=6 if p.role=="daoist" else 2
+ apply_preference()
  phase="selection";selection_left=25;selection_elapsed=0;return true
+## 희망 진영이 있으면 휴먼과 반대편 한 명의 역할·자리를 맞바꾼다(구성 비율 유지).
+func apply_preference() -> void:
+ if not players.has("human") or preferred_role not in ["daoist","yokai"]:return
+ var human: Dictionary=players["human"]
+ if human.role==preferred_role:return
+ for p in players.values():
+  if p.id=="human" or p.role!=preferred_role:continue
+  var role: String=human.role
+  human.role=p.role;p.role=role
+  for key in ["position","ground","origin","form_origin","facing"]:
+   var value=human[key];human[key]=p[key];p[key]=value
+  return
+
 func select_character(id: String,character_id: String) -> bool:
  if phase!="selection" or not players.has(id) or players[id].confirmed:return false
  var spec:=C.find(character_id)
@@ -147,7 +164,7 @@ func skill(p: Dictionary,aim: Vector2) -> bool:
   burst(p.position,"fx_poof",.6);event("transform",p.id,nearest.kind)
  elif id in ["sense","shield"]:p.buff[id]=elapsed+(4 if id=="sense" else 8)
  elif id=="clone":
-  serial+=1;effects.append({"id":serial,"kind":"clone","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"born":elapsed,"until":elapsed+8})
+  serial+=1;effects.append({"id":serial,"kind":"clone","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"character":p.character,"born":elapsed,"until":elapsed+8})
  elif id=="smoke":
   serial+=1;effects.append({"id":serial,"kind":"smoke","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"born":elapsed,"until":elapsed+6})
  if id in ["blink","shield"]:burst(p.position,"fx_talisman",.6,{"facing":p.facing})

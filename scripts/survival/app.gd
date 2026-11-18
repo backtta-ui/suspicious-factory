@@ -76,8 +76,9 @@ var bot_clock:=0.0
 var fixed_clock:=0.0
 ## 인게임 고정 스텝: 20Hz(0.05)에서 60Hz(1/60)로 올려 이동이 끊기지 않게 한다.
 const STEP=1.0/60.0
-## 캐릭터 원화 배율(2.0.17에서 1.5 → 1.12로 줄여 시야를 넓혔다).
-const ACTOR_SCALE=1.12
+## 캐릭터 원화 배율. 2.0.19에서 LoL식 비율(돌길 폭·한옥 문/계단·항아리·석등)에
+## 맞춰 1.12 → 1.05로 미세 조정했다. 모바일에서 식별되는 크기는 유지한다.
+const ACTOR_SCALE=1.05
 ## 화면상 위치는 60Hz 목표점을 매 프레임 부드럽게 따라간다(텔레포트만 즉시 붙는다).
 const AVATAR_FOLLOW=26.0
 ## 한 프레임 이동(최대 210px/s)보다 큰 이동은 텔레포트로 보고 즉시 붙인다.
@@ -88,6 +89,8 @@ var aim_cancelled:=false
 var render_clock:=0.0
 var last_count:=-1
 var selection_team:="daoist"
+## 희망 진영: any / daoist / yokai. 매칭·대기실에서 고르고 rules.start()가 배정에 반영한다.
+var preferred_role:="any"
 var selection_id:=""
 var selection_return:="lobby"
 var status_message:=""
@@ -324,37 +327,134 @@ func create_room(name_value: String,count: int,fill_bots: bool,code: String="",y
  room_code=used_code;remember_code(used_code)
  setup_participants();transition("room")
 func setup_participants(seed_value: int=0) -> void:
- rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.add("human","나",storage.data.daoist,storage.data.yokai)
+ rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.preferred_role=preferred_role;rules.add("human","나",storage.data.daoist,storage.data.yokai)
  if room.fill:
   for i in range(1,room.count):rules.add("bot-%d"%i,("요괴 %d" if i<3 else "도사 %d")%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[(i+1)%4].id)
  result_seen=false;recorded=false;spectate="human";fixed_clock=0;bot_clock=0
+## 친구와 함께 · 대기실: 상단 장식 배너 + 좌측 맵 프리뷰·희망 진영 + 우측 2열 참가자 카드.
+## 20:9 와이드에서도 잘리지 않도록 컨테이너 비율로만 배치한다.
+## 카드·배너용 둥근 테두리 박스(내용 여백은 카드 크기에 맞춰 작게).
+func box_style(fill: Color,radius: int,border: Color,width: int=1) -> StyleBoxFlat:
+ var style:=StyleBoxFlat.new();style.bg_color=fill;style.border_color=border;style.set_border_width_all(width);style.set_corner_radius_all(radius)
+ style.content_margin_left=10;style.content_margin_right=10;style.content_margin_top=6;style.content_margin_bottom=6
+ return style
 func room_screen() -> void:
  if room.is_empty():build("rooms");return
- var box:=page(room.name+" · 방 코드 대기실")
- var code_row:=HBoxContainer.new();code_row.add_theme_constant_override("separation",12);box.add_child(code_row)
- code_row.add_child(text("방 코드  "+String(room.get("code","")),24,D.GOLD))
- button("코드 복사",func()->void:Copycode(),false,code_row)
- button("친구 초대 문구 복사",func()->void:Copyinvite(),false,code_row)
- var spacer:=Control.new();spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;code_row.add_child(spacer)
- var back_button:=button("← 뒤로",func()->void:leave_room())
- back_button.name="RoomBack"
- code_row.add_child(back_button)
- var body:=HBoxContainer.new();body.add_theme_constant_override("separation",22);body.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(body)
- var preview:=panel(body);preview.add_child(text("월하의 서원",28,D.GOLD))
- # 새 《월하의 서원》 맵 프리뷰( 옛 달궁 썸네일 교체 )
- var image:=TextureRect.new();image.texture=load("res://assets/woo/seowon/map_preview.png");image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;image.custom_minimum_size=Vector2(380,180);preview.add_child(image)
- preview.add_child(text("도사 %d · 요괴 %d · 10분\n역할은 시작 시 무작위 배정" % [int(room.count)-int(room.get("yokai",2)),int(room.get("yokai",2))],19))
- var members:=panel(body);members.add_child(text("참가자 %d/%d"%[rules.players.size(),room.count],24,D.GOLD))
- var list:=ScrollContainer.new();list.custom_minimum_size=Vector2(0,340);list.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;members.add_child(list)
- var rows:=VBoxContainer.new();rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL;rows.add_theme_constant_override("separation",4);list.add_child(rows)
- for p in rules.players.values():
-  var row:=HBoxContainer.new();rows.add_child(row)
-  var thumb:=TextureRect.new();thumb.texture=load(C.find(p.choices.daoist).sprite);thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;thumb.custom_minimum_size=Vector2(40,40);row.add_child(thumb)
-  row.add_child(text(p.name+" · "+("준비 완료" if p.ready else "대기"),19))
- if not room.fill:members.add_child(button("빈 칸을 봇으로 채우기",func()->void:room.fill=true;setup_participants();build("room"),true))
- var buttons:=HBoxContainer.new();box.add_child(buttons)
- buttons.add_child(button("준비 취소" if rules.players.human.ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),true))
- buttons.add_child(button("게임 시작",start_match,true));buttons.add_child(button("방 나가기",leave_room))
+ background()
+ var margin:=MarginContainer.new();full(margin,ui)
+ for side in ["left","right","top","bottom"]:margin.add_theme_constant_override("margin_"+side,20)
+ var column:=VBoxContainer.new();column.add_theme_constant_override("separation",10);margin.add_child(column)
+ # ── 상단 배너
+ var banner:=PanelContainer.new();banner.add_theme_stylebox_override("panel",box_style(Color(.035,.043,.09,.94),14,D.GOLD))
+ column.add_child(banner)
+ var banner_row:=HBoxContainer.new();banner_row.add_theme_constant_override("separation",12);banner.add_child(banner_row)
+ var title:=text("월하의 서원 · 친구 방",24,Color("f4dfae"));title.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
+ title.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;banner_row.add_child(title)
+ var name_label:=text(String(room.get("name","")),17,Color("cdd4e6"));name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;banner_row.add_child(name_label)
+ var code_chip:=text("방 코드 "+String(room.get("code","")),18,Color("ffe6a8"))
+ code_chip.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ code_chip.add_theme_stylebox_override("normal",box_style(Color(.10,.08,.05,.9),10,Color(.90,.76,.48,.8)))
+ banner_row.add_child(code_chip)
+ var copy:=button("코드 복사",func()->void:Copycode(),false);copy.custom_minimum_size.y=42;banner_row.add_child(copy)
+ var invite:=button("친구 초대",func()->void:Copyinvite(),false);invite.custom_minimum_size.y=42;banner_row.add_child(invite)
+ var spacer:=Control.new();spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;banner_row.add_child(spacer)
+ var back_button:=button("← 뒤로",func()->void:leave_room());back_button.name="RoomBack";back_button.custom_minimum_size.y=42;banner_row.add_child(back_button)
+ # ── 본문
+ var body:=HBoxContainer.new();body.add_theme_constant_override("separation",14);body.size_flags_vertical=Control.SIZE_EXPAND_FILL;column.add_child(body)
+ var left:=PanelContainer.new();left.add_theme_stylebox_override("panel",box_style(Color(.03,.038,.08,.9),14,Color(.85,.72,.47,.6)))
+ left.size_flags_horizontal=Control.SIZE_EXPAND_FILL;left.size_flags_stretch_ratio=1.05;body.add_child(left)
+ var left_box:=VBoxContainer.new();left_box.add_theme_constant_override("separation",8);left.add_child(left_box)
+ left_box.add_child(text("《월하의 서원》",20,Color("f4dfae")))
+ var preview:=TextureRect.new()
+ preview.texture=load("res://assets/woo/seowon/map_preview.png")
+ preview.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;preview.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+ preview.custom_minimum_size=Vector2(0,220);preview.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ preview.clip_contents=true;left_box.add_child(preview)
+ left_box.add_child(text("도사 %d : 요괴 %d · 10분 생존전" % [int(room.count)-int(room.get("yokai",2)),int(room.get("yokai",2))],16,Color("cdd4e6")))
+ var side_heading:=text("희망 진영",16,Color("e9dfc6"));left_box.add_child(side_heading)
+ var sides:=HBoxContainer.new();sides.add_theme_constant_override("separation",8);left_box.add_child(sides)
+ for spec in [["도사 희망","daoist",Color("f2c878")],["요괴 희망","yokai",Color("b18cff")],["상관없음","any",Color("9aa4c4")]]:
+  var value:=String(spec[1])
+  var picked:=preferred_role==value
+  var picked_color: Color=spec[2]
+  var target:=button(String(spec[0]),func()->void:set_preferred_role(value),picked)
+  target.name="Side_"+value
+  target.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+  if picked:
+   target.add_theme_color_override("font_color",picked_color)
+  sides.add_child(target)
+ left_box.add_child(text("도사 6명 중 1명 · 요괴 2명 중 1명으로 배정됩니다",13,Color(.72,.76,.88,.85)))
+ var right:=PanelContainer.new();right.add_theme_stylebox_override("panel",box_style(Color(.03,.038,.08,.9),14,Color(.85,.72,.47,.6)))
+ right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;right.size_flags_stretch_ratio=1.45;body.add_child(right)
+ var right_box:=VBoxContainer.new();right_box.add_theme_constant_override("separation",8);right.add_child(right_box)
+ var members_head:=HBoxContainer.new();right_box.add_child(members_head)
+ members_head.add_child(text("참가자 %d/%d" % [rules.players.size(),int(room.count)],20,Color("f4dfae")))
+ var head_spacer:=Control.new();head_spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;head_spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;members_head.add_child(head_spacer)
+ members_head.add_child(text("초록 배지 = 준비 완료",13,Color("8fd3a8")))
+ var grid:=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",8);grid.add_theme_constant_override("v_separation",8)
+ grid.size_flags_vertical=Control.SIZE_EXPAND_FILL;right_box.add_child(grid)
+ var order: Array=rules.players.values().duplicate()
+ for index in range(int(room.count)):
+  var entry: Dictionary={}
+  if index<order.size():entry=order[index]
+  grid.add_child(room_member_card(entry,index))
+ var buttons:=HBoxContainer.new();buttons.add_theme_constant_override("separation",10);column.add_child(buttons)
+ var ready_button:=button("준비 취소" if rules.players.human.ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),true)
+ ready_button.name="RoomReady";ready_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL;buttons.add_child(ready_button)
+ var start_button:=button("게임 시작",start_match,true);start_button.name="RoomStart";start_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+ # 금빛 시작 버튼(롤의 '게임 시작' 자리)
+ for state in ["normal","hover","pressed","hover_pressed"]:
+  var fill:=Color(.96,.80,.46,1) if state=="normal" else (Color(1,.87,.58,1) if state=="hover" else Color(.84,.68,.38,1))
+  start_button.add_theme_stylebox_override(state,box_style(fill,12,Color(1,.95,.75,.95),2))
+  start_button.add_theme_color_override("font_color" if state=="normal" else "font_"+state+"_color",Color(.07,.05,.02,1))
+ buttons.add_child(start_button)
+ var leave_button:=button("방 나가기",leave_room);leave_button.size_flags_horizontal=Control.SIZE_EXPAND_FILL;buttons.add_child(leave_button)
+
+## 참가자 카드 한 장: 초상화 · 이름 · 희망 진영 · 준비 배지.
+func room_member_card(entry: Dictionary,index: int) -> Control:
+ var frame:=PanelContainer.new()
+ frame.size_flags_horizontal=Control.SIZE_EXPAND_FILL;frame.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ var filled:=not entry.is_empty()
+ var ready:=filled and bool(entry.get("ready",false))
+ var edge:=Color(.85,.72,.47,.45) if filled else Color(.5,.55,.7,.22)
+ if ready:edge=Color(.55,.85,.65,.75)
+ frame.add_theme_stylebox_override("panel",box_style(Color(.045,.052,.1,.92),12,edge))
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",10);frame.add_child(row)
+ var thumb:=TextureRect.new()
+ thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;thumb.clip_contents=true
+ thumb.custom_minimum_size=Vector2(56,56);thumb.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ if filled:
+  var look: String=String(entry.get("choices",{}).get("daoist","daoist:woochi"))
+  var spec: Dictionary=C.find(look)
+  if String(spec.get("portrait",""))!="":thumb.texture=load(String(spec.portrait))
+ row.add_child(thumb)
+ var info:=VBoxContainer.new();info.size_flags_horizontal=Control.SIZE_EXPAND_FILL;info.add_theme_constant_override("separation",2)
+ row.add_child(info)
+ var name_row:=HBoxContainer.new();name_row.add_theme_constant_override("separation",6);info.add_child(name_row)
+ var nick:=text(String(entry.get("name","빈 자리")) if filled else "빈 자리",16,Color("f0e6cf") if filled else Color(.55,.58,.7))
+ name_row.add_child(nick)
+ var badge_spacer:=Control.new();badge_spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;badge_spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;name_row.add_child(badge_spacer)
+ if ready:
+  var badge:=text("준비 완료",12,Color(.06,.14,.09))
+  badge.add_theme_stylebox_override("normal",box_style(Color(.55,.85,.65,1),8,Color(.75,1,.82,.8)))
+  name_row.add_child(badge)
+ var side_text:="상관없음"
+ if filled and String(entry.get("id",""))=="human":side_text=side_name(preferred_role)
+ var side:=text(side_text,13,Color(.74,.78,.9));info.add_child(side)
+ return frame
+
+func side_name(value: String) -> String:
+ if value=="daoist":return "희망 · 도사"
+ if value=="yokai":return "희망 · 요괴"
+ return "희망 · 상관없음"
+
+## 희망 진영을 저장하고 화면을 다시 그린다. 매칭·대기실·배정이 같은 값을 쓴다.
+func set_preferred_role(value: String) -> void:
+ preferred_role=value if value in ["daoist","yokai","any"] else "any"
+ if rules!=null:rules.preferred_role=preferred_role
+ if screen=="room":build("room")
+ elif screen=="quick" and is_instance_valid(quick):quick.refresh_sides()
+
 func characters_screen() -> void:
  # The painted roster guide; it is read-only, so nothing here writes the save.
  var codex:=preload("res://scripts/survival/codex.gd").new()
@@ -386,6 +486,14 @@ func owned_characters(team: String) -> Array:
  return result
 func selection_screen() -> void:
  # 롤 스타일 직행 선택 화면: 왼쪽 카드 · 가운데 프리뷰 · 오른쪽 상세/확정.
+ # 배정된 진영과 다른 팀 캐릭터가 선택되어 있으면 그 진영의 저장 캐릭터로 맞춘다.
+ var role: String=String(rules.players.human.get("role","daoist"))
+ if String(C.find(selection_id).get("team",""))!=role:
+  selection_id=String(storage.data.get(role,""))
+ if String(C.find(selection_id).get("team",""))!=role:
+  var catalog: Array=C.catalog(role)
+  selection_id=String(catalog[0].id) if not catalog.is_empty() else selection_id
+ if not bool(rules.players.human.confirmed):rules.select_character("human",selection_id)
  var view:=preload("res://scripts/survival/selection_view.gd").new()
  view.game=self
  view.selection_id=selection_id
@@ -399,24 +507,79 @@ func confirm_selection(id: String,_view: Node=null) -> void:
  storage.data[rules.players.human.role]=id
  storage.save()
  build("selection")
+## LoL/오버워치식 매치 로딩: 달빛 서원 배경 위에 도사 6 : 요괴 2 대진표 카드,
+## 금빛 로딩 게이지(ResourceProgress)와 팁. 가로가 넓어도 가운데 정렬을 유지한다.
 func loading_screen() -> void:
- var box:=page("월하의 서원 · 경기 준비")
- var row:=HBoxContainer.new();row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
- for team in ["daoist","yokai"]:
-  var team_box:=panel(row);team_box.add_child(text("도사팀" if team=="daoist" else "요괴팀",30,D.GOLD))
-  var names: Array[String]=[]
-  for p in rules.players.values():
-   if p.role==team:names.append(p.name+" · "+C.find(p.character).name)
-  var lead: Dictionary=rules.players.values().filter(func(p: Dictionary)->bool:return p.role==team)[0]
-  portrait(team_box,lead.character,Vector2(340,220));team_box.add_child(text("\n".join(names),18))
-  if team=="daoist":row.add_child(text("VS",64,D.GOLD))
- status_label=text("리소스 준비 중…",24);box.add_child(status_label)
- var bar:=ProgressBar.new();bar.name="ResourceProgress";bar.max_value=100;bar.custom_minimum_size.y=30;box.add_child(bar)
- box.add_child(text("TIP · 구조 버튼을 4초 유지하세요. 서클은 양 팀 모두에게 적용됩니다.",19))
+ var art:=TextureRect.new()
+ art.texture=load("res://assets/woo/seowon/map_preview.png")
+ art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+ art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ full(art,ui)
+ var dim:=ColorRect.new();dim.color=Color(.012,.018,.045,.74);dim.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(dim,ui)
+ var column:=VBoxContainer.new();column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ column.add_theme_constant_override("separation",4);ui.add_child(column)
+ var top:=Control.new();top.custom_minimum_size.y=16;top.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_child(top)
+ var heading:=text("월하의 서원 · 경기 시작 준비",30,Color("f7e3b4"))
+ heading.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
+ heading.add_theme_constant_override("outline_size",5);heading.add_theme_color_override("font_outline_color",Color(.05,.03,.07,.9))
+ heading.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(heading)
+ var sub:=text("도사 6 : 요괴 2 · 10분 생존전",14,Color("ccd4e8"));sub.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(sub)
+ var roster:=HBoxContainer.new();roster.alignment=BoxContainer.ALIGNMENT_CENTER
+ roster.size_flags_vertical=Control.SIZE_EXPAND_FILL;roster.add_theme_constant_override("separation",14)
+ column.add_child(roster)
+ roster.add_child(loading_team("daoist"))
+ var versus:=text("VS",34,Color("e8c98b"));versus.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
+ versus.vertical_alignment=VERTICAL_ALIGNMENT_CENTER;roster.add_child(versus)
+ roster.add_child(loading_team("yokai"))
+ var footer:=VBoxContainer.new();footer.add_theme_constant_override("separation",6);column.add_child(footer)
+ status_label=text("리소스 준비 중…",16,Color("e9dfc6"));status_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;footer.add_child(status_label)
+ var gauge:=CenterContainer.new();footer.add_child(gauge)
+ var bar:=ProgressBar.new();bar.name="ResourceProgress";bar.max_value=100
+ bar.custom_minimum_size=Vector2(860,18);bar.show_percentage=false
+ bar.add_theme_stylebox_override("background",box_style(Color(.03,.035,.07,.92),9,Color(.85,.72,.47,.5)))
+ bar.add_theme_stylebox_override("fill",box_style(Color(.95,.79,.45,1),9,Color(1,.92,.7,.9)))
+ gauge.add_child(bar)
+ var tip:=text("TIP · 요괴만 도사를 봉인할 수 있습니다. 도사는 사물로 둔갑해 숨으세요.",14,Color("cfd6e6"))
+ tip.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;footer.add_child(tip)
+ var bottom:=Control.new();bottom.custom_minimum_size.y=14;bottom.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_child(bottom)
+
+## 대진표 한 팀: 금빛(도사) / 보랏빛(요괴) 카드 6장·2장.
+func loading_team(team: String) -> Control:
+ var daoist:=team=="daoist"
+ var accent:=Color(.92,.78,.46) if daoist else Color(.72,.58,1)
+ var frame:=PanelContainer.new()
+ frame.add_theme_stylebox_override("panel",box_style(Color(.03,.036,.075,.82),14,Color(accent.r,accent.g,accent.b,.55)))
+ frame.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",8);frame.add_child(box)
+ var head:=text("%s팀 (%d인)" % ["도사" if daoist else "요괴",rules.yokai_count if not daoist else rules.players.size()-rules.yokai_count],16,accent)
+ head.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(head)
+ var cards:=HBoxContainer.new();cards.add_theme_constant_override("separation",7);box.add_child(cards)
+ var members: Array=rules.players.values().filter(func(p: Dictionary)->bool:return p.role==team)
+ for entry in members:cards.add_child(loading_card(entry,accent))
+ if members.is_empty():
+  var empty:=text("배정 중…",14,Color(.7,.74,.86));empty.custom_minimum_size=Vector2(96,128);cards.add_child(empty)
+ return frame
+
+## 대진표 카드 한 장: 초상화 + 닉네임 + 캐릭터명.
+func loading_card(entry: Dictionary,accent: Color) -> Control:
+ var frame:=PanelContainer.new();frame.custom_minimum_size=Vector2(92,136)
+ frame.add_theme_stylebox_override("panel",box_style(Color(.05,.055,.11,.95),12,Color(accent.r,accent.g,accent.b,.65)))
+ var box:=VBoxContainer.new();box.add_theme_constant_override("separation",3);frame.add_child(box)
+ var portrait:=TextureRect.new();portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+ portrait.custom_minimum_size=Vector2(0,74);portrait.size_flags_vertical=Control.SIZE_EXPAND_FILL
+ var character:=String(entry.get("character",""))
+ if character=="":character=String(entry.get("choices",{}).get("daoist",""))
+ var spec: Dictionary=C.find(character)
+ if String(spec.get("portrait",""))!="":portrait.texture=load(String(spec.portrait))
+ box.add_child(portrait)
+ var nick:=text(String(entry.get("name","")),13,Color("f0e6cf"));nick.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(nick)
+ var who:=text(String(spec.get("name","")),12,Color(.74,.78,.9));who.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(who)
+ return frame
+
 func load_match(ticket: int) -> void:
  build("loading");changing=true
  await get_tree().process_frame;await get_tree().process_frame
- var paths: Array=["res://scripts/survival/world.gd","res://assets/woo/worlds/plaza_ground.png"]
+ var paths: Array=["res://scripts/survival/world.gd","res://assets/woo/seowon/seowon_ground.png"]
  for path in paths:
   var error:=ResourceLoader.load_threaded_request(path)
   if error!=OK and error!=ERR_BUSY:load_error("맵 리소스 요청에 실패했습니다.");return
@@ -524,7 +687,9 @@ func hud() -> void:
   action_button.pressed.connect(func()->void:
    if rules.players.human.rescue=="" and rescue_target()=="":rules.command("human","interact"))
  action_badge=action_button.get_node("Badge")
- count_label=text("3",80,D.GOLD);ui.add_child(count_label);count_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER);count_label.offset_left=-220;count_label.offset_right=220;count_label.offset_top=-80;count_label.offset_bottom=80;count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ count_label=text("3",108,Color("ffe6a8"));ui.add_child(count_label)
+ count_label.add_theme_constant_override("outline_size",10);count_label.add_theme_color_override("font_outline_color",Color(.05,.03,.08,.92))
+ count_label.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));count_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER);count_label.offset_left=-220;count_label.offset_right=220;count_label.offset_top=-80;count_label.offset_bottom=80;count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  form_label=text("",18,Color("ffe3a8"));ui.add_child(form_label)
  form_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
  form_label.offset_left=-330;form_label.offset_right=330;form_label.offset_top=-252;form_label.offset_bottom=-214;form_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
@@ -694,7 +859,7 @@ func update_avatars() -> void:
    if info.id=="human":actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
    actor.position=target;actor.set_meta("target",target)
    avatars[id]=actor
-   var label:=text("",11);label.name="Name";label.position=Vector2(-58,-88);label.size=Vector2(116,18);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
+   var label:=text("",11);label.name="Name";label.position=Vector2(-58,-68);label.size=Vector2(116,18);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
    var mark:=preload("res://scripts/seal/color_marker.gd").new();mark.actor=actor;mark.name="Identity";actor.add_child(mark)
    var aura:=preload("res://scripts/survival/actor_aura.gd").new();aura.name="Aura";actor.add_child(aura)
   var actor: WooActor=avatars[id]
@@ -725,7 +890,12 @@ func update_avatars() -> void:
   if effect.kind!="clone":continue
   var key: String=str(effect.id);live_effects.append(key)
   if not clones.has(key):
-   var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic;clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clones[key]=clone
+   var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic
+   # 2.0.19: 분신도 본체와 같은 2.5D 인게임 원화로 그린다(예전 마스코트가 나오지 않게).
+   clone.ingame_art=true
+   clone.art_id=String(effect.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
+   if clone.art_id=="":clone.art_id=String(effect.cosmetic.get("character","woochi"))
+   clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clone.update_sprite();clones[key]=clone
   var clone: WooActor=clones[key];clone.position=effect.position;clone.facing=effect.facing;clone.velocity=Vector2(36,0);clone.gait_phase+=.15;clone.gait_weight=1
  for key in clones.keys():
   if not live_effects.has(key):clones[key].queue_free();clones.erase(key)

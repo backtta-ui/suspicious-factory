@@ -11,3 +11,4 @@ seal_identity.json
 .ci/
 __pycache__/
 *.pyc
+art_sources/ingame_walk/

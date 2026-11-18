@@ -140,11 +140,18 @@ func _header() -> void:
  place(title,Rect2(176,8,540,52))
  var sub:=label(self,"월하의 서원 · 8인 생존전",16,LC.MUTED)
  place(sub,Rect2(178,58,540,26))
- var badge:=label(self,"도사 %d명  :  요괴 %d명" % [daoists,int(r.yokai_count)],17,LC.GOLD_SOFT)
+ var mine: String=team()
+ var badge:=label(self,"내 진영 · %s" % ("도사" if mine=="daoist" else "요괴"),18,Color(0.98,0.90,0.66) if mine=="daoist" else Color(0.86,0.78,1.0),true)
+ badge.name="MySideBadge"
  badge.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  badge.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- badge.add_theme_stylebox_override("normal",LC.panel_box(Color(0.10,0.08,0.05,0.85),24,Color(0.90,0.76,0.48,0.8),1,Color(0,0,0,0),0))
- place(badge,Rect2(690,20,320,46))
+ badge.add_theme_stylebox_override("normal",LC.panel_box(Color(0.10,0.08,0.05,0.92) if mine=="daoist" else Color(0.09,0.06,0.14,0.92),24,Color(0.90,0.76,0.48,0.85) if mine=="daoist" else Color(0.72,0.58,1.0,0.85),2,Color(0,0,0,0),0))
+ place(badge,Rect2(690,20,150,46))
+ var roster:=label(self,"도사 %d명  :  요괴 %d명" % [daoists,int(r.yokai_count)],16,LC.GOLD_SOFT)
+ roster.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ roster.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ roster.add_theme_stylebox_override("normal",LC.panel_box(Color(0.10,0.08,0.05,0.85),24,Color(0.90,0.76,0.48,0.8),1,Color(0,0,0,0),0))
+ place(roster,Rect2(848,20,162,46))
  var ready:=label(self,"출발 준비",15,LC.MUTED)
  ready.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  place(ready,Rect2(1040,10,214,24))

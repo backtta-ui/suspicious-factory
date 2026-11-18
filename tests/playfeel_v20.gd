@@ -8,6 +8,7 @@ const C=preload("res://scripts/survival/characters.gd")
 const L=preload("res://scripts/survival/layout.gd")
 const Rules=preload("res://scripts/survival/rules.gd")
 const Actor=preload("res://scripts/woo/actor.gd")
+const Looks=preload("res://scripts/wardrobe/catalog.gd")
 var checks:=0
 var failures:=0
 var game: Node
@@ -166,6 +167,60 @@ func run() -> void:
   if String((child as Control).get("text")).contains("로비로") or String((child as Control).get("text")).contains("나가기"):leave=child
  check(leave!=null,"match pause menu keeps a visible lobby exit")
  game.close_popup();await frames(2)
+ # 9) 2.0.19: 봉인은 요괴 전용 · 희망 진영 배정 · 기본 스킨 1종 · 걷기 프레임
+ var bout:=Rules.new(7)
+ bout.add("human","나","daoist:woochi","yokai:gumiho")
+ for i in range(1,8):bout.add("bot-%d"%i,"봇%d"%i,"daoist:woochi","yokai:gumiho")
+ for p in bout.players.values():p.ready=true
+ bout.start()
+ var prey: Dictionary=bout.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist")[0]
+ var hunter: Dictionary=bout.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai")[0]
+ prey.position=hunter.position+Vector2(0,10);prey.captured=false;prey.eliminated=false
+ prey.facing=6;hunter.facing=2;hunter.cd.seal=0
+ check(not bout.seal(prey),"a daoist can never seal anyone")
+ check(hunter.get("captured",false)==false,"no seal happened from the daoist side")
+ hunter.position=prey.position-Vector2(0,10);hunter.facing=2;hunter.cd.seal=0;prey.immune=0
+ check(bout.seal(hunter) and prey.captured,"only a yokai seals a daoist")
+ var preferred:=Rules.new(9)
+ preferred.preferred_role="yokai"
+ preferred.add("human","나","daoist:woochi","yokai:gumiho")
+ for i in range(1,8):preferred.add("bot-%d"%i,"봇%d"%i,"daoist:woochi","yokai:gumiho")
+ for p in preferred.players.values():p.ready=true
+ preferred.start()
+ check(preferred.players.human.role=="yokai","preferred yokai side is honoured")
+ check(preferred.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai").size()==2,"yokai count stays at two")
+ var side_daoist:=Rules.new(11)
+ side_daoist.preferred_role="daoist"
+ side_daoist.add("human","나","daoist:woochi","yokai:gumiho")
+ for i in range(1,8):side_daoist.add("bot-%d"%i,"봇%d"%i,"daoist:woochi","yokai:gumiho")
+ for p in side_daoist.players.values():p.ready=true
+ side_daoist.start()
+ check(side_daoist.players.human.role=="daoist","preferred daoist side is honoured")
+ check(side_daoist.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist").size()==6,"daoist count stays at six")
+ var Market=preload("res://scripts/survival/market.gd")
+ check(Market.shop_items("skin").size()==1 and String(Market.shop_items("skin")[0].id)=="default","skin shop keeps only the default robe")
+ check(Market.skin("moon").get("id","")=="moon","legacy skin ids still resolve for saved data")
+ var manifest: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/woo/ingame/frames.json"))
+ var walk_ok:=true
+ for id in ["woochi","yeonhwa","muyeong","hongryeon","gumiho","jangsanbeom","dokkaebi","haechi"]:
+  for direction in ["front","back","left","right"]:
+   var entry: Dictionary=manifest.characters[id].directions[direction]
+   var frames_list: Array=entry.get("walk",[])
+   if frames_list.size()<2:walk_ok=false;continue
+   for frame in frames_list:
+    if not ResourceLoader.exists(String(frame.path)):walk_ok=false
+ check(walk_ok,"all eight characters have two walk frames per direction")
+ var walker:=Actor.new();walker.cosmetic=Looks.base_appearance("woochi");root.add_child(walker);walker.set_physics_process(false)
+ walker.ingame_art=true;walker.art_id="woochi";walker.update_sprite()
+ walker.gait_weight=1.0;walker.gait_phase=0.0
+ walker.ingame_sprite._process(.016)
+ var first_pose: String=String(walker.ingame_sprite.pose_name)
+ walker.gait_phase=PI*1.05;walker.ingame_sprite._process(.016)
+ var second_pose: String=String(walker.ingame_sprite.pose_name)
+ walker.gait_phase=PI*2.05;walker.ingame_sprite._process(.016)
+ var third_pose: String=String(walker.ingame_sprite.pose_name)
+ check(first_pose=="walk1" and second_pose=="idle" and third_pose=="walk2","walk cycle swaps front and back leg frames")
+ walker.queue_free();await frames(2)
  print("PLAYFEEL V2.0: ",checks," checks / ",failures," failures")
  game.queue_free();await frames(4)
  quit(1 if failures else 0)

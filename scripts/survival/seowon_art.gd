@@ -4,7 +4,9 @@ extends RefCounted
 const ATLAS=preload("res://assets/woo/v11/village_atlas.png")
 const DECOR=preload("res://assets/woo/v11/decor_atlas.png")
 const GROUND=preload("res://assets/woo/worlds/plaza_ground.png")
-const TILE=preload("res://assets/woo/seowon/ground_tile.png")
+## 2.0.19: 격자·타일 블록 없이 통으로 그린 바닥 원화(1800x1400).
+## 이동 가능 마스크·충돌은 tools/bake_seowon_ground.py가 layout.gd 수치로 1:1 합성한다.
+const GROUND_ART=preload("res://assets/woo/seowon/seowon_ground.png")
 const WALL_TEX=preload("res://assets/woo/seowon/wall_h.png")
 const L=preload("res://scripts/survival/layout.gd")
 const HANOK_CELL=Rect2(0,0,512,512)
@@ -48,68 +50,12 @@ static func draw_moon(node: Node2D) -> void:
   var p:=Vector2(1210+i*70,120+sin(i*1.7)*16);node.draw_circle(p,20+shade(i,31)*14,Color(.52,.55,.78,.16))
  for i in range(7):
   var p:=Vector2(1330+i*62,205+cos(i*1.3)*10);node.draw_circle(p,16+shade(i,41)*10,Color(.48,.5,.72,.12))
+## 바닥은 1800x1400 통 원화 한 장. 격자선·사각 패치·디버그 타일을 그리지 않는다.
+## 돌길/화단 경계·돌 턱·이끼 펄·등불 빛웅덩이는 원화에 이미 구워져 있고,
+## 그 경계는 layout.gd의 이동 가능 영역과 1:1로 맞춰져 있다.
 static func draw_base(node: Node2D) -> void:
  node.draw_rect(Rect2(Vector2(-40,-40),L.SIZE+Vector2(80,80)),Color("04070d"))
- # 1) 기본 돌바닥(원화 타일) + 이음매를 가리는 얼룩
- for gy in range(0,int(L.SIZE.y)+1,512):
-  for gx in range(0,int(L.SIZE.x)+1,512):
-   node.draw_texture_rect(TILE,Rect2(gx,gy,512,512),false)
- node.draw_rect(Rect2(Vector2(0,0),L.SIZE),Color(.04,.05,.12,.30))
- for i in range(420):
-  var p:=Vector2(shade(i,91)*L.SIZE.x,shade(i,92)*L.SIZE.y)
-  var radius:=18.0+shade(i,93)*54.0
-  var light:=shade(i,94)>.5
-  node.draw_circle(p,radius,Color(1,1,1,.020) if light else Color(.01,.02,.05,.030))
- # 2) 갈 수 있는 길/마당은 달빛 돌톤으로 밝게, 막힌 곳은 어두운 풀밭으로
- #    칸을 겹쳐 그려 경계가 격자처럼 딱딱해지지 않게 한다.
- var cell:=20.0
- var cols:=int(ceil(L.SIZE.x/cell));var rows:=int(ceil(L.SIZE.y/cell))
- var walk: Array=[]
- walk.resize(cols*rows)
- for gy in range(rows):
-  for gx in range(cols):
-   walk[gy*cols+gx]=L.can_stand(Vector2((gx+.5)*cell,(gy+.5)*cell),12)
- for gy in range(rows):
-  for gx in range(cols):
-   var t:=shade(gx,gy,11)
-   var dst:=Rect2(gx*cell-0.5,gy*cell-0.5,cell+1.0,cell+1.0)
-   if walk[gy*cols+gx]:
-    node.draw_rect(dst,Color(.78,.84,1,.15))
-    node.draw_rect(dst,Color(.95,.97,1,.05))
-   else:
-    node.draw_rect(dst,Color(.008,.020,.016,.88))
- # 3) 경계 바깥은 한 단 더 어둡게(밤 그림자)
- for gy in range(rows):
-  for gx in range(cols):
-   if walk[gy*cols+gx]:continue
-   var touching:=false
-   for d in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),Vector2i(0,-1)]:
-    var nx: int=gx+int(d.x);var ny: int=gy+int(d.y)
-    if nx<0 or ny<0 or nx>=cols or ny>=rows:continue
-    if walk[ny*cols+nx]:touching=true;break
-   if touching:node.draw_rect(Rect2(gx*cell-0.5,gy*cell-0.5,cell+1.0,cell+1.0),Color(.004,.008,.014,.35))
- # 4) 걸을 수 있는 쪽에는 밝은 돌 턱선(경계 0.1초 인지)
- for gy in range(rows):
-  for gx in range(cols):
-   if not walk[gy*cols+gx]:continue
-   var x0:=gx*cell;var y0:=gy*cell
-   for d in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),Vector2i(0,-1)]:
-    var nx: int=gx+int(d.x);var ny: int=gy+int(d.y)
-    var blocked: bool=nx<0 or ny<0 or nx>=cols or ny>=rows or not walk[ny*cols+nx]
-    if not blocked:continue
-    var a:=Color(.98,.99,1,.55)
-    if d.x==1:node.draw_line(Vector2(x0+cell,y0),Vector2(x0+cell,y0+cell),a,2.0)
-    elif d.x==-1:node.draw_line(Vector2(x0,y0),Vector2(x0,y0+cell),a,2.0)
-    elif d.y==1:node.draw_line(Vector2(x0,y0+cell),Vector2(x0+cell,y0+cell),a,2.0)
-    else:node.draw_line(Vector2(x0,y0),Vector2(x0+cell,y0),a,2.0)
- for p in [Vector2(860,720),Vector2(430,1060),Vector2(1180,860)]:glow(node,p,320,Color(.55,.62,1,.06))
- path(node,PackedVector2Array(L.PATH),34)
- draw_petals(node,180,Rect2(500,470,760,720),Color(.95,.6,.78,.42))
- # 팔각 문양 주변의 디딤돌
- for i in range(8):
-  var angle:=i*TAU/8
-  var p:=Vector2(860,720)+Vector2.from_angle(angle)*(136+14)
-  node.draw_circle(p,7,Color(.34,.33,.42,.5));node.draw_circle(p+Vector2(-1,-2),4.5,Color(.5,.49,.58,.45))
+ node.draw_texture_rect(GROUND_ART,Rect2(Vector2.ZERO,L.SIZE),false)
 static func draw_walls(node: Node2D) -> void:
  var segments: Array=[Rect2(60,120,820,14),Rect2(930,120,810,14)]
  for seg in segments:wall_sprite(node,seg)
@@ -182,19 +128,8 @@ static func draw_petals(node: Node2D,count: int,area: Rect2,color: Color) -> voi
   node.draw_circle(Vector2.ZERO,w,Color(color.r,color.g,color.b,color.a*(.35+shade(i,55)*.65)))
   node.draw_set_transform(Vector2.ZERO)
 static func draw_ground_decor(node: Node2D) -> void:
- # 연못·다리·바닥 문양은 원화 스프라이트가 맡고, 여기서는 물가 갈대만 남긴다.
+ # 연못·다리·바닥 문양·평상 마루는 원화가 맡고, 여기서는 물가 갈대만 남긴다.
  reeds(node)
- # 벤치·평상 (낮은 장애물과 같은 자리)
- for rect in L.LOW:
-  node.draw_rect(Rect2(rect.position+Vector2(0,3),rect.size).grow(3),Color(.02,.02,.05,.45))
-  node.draw_rect(rect,Color("3c3a46"));node.draw_rect(Rect2(rect.position,Vector2(rect.size.x,4)),Color("565160"))
-  node.draw_rect(rect,Color(.1,.1,.14,.7),false,1)
-  for i in range(4):
-   var p: Vector2=rect.position+Vector2(shade(i,int(rect.position.x),3)*rect.size.x,.3+shade(i,4)*.5)
-   node.draw_circle(p,2,Color(.27,.34,.28,.5))
- # 계단·디딤돌
- for i in range(5):
-  node.draw_rect(Rect2(390,600+i*8,92,5),Color(.55,.51,.58,.35))
 
 static func reeds(node: Node2D) -> void:
  for i in range(7):
