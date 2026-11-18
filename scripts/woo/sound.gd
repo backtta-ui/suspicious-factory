@@ -9,8 +9,14 @@ const CLIPS = {
  "step":preload("res://assets/audio/step.wav"),
  "jar_step":preload("res://assets/audio/jar_step.wav"),
  "spell":preload("res://assets/audio/spell.wav"),
- "dialogue":preload("res://assets/audio/dialogue.wav")
+ "dialogue":preload("res://assets/audio/dialogue.wav"),
+ "jump":preload("res://assets/audio/jump.wav"),
+ "door":preload("res://assets/audio/door.wav"),
+ "seal":preload("res://assets/audio/seal.wav"),
+ "rescue":preload("res://assets/audio/rescue.wav"),
+ "transform":preload("res://assets/audio/transform.wav")
 }
+const INGAME=preload("res://assets/audio/seowon_ingame.wav")
 const MUSIC=preload("res://assets/audio/moonlit_plaza.ogg")
 const STEPS=[preload("res://assets/audio/step.wav"),preload("res://assets/audio/step2.wav"),preload("res://assets/audio/step3.wav")]
 const SURFACES={"stone":STEPS[0],"grass":preload("res://assets/audio/grass.wav"),"dirt":preload("res://assets/audio/dirt.wav"),"wood":preload("res://assets/audio/wood.wav"),"water":preload("res://assets/audio/water.wav")}
@@ -21,6 +27,7 @@ var map_id:="gyewol_village"
 var ambience: AudioStreamPlayer
 const WIND=preload("res://assets/audio/forest_wind.ogg")
 var music: AudioStreamPlayer
+var ingame: AudioStreamWAV
 var music_enabled:=true
 var music_requested:=false
 var context:="menu"
@@ -35,12 +42,25 @@ var previous_position := Vector2.ZERO
 var tracking := false
 func _ready() -> void:
  ambience=AudioStreamPlayer.new();ambience.stream=WIND;ambience.stream.loop=true;ambience.volume_db=-25;add_child(ambience)
+ ingame=INGAME.duplicate()
+ ingame.loop_mode=AudioStreamWAV.LOOP_FORWARD;ingame.loop_begin=0
+ ingame.loop_end=int(ingame.get_length()*ingame.mix_rate)
  music=AudioStreamPlayer.new();music.stream=MUSIC;music.stream.loop=true;music.volume_db=-60;add_child(music)
  set_music_enabled(true)
  for i in range(6):
   var voice:=AudioStreamPlayer.new()
   voice.volume_db=-6
   add_child(voice);voices.append(voice)
+func set_context(value: String) -> void:
+ if context==value:return
+ context=value
+ if not is_instance_valid(music):return
+ var target: AudioStream=ingame if value=="match" else MUSIC
+ if music.stream==target:return
+ var was_playing:=music.playing
+ music.stop();music.stream=target
+ if was_playing or music_requested:
+  if music_enabled and AudioServer.get_driver_name()!="Dummy":music.play()
 func set_music_enabled(value: bool) -> void:
  music_enabled=value;music_requested=value
  if not is_instance_valid(music):return

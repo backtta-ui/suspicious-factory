@@ -26,6 +26,7 @@ var identity_concealed:=false
 var appearance_form:="human"
 var extracted_visual: SealEnvironmentAsset
 const SKILL_SHEET=preload("res://assets/woo/v20/skills.png")
+const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
 var dash_left:=0.0
 var dash_direction:=Vector2.ZERO
 var combat_frozen:=false
@@ -179,6 +180,17 @@ func _physics_process(delta: float) -> void:
 func update_sprite() -> void:
 	if npc:
 		update_npc_art()
+		return
+	if appearance_form.begins_with("seowon:"):
+		var form_kind:=appearance_form.trim_prefix("seowon:")
+		var form_texture: Texture2D=SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar)
+		var form_height:=44.0/1.5
+		sprite.texture=form_texture;sprite.region_enabled=false;sprite.centered=true
+		sprite.scale=Vector2.ONE*(form_height/form_texture.get_height())
+		sprite.offset=Vector2.ZERO;sprite.position=Vector2(0,-form_height*.5)
+		sprite.visible=true;sprite.flip_h=facing in [3,4,5]
+		if is_instance_valid(extracted_visual):extracted_visual.visible=false
+		sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
 		return
 	var region: Array
 	var ratio: float
