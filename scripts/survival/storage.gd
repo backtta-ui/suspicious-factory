@@ -9,8 +9,10 @@ func _init() -> void:
   if raw is Dictionary:
    for key in data:
     if raw.has(key) and typeof(raw[key])==typeof(data[key]):data[key]=raw[key]
+ var roster: RefCounted=preload("res://scripts/survival/characters.gd")
  for team in ["daoist","yokai"]:
-  if preload("res://scripts/survival/characters.gd").find(data[team]).is_empty():data[team]=team+":woochi"
+  # A save written before a roster change falls back to that team's first entry.
+  if roster.find(data[team]).is_empty():data[team]=roster.catalog(team)[0].id
  data.music=clampf(data.music,0,1);data.sfx=clampf(data.sfx,0,1)
 func backup_legacy() -> void:
  var dir:="user://legacy-backup-v13"
