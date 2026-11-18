@@ -74,6 +74,26 @@ func run() -> void:
 		print("V2023 RENDER DONE")
 		quit()
 		return
+	if only=="wide16":
+		root.size=Vector2i(1920,1080)
+		await frames(8)
+		for spec in [["market","shop"],["achievements","achievements"],["mail","mail"],["friends","coop"],["quick","matching"]]:
+			game.build(String(spec[0]))
+			await frames(6)
+			if String(spec[0])=="quick":game.open_quick();await wait_screen("quick");await frames(4)
+			await capture("/workspace/downloads/v2023_%s_16x9.png"%String(spec[1]))
+		game.create_room("월하의 모의전",8,true,"달빛-2319",2)
+		await wait_screen("room");await frames(6)
+		await capture("/workspace/downloads/v2023_room_16x9.png")
+		game.rules.start()
+		for entry in game.rules.players.values():
+			var role: String=String(entry.get("role","daoist"))
+			if String(entry.get("character",""))=="":entry.character=String(entry.get("choices",{}).get(role,""))
+		game.build("loading");await frames(8)
+		await capture("/workspace/downloads/v2023_loading_16x9.png")
+		print("V2023 RENDER DONE")
+		quit()
+		return
 	if only=="" or only=="selection":
 		await prepare_room()
 		await frames(8)
