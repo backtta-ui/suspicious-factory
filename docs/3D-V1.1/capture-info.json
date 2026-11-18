@@ -1,0 +1,16 @@
+{
+  "actual_3d": true,
+  "android_device": false,
+  "clips": [
+    "air",
+    "idle",
+    "interact",
+    "jump_start",
+    "land",
+    "rescue",
+    "run",
+    "sealed",
+    "walk"
+  ],
+  "platform": "Linux desktop Godot OpenGL software renderer"
+}
