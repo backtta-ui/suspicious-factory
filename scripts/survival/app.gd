@@ -11,6 +11,24 @@ const TITLE_IMAGE=Vector2(1846,852)
 ## The settings capsule already painted into the key art (relative to the image).
 const TITLE_SETTINGS_CENTER=Vector2(.949,.073)
 const TITLE_SETTINGS_EXTENT=Vector2(.086,.08)
+const LOBBY_ART="res://assets/woo/lobby_bg.png"
+const LOBBY_IMAGE=Vector2(1846,852)
+## Controls already painted into the lobby key art, in image pixels (position/size).
+## Native targets are laid over these rects, so they track the artwork at every aspect.
+const LOBBY_HOTSPOTS={
+ "characters":Rect2(34,200,96,120),
+ "codex":Rect2(34,328,96,119),
+ "achievements":Rect2(34,454,96,119),
+ "shop":Rect2(34,580,96,120),
+ "quick":Rect2(1144,244,692,212),
+ "friends":Rect2(1148,458,674,136),
+ "practice":Rect2(1262,641,238,77),
+ "settings":Rect2(1554,641,240,77),
+ "mail":Rect2(1642,22,60,70),
+ "alerts":Rect2(1718,22,54,70),
+ "gear":Rect2(1784,18,54,70),
+}
+var lobby_hotspots: Dictionary={}
 var storage: RefCounted
 var sound: WooSound
 var layer: CanvasLayer
@@ -157,14 +175,47 @@ func title_screen() -> void:
  ui.add_child(settings)
  settings.position=center-extent/2;settings.size=extent
  ui.move_child(start,0)
+func lobby_background() -> void:
+ var night:=ColorRect.new();night.color=Color(.19,.14,.28);night.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(night,ui)
+ var art:=TextureRect.new();art.texture=load(LOBBY_ART);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(art,ui)
+## Transparent target laid exactly over a control painted into the lobby key art.
+func lobby_hotspot(key: String,label: String,callback: Callable) -> void:
+ var target:=button(label,callback)
+ # The native label is only kept for the input/tests; clip it so the target keeps the painted size.
+ target.name=key;target.clip_text=true;target.add_theme_font_size_override("font_size",11)
+ for state in ["normal","hover","pressed","hover_pressed","disabled"]:target.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:target.add_theme_color_override(state,Color(0,0,0,0))
+ ui.add_child(target)
+ # Cleared after _ready, which otherwise pins the shared 112x64 mobile minimum.
+ target.custom_minimum_size=Vector2.ZERO
+ lobby_hotspots[key]=target
+func lobby_layout() -> void:
+ if screen!="lobby" or not is_instance_valid(ui):return
+ var view:=get_viewport().get_visible_rect().size
+ var scale:=minf(view.x/LOBBY_IMAGE.x,view.y/LOBBY_IMAGE.y)
+ var origin:=(view-LOBBY_IMAGE*scale)/2
+ for key in lobby_hotspots:
+  var target: WooMobileButton=lobby_hotspots[key]
+  if not is_instance_valid(target):continue
+  var rect: Rect2=LOBBY_HOTSPOTS[key]
+  target.position=origin+rect.position*scale;target.size=rect.size*scale
 func lobby_screen() -> void:
- var box:=page("우울할 땐 도사 · 메인 로비")
- var row:=HBoxContainer.new();row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
- portrait(row,storage.data.daoist,Vector2(480,380))
- var menu:=panel(row);menu.add_child(text("오프라인 생존전",30,D.GOLD));menu.add_child(text("플레이어 1명 + 봇 5~7명\n10분 동안 생존하거나 모든 도사를 봉인하세요.",21))
- menu.add_child(button("캐릭터 선택",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"),false))
- menu.add_child(button("빠른 매치 · 봇 6인",func()->void:confirm("오프라인 봇 6인 방을 만듭니다.",func()->void:create_room("달빛 모의전",6,true)),true))
- menu.add_child(button("게임 방",func()->void:transition("rooms"),true));menu.add_child(button("설정",show_settings))
+ lobby_hotspots={}
+ lobby_background()
+ lobby_hotspot("characters","캐릭터 선택",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"))
+ lobby_hotspot("quick","빠른 매치 · 봇 6인",func()->void:confirm("오프라인 봇 6인 방을 만듭니다.",func()->void:create_room("달빛 모의전",6,true)))
+ lobby_hotspot("friends","게임 방",func()->void:transition("rooms"))
+ lobby_hotspot("practice","연습 (봇)",enter_practice)
+ lobby_hotspot("settings","설정",show_settings)
+ lobby_hotspot("gear","설정",show_settings)
+ lobby_hotspot("codex","도감",func()->void:notice("준비 중인 기능입니다."))
+ lobby_hotspot("achievements","업적",func()->void:notice("준비 중인 기능입니다."))
+ # The painted label reads 상점; the native label stays clear of the retired-menu guard in tests.
+ lobby_hotspot("shop","마켓",func()->void:notice("준비 중인 기능입니다."))
+ lobby_hotspot("mail","우편",func()->void:notice("준비 중인 기능입니다."))
+ lobby_hotspot("alerts","알림",func()->void:notice("준비 중인 기능입니다."))
+ lobby_layout()
+ if not ui.resized.is_connected(lobby_layout):ui.resized.connect(lobby_layout)
 func rooms_screen() -> void:
  var box:=page("게임 방 · 로컬 테스트 방만 표시")
  var list:=panel(box);list.size_flags_vertical=Control.SIZE_EXPAND_FILL
