@@ -54,5 +54,9 @@
   "seowon_ingame.wav": {
     "sha256": "813d2e8d0883821d497e4895f1ff0520359c8033b0a9b5ac62b496724e1c5fe6",
     "bytes": 1008044
+  },
+  "lobby_night.wav": {
+    "sha256": "3c76b1ec369b719c7167608ac828fcdc3d9e21754630e5a86f9d4798e857572f",
+    "bytes": 1282952
   }
 }

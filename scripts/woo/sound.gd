@@ -17,7 +17,8 @@ const CLIPS = {
  "transform":preload("res://assets/audio/transform.wav")
 }
 const INGAME=preload("res://assets/audio/seowon_ingame.wav")
-const MUSIC=preload("res://assets/audio/moonlit_plaza.ogg")
+## 로비 음악: tools/prepare_ingame_audio.py가 numpy로 직접 합성한 무저작권 WAV.
+const MUSIC=preload("res://assets/audio/lobby_night.wav")
 const STEPS=[preload("res://assets/audio/step.wav"),preload("res://assets/audio/step2.wav"),preload("res://assets/audio/step3.wav")]
 const SURFACES={"stone":STEPS[0],"grass":preload("res://assets/audio/grass.wav"),"dirt":preload("res://assets/audio/dirt.wav"),"wood":preload("res://assets/audio/wood.wav"),"water":preload("res://assets/audio/water.wav")}
 var terrain_stream: AudioStream
@@ -28,6 +29,7 @@ var ambience: AudioStreamPlayer
 const WIND=preload("res://assets/audio/forest_wind.ogg")
 var music: AudioStreamPlayer
 var ingame: AudioStreamWAV
+var lobby: AudioStreamWAV
 var music_enabled:=true
 var music_requested:=false
 var context:="menu"
@@ -45,7 +47,10 @@ func _ready() -> void:
  ingame=INGAME.duplicate()
  ingame.loop_mode=AudioStreamWAV.LOOP_FORWARD;ingame.loop_begin=0
  ingame.loop_end=int(ingame.get_length()*ingame.mix_rate)
- music=AudioStreamPlayer.new();music.stream=MUSIC;music.stream.loop=true;music.volume_db=-60;add_child(music)
+ lobby=MUSIC.duplicate()
+ lobby.loop_mode=AudioStreamWAV.LOOP_FORWARD;lobby.loop_begin=0
+ lobby.loop_end=maxi(1,int(lobby.get_length()*lobby.mix_rate)-1)
+ music=AudioStreamPlayer.new();music.stream=lobby;music.volume_db=-60;add_child(music)
  set_music_enabled(true)
  for i in range(6):
   var voice:=AudioStreamPlayer.new()
@@ -55,7 +60,7 @@ func set_context(value: String) -> void:
  if context==value:return
  context=value
  if not is_instance_valid(music):return
- var target: AudioStream=ingame if value=="match" else MUSIC
+ var target: AudioStream=ingame if value=="match" else lobby
  if music.stream==target:return
  var was_playing:=music.playing
  music.stop();music.stream=target

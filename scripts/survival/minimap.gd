@@ -25,7 +25,7 @@ func _draw() -> void:
  var origin:=center-Vector2(L.SIZE.x,L.SIZE.y)*scale_factor*.5
  if rules!=null:
   var to_map:=func(p: Vector2)->Vector2:return origin+p*scale_factor
-  for rect in L.HARD+[L.HANOK]:
+  for rect in L.HARD:
    var a: Vector2=to_map.call(rect.position);var b: Vector2=to_map.call(rect.end)
    draw_rect(Rect2(a,b-a),Color("3a4666"))
   var pond:=L.POND

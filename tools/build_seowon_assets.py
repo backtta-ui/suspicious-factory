@@ -33,7 +33,7 @@ def chroma(path: Path) -> Image.Image:
 def main() -> None:
     ORIGINALS.mkdir(parents=True, exist_ok=True)
     for path in SRC.glob("*.png"):
-        if path.name.startswith("prop_"):
+        if path.name.startswith("prop_") or path.name in {"ground_tile.png", "vignette.png"}:
             continue
         original = ORIGINALS / path.name
         if not original.exists():
@@ -41,7 +41,8 @@ def main() -> None:
     ground = Image.open(SRC / "ground_night.png").convert("RGB")
     ground.save(SRC / "ground_night.png", optimize=True)
     ground.resize((512, 512), Image.LANCZOS).save(SRC / "ground_tile.png", optimize=True)
-    for name in ["hanok_exterior.png", "hanok_interior.png", "wall_h.png", "bamboo_cluster.png"]:
+    for name in ["hanok_exterior.png", "hanok_interior.png", "wall_h.png", "bamboo_cluster.png",
+                 "pond_night.png", "bridge_wood.png", "medallion_octagon.png"]:
         sprite = chroma(ORIGINALS / name)
         longest = max(sprite.size)
         if longest > 760:

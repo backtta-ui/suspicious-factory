@@ -1,4 +1,19 @@
-# 도사: 전우치 — V2.0 공통 로딩·화면 전환 개선 2.0.10
+# 도사: 전우치 — 2.0.17 2.5D 줌·대형 한옥 3채·로비 실화면
+
+**2.0.17 (versionCode 28)** — 인게임 기본 시점을 1.75배로 키우고, 출입 가능한 대형 한옥을 청월당·서고·별채
+세 채로 늘렸습니다. 실내에 들어가면 그 건물의 지붕이 열리고 바깥은 밤안개로 가려집니다. 연못·아치 목교·
+마당 팔각 문양은 원화 에셋으로 교체했고, 8인 캐릭터(전우치·연화·무영·홍련·구미호·장산범·도깨비·해치)는
+2.5D 아니메 스프라이트 8방향으로 새로 그렸습니다. 로비는 빠른 매치·친구 방 코드·무료 마켓·업적·우편·
+알림·설정이 모두 실제 화면으로 동작하고, 로비 BGM은 자체 합성 음원입니다. 앱 아이콘도 확정본으로 교체했습니다.
+
+[야외 1.75x 시점](docs/ingame-2.5d-b/outside.png) · [청월당 실내](docs/ingame-2.5d-b/inside.png) ·
+[서고 실내](docs/ingame-2.5d-b/inside-seogo.png) · [마당](docs/ingame-2.5d-b/courtyard.png) ·
+[마켓](docs/ingame-2.5d-b/lobby-market.png) · [빠른 매치](docs/ingame-2.5d-b/lobby-matching.png) ·
+[업적](docs/ingame-2.5d-b/lobby-achievements.png)
+
+[2.0.17 구현·검증·미완료 항목](docs/INGAME-2.5D-B.md)
+
+# 이전: 도사: 전우치 — V2.0 공통 로딩·화면 전환 개선 2.0.10
 
 Godot 4.6.3 / GDScript로 만든 Android 도술 어드벤처와 서버 권한 6~8인 추리·추격 게임입니다. 계월촌의 다섯 구역을 탐험하고 그림 속 ‘여우의 숲’에서 도깨비 세 마리와 전투한 뒤 보상을 얻어 돌아옵니다. 기존 GitHub 저장소와 Android 패키지·서명·내보내기 기반을 유지하고 게임을 전면 개편했습니다.
 
@@ -18,7 +33,7 @@ GitHub 로그인 → 아래 **Artifacts → jeon-woochi-verified-apk** → ZIP �
 
 [이전 2.0.6 APK 보존 링크](https://raw.githubusercontent.com/backtta-ui/suspicious-factory/b7c5e0536c85b0c88a6aba34d3d85fb7e84e7b65/jeon-woochi-2.0.6.apk)
 
-Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.10, versionCode는 21입니다.
+Android 10 이상 ARM64 기기용, 가로 화면입니다. 삼성 내 파일 → 다운로드에서 APK를 눌러 기존 앱 위에 업데이트 설치합니다. 패키지 ID는 `com.suspiciousfactory.game`을 유지하므로 예전 수상한 공장 앱이 새 게임으로 바뀝니다. 앱 표시 이름은 ‘도사: 전우치’, versionName은 2.0.17, versionCode는 28입니다.
 
 [V2.0 구현·검증·미완료 보고](docs/V2.0.md) · [휴대폰에서 무료 Render 서버 배포](docs/V2.0-SERVER.md)
 

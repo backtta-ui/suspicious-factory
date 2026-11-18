@@ -1,19 +1,33 @@
 extends RefCounted
 const PATH="user://survival_v13.json"
 var error:=""
-var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi","music":.7,"sfx":.8,"music_mute":false,"sfx_mute":false,"vibration":false,"quality":"보통"}
+var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi","music":.7,"sfx":.8,"music_mute":false,"sfx_mute":false,"vibration":false,"quality":"보통","sensitivity":1.0,
+ "coins":0,"gems":0,
+ "stats":{"matches":0,"wins":0,"seals":0,"rescues":0,"doors":0,"disguises":0},
+ "market":{"owned":["default"],"equipped":{"skin":"default","title":"","effect":""}},
+ "achievements":{"claimed":[]},
+ "mail":{"read":[],"claimed":[]},
+ "alerts":{"read":[]},
+ "room_codes":[]}
 func _init() -> void:
  backup_legacy()
  if FileAccess.file_exists(PATH):
   var raw=JSON.parse_string(FileAccess.get_file_as_string(PATH))
   if raw is Dictionary:
    for key in data:
-    if raw.has(key) and typeof(raw[key])==typeof(data[key]):data[key]=raw[key]
+    if not raw.has(key):continue
+    if typeof(raw[key])!=typeof(data[key]):continue
+    if raw[key] is Dictionary:
+     # A save written before a new field existed keeps the new default for it.
+     var merged: Dictionary=data[key].duplicate(true)
+     merged.merge(raw[key],true)
+     data[key]=merged
+    else:data[key]=raw[key]
  var roster: RefCounted=preload("res://scripts/survival/characters.gd")
  for team in ["daoist","yokai"]:
   # A save written before a roster change falls back to that team's first entry.
   if roster.find(data[team]).is_empty():data[team]=roster.catalog(team)[0].id
- data.music=clampf(data.music,0,1);data.sfx=clampf(data.sfx,0,1)
+ data.music=clampf(data.music,0,1);data.sfx=clampf(data.sfx,0,1);data.sensitivity=clampf(data.sensitivity,.6,1.5)
 func backup_legacy() -> void:
  var dir:="user://legacy-backup-v13"
  if FileAccess.file_exists(dir+"/manifest.json"):return
@@ -33,3 +47,12 @@ func save() -> Error:
  f.store_string(JSON.stringify(data));f.flush();var result:=f.get_error();f.close()
  if result!=OK:return result
  return DirAccess.rename_absolute(PATH+".tmp",PATH)
+## 마켓·업적·우편에서 쓰는 재화/통계 갱신. 저장은 호출한 쪽이 결정한다.
+func add_coins(value: int) -> void:data.coins=maxi(0,int(data.coins)+value)
+func stat(key: String) -> int:return int((data.stats as Dictionary).get(key,0))
+func bump(key: String,value: int=1) -> void:data.stats[key]=stat(key)+value
+func owns(item: String) -> bool:return (data.market.owned as Array).has(item)
+func own(item: String) -> void:
+ if not owns(item):(data.market.owned as Array).append(item)
+func equip(kind: String,id: String) -> void:data.market.equipped[kind]=id
+func equipped(kind: String) -> String:return String((data.market.equipped as Dictionary).get(kind,""))

@@ -7,7 +7,7 @@ const SCALE=.34
 var actor: WooActor
 func _process(_delta: float) -> void:
  if not is_instance_valid(actor):return
- visible=not actor.npc and not actor.jar and actor.appearance_form=="human"
+ visible=not actor.npc and not actor.jar and actor.appearance_form=="human" and not actor.ingame_art
  position=Vector2(0,-actor.jump_height)
  modulate=actor.sprite.modulate
  rotation=actor.sprite.rotation

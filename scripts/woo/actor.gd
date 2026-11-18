@@ -24,6 +24,17 @@ var jump_phase:="ground"
 var network_remote:=false
 var identity_concealed:=false
 var appearance_form:="human"
+## 인게임 2.5D 원화 캐릭터 사용 여부. 코드/테스트의 기존 wardrobe 경로는 그대로 둔다.
+var ingame_art:=false:
+	set(value):
+		ingame_art=value
+		if is_instance_valid(ingame_sprite):
+			ingame_sprite.visible=value
+			draw_ground=not value
+		if is_instance_valid(wardrobe_visual):wardrobe_visual.visible=not value
+		if value and is_instance_valid(sprite):sprite.visible=false
+		queue_redraw()
+var ingame_sprite: Node2D
 var extracted_visual: SealEnvironmentAsset
 const SKILL_SHEET=preload("res://assets/woo/v20/skills.png")
 const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
@@ -38,6 +49,10 @@ var npc := false
 var npc_variant := 0
 var npc_name := ""
 var tint := Color.WHITE
+## 마켓에서 장착한 도포 색(원화 위에 옅게 얹는다).
+var skin_tint := Color.WHITE
+## 인게임 원화 id(예: woochi, gumiho). 비어 있으면 cosmetic.character를 쓴다.
+var art_id := ""
 var facing := 2
 var locomotion_velocity:=Vector2.ZERO
 var gait_phase:=0.0
@@ -97,6 +112,7 @@ func _ready() -> void:
 		appearance_back=Node2D.new();add_child(appearance_back)
 		hero_rig=preload("res://scripts/woo/hero_rig.gd").new();hero_rig.actor=self;add_child(hero_rig)
 		wardrobe_visual=preload("res://scripts/art/mascot_renderer.gd").new();wardrobe_visual.actor=self;add_child(wardrobe_visual)
+		ingame_sprite=preload("res://scripts/art/ingame_sprite.gd").new();ingame_sprite.actor=self;ingame_sprite.visible=false;add_child(ingame_sprite)
 		extracted_visual=preload("res://scripts/seal/environment_asset.gd").new();extracted_visual.hide();add_child(extracted_visual)
 	npc_origin = position
 func jump() -> bool:
@@ -181,6 +197,9 @@ func update_sprite() -> void:
 	if npc:
 		update_npc_art()
 		return
+	if ingame_art:
+		if is_instance_valid(wardrobe_visual):wardrobe_visual.hide()
+		if is_instance_valid(ingame_sprite):ingame_sprite.visible=appearance_form=="" or appearance_form=="human"
 	if appearance_form.begins_with("seowon:"):
 		var form_kind:=appearance_form.trim_prefix("seowon:")
 		var form_texture: Texture2D=SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar)

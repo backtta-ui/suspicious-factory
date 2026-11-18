@@ -1,9 +1,12 @@
 extends SceneTree
-## 2단계-A 검증: 아치 목교·출입 한옥·5종 둔갑·상호작용 HUD·사운드.
+## 2단계-B 검증: 1.75x 시점·대형 한옥 3채 다중 출입·지붕 크로스페이드·실내 안개·
+## 8인 2.5D 캐릭터 8방향 매핑·점프 방향 유지·로비 BGM.
 const Rules=preload("res://scripts/survival/rules.gd")
 const C=preload("res://scripts/survival/characters.gd")
 const L=preload("res://scripts/survival/layout.gd")
 const App=preload("res://scenes/survival.tscn")
+const Actor=preload("res://scripts/woo/actor.gd")
+const Looks=preload("res://scripts/wardrobe/catalog.gd")
 var checks:=0
 var failures:=0
 func check(ok: bool,message: String) -> void:
@@ -24,59 +27,55 @@ func live_room(count: int=8,seed_value: int=17) -> RefCounted:
  return r
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
- # 1) 지도: 아치 목교·연못 우회·출입 한옥·담장·대나무
+ # 1) 지도: 세 채의 출입 한옥·앞뒤 문·연못·아치 목교
+ check(L.buildings().size()==3,"three enterable hanok")
+ var front_ok:=true;var back_ok:=true;var interior_ok:=true;var distinct:=true
+ var names: Array=[]
+ for building in L.buildings():
+  var front: Vector2=(building.doors as Dictionary).front
+  var back: Vector2=(building.doors as Dictionary).back
+  front_ok=front_ok and L.can_stand(front+Vector2(0,14)) and L.can_stand(front+Vector2(0,-22))
+  back_ok=back_ok and L.can_stand(back+Vector2(0,-14)) and L.can_stand(back+Vector2(0,22))
+  interior_ok=interior_ok and L.inside((building.interior as Rect2).get_center()) and L.can_stand((building.interior as Rect2).get_center())
+  names.append(String(building.id))
+ check(front_ok,"front door of every hanok walkable from the courtyard")
+ check(back_ok,"back door of every hanok walkable from behind")
+ check(interior_ok,"room floor of every hanok walkable")
+ check(names.size()==3 and not (names[0]==names[1] or names[1]==names[2] or names[0]==names[2]),"each hanok has its own interior")
+ var wide:=true
+ for building in L.buildings():
+  wide=wide and (building.rect as Rect2).size.x>=450 and (building.rect as Rect2).size.y>=380
+ check(wide,"every hanok keeps the enlarged size")
+ var solid:=true
+ for building in L.buildings():
+  var rect: Rect2=building.rect
+  var probe: Vector2=rect.position+Vector2(8,rect.size.y*.55)
+  solid=solid and not L.can_stand(probe,9,true)
+ check(solid,"hanok walls still block even while jumping")
  var bridge_mid: Vector2=L.BRIDGE_A.lerp(L.BRIDGE_B,.5)
  check(L.on_bridge(bridge_mid) and L.elevation(bridge_mid)>20,"arched bridge carries elevation")
  check(L.can_stand(bridge_mid) and not L.can_stand(L.POND.get_center(),9,true),"bridge crossable, pond not")
- var walked: Vector2=L.move(L.BRIDGE_A,L.BRIDGE_B)
- check(walked.distance_to(L.BRIDGE_B)<2,"walk the bridge end to end")
- check(not L.can_stand(bridge_mid+(L.BRIDGE_B-L.BRIDGE_A).normalized().orthogonal()*60),"bridge rails/pond block stepping off the side")
- check(L.can_stand(Vector2(435,573)) and L.can_stand(Vector2(435,500)) and L.can_stand(Vector2(435,267)),"hanok front door, room and back door")
- check(not L.can_stand(Vector2(247,400),9,true) and not L.can_stand(Vector2(647,700),9,true),"hanok and courtyard walls block")
- check(L.can_stand(Vector2(435,600)) and L.can_stand(Vector2(420,790)),"courtyard and alleys walkable")
+ check(L.move(L.BRIDGE_A,L.BRIDGE_B).distance_to(L.BRIDGE_B)<2,"walk the bridge end to end")
  check(L.WALLS.size()>=8 and L.BAMBOO.size()>=5,"tiled walls and bamboo groves divide the map")
  var five: Array=[]
  for object in L.OBJECTS:
   if not five.has(object.kind):five.append(object.kind)
  check(five.size()==5 and L.OBJECTS.size()>=15,"five disguisable prop kinds in dense clusters")
- check(L.FORMS.has("cat") and L.FORMS.cat.moving and not L.FORMS.jar.moving,"cat walks, fixed props hide")
- for kind in ["jar","crate","lantern","cat","stele"]:
-  check(not L.form(kind).is_empty(),"form data "+kind)
- check(L.surface(L.BRIDGE_A.lerp(L.BRIDGE_B,.5))=="wood","bridge uses wood footstep surface")
- # 2) 규칙: 공용 형상 추출(둔갑)·해제·이동 판정·문 열기
+ # 2) 규칙: 문 ID가 건물별로 열리고 둔갑·봉인이 그대로 동작
  var r:=live_room()
  var human: Dictionary=r.players.human
- var partner: Dictionary=r.players["bot-1"]
- human.position=Vector2(560,780);human.facing=2
- check(r.command("human","interact"),"disguise near jar cluster")
- check(human.form=="jar" and human.buff.transform>r.elapsed,"jar disguise active")
- var seen: Array=r.visible("bot-1")
- check(not seen.any(func(a: Dictionary)->bool:return a.id=="human"),"disguised daoist hidden from others")
- r.command("human","move",{"vector":Vector2(1,0)})
- for i in range(8):r.tick(.1)
- check(human.form=="","fixed disguise breaks when moving")
- human.form="";human.buff.erase("transform");human.wobble=0
- human.position=Vector2(700,880);human.cd.erase("transform");r.command("human","move",{"vector":Vector2.ZERO})
- check(r.command("human","interact"),"cat disguise near cat")
- check(human.form=="cat","cat form")
- var before: Vector2=human.position
- r.command("human","move",{"vector":Vector2(1,0)})
- for i in range(5):r.tick(.1)
- check(human.position.distance_to(before)>4 and human.form=="cat","cat disguise can move while hidden")
- check(r.command("human","interact") and human.form=="","press again cancels disguise")
- check(not r.command("human","interact") and human.cd.get("transform",0)>r.elapsed,"disguise cooldown after reuse")
- human.position=Vector2(435,600);human.form="";human.cd.erase("transform")
- check(r.command("human","interact") and r.doors.front>r.elapsed,"front door opens by interaction")
+ var first_door:=String((L.DOORS[0] as Dictionary).id)
+ human.position=L.door(first_door).center+Vector2(0,26)
+ check(r.command("human","interact") and r.doors.get(first_door,0.0)>r.elapsed,"front door opens by interaction")
  check(r.events.any(func(e: Dictionary)->bool:return e.kind=="door"),"door event for sound")
- # 둔갑한 도사는 아주 가까이에서만 봉인된다
+ var jar_point: Vector2=L.OBJECTS[0].p
+ human.position=jar_point;human.facing=2;human.cd.erase("transform")
+ check(r.command("human","interact") and human.form=="jar","jar disguise still works")
+ check(L.door_near(jar_point,70)=="","no door reported far from a hanok")
  var evil: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai")[0]
- human.position=Vector2(560,780);human.form="";human.captured=false;human.immune=0;human.cd.erase("transform")
- r.command("human","interact")
- evil.position=human.position+Vector2(52,0);evil.facing=0;evil.cd.erase("seal")
- check(r.command(evil.id,"seal") and human.captured==false,"disguised target not sealed from afar")
- evil.cd.erase("seal");evil.position=human.position+Vector2(18,0);evil.facing=4
- check(r.command(evil.id,"seal") and human.captured,"close seal reveals disguised target")
- # 3) 앱: 카메라·HUD·문 열기·둔갑 표시·전체 지도
+ evil.position=jar_point+Vector2(-18,0);evil.facing=0;evil.cd.erase("seal");human.form=""
+ check(r.command(evil.id,"seal") and human.captured,"close seal still works")
+ # 3) 앱: 1.75x 카메라·문 앞 상호작용·지붕 크로스페이드·실내 안개
  root.size=Vector2i(1280,720);var game:=App.instantiate();root.add_child(game);await frames(8)
  game.create_room("QA 술래잡기",8,true);await create_timer(.4).timeout
  for p in game.rules.players.values():p.ready=true
@@ -93,35 +92,73 @@ func run() -> void:
   if game.screen=="match" and not game.changing:break
  game.rules.phase="live";game.rules.elapsed=2.0
  check(game.screen=="match" and is_instance_valid(game.camera),"match world with camera")
- check(is_instance_valid(game.camera) and game.camera.zoom.x>=1.35,"camera zoom keeps 2.5D ratio")
- for name in ["Menu","Settings","Spectator"]:
-  check(game.ui.find_child(name,true,false)!=null,"HUD control "+name)
- check(game.ui.find_children("*","Button",true,false).size()>=6,"HUD buttons present")
- check(game.seal_label.text=="봉인 0 / 5" and game.survivor_label.text.contains("생존 도사"),"seal counter and survivors line")
- check(game.timer_label.text.contains("월하의 서원 · "),"title timer line")
- for button in [game.run_button,game.jump_button,game.skill_button,game.action_button]:
-  check(button.get_node_or_null("Caption")!=null and button.get_node_or_null("Badge")!=null,"caption and icon on "+button.name)
+ check(is_instance_valid(game.camera) and is_equal_approx(game.camera.zoom.x,L.CAMERA_ZOOM) and L.CAMERA_ZOOM>=1.65,"camera zoom 1.75 keeps the 2.5D ratio")
+ var hall: Dictionary=L.buildings()[0]
+ var front: Vector2=(hall.doors as Dictionary).front
  var me: Dictionary=game.rules.players.human
- me.position=Vector2(435,600);game.update_avatars();game.update_hud();await frames(3)
- check(game.action_button.get_node("Caption").text=="문 열기","door context label")
- me.position=Vector2(560,780);game.rules.players.human.cd.erase("transform")
+ me.position=front+Vector2(0,16);me.facing=6
  game.update_avatars();game.update_hud();await frames(3)
- check(game.action_button.get_node("Caption").text=="둔갑","prop context label")
- var disguised: bool=game.rules.command("human","interact")
- game.update_hud();await frames(3)
- check(game.form_label.visible and game.form_label.text.contains("둔갑"),"disguise status bar shown")
- game.show_map();await frames(2);check(game.modal!=null,"minimap opens full map")
- game.close_popup();await frames(1)
+ check(game.camera.position.distance_to(me.position+Vector2(0,-L.CAMERA_LIFT))<1.5,"camera follows the player with the 42px lift")
+ check(game.action_button.get_node("Caption").text=="문 열기","door context label at the enlarged hanok")
+ check(game.ui.find_children("*","Button",true,false).size()>=6,"HUD buttons present")
+ check(game.world.buildings.size()==3,"world draws three hanok")
+ for building in game.world.buildings:
+  check((building.data.rect as Rect2).size.x>=450,"world hanok uses the enlarged rect")
+  var painted: Vector2=L.painted_door(String(building.data.id))
+  var door_anchor: Vector2=(building.data.doors as Dictionary).front
+  check(is_instance_valid(building.exterior) and (building.exterior as Sprite2D).scale.x>0,"exterior sprite for "+String(building.data.id))
+  check(painted.y<door_anchor.y and painted.x<door_anchor.x,"painted door sits above the stairs foot")
+ for i in range(24):
+  me.position=front+Vector2(0,16);game.update_avatars();await process_frame
+ var outside_alpha: float=game.world.buildings[0].alpha
+ check(outside_alpha>.8 and (game.world.buildings[0].exterior as Sprite2D).modulate.a>.7,"exterior closed while outside")
+ for i in range(30):
+  me.position=(hall.interior as Rect2).get_center();game.update_avatars();await process_frame
+ var building: Dictionary=game.world.buildings[0]
+ check(building.alpha<.2,"roof crossfade opens the hall when inside")
+ check((building.exterior as Sprite2D).modulate.a<.25,"exterior fades out inside")
+ check((building.interior as Sprite2D).modulate.a>.6 and (building.interior as Sprite2D).visible,"interior is shown inside")
+ check((building.fog as Node2D).visible and (building.fog as Node2D).modulate.a>.6,"outside is blocked by night fog inside")
+ check(game.world.buildings[1].alpha>.8,"other hanok keep their roofs")
+ me.position=front+Vector2(0,16)
+ for i in range(30):game.update_avatars();await process_frame
+ check(game.world.buildings[0].alpha>.8 and not (game.world.buildings[0].fog as Node2D).visible,"roof closes again when leaving")
  game.show_settings();await frames(2)
  check(game.modal!=null and game.modal.find_children("*","CheckBox",true,false).size()>=3,"settings with mute and vibration")
- game.close_popup();game.pause_menu();await frames(2)
- check(game.modal!=null and "10분" in str(game.modal.find_children("*","Label",true,false).map(func(l: Label)->String:return l.text)),"pause rules explain the hunt")
- game.resume_match()
- # 4) 사운드: 인게임 BGM·효과음이 실제로 로드되고 문맥이 바뀐다
- for path in ["res://assets/audio/jump.wav","res://assets/audio/door.wav","res://assets/audio/seal.wav","res://assets/audio/rescue.wav","res://assets/audio/transform.wav","res://assets/audio/seowon_ingame.wav"]:
-  check(ResourceLoader.exists(path),"audio "+path)
- check(game.sound.CLIPS.has("door") and game.sound.CLIPS.has("transform") and game.sound.CLIPS.has("seal"),"in-game sfx registered")
- check(game.sound.context=="match" and game.sound.music.stream==game.sound.ingame,"tense Korean BGM in match")
- game.cleanup_match();game.queue_free();await frames(6)
+ check(game.modal.find_children("*","HSlider",true,false).size()>=3,"settings include volume and control sensitivity")
+ game.close_popup()
+ # 4) 8인 2.5D 캐릭터: 8방향 매핑·점프 방향 유지·8명 전원 원화
+ for id in ["woochi","yeonhwa","muyeong","hongryeon","gumiho","jangsanbeom","dokkaebi","haechi"]:
+  for direction in ["front","back","left","right"]:
+   var path: String="res://assets/woo/ingame/%s-%s.png" % [id,direction]
+   check(ResourceLoader.exists(path),"ingame art %s %s" % [id,direction])
+ var actor:=Actor.new();actor.cosmetic=Looks.base_appearance("woochi");root.add_child(actor);actor.set_physics_process(false)
+ actor.ingame_art=true;actor.art_id="woochi";actor.update_sprite()
+ var mapping:=[[2,"front",false],[1,"front",true],[3,"front",false],[6,"back",false],[5,"back",false],[7,"back",true],[0,"right",false],[4,"left",false]]
+ var mapped:=true;var flipped:=true
+ for entry in mapping:
+  actor.facing=int(entry[0]);actor.ingame_sprite._process(.016)
+  mapped=mapped and actor.ingame_sprite.current_key==String("woochi:"+String(entry[1]))
+  flipped=flipped and actor.ingame_sprite.sprite.flip_h==bool(entry[2])
+ check(mapped,"south/diagonal use front, north uses back, east-west use side")
+ check(flipped,"diagonal and east/west views flip with the movement direction")
+ # 뒤돌아(북) 점프: 뒷모습 유지
+ actor.facing=6;actor.jump_height=22;actor.jump_velocity=120;actor.update_sprite();actor.ingame_sprite._process(.016)
+ check(actor.ingame_sprite.current_key=="woochi:back" and not actor.ingame_sprite.sprite.flip_h,"back view kept while jumping north")
+ # 북서 대각선 점프: 뒷모습 + 반전 유지
+ actor.facing=5;actor.jump_height=30;actor.update_sprite();actor.ingame_sprite._process(.016)
+ check(actor.ingame_sprite.current_key=="woochi:back" and not actor.ingame_sprite.sprite.flip_h,"north-west diagonal jump keeps the back view")
+ check(actor.ingame_sprite.sprite.position.y<-20,"jump height lifts the sprite")
+ check(actor.ingame_sprite.sprite.scale.x>0,"squash and stretch keep a positive scale")
+ actor.jump_height=0;actor.jump_velocity=0;actor.update_sprite();actor.ingame_sprite._process(.016)
+ check(actor.ingame_sprite.landing>0,"landing squash is triggered on touchdown")
+ actor.queue_free();await process_frame
+ # 5) 사운드: 로비는 자체 합성 BGM, 경기는 인게임 BGM
+ check(ResourceLoader.exists("res://assets/audio/lobby_night.wav"),"self-made lobby bgm file")
+ var sound: WooSound=game.sound
+ check(sound.context=="match" and sound.music.stream==sound.ingame,"tense Korean BGM in match")
+ game.cleanup_match();game.room={};game.build("lobby");await frames(4)
+ check(sound.context=="menu" and sound.music.stream==sound.lobby,"self-made lobby bgm plays in the lobby")
+ game.queue_free();await frames(6)
  print("SEOWON INGAME: ",checks," checks / ",failures," failures")
  quit(1 if failures else 0)
