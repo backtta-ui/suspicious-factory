@@ -1,6 +1,6 @@
 extends SceneTree
-## 2단계-B 로비 검증: 모든 버튼이 실제 화면으로 이어지고, 매칭·방 코드·마켓·
-## 업적·우편·알림·설정이 실제 데이터(저장)까지 바뀌는지 확인한다.
+## 로비 검증: 모든 버튼이 실제 화면으로 이어지고, 빠른 매치(도사6:요괴2 고정)·스킨 상점·
+## 업적·우편·알림·친구 방 코드·설정이 실제 데이터(저장)까지 바뀌는지 확인한다.
 const App=preload("res://scenes/survival.tscn")
 const Market=preload("res://scripts/survival/market.gd")
 const Storage=preload("res://scripts/survival/storage.gd")
@@ -13,6 +13,16 @@ func check(ok: bool,message: String) -> void:
  if not ok:failures+=1;push_error(message)
 func frames(n: int=5) -> void:
  for i in range(n):await process_frame
+## 화면의 모든 버튼 글자를 모아 금지된 선택지가 남아 있지 않은지 확인한다.
+func button_texts(node: Node) -> String:
+ var out:=""
+ for child in node.find_children("*","Button",true,false):
+  if child is Button:out+=String(child.text)+"|"
+ return out
+func wait_screen(game: Node,target: String) -> void:
+ for i in range(120):
+  await process_frame
+  if game.screen==target and not game.changing:return
 func _initialize() -> void:run.call_deferred()
 func run() -> void:
  root.size=Vector2i(1280,720)
@@ -25,50 +35,77 @@ func run() -> void:
  for destination in ["market","achievements","mail","alerts","friends"]:
   game.build(destination);await frames(2)
   check(game.screen==destination and game.modal==null,"lobby button opens real screen "+destination)
+  check(game.ui.find_children("*","Control",true,false).size()>20,"screen "+destination+" is built by the shared lobby frame")
  game.build("lobby");await frames(2)
- # 2) 빠른 매치: 8인 슬롯이 차고 대기방 → 경기 준비까지
- game.open_quick();await create_timer(.4).timeout
- check(game.screen=="quick" and game.match_slots>=1,"quick match screen opens")
- for i in range(12):game.advance_matching(.5);await frames(1)
- await create_timer(.4).timeout
+ # 2) 빠른 매치: 도사 6 : 요괴 2 고정, 8인 인장 슬롯, 대기방 → 경기 준비
+ game.open_quick();await wait_screen(game,"quick")
+ check(game.screen=="quick" and is_instance_valid(game.quick),"quick match screen opens")
+ check(game.quick.slots.size()==8,"quick match draws eight seal slots")
+ check(not button_texts(game.quick).contains("요괴 6"),"no daoist2:yokai6 choice remains in the quick match screen")
+ check(String(game.quick.status_label.text).contains("/ 8"),"matching progress reads n / 8")
+ for i in range(3):game.advance_matching(.5);await frames(1)
+ check(game.match_slots>=2,"matching fills slots over time")
+ for i in range(40):game.advance_matching(.2);await frames(1)
+ await wait_screen(game,"room")
  check(game.screen=="room","quick match fills eight slots and enters the room")
  check(game.rules.players.size()==8 and String(game.room.code)!="","quick room has eight players and a share code")
+ check(int(game.room.yokai)==2 and game.rules.yokai_count==2,"quick match composition is fixed to two yokai")
  game.rules.players.human.ready=true;game.rules.start()
  check(game.rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai").size()==2,"default composition is 2 yokai of 8")
- # 3) 친구와 함께: 코드로 입장, 8인 도사2:요괴6 구성
- game.join_with_code("달빛-4821");await create_timer(.4).timeout
+ # 3) 친구와 함께: 코드로 입장, 8인 도사6:요괴2 구성
+ game.join_with_code("달빛-4821");await wait_screen(game,"room")
  check(game.screen=="room" and String(game.room.code)=="달빛-4821","join with a friend code keeps that code")
  check((game.storage.data.room_codes as Array).has("달빛-4821"),"recent room code is remembered")
+ check(game.rules.yokai_count==2,"friend rooms use the same two-yokai composition")
  game.join_with_code("abc");await frames(3)
  check(game.modal!=null,"too short room code is rejected with guidance")
  game.close_popup()
- game.create_room("여섯 요괴",8,true,"달빛-6006",6);await create_timer(.4).timeout
- check(game.rules.yokai_count==6,"eight-player room can use six yokai")
+ game.build("friends");await frames(3)
+ check(game.screen=="friends","friends screen opens")
+ check(not button_texts(game.ui).contains("요괴 6"),"friend screen no longer offers the six-yokai room")
+ game.create_room("기록",8,true);await wait_screen(game,"room")
  for p in game.rules.players.values():p.ready=true
  game.rules.start()
- check(game.rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai").size()==6,"six yokai composition applies at start")
- check(game.rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist").size()==2,"two daoists accompany six yokai")
- # 4) 마켓: 무료 재화로 해금·장착하고 저장에 남는다
- game.storage.data.coins=2000;game.build("market");await frames(3)
- check(game.screen=="market","market screen opens")
+ check(game.rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist").size()==6,"six daoists accompany two yokai")
+ # 4) 캐릭터 & 스킨 상점: 무료 재화로 해금·장착, 캐릭터 해금, 저장 유지
+ game.storage.data.coins=3000;game.build("market");await frames(4)
+ check(game.screen=="market" and is_instance_valid(game.shop),"character and skin shop opens")
+ check(game.shop.cards.size()==6,"shop shows a two by three gold card grid")
+ check(is_instance_valid(game.ui.find_child("ShopTab_character",true,false)),"shop has a character tab")
+ check(is_instance_valid(game.ui.find_child("ShopTab_skin",true,false)) and is_instance_valid(game.ui.find_child("ShopTab_aura",true,false)),"shop has skin and title tabs")
  var moon: Dictionary=Market.SKINS[1]
  game.market_buy(moon,"skin");await frames(2)
  check(game.storage.owns("moon") and game.storage.equipped("skin")=="moon","skin unlock and equip")
- check(int(game.storage.data.coins)==2000-int(moon.price),"skin price is taken from coins")
+ check(int(game.storage.data.coins)==3000-int(moon.price),"skin price is taken from coins")
  var reload:=Storage.new()
  check(reload.equipped("skin")=="moon" and reload.owns("moon"),"market state persists to disk")
  game.storage.data.coins=100;game.market_buy(Market.SKINS[4],"skin");await frames(2)
  check(game.modal!=null and not game.storage.owns("ember"),"not enough coins is explained, nothing is bought")
  game.close_popup()
  var title: Dictionary=Market.TITLES[2]
- game.storage.data.coins=2000;game.market_buy(title,"title");await frames(2)
+ game.storage.data.coins=3000
+ game.market_buy(title,"title");await frames(2)
  check(game.storage.equipped("title")=="first_seal","title equips and shows in state")
- var effect: Dictionary=Market.EFFECTS[1]
- game.market_buy(effect,"effect");await frames(2)
+ game.market_buy(Market.EFFECTS[1],"effect");await frames(2)
  check(game.storage.equipped("effect")=="gold","aura effect equips")
+ # 캐릭터 해금: 잠긴 캐릭터를 코인으로 사고 그 팀 대표로 장착한다
+ var locked: String="daoist:muyeong"
+ check(not game.storage.owns_character(locked),"locked character starts unowned")
+ var before_coins:=int(game.storage.data.coins)
+ game.shop_buy_character(locked);await frames(2)
+ check(game.storage.owns_character(locked),"character unlock is recorded")
+ check(String(game.storage.data.daoist)==locked,"unlocked character becomes the team representative")
+ check(int(game.storage.data.coins)==before_coins-Market.character_price(locked),"character price is taken from coins")
+ var owned_now:=Storage.new()
+ check(owned_now.owns_character(locked),"character unlock persists to disk")
+ check(game.owned_characters("daoist").has(locked),"owned character appears in the selection pool")
+ game.storage.data.coins=50;game.shop_buy_character("yokai:haechi");await frames(2)
+ check(game.modal!=null and not game.storage.owns_character("yokai:haechi"),"character purchase without coins is refused")
+ game.close_popup()
  # 5) 업적·우편·알림: 실제 진행도와 보상
  game.storage.data.stats.matches=3;game.storage.data.coins=0
- game.build("achievements");await frames(2)
+ game.build("achievements");await frames(3)
+ check(game.screen=="achievements","achievements scroll screen opens")
  var before:=int(game.storage.data.coins)
  game.claim_achievement(Market.ACHIEVEMENTS[0]);await frames(2)
  check(int(game.storage.data.coins)==before+int(Market.ACHIEVEMENTS[0].reward),"achievement reward is paid")
@@ -79,7 +116,8 @@ func run() -> void:
  game.storage.data.stats.matches=0
  game.claim_achievement(Market.ACHIEVEMENTS[1]);await frames(2)
  check(not (game.storage.data.achievements.claimed as Array).has("ten_matches"),"unfinished achievement is not claimable")
- game.build("mail");await frames(2)
+ game.build("mail");await frames(3)
+ check(game.screen=="mail","mail screen opens")
  var mail: Dictionary=Market.MAILS[0]
  game.open_mail(mail);await frames(2)
  check((game.storage.data.mail.read as Array).has("welcome"),"opening mail marks it read")
@@ -99,7 +137,7 @@ func run() -> void:
  game.close_popup()
  # 7) 경기 기록이 업적 진행도와 코인으로 이어진다
  game.storage.data.stats.matches=0;game.storage.data.coins=0
- game.create_room("기록",6,true);await create_timer(.4).timeout
+ game.create_room("기록",6,true);await wait_screen(game,"room")
  for p in game.rules.players.values():p.ready=true
  game.rules.start()
  game.rules.winner=game.rules.players.human.role

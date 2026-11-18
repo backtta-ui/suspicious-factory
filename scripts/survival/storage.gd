@@ -5,6 +5,7 @@ var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi
  "coins":0,"gems":0,
  "stats":{"matches":0,"wins":0,"seals":0,"rescues":0,"doors":0,"disguises":0},
  "market":{"owned":["default"],"equipped":{"skin":"default","title":"","effect":""}},
+ "characters":{"owned":["daoist:woochi","daoist:yeonhwa","yokai:gumiho","yokai:jangsanbeom"]},
  "achievements":{"claimed":[]},
  "mail":{"read":[],"claimed":[]},
  "alerts":{"read":[]},
@@ -56,3 +57,7 @@ func own(item: String) -> void:
  if not owns(item):(data.market.owned as Array).append(item)
 func equip(kind: String,id: String) -> void:data.market.equipped[kind]=id
 func equipped(kind: String) -> String:return String((data.market.equipped as Dictionary).get(kind,""))
+## 캐릭터 해금 상태. 무료 캐릭터는 처음부터 보유한다.
+func owns_character(id: String) -> bool:return (data.characters.owned as Array).has(id)
+func own_character(id: String) -> void:
+ if not owns_character(id):(data.characters.owned as Array).append(id)
