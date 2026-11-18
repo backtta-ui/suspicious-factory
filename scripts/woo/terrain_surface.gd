@@ -9,6 +9,7 @@ static func at(p: Vector2,map_id: String="gyewol_village") -> String:
  if map_id=="moon_palace":return "stone"
  if map_id=="red_sea":return "dirt"
  if map_id=="fox_forest":return preload("res://scripts/woo/forest_layout.gd").surface(p)
+ if map_id=="seowon":return preload("res://scripts/survival/layout.gd").surface(p)
  # Match terrain.gd's actual baked paving and water.gd's STONE bridge.
  if Rect2(1480,1274,440,52).has_point(p):return "stone"
  for area in [[Vector2(1080,650),Vector2(440,250)],[Vector2(1900,410),Vector2(390,190)],[Vector2(1850,910),Vector2(510,165)]]:

@@ -1,4 +1,4 @@
-extends WooMobileButton
+extends "res://scripts/survival/skill_button.gd"
 signal ability(direction: Vector2)
 signal tip_requested
 signal aimed(direction: Vector2,cancelled: bool)
@@ -17,6 +17,7 @@ func _process(delta: float) -> void:
  if elapsed>.65 and not dragged and not explained:explained=true;tip_requested.emit()
 func up(inside: bool) -> void:
  var active:=held;cancel()
+ scale=Vector2.ONE
  if not active or explained or abort:return
  if directional:
   ability.emit(aim)

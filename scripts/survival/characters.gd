@@ -82,6 +82,11 @@ static func find(id: String) -> Dictionary:
   for data in catalog(team):
    if data.id==id:return data.duplicate(true)
  return {}
+## 인게임 액터 구분용 색. 배경과 겹치지 않는 은은한 기운으로만 쓴다.
+const TINTS={
+ "daoist:woochi":Color("ffe0a8"),"daoist:yeonhwa":Color("ffadc4"),"daoist:muyeong":Color("a9b8ff"),"daoist:hongryeon":Color("ff9a76"),
+ "yokai:gumiho":Color("ff9ee0"),"yokai:jangsanbeom":Color("8fc8ff"),"yokai:dokkaebi":Color("ffc46b"),"yokai:haechi":Color("7ef0d0")}
+static func tint(id: String) -> Color:return TINTS.get(id,Color.WHITE)
 static func look(id: String) -> Dictionary:
  var data:=find(id)
  return Looks.base_appearance(data.get("body","woochi"))

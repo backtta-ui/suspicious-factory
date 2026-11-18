@@ -43,7 +43,7 @@ func think(delta: float) -> void:
    return
   if wait<=0 and rules.C.find(me.character).active=="transform":
    if command("skill"):wait=5;command("move",{"vector":Vector2.ZERO});return
-  var points: Array=[Vector2(450,430),Vector2(900,740),Vector2(1550,780),Vector2(450,1000),Vector2(1360,1200),Vector2(1320,350),Vector2(210,1100)]
+  var points: Array=[Vector2(435,700),Vector2(860,720),Vector2(1260,1010),Vector2(620,1000),Vector2(1040,520),Vector2(480,1100),Vector2(1250,880)]
   var target: Vector2=rules.L.safe(points[(index+patrol)%points.size()])
   if target.distance_to(zone.center)>zone.radius-70:target=rules.L.safe(zone.center+Vector2.from_angle(index*TAU/8)*zone.radius*.55)
   if p.distance_to(target)<50:patrol+=1

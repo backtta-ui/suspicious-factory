@@ -4,7 +4,7 @@ extends RefCounted
 const Village=preload("res://scripts/woo/village_layout.gd")
 const Forest=preload("res://scripts/woo/forest_layout.gd")
 const REGISTRY={
- "seowon":{"playable":false,"survival_playable":true,"name":"월하의 서원","size":Vector2(1800,1400),"spawn":Vector2(900,760),"altar":Vector2(900,760),"jail":Vector2(900,760),"stations":[Vector2(450,430),Vector2(900,700),Vector2(1500,800),Vector2(450,1000)],"layout":"res://scripts/survival/layout.gd","scene":"res://scripts/survival/world.gd"},
+ "seowon":{"playable":false,"survival_playable":true,"name":"월하의 서원","size":Vector2(1800,1400),"spawn":Vector2(860,720),"altar":Vector2(860,720),"jail":Vector2(860,720),"stations":[Vector2(860,720),Vector2(435,760),Vector2(1250,880),Vector2(430,1060)],"layout":"res://scripts/survival/layout.gd","scene":"res://scripts/survival/world.gd"},
  "village":{"playable":true,"name":"달빛 계월촌","size":Vector2(3400,1900),"spawn":Vector2(900,690),"altar":Vector2(1140,670),"jail":Vector2(2380,1210),"stations":[Vector2(900,700),Vector2(1180,950),Vector2(1840,650),Vector2(2260,900),Vector2(2640,560),Vector2(1440,1300),Vector2(2200,1120),Vector2(780,980)],"layout":"res://scripts/woo/village_layout.gd","scene":"res://scripts/woo/village.gd"},
  "forest":{"playable":true,"name":"안개 속 여우의 숲","size":Vector2(3000,2160),"spawn":Vector2(320,780),"altar":Vector2(1150,690),"jail":Vector2(2520,1400),"stations":[Vector2(490,690),Vector2(980,580),Vector2(1320,1080),Vector2(1800,1100),Vector2(2180,1080),Vector2(2460,700),Vector2(2600,1300),Vector2(2650,1690)],"layout":"res://scripts/woo/forest_layout.gd","scene":"res://scripts/woo/forest.gd"}}
 const KINDS={
@@ -17,7 +17,8 @@ const KINDS={
  "dummy":{"name":"허수아비","type":"object","radius":7.0,"size":Vector2(27,35),"trackable":true},
  "cat":{"name":"고양이","type":"animal","radius":0.0,"size":Vector2(22,23),"trackable":true},
  "dog":{"name":"강아지","type":"animal","radius":0.0,"size":Vector2(24,25),"trackable":true},
- "chicken":{"name":"닭","type":"animal","radius":0.0,"size":Vector2(18,22),"trackable":true}}
+ "chicken":{"name":"닭","type":"animal","radius":0.0,"size":Vector2(18,22),"trackable":true},
+ "stele":{"name":"비석","type":"object","radius":10.0,"size":Vector2(26,38),"trackable":true}}
 var id: String
 var data: Dictionary
 var layout: Script

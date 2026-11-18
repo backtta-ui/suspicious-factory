@@ -1,7 +1,7 @@
 extends RefCounted
 const PATH="user://survival_v13.json"
 var error:=""
-var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi","music":.7,"sfx":.8,"vibration":false,"quality":"보통"}
+var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi","music":.7,"sfx":.8,"music_mute":false,"sfx_mute":false,"vibration":false,"quality":"보통"}
 func _init() -> void:
  backup_legacy()
  if FileAccess.file_exists(PATH):

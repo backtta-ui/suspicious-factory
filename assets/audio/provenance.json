@@ -30,5 +30,29 @@
   "button.wav": {
     "sha256": "fb20b8734334ad82d4476389b715d5ef5e17c79928aa56be7fbd8e5bb6c6b059",
     "bytes": 11564
+  },
+  "jump.wav": {
+    "sha256": "a37a961732a4c0034034fc2d121bcaa86a8b238ec41568f6564598b579850b83",
+    "bytes": 13274
+  },
+  "door.wav": {
+    "sha256": "9ed6cf6f04196698fae59387374641eb58434e4652124f848b6a215bf5447721",
+    "bytes": 24298
+  },
+  "seal.wav": {
+    "sha256": "6ec650416d63c97c7de0e667a68c28fc2ff18e71f9c4db6e811ead679dcaaea6",
+    "bytes": 48554
+  },
+  "rescue.wav": {
+    "sha256": "a0b17386f9b5b71ad765ea3b79110c3e2588caf372e5cc0fff55ec3e4e9d2083",
+    "bytes": 39734
+  },
+  "transform.wav": {
+    "sha256": "d301e1cef945215a3e096243d75dda2e862818bd917348a15c7616faf0761d94",
+    "bytes": 26504
+  },
+  "seowon_ingame.wav": {
+    "sha256": "813d2e8d0883821d497e4895f1ff0520359c8033b0a9b5ac62b496724e1c5fe6",
+    "bytes": 1008044
   }
 }

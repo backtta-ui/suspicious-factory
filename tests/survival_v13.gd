@@ -59,9 +59,9 @@ func run() -> void:
  var obstacle: Rect2=L.LOW[0];var a:=Vector2(obstacle.position.x+50,obstacle.position.y-35);var b:=a+Vector2(0,85)
  check(L.move(a,b).y<obstacle.end.y,"low obstacle blocks ground walk")
  check(L.move(a,b,true).distance_to(b)<1,"jump crosses low obstacle")
- check(not L.can_stand(Vector2(310,300),9,true),"jump cannot cross building wall")
+ check(not L.can_stand(Vector2(246,320),9,true),"jump cannot cross building wall")
  check(not L.can_stand(L.POND.get_center(),9,true),"jump cannot enter pond")
- check(L.can_stand(Vector2(455,520)) and L.can_stand(Vector2(455,460)),"library door and interior passable")
+ check(L.can_stand(Vector2(435,573)) and L.can_stand(Vector2(435,500)) and L.can_stand(Vector2(435,267)),"hanok front door, interior and back door passable")
  for time in [0,180,360,480]:r.elapsed=time;check(r.circle().stage==[0,180,360,480].find(time),"circle stage %d"%time)
  r.elapsed=510;check(is_equal_approx(r.circle().radius,360),"final zone still playable size")
  for p in r.players.values():p.intent=Vector2.ZERO;p.captured=false;p.eliminated=false;p.deadline=0
