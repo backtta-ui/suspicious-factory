@@ -166,7 +166,7 @@ func _physics_process(delta: float) -> void:
 	velocity = move*speed
 	if not npc:
 		if not enabled or transforming>0 or defeated:locomotion_velocity=Vector2.ZERO;velocity=Vector2.ZERO
-		locomotion_velocity=locomotion_velocity.move_toward(velocity,(1100.0 if move.length()>.05 else 1500.0)*delta)
+		locomotion_velocity=locomotion_velocity.move_toward(velocity,(780.0 if move.length()>.05 else 1000.0)*delta)
 		velocity=locomotion_velocity
 	if dash_left>0 and enabled and not npc:
 		dash_left=maxf(0,dash_left-delta);velocity=dash_direction*360.0
