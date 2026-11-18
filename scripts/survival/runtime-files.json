@@ -1,6 +1,7 @@
 [
   "scenes/survival.tscn",
   "scripts/art/attachments.gd",
+  "scripts/art/ingame_sprite.gd",
   "scripts/art/locomotion_rig.gd",
   "scripts/art/mascot_props.gd",
   "scripts/art/mascot_renderer.gd",
@@ -35,6 +36,7 @@
   "scripts/survival/characters.gd",
   "scripts/survival/codex.gd",
   "scripts/survival/layout.gd",
+  "scripts/survival/market.gd",
   "scripts/survival/minimap.gd",
   "scripts/survival/practice_view.gd",
   "scripts/survival/rules.gd",

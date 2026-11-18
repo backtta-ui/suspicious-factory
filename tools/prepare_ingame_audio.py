@@ -166,12 +166,65 @@ def make_music() -> None:
     body = lowpass(body + pad, 0.85)
     save("seowon_ingame.wav", body, 0.55)
 
+    make_lobby_music()
+
     manifest_path = TARGET / "provenance.json"
     manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {}
-    for name in ["jump.wav", "door.wav", "seal.wav", "rescue.wav", "transform.wav", "seowon_ingame.wav"]:
+    for name in ["jump.wav", "door.wav", "seal.wav", "rescue.wav", "transform.wav", "seowon_ingame.wav", "lobby_night.wav"]:
         path = TARGET / name
         manifest[name] = {"sha256": hashlib.sha256(path.read_bytes()).hexdigest(), "bytes": path.stat().st_size}
     manifest_path.write_text(json.dumps(manifest, indent=2))
+
+
+def make_lobby_music() -> None:
+    """로비 전용 국악풍 밤 음악. 외부 샘플 없이 numpy로만 합성한다(무저작권)."""
+    bpm = 66.0
+    beat = 60.0 / bpm
+    bars = 8
+    total = beat * 4 * bars
+    track = np.zeros(int(SR * total) + int(SR * 1.5))
+    # 계면조(라·도·레·미·솔) 기반의 느린 선율
+    scale = [0, 3, 5, 7, 10]
+    root = 196.0
+
+    def note(degree: int, octave: int = 0) -> float:
+        return root * (2 ** ((scale[degree % 5] + 12 * (octave + degree // 5)) / 12))
+
+    # 낮은 북과 아주 옅은 장구
+    for b in range(bars * 4):
+        at = b * beat
+        boom = np.zeros(int(SR * 0.6))
+        place(boom, tone(66, 0.6, 0.22) * 0.34, 0.0)
+        place(boom, noise(0.16, 0.06) * 0.05, 0.0)
+        place(track, boom, at)
+    # 가야금 뜯는 멜로디: 한 마디에 두 음, 여백을 많이 둔다
+    melody = [(0, 1), (2, 1), (3, 1), (2, 1), (1, 1), (0, 1), (4, 1), (3, 1),
+              (2, 1), (0, 1), (1, 1), (2, 1), (3, 1), (2, 1), (0, 1), (1, 1)]
+    for i, (degree, _hold) in enumerate(melody):
+        at = i * beat * 2 + (beat * 0.5 if i % 2 else 0.0)
+        octave = 1 if i % 6 == 4 else 0
+        place(track, karplus(note(degree, octave), 1.8, 0.997) * 0.30, at)
+        if i % 4 == 0:
+            place(track, karplus(note(degree, -1), 2.2, 0.998) * 0.20, at + beat * 0.25)
+    # 대금의 긴 숨결
+    for degree, at, length in [(3, 0.0, 5.0), (2, 9.0, 5.5), (4, 18.0, 5.0), (1, 27.0, 5.5)]:
+        n = int(SR * length)
+        t = np.arange(n) / SR
+        f = note(degree, 0 if degree != 3 else 1)
+        vib = 1 + 0.005 * np.sin(2 * np.pi * 4.6 * t)
+        breath = lowpass(rng.uniform(-1, 1, n), 0.07) * 0.05
+        voice = np.sin(2 * np.pi * f * np.cumsum(vib) / SR) * 0.15
+        voice += np.sin(4 * np.pi * f * np.cumsum(vib) / SR) * 0.04 + breath
+        place(track, voice * env(n, 0.9, 2.0), at * beat)
+    loop_len = int(SR * total)
+    fade = int(SR * 1.5)
+    body = track[:loop_len].copy()
+    tail = track[loop_len:loop_len + fade]
+    body[:len(tail)] += tail * np.linspace(1, 0, len(tail)) * 0.5
+    t = np.arange(loop_len) / SR
+    pad = (np.sin(2 * np.pi * 49 * t) + 0.45 * np.sin(2 * np.pi * 73.5 * t)) * 0.05
+    body = lowpass(body + pad, 0.9)
+    save("lobby_night.wav", body, 0.5)
 
 
 if __name__ == "__main__":

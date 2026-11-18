@@ -13,6 +13,8 @@ var circle_penalty_after:=INF
 var circle_speed_factor:=1.0
 var serial:=0
 var selection_left:=25.0
+## 요괴 수(기본 2). 8인 방에서 도사2:요괴6 구성을 고르면 6이 된다.
+var yokai_count:=2
 var selection_elapsed:=0.0
 ## 문이 열린 시각(초). world.gd는 이 값으로 문짝과 지붕을 움직인다.
 var doors: Dictionary={"front":0.0,"back":0.0}
@@ -35,7 +37,7 @@ func start() -> bool:
  for i in range(ids.size()-1,0,-1):
   var j:=rng.randi_range(0,i);var value=ids[i];ids[i]=ids[j];ids[j]=value
  for i in range(ids.size()):
-  var p: Dictionary=players[ids[i]];p.role="yokai" if i<2 else "daoist";p.character=""
+  var p: Dictionary=players[ids[i]];p.role="yokai" if i<yokai_count else "daoist";p.character=""
   p.position=L.safe(L.SPAWN+Vector2.from_angle(i*TAU/ids.size())*150);p.ground=p.position
  phase="selection";selection_left=25;selection_elapsed=0;return true
 func select_character(id: String,character_id: String) -> bool:
