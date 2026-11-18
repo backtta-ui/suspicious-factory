@@ -169,7 +169,7 @@ func place(node: Control,rect: Rect2) -> void:
 func _apply(node: Control,rect: Rect2,s: float) -> void:
  node.position=rect.position*s;node.size=rect.size*s
  if node is Label and node.has_meta("base_font"):
-  node.add_theme_font_size_override("font_size",maxi(8,int(float(node.get_meta("base_font"))*s)))
+  node.add_theme_font_size_override("font_size",maxi(10,int(float(node.get_meta("base_font"))*s)))
 
 func label_text(parent: Node,value: String,extent: float,color: Color,weight: bool=false) -> Label:
  var node:=Label.new();node.text=value;node.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -233,41 +233,43 @@ func _build() -> void:
  _select("daoist:woochi")
 
 func _build_header() -> void:
- title_label=label_text(self,"캐릭터 안내",32,GOLD,true)
- subtitle=label_text(self,"게임에 등장하는 도사와 요괴를 확인하세요.",13.5,Color("d3c6ea"))
+ title_label=label_text(self,"캐릭터 안내",36,GOLD,true)
+ subtitle=label_text(self,"게임에 등장하는 도사와 요괴를 확인하세요.",16,Color("ddd2f0"))
  back_button=button("",func()->void:game.back(),self)
  back_button.name="CodexBack"
  var disc:=Panel.new();disc.mouse_filter=Control.MOUSE_FILTER_IGNORE
- disc.add_theme_stylebox_override("panel",glass(Color(.06,.05,.14,.82),Color(GOLD.r,GOLD.g,GOLD.b,.55),22,Color(VIOLET.r,VIOLET.g,VIOLET.b,.35)))
+ var disc_box:=glass(Color(.09,.07,.20,.95),Color(1,.88,.62,.95),24,Color(VIOLET.r,VIOLET.g,VIOLET.b,.5))
+ disc_box.set_border_width_all(2)
+ disc.add_theme_stylebox_override("panel",disc_box)
  back_button.add_child(disc);disc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- back_arrow=label_text(back_button,"←",21,TEXT)
+ back_arrow=label_text(back_button,"←",28,TEXT)
  back_arrow.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;back_arrow.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- place(back_arrow,Rect2(0,0,44,44))
+ place(back_arrow,Rect2(0,0,64,64))
  for spec in FILTERS:
   var key: String=spec.id
   var target:=button("",func()->void:_set_filter(key),self)
   target.name="CodexTab_"+key
   var pill:=Panel.new();pill.mouse_filter=Control.MOUSE_FILTER_IGNORE;target.add_child(pill);pill.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  var text:=label_text(target,spec.label,14,TEXT)
+  var text:=label_text(target,spec.label,17,TEXT)
   text.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;text.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
   var badge: Painted=null
   if spec.icon!="":
    badge=Painted.new();badge.icon=spec.icon;badge.bare=true;target.add_child(badge)
-   place(text,Rect2(34,0,float(spec.label.length())*14.4+20.0,36))
-  else:place(text,Rect2(0,0,float(spec.label.length())*14.4+36.0,36))
-  tabs[key]={"button":target,"pill":pill,"label":text,"icon":badge,"width":float(spec.label.length())*14.4+58.0}
+   place(text,Rect2(38,0,float(spec.label.length())*17.6+24.0,44))
+  else:place(text,Rect2(0,0,float(spec.label.length())*17.6+40.0,44))
+  tabs[key]={"button":target,"pill":pill,"label":text,"icon":badge,"width":float(spec.label.length())*17.6+66.0}
  _paint_tabs()
 
 func _build_guide() -> void:
  guide=Panel.new();guide.name="CodexRoleGuide";guide.mouse_filter=Control.MOUSE_FILTER_IGNORE
  guide.add_theme_stylebox_override("panel",glass(INK,Color(GOLD.r,GOLD.g,GOLD.b,.4),14,Color(VIOLET.r,VIOLET.g,VIOLET.b,.28)));add_child(guide)
- place(label_text(guide,"역할 안내",14.5,GOLD),Rect2(16,7,200,22))
- place(rule(guide,Color(GOLD.r,GOLD.g,GOLD.b,.24)),Rect2(16,34,500,1))
+ place(label_text(guide,"역할 안내",17,GOLD),Rect2(18,7,200,26))
+ place(rule(guide,Color(GOLD.r,GOLD.g,GOLD.b,.24)),Rect2(18,38,500,1))
  for row in [{"icon":"talisman","title":"도사 (6명)","body":"술래를 따돌리고, 봉인을 막으며 생존하세요","y":48.0,"color":DAOIST_COLOR},
   {"icon":"mask","title":"요괴 (2명)","body":"도사를 추적해 봉인하고, 모두 봉인하면 승리합니다","y":100.0,"color":YOKAI_COLOR}]:
-  var icon:=Painted.new();icon.icon=row.icon;icon.ring=row.color;icon.bare=true;guide.add_child(icon);place(icon,Rect2(16,row.y+2,28,28))
-  place(label_text(guide,row.title,15,row.color,true),Rect2(54,row.y,200,24))
-  place(label_text(guide,row.body,12.5,MUTED),Rect2(54,row.y+24,470,22))
+  var icon:=Painted.new();icon.icon=row.icon;icon.ring=row.color;icon.bare=true;guide.add_child(icon);place(icon,Rect2(16,row.y+2,30,30))
+  place(label_text(guide,row.title,18,row.color,true),Rect2(56,row.y,200,26))
+  place(label_text(guide,row.body,15.5,MUTED),Rect2(56,row.y+25,474,24))
 
 func _build_detail() -> void:
  detail=Control.new();detail.name="CodexDetail";detail.mouse_filter=Control.MOUSE_FILTER_PASS;detail.clip_contents=true;add_child(detail)
@@ -279,27 +281,27 @@ func _build_detail() -> void:
  var material:=ShaderMaterial.new();material.shader=shader;material.set_shader_parameter("strength",0.17);watermark.material=material
  watermark.modulate=Color(.82,.68,1,1)
  detail.add_child(watermark);place(watermark,Rect2(140,-14,200,200))
- detail_name=label_text(detail,"",27,GOLD,true);place(detail_name,Rect2(22,10,220,40))
- detail_team=Panel.new();detail_team.mouse_filter=Control.MOUSE_FILTER_IGNORE;detail.add_child(detail_team);place(detail_team,Rect2(22,56,46,22))
- detail_team_label=label_text(detail_team,"도사",12,Color("231a0c"))
+ detail_name=label_text(detail,"",30,GOLD,true);place(detail_name,Rect2(24,8,220,42))
+ detail_team=Panel.new();detail_team.mouse_filter=Control.MOUSE_FILTER_IGNORE;detail.add_child(detail_team);place(detail_team,Rect2(24,54,56,26))
+ detail_team_label=label_text(detail_team,"도사",15,Color("231a0c"))
  detail_team_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  detail_team_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;detail_team_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- detail_role=Panel.new();detail_role.mouse_filter=Control.MOUSE_FILTER_IGNORE;detail.add_child(detail_role);place(detail_role,Rect2(74,56,90,22))
- detail_role_label=label_text(detail_role,"",11.5,Color("efe2ff"))
+ detail_role=Panel.new();detail_role.mouse_filter=Control.MOUSE_FILTER_IGNORE;detail.add_child(detail_role);place(detail_role,Rect2(88,54,96,26))
+ detail_role_label=label_text(detail_role,"",15,Color("efe2ff"))
  detail_role_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  detail_role_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;detail_role_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- detail_intro=label_text(detail,"",13,MUTED);detail_intro.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(detail_intro,Rect2(22,92,300,44))
- place(rule(detail,Color(GOLD.r,GOLD.g,GOLD.b,.26)),Rect2(22,138,300,1))
- place(label_text(detail,"✦  주요 능력",15.5,GOLD,true),Rect2(22,148,220,26))
+ detail_intro=label_text(detail,"",15.5,MUTED);detail_intro.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(detail_intro,Rect2(24,90,300,64))
+ place(rule(detail,Color(GOLD.r,GOLD.g,GOLD.b,.26)),Rect2(24,160,300,1))
+ place(label_text(detail,"✦  주요 능력",18,GOLD,true),Rect2(24,166,220,28))
  ability_root=Control.new();ability_root.mouse_filter=Control.MOUSE_FILTER_PASS;detail.add_child(ability_root)
- hint=label_text(detail,"능력을 누르면 쿨타임과 상세 설명이 표시됩니다.",11,MUTED);hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
- place(hint,Rect2(22,462,300,30))
+ hint=label_text(detail,"능력을 누르면 쿨타임과 상세 설명이 표시됩니다.",14.5,MUTED);hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ place(hint,Rect2(24,484,300,40))
  tip=Panel.new();tip.mouse_filter=Control.MOUSE_FILTER_IGNORE
  tip.add_theme_stylebox_override("panel",glass(Color(.09,.07,.20,.97),Color(GOLD.r,GOLD.g,GOLD.b,.6),10,Color(VIOLET.r,VIOLET.g,VIOLET.b,.45)))
- detail.add_child(tip);place(tip,Rect2(14,458,316,110))
- tip_name=label_text(tip,"",14.5,GOLD,true);place(tip_name,Rect2(14,9,286,22))
- tip_meta=label_text(tip,"",11.5,MUTED);place(tip_meta,Rect2(14,30,286,18))
- tip_body=label_text(tip,"",12,TEXT);tip_body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(tip_body,Rect2(14,50,288,54))
+ detail.add_child(tip);place(tip,Rect2(14,466,316,104))
+ tip_name=label_text(tip,"",17,GOLD,true);place(tip_name,Rect2(14,7,286,26))
+ tip_meta=label_text(tip,"",14.5,MUTED);place(tip_meta,Rect2(14,32,286,20))
+ tip_body=label_text(tip,"",15,TEXT);tip_body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(tip_body,Rect2(14,54,288,48))
  tip.hide()
 
 func _fill_detail() -> void:
@@ -307,8 +309,8 @@ func _fill_detail() -> void:
  detail_team_label.text=selected.get("team_name","")
  detail_team.add_theme_stylebox_override("panel",flat(DAOIST_COLOR if selected.get("team","")=="daoist" else YOKAI_COLOR,Color(0,0,0,0),0,11))
  detail_role_label.text=selected.get("role","")
- var role_width:=FONT.get_string_size(selected.get("role",""),HORIZONTAL_ALIGNMENT_LEFT,-1,11.5).x+24
- place(detail_role,Rect2(74,56,maxf(64.0,role_width),22))
+ var role_width:=FONT.get_string_size(selected.get("role",""),HORIZONTAL_ALIGNMENT_LEFT,-1,15).x+28
+ place(detail_role,Rect2(88,54,maxf(76.0,role_width),26))
  detail_intro.text=selected.get("intro","")
  var portrait_path:=String(selected.get("portrait",""))
  if portrait_path!="" and ResourceLoader.exists(portrait_path):watermark.texture=load(portrait_path)
@@ -322,12 +324,12 @@ func _fill_detail() -> void:
 func _ability_row(index: int,ability: Dictionary) -> void:
  var target:=button("",func()->void:_show_tip(index),ability_root)
  target.name="CodexAbility_%d"%index
- place(target,Rect2(12,176.0+index*92.0,320,88))
- var badge:=Painted.new();badge.icon=ability.get("icon","");target.add_child(badge);place(badge,Rect2(14,22,44,44))
- var title:=label_text(target,ability.get("name",""),15,TEXT);place(title,Rect2(70,6,182,22))
- var body:=label_text(target,ability.get("description",""),11.5,MUTED)
- body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(body,Rect2(70,28,182,50))
- place(label_text(target,"%d초"%int(ability.get("cd",0.0)),11.5,GOLD_DEEP),Rect2(252,6,52,20))
+ place(target,Rect2(12,196.0+index*94.0,320,90))
+ var badge:=Painted.new();badge.icon=ability.get("icon","");target.add_child(badge);place(badge,Rect2(12,20,44,44))
+ var title:=label_text(target,ability.get("name",""),17,TEXT);place(title,Rect2(64,4,206,24))
+ var body:=label_text(target,ability.get("description",""),15,MUTED)
+ body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(body,Rect2(64,30,238,56))
+ place(label_text(target,"%d초"%int(ability.get("cd",0.0)),15,GOLD_DEEP),Rect2(262,4,52,24))
  target.set_meta("badge",badge);target.set_meta("title",title)
  target.mouse_entered.connect(func()->void:_hover_row(index,true))
  target.mouse_exited.connect(func()->void:_hover_row(index,false))
@@ -394,9 +396,9 @@ func _refresh_grid() -> void:
   var plate:=ColorRect.new();plate.color=Color(.02,.015,.06,.34);plate.mouse_filter=Control.MOUSE_FILTER_IGNORE;target.add_child(plate)
   place(plate,Rect2(0,CARD_SIZE.y-36,CARD_SIZE.x,36))
   var edge:=rule(target,Color(GOLD.r,GOLD.g,GOLD.b,.35));place(edge,Rect2(14,CARD_SIZE.y-37,CARD_SIZE.x-28,1))
-  var name_label:=label_text(target,entry.get("name",""),15,TEXT)
+  var name_label:=label_text(target,entry.get("name",""),17,TEXT)
   name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-  place(name_label,Rect2(0,CARD_SIZE.y-34,CARD_SIZE.x,32))
+  place(name_label,Rect2(0,CARD_SIZE.y-36,CARD_SIZE.x,34))
   var sheen:=soft(target,Color(1,.86,.55,.0),Rect2(-16,-40,CARD_SIZE.x+32,120))
   target.set_meta("sheen",sheen);target.set_meta("name",name_label);target.set_meta("id",id)
   cards[id]=target
@@ -497,24 +499,24 @@ func _layout() -> void:
   if not is_instance_valid(node):continue
   alive.append(node);_apply(node,node.get_meta("design"),s)
  design=alive
- title_label.position=Vector2(52*s,6*s);title_label.size=Vector2(320*s,44*s)
- var title_width:=TITLE_FONT.get_string_size(title_label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,int(32*s)).x
- subtitle.position=Vector2(52*s+title_width+22*s,25*s);subtitle.size=Vector2(460*s,24*s)
- trim.title_box=Rect2(Vector2(52*s,46*s),Vector2(title_width,0))
+ title_label.position=Vector2(52*s,4*s);title_label.size=Vector2(340*s,50*s)
+ var title_width:=TITLE_FONT.get_string_size(title_label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,int(36*s)).x
+ subtitle.position=Vector2(52*s+title_width+22*s,24*s);subtitle.size=Vector2(470*s,28*s)
+ trim.title_box=Rect2(Vector2(52*s,50*s),Vector2(title_width,0))
  trim.queue_redraw()
- back_button.position=Vector2(w-MARGIN*s-44*s,12*s);back_button.size=Vector2(44*s,44*s)
+ back_button.position=Vector2(w-MARGIN*s-64*s,8*s);back_button.size=Vector2(64*s,64*s)
  var x:=MARGIN*s
  for spec in FILTERS:
   var entry: Dictionary=tabs[spec.id]
   var target: WooMobileButton=entry.button
   var tab_width: float=float(entry.width)*s
-  target.position=Vector2(x,74*s);target.size=Vector2(tab_width,36*s)
+  target.position=Vector2(x,80*s);target.size=Vector2(tab_width,44*s)
   var badge: Painted=entry.icon
   var label: Label=entry.label
-  label.position=Vector2(34*s,0) if badge!=null else Vector2.ZERO
-  label.size=Vector2((tab_width-40*s) if badge!=null else tab_width,36*s)
+  label.position=Vector2(38*s,0) if badge!=null else Vector2.ZERO
+  label.size=Vector2((tab_width-44*s) if badge!=null else tab_width,44*s)
   if badge!=null:
-   badge.position=Vector2(10*s,8*s);badge.size=Vector2(20*s,20*s)
+   badge.position=Vector2(10*s,10*s);badge.size=Vector2(24*s,24*s)
   x+=tab_width+8*s
  grid.position=Vector2(MARGIN*s,GRID_Y*s)
  guide.position=Vector2(MARGIN*s,GUIDE_Y*s);guide.size=Vector2(grid_w*s,GUIDE_H*s)

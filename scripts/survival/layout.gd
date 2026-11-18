@@ -9,8 +9,16 @@ extends RefCounted
 const SIZE=Vector2(1800,1400)
 const SPAWN=Vector2(860,760)
 ## 인게임 기본 시점(2.5D 줌). 카메라는 내 캐릭터를 화면 중앙보다 아래에 둔다.
-const CAMERA_ZOOM=1.75
-const CAMERA_LIFT=56.0
+## 2.0.17 사용자 피드백: 1.75는 캐릭터가 너무 크고 주변이 좁아 1.32로 넓혔다.
+const CAMERA_ZOOM=1.32
+const CAMERA_LIFT=36.0
+## 시작 배치. 도사는 서원 중앙~서남쪽 안전 지대 6곳, 요괴는 도사와 600px 이상
+## 떨어진 북동·동남쪽 외곽 2곳에서 시작한다. 모두 safe()를 거쳐 설 수 있는 자리다.
+const DAOIST_SPAWN_POINTS=[Vector2(820,780),Vector2(700,820),Vector2(880,880),Vector2(680,760),Vector2(640,730),Vector2(890,820)]
+const YOKAI_SPAWN_POINTS=[Vector2(1560,420),Vector2(1480,1180)]
+## 외곽 스폰이 구조물에 걸리더라도 도사 무리와 이만큼은 떨어지게 잡는다.
+const SPAWN_SEPARATION=600.0
+static var _spawn_cache: Dictionary={}
 const POND=Rect2(950,680,300,230)
 ## 연못을 비스듬히 가로지르는 아치 목교. 걸어서 오르면 표고가 오른다.
 const BRIDGE_A=Vector2(885,965)
@@ -194,6 +202,47 @@ static func safe(p: Vector2) -> Vector2:
    var q:=p+Vector2.from_angle(i*TAU/16)*radius
    if can_stand(q):return q
  return SPAWN
+## 서로 겹치지 않게 주어진 지점을 안전한 자리로 옮긴다(앞 지점과 46px 이상).
+static func _settle(candidates: Array,keep: Array=[]) -> Array:
+ var out: Array=[]
+ for candidate in candidates:
+  var spot:=safe(candidate)
+  for attempt in range(24):
+   var clear:=true
+   for other in out+keep:
+    if spot.distance_to(other)<46:clear=false;break
+   if clear:break
+   spot=safe(spot+Vector2.from_angle(attempt*TAU/16+0.4)*(28.0+attempt*6.0))
+  out.append(spot)
+ return out
+## 도사 6명 시작 지점(서원 중앙~서남쪽 안전 지대).
+static func daoist_spawns() -> Array:
+ if not _spawn_cache.has("daoist"):_spawn_cache["daoist"]=_settle(DAOIST_SPAWN_POINTS)
+ return _spawn_cache["daoist"]
+## 요괴 시작 지점(도사 무리와 SPAWN_SEPARATION 이상 떨어진 북동·동남 외곽).
+static func yokai_spawns() -> Array:
+ if not _spawn_cache.has("yokai"):
+  var daoists:=daoist_spawns()
+  var out: Array=[]
+  for candidate in YOKAI_SPAWN_POINTS:
+   var spot:=safe(candidate)
+   # 안전 지대로 당겨져 도사와 너무 가까워지면 지도 바깥쪽으로 다시 밀어낸다.
+   for attempt in range(40):
+    var near:=false
+    for daoist in daoists:
+     if spot.distance_to(daoist)<SPAWN_SEPARATION:near=true;break
+    if not near:break
+    var away: Vector2=spot-SPAWN
+    if away.length()<1.0:away=Vector2(1,0)
+    spot=safe(spot+away.normalized()*(40.0+attempt*10.0))
+   out.append(spot)
+  _spawn_cache["yokai"]=_settle(out,daoists)
+ return _spawn_cache["yokai"]
+## 팀별 시작 지점(순환 배치). 요괴가 2명을 넘는 특수 설정도 같은 목록을 돌려 쓴다.
+static func spawns_for(role: String,index: int) -> Vector2:
+ var spots: Array=daoist_spawns() if role=="daoist" else yokai_spawns()
+ if spots.is_empty():return safe(SPAWN)
+ return spots[posmod(index,spots.size())]
 static func move(a: Vector2,b: Vector2,jumping: bool=false) -> Vector2:
  var steps:=maxi(1,ceili(a.distance_to(b)/4));var delta: Vector2=(b-a)/steps;var p:=a
  for i in range(steps):

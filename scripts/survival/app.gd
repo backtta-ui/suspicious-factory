@@ -74,6 +74,14 @@ var paused:=false
 var backgrounded:=false
 var bot_clock:=0.0
 var fixed_clock:=0.0
+## 인게임 고정 스텝: 20Hz(0.05)에서 60Hz(1/60)로 올려 이동이 끊기지 않게 한다.
+const STEP=1.0/60.0
+## 캐릭터 원화 배율(2.0.17에서 1.5 → 1.12로 줄여 시야를 넓혔다).
+const ACTOR_SCALE=1.12
+## 화면상 위치는 60Hz 목표점을 매 프레임 부드럽게 따라간다(텔레포트만 즉시 붙는다).
+const AVATAR_FOLLOW=26.0
+## 한 프레임 이동(최대 210px/s)보다 큰 이동은 텔레포트로 보고 즉시 붙인다.
+const AVATAR_SNAP=40.0
 var spectate:="human"
 var aim:=Vector2.ZERO
 var aim_cancelled:=false
@@ -87,6 +95,7 @@ var sequence:=0
 var result_seen:=false
 var recorded:=false
 var practice: Node
+var selection_view: Node
 var settings: Dictionary={"low_effects":false}
 var matching:=0.0
 var match_slots:=0
@@ -175,7 +184,10 @@ func panel(parent: Node) -> VBoxContainer:
 func portrait(parent: Node,id: String,extent: Vector2=Vector2(330,360)) -> Control:
  var holder:=Control.new();holder.custom_minimum_size=extent;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;holder.size_flags_horizontal=Control.SIZE_EXPAND_FILL;holder.mouse_filter=Control.MOUSE_FILTER_IGNORE;parent.add_child(holder)
  var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.4,extent.y/72);holder.add_child(actor);actor.ingame_art=true;actor.art_id=id.trim_prefix("yokai:").trim_prefix("daoist:");actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
- holder.resized.connect(func()->void:actor.position=Vector2(holder.size.x/2,holder.size.y*.85));actor.position=Vector2(extent.x/2,extent.y*.85)
+ holder.resized.connect(func()->void:
+  actor.position=Vector2(holder.size.x/2,holder.size.y*.85)
+  actor.scale=Vector2.ONE*minf(7.2,holder.size.y/72.0))
+ actor.position=Vector2(extent.x/2,extent.y*.85)
  return holder
 func transition(destination: String) -> void:
  if changing:return
@@ -257,7 +269,7 @@ func lobby_screen() -> void:
  lobby_hotspot("characters","캐릭터 안내",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"))
  lobby_hotspot("quick","빠른 매치",open_quick)
  lobby_hotspot("friends","친구와 함께",func()->void:transition("friends"))
- lobby_hotspot("practice","연습 (봇)",enter_practice)
+ lobby_hotspot("practice","연습 (봇)",start_practice_match)
  lobby_hotspot("settings","설정",show_settings)
  lobby_hotspot("gear","설정",show_settings)
  lobby_hotspot("codex","도감",func()->void:selection_team="daoist";selection_return="lobby";transition("characters"))
@@ -318,18 +330,25 @@ func setup_participants(seed_value: int=0) -> void:
  result_seen=false;recorded=false;spectate="human";fixed_clock=0;bot_clock=0
 func room_screen() -> void:
  if room.is_empty():build("rooms");return
- var box:=page(room.name+" · 중립 대기실")
+ var box:=page(room.name+" · 방 코드 대기실")
  var code_row:=HBoxContainer.new();code_row.add_theme_constant_override("separation",12);box.add_child(code_row)
- code_row.add_child(text("방 코드  "+String(room.get("code","")),26,D.GOLD))
+ code_row.add_child(text("방 코드  "+String(room.get("code","")),24,D.GOLD))
  button("코드 복사",func()->void:Copycode(),false,code_row)
  button("친구 초대 문구 복사",func()->void:Copyinvite(),false,code_row)
+ var spacer:=Control.new();spacer.size_flags_horizontal=Control.SIZE_EXPAND_FILL;spacer.mouse_filter=Control.MOUSE_FILTER_IGNORE;code_row.add_child(spacer)
+ var back_button:=button("← 뒤로",func()->void:leave_room())
+ back_button.name="RoomBack"
+ code_row.add_child(back_button)
  var body:=HBoxContainer.new();body.add_theme_constant_override("separation",22);body.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(body)
- var preview:=panel(body);preview.add_child(text("월하의 서원",29,D.GOLD))
- var image:=TextureRect.new();image.texture=load("res://assets/woo/worlds/moon_palace.png");image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;image.custom_minimum_size=Vector2(380,180);preview.add_child(image)
- preview.add_child(text("도사 %d · 요괴 %d · 10분\n역할은 시작 시 무작위 배정\n방 코드로 같은 방에 입장" % [int(room.count)-int(room.get("yokai",2)),int(room.get("yokai",2))],20))
- var members:=panel(body);members.add_child(text("참가자 %d/%d"%[rules.players.size(),room.count],25,D.GOLD))
+ var preview:=panel(body);preview.add_child(text("월하의 서원",28,D.GOLD))
+ # 새 《월하의 서원》 맵 프리뷰( 옛 달궁 썸네일 교체 )
+ var image:=TextureRect.new();image.texture=load("res://assets/woo/seowon/map_preview.png");image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;image.custom_minimum_size=Vector2(380,180);preview.add_child(image)
+ preview.add_child(text("도사 %d · 요괴 %d · 10분\n역할은 시작 시 무작위 배정" % [int(room.count)-int(room.get("yokai",2)),int(room.get("yokai",2))],19))
+ var members:=panel(body);members.add_child(text("참가자 %d/%d"%[rules.players.size(),room.count],24,D.GOLD))
+ var list:=ScrollContainer.new();list.custom_minimum_size=Vector2(0,340);list.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;members.add_child(list)
+ var rows:=VBoxContainer.new();rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL;rows.add_theme_constant_override("separation",4);list.add_child(rows)
  for p in rules.players.values():
-  var row:=HBoxContainer.new();members.add_child(row)
+  var row:=HBoxContainer.new();rows.add_child(row)
   var thumb:=TextureRect.new();thumb.texture=load(C.find(p.choices.daoist).sprite);thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;thumb.custom_minimum_size=Vector2(40,40);row.add_child(thumb)
   row.add_child(text(p.name+" · "+("준비 완료" if p.ready else "대기"),19))
  if not room.fill:members.add_child(button("빈 칸을 봇으로 채우기",func()->void:room.fill=true;setup_participants();build("room"),true))
@@ -343,10 +362,13 @@ func characters_screen() -> void:
  full(codex,ui)
 func start_match() -> void:
  if changing or screen!="room":return
+ begin_match()
+## 방에서 캐릭터 선택으로 넘어간다. 빠른 매치·연습 봇전도 같은 진입로를 쓴다.
+func begin_match() -> bool:
  rules.yokai_count=int(room.get("yokai",2))
- if rules.players.size()!=room.count:notice("필요한 인원이 없습니다. 빈 칸을 봇으로 채워 주세요.");return
- if not rules.players.human.ready:notice("먼저 준비 완료를 눌러 주세요.");return
- if not rules.start():notice("캐릭터·봇 참가 상태를 확인하세요.");return
+ if rules.players.size()!=room.count:notice("필요한 인원이 없습니다. 빈 칸을 봇으로 채워 주세요.");return false
+ if not rules.players.human.ready:notice("먼저 준비 완료를 눌러 주세요.");return false
+ if not rules.start():notice("캐릭터·봇 참가 상태를 확인하세요.");return false
  selection_team=rules.players.human.role
  # 해금한 캐릭터만 고를 수 있다. 자동 배정도 보유 목록 안에서만 고른다.
  var owned:=owned_characters(selection_team)
@@ -355,6 +377,7 @@ func start_match() -> void:
  if not owned.is_empty() and not owned.has(selection_id):selection_id=String(owned[0])
  rules.select_character("human",selection_id)
  build("selection")
+ return true
 
 func owned_characters(team: String) -> Array:
  var result: Array=[]
@@ -362,25 +385,20 @@ func owned_characters(team: String) -> Array:
   if storage.owns_character(String(item.id)):result.append(String(item.id))
  return result
 func selection_screen() -> void:
- var box:=page("캐릭터 선택 · "+("도사팀" if rules.players.human.role=="daoist" else "요괴팀"))
- var timer:=text("선택 시간 25초",25,D.GOLD);timer.name="SelectionTimer";box.add_child(timer)
- var row:=HBoxContainer.new();row.add_theme_constant_override("separation",24);row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
- var list:=panel(row)
- for item in C.catalog(rules.players.human.role):
-  var owned: bool=storage.owns_character(item.id)
-  var b:=button(("✓ " if selection_id==item.id else ("" if owned else "미해금 · "))+item.name+("" if owned else " — 상점에서 해금"),func()->void:
-   if rules.select_character("human",item.id):selection_id=item.id;build("selection"),selection_id==item.id or not owned,list)
-  b.disabled=rules.players.human.confirmed or not owned
- var info:=panel(row);portrait(info,selection_id,Vector2(370,220));var spec:=C.find(selection_id)
- info.add_child(text(spec.name,27,D.GOLD));info.add_child(text(spec.skill.name+" · "+spec.skill.description,18))
- var team_label:=text("",18);team_label.name="TeamSelection";info.add_child(team_label)
- var confirm_button:=button("선택 확정" if not rules.players.human.confirmed else "확정 완료 · 팀원 대기",func()->void:
-  if not rules.confirm_character("human"):return
-  # Remember the confirmed character as this team's representative look.
-  storage.data[rules.players.human.role]=selection_id
-  storage.save()
-  build("selection"),true,box);confirm_button.disabled=rules.players.human.confirmed
- box.add_child(text("상대팀의 캐릭터는 VS 화면에서 공개합니다. 같은 캐릭터 선택은 허용됩니다.",17))
+ # 롤 스타일 직행 선택 화면: 왼쪽 카드 · 가운데 프리뷰 · 오른쪽 상세/확정.
+ var view:=preload("res://scripts/survival/selection_view.gd").new()
+ view.game=self
+ view.selection_id=selection_id
+ view.locked=rules.players.human.confirmed
+ selection_view=view
+ full(view,ui)
+## 선택 확정: 팀 대표 캐릭터로 저장하고 화면을 다시 그린다.
+func confirm_selection(id: String,_view: Node=null) -> void:
+ selection_id=id
+ if not rules.confirm_character("human"):return
+ storage.data[rules.players.human.role]=id
+ storage.save()
+ build("selection")
 func loading_screen() -> void:
  var box:=page("월하의 서원 · 경기 준비")
  var row:=HBoxContainer.new();row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
@@ -392,9 +410,9 @@ func loading_screen() -> void:
   var lead: Dictionary=rules.players.values().filter(func(p: Dictionary)->bool:return p.role==team)[0]
   portrait(team_box,lead.character,Vector2(340,220));team_box.add_child(text("\n".join(names),18))
   if team=="daoist":row.add_child(text("VS",64,D.GOLD))
- status_label=text("리소스 준비 중…",22);box.add_child(status_label)
- var bar:=ProgressBar.new();bar.name="ResourceProgress";bar.max_value=100;bar.custom_minimum_size.y=26;box.add_child(bar)
- box.add_child(text("TIP · 구조 버튼을 4초 유지하세요. 서클은 양 팀 모두에게 적용됩니다.",18))
+ status_label=text("리소스 준비 중…",24);box.add_child(status_label)
+ var bar:=ProgressBar.new();bar.name="ResourceProgress";bar.max_value=100;bar.custom_minimum_size.y=30;box.add_child(bar)
+ box.add_child(text("TIP · 구조 버튼을 4초 유지하세요. 서클은 양 팀 모두에게 적용됩니다.",19))
 func load_match(ticket: int) -> void:
  build("loading");changing=true
  await get_tree().process_frame;await get_tree().process_frame
@@ -417,7 +435,7 @@ func load_match(ticket: int) -> void:
  if ticket!=sequence:return
  status_label.text="캐릭터·카메라·경기 HUD 준비 중…"
  world=load("res://scripts/survival/world.gd").new();world.rules=rules;add_child(world)
- camera=Camera2D.new();camera.zoom=Vector2(L.CAMERA_ZOOM,L.CAMERA_ZOOM);camera.position=L.SPAWN+Vector2(0,-L.CAMERA_LIFT);camera.position_smoothing_enabled=true;camera.position_smoothing_speed=7;camera.limit_left=0;camera.limit_top=0;camera.limit_right=int(L.SIZE.x);camera.limit_bottom=int(L.SIZE.y);world.add_child(camera);camera.make_current()
+ camera=Camera2D.new();camera.zoom=Vector2(L.CAMERA_ZOOM,L.CAMERA_ZOOM);camera.position=L.SPAWN+Vector2(0,-L.CAMERA_LIFT);camera.limit_left=0;camera.limit_top=0;camera.limit_right=int(L.SIZE.x);camera.limit_bottom=int(L.SIZE.y);world.add_child(camera);camera.make_current()
  bots.clear()
  for p in rules.players.values():
   if p.id!="human":bots.append(preload("res://scripts/survival/bot.gd").new(rules,nav,p.id,int(p.color)))
@@ -428,26 +446,26 @@ func load_error(message: String) -> void:
  changing=false;cleanup_match();build("lobby");notice(message+"\n안전한 로비로 돌아왔습니다.")
 func hud() -> void:
  var decor:=preload("res://scripts/survival/hud_decor.gd").new();full(decor,ui)
- timer_label=text("월하의 서원 · 10:00",21,Color("f0d7a2"))
+ timer_label=text("월하의 서원 · 10:00",23,Color("f0d7a2"))
  ui.add_child(timer_label)
  timer_label.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
  timer_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
- timer_label.offset_left=-224;timer_label.offset_right=224;timer_label.offset_top=14;timer_label.offset_bottom=42
+ timer_label.offset_left=-224;timer_label.offset_right=224;timer_label.offset_top=10;timer_label.offset_bottom=42
  timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- survivor_label=text("생존 도사 6 · 요괴 2",14,Color("e9dfc6"))
+ survivor_label=text("생존 도사 6 · 요괴 2",16,Color("e9dfc6"))
  ui.add_child(survivor_label)
  survivor_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP)
- survivor_label.offset_left=-224;survivor_label.offset_right=224;survivor_label.offset_top=44;survivor_label.offset_bottom=66
+ survivor_label.offset_left=-224;survivor_label.offset_right=224;survivor_label.offset_top=42;survivor_label.offset_bottom=66
  survivor_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- seal_label=text("봉인 0 / 5",18,Color("f6e4b8"))
+ seal_label=text("봉인 0 / 5",21,Color("f6e4b8"))
  ui.add_child(seal_label)
  seal_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
- seal_label.offset_left=70;seal_label.offset_right=240;seal_label.offset_top=21;seal_label.offset_bottom=50
+ seal_label.offset_left=70;seal_label.offset_right=280;seal_label.offset_top=18;seal_label.offset_bottom=52
  seal_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- status_label=text("",14,Color("ffb3bb"))
+ status_label=text("",17,Color("ffb3bb"))
  ui.add_child(status_label)
  status_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
- status_label.offset_left=20;status_label.offset_right=252;status_label.offset_top=72;status_label.offset_bottom=96
+ status_label.offset_left=20;status_label.offset_right=340;status_label.offset_top=72;status_label.offset_bottom=104
  pill(status_label,Color(.03,.04,.09,.55),10)
  status_label.add_theme_color_override("font_color",Color("ffd0d4"))
  var menu:=button("메뉴",pause_menu);menu.name="Menu";ui.add_child(menu)
@@ -474,16 +492,16 @@ func hud() -> void:
  minimap.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
  minimap.offset_left=-156;minimap.offset_right=-6;minimap.offset_top=8;minimap.offset_bottom=158
  minimap.map_requested.connect(show_map)
- circle_label=text("",12,Color("cfd7ea"))
+ circle_label=text("",15,Color("cfd7ea"))
  ui.add_child(circle_label)
  circle_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- circle_label.offset_left=-246;circle_label.offset_right=-8;circle_label.offset_top=160;circle_label.offset_bottom=184
+ circle_label.offset_left=-300;circle_label.offset_right=-8;circle_label.offset_top=166;circle_label.offset_bottom=194
  circle_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
  pill(circle_label,Color(.03,.04,.09,.5),9)
  stick=preload("res://scripts/joystick.gd").new();ui.add_child(stick);D.position_stick(stick)
- stamina_label=text("달리기 100%",13,Color("cfd7ea"));ui.add_child(stamina_label)
+ stamina_label=text("달리기 100%",16,Color("cfd7ea"));ui.add_child(stamina_label)
  stamina_label.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
- stamina_label.offset_left=26;stamina_label.offset_right=176;stamina_label.offset_top=-414;stamina_label.offset_bottom=-392
+ stamina_label.offset_left=26;stamina_label.offset_right=206;stamina_label.offset_top=-424;stamina_label.offset_bottom=-396
  pill(stamina_label,Color(.03,.04,.09,.5),9)
  run_button=action("달리기","dodge",Vector2(-424,-152),Vector2(92,92))
  run_button.button_down.connect(func()->void:rules.command("human","run",{"held":true}));run_button.button_up.connect(func()->void:rules.command("human","run",{"held":false}))
@@ -507,17 +525,14 @@ func hud() -> void:
    if rules.players.human.rescue=="" and rescue_target()=="":rules.command("human","interact"))
  action_badge=action_button.get_node("Badge")
  count_label=text("3",80,D.GOLD);ui.add_child(count_label);count_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER);count_label.offset_left=-220;count_label.offset_right=220;count_label.offset_top=-80;count_label.offset_bottom=80;count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- form_label=text("",15,Color("ffe3a8"));ui.add_child(form_label)
+ form_label=text("",18,Color("ffe3a8"));ui.add_child(form_label)
  form_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
- form_label.offset_left=-300;form_label.offset_right=300;form_label.offset_top=-240;form_label.offset_bottom=-206;form_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ form_label.offset_left=-330;form_label.offset_right=330;form_label.offset_top=-252;form_label.offset_bottom=-214;form_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  var form_pill:=D.panel(Color(.03,.04,.09,.62),12);form_pill.border_color=Color(GOLD,.5);form_pill.set_border_width_all(1);form_pill.content_margin_left=10;form_pill.content_margin_right=10
  form_label.add_theme_stylebox_override("normal",form_pill)
- hint_label=text("",14,Color("e2d3ac"));ui.add_child(hint_label)
- hint_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM)
- hint_label.offset_left=-330;hint_label.offset_right=330;hint_label.offset_top=-200;hint_label.offset_bottom=-170;hint_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- var hint_pill:=D.panel(Color(.03,.04,.09,.55),12);hint_pill.border_color=Color(GOLD,.34);hint_pill.set_border_width_all(1);hint_pill.content_margin_left=10;hint_pill.content_margin_right=10
- hint_label.add_theme_stylebox_override("normal",hint_pill)
- var spectator:=button("관전 대상",spectator_menu);spectator.name="Spectator";spectator.position=Vector2(20,100);spectator.custom_minimum_size=Vector2(110,44);ui.add_child(spectator)
+ # 하단 중앙의 긴 힌트 바는 시야를 가려 없앴다. 상태·안내는 좌상단 상태 라벨과
+ # 우측 상호작용 버튼 캡션에만 표시한다.
+ var spectator:=button("관전 대상",spectator_menu);spectator.name="Spectator";spectator.position=Vector2(20,108);spectator.custom_minimum_size=Vector2(160,56);ui.add_child(spectator)
  spectator.visible=false
 func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,callback: Callable=Callable(),type: Script=preload("res://scripts/survival/skill_button.gd")) -> WooMobileButton:
  var b: WooMobileButton=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type)
@@ -528,7 +543,7 @@ func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,call
  b.offset_left=offset.x;b.offset_top=offset.y;b.offset_right=offset.x+extent.x;b.offset_bottom=offset.y+extent.y
  for state in ["normal","hover","pressed","hover_pressed","disabled"]:b.add_theme_stylebox_override(state,StyleBoxEmpty.new())
  for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:b.add_theme_color_override(state,Color(0,0,0,0))
- var caption:=text(name_value,12,Color("f6e8c8"));caption.name="Caption"
+ var caption:=text(name_value,14,Color("f6e8c8"));caption.name="Caption"
  var ribbon:=D.panel(Color(.03,.04,.09,.72),6);ribbon.border_color=Color(GOLD,.45);ribbon.set_border_width_all(1);ribbon.content_margin_top=0;ribbon.content_margin_bottom=0;ribbon.content_margin_left=4;ribbon.content_margin_right=4
  caption.add_theme_stylebox_override("normal",ribbon)
  caption.add_theme_color_override("font_outline_color",Color(.02,.02,.05));caption.add_theme_constant_override("outline_size",2)
@@ -562,14 +577,14 @@ func popup(title: String) -> VBoxContainer:
  modal=Control.new();full(modal,ui);modal.mouse_filter=Control.MOUSE_FILTER_STOP
  var shade:=ColorRect.new();shade.color=Color(.012,.015,.035,.86);full(shade,modal)
  var center:=CenterContainer.new();full(center,modal)
- var frame:=PanelContainer.new();frame.custom_minimum_size=Vector2(640,120)
+ var frame:=PanelContainer.new();frame.custom_minimum_size=Vector2(780,140)
  var popup_style:=LC.panel_box(Color(0.035,0.04,0.085,0.97),14,Color(0.85,0.72,0.47,0.65),1,Color(0.55,0.45,1.0,0.28),18)
  popup_style.content_margin_left=26;popup_style.content_margin_right=26;popup_style.content_margin_top=18;popup_style.content_margin_bottom=18
  frame.add_theme_stylebox_override("panel",popup_style)
  center.add_child(frame)
  var trim:=LArt.Filigree.new();trim.color=Color(0.85,0.72,0.47,0.55);trim.arm=22.0;frame.add_child(trim)
  var box:=VBoxContainer.new();box.add_theme_constant_override("separation",14);frame.add_child(box)
- var heading:=text(title,26,LC.GOLD_SOFT);heading.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));box.add_child(heading)
+ var heading:=text(title,28,LC.GOLD_SOFT);heading.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));box.add_child(heading)
  var rule_line:=ColorRect.new();rule_line.color=Color(0.85,0.72,0.47,0.3);rule_line.custom_minimum_size.y=1;box.add_child(rule_line)
  return box
 func style_slider(slider: HSlider) -> void:
@@ -582,36 +597,36 @@ func style_slider(slider: HSlider) -> void:
   slider.add_theme_stylebox_override(key,style)
 func style_check(box: CheckBox) -> void:
  box.add_theme_font_override("font",LC.FONT)
- box.add_theme_font_size_override("font_size",15)
+ box.add_theme_font_size_override("font_size",17)
  for color_key in ["font_color","font_hover_color","font_pressed_color","font_focus_color"]:
   box.add_theme_color_override(color_key,LC.IVORY)
 func settings_row(box: VBoxContainer,title_value: String,detail: String) -> HBoxContainer:
  var row:=HBoxContainer.new();row.add_theme_constant_override("separation",14);box.add_child(row)
- var column:=VBoxContainer.new();column.add_theme_constant_override("separation",0);column.custom_minimum_size=Vector2(120,0);row.add_child(column)
- column.add_child(text(title_value,16,LC.IVORY))
- if detail!="":column.add_child(text(detail,11,Color(0.68,0.72,0.82,0.85)))
+ var column:=VBoxContainer.new();column.add_theme_constant_override("separation",0);column.custom_minimum_size=Vector2(160,0);row.add_child(column)
+ column.add_child(text(title_value,19,LC.IVORY))
+ if detail!="":column.add_child(text(detail,14,Color(0.74,0.78,0.88,0.9)))
  return row
 func show_settings() -> void:
  var box:=popup("설정 · 소리와 화면")
  for spec in [["배경음악","music","music_mute","로비·경기 음악"],["효과음","sfx","sfx_mute","버튼·도술 효과음"]]:
   var row:=settings_row(box,String(spec[0]),String(spec[3]))
-  var slider:=HSlider.new();slider.min_value=0;slider.max_value=1;slider.step=.05;slider.value=storage.data[spec[1]];slider.custom_minimum_size=Vector2(300,36);style_slider(slider);row.add_child(slider)
+  var slider:=HSlider.new();slider.min_value=0;slider.max_value=1;slider.step=.05;slider.value=storage.data[spec[1]];slider.custom_minimum_size=Vector2(280,44);style_slider(slider);row.add_child(slider)
   var mute:=CheckBox.new();mute.text="음소거";mute.button_pressed=bool(storage.data.get(spec[2],false));style_check(mute);row.add_child(mute)
   var key: String=spec[1];var mute_key: String=spec[2]
   slider.value_changed.connect(func(value: float)->void:storage.data[key]=value;apply_settings())
   mute.toggled.connect(func(value: bool)->void:storage.data[mute_key]=value;apply_settings())
  var sensitivity_row:=settings_row(box,"조작감","가상 스틱 감도")
  var sensitivity_slider:=HSlider.new();sensitivity_slider.min_value=.6;sensitivity_slider.max_value=1.4;sensitivity_slider.step=.05
- sensitivity_slider.value=float(storage.data.sensitivity);sensitivity_slider.custom_minimum_size=Vector2(300,36);style_slider(sensitivity_slider);sensitivity_row.add_child(sensitivity_slider)
+ sensitivity_slider.value=float(storage.data.sensitivity);sensitivity_slider.custom_minimum_size=Vector2(280,44);style_slider(sensitivity_slider);sensitivity_row.add_child(sensitivity_slider)
  sensitivity_slider.value_changed.connect(func(value: float)->void:storage.data.sensitivity=value;sensitivity=value)
  var screen_row:=settings_row(box,"화면·진동","")
  var vibrate:=CheckBox.new();vibrate.text="진동 켜기";vibrate.button_pressed=storage.data.vibration;style_check(vibrate);screen_row.add_child(vibrate)
- var quality:=OptionButton.new();quality.add_item("보통 · 벚꽃·물결 효과");quality.add_item("낮음 · 효과 축소");quality.selected=1 if storage.data.quality=="낮음" else 0;quality.custom_minimum_size.y=38
- quality.add_theme_font_override("font",LC.FONT);quality.add_theme_font_size_override("font_size",14)
+ var quality:=OptionButton.new();quality.add_item("보통 · 벚꽃·물결 효과");quality.add_item("낮음 · 효과 축소");quality.selected=1 if storage.data.quality=="낮음" else 0;quality.custom_minimum_size.y=46
+ quality.add_theme_font_override("font",LC.FONT);quality.add_theme_font_size_override("font_size",17)
  screen_row.add_child(quality)
  vibrate.toggled.connect(func(value: bool)->void:storage.data.vibration=value)
  quality.item_selected.connect(func(index: int)->void:storage.data.quality="낮음" if index==1 else "보통")
- box.add_child(text("음소거는 배경음악·효과음 버스에 바로 적용됩니다.",12,Color(0.68,0.72,0.82,0.85)))
+ box.add_child(text("음소거는 배경음악·효과음 버스에 바로 적용됩니다.",15,Color(0.74,0.78,0.88,0.9)))
  var buttons:=HBoxContainer.new();buttons.add_theme_constant_override("separation",12);box.add_child(buttons)
  buttons.add_child(button("저장 및 닫기",func()->void:
   if storage.save()!=OK:notice("설정을 저장하지 못했습니다.")
@@ -625,8 +640,8 @@ func pause_menu() -> void:
  if screen!="match":return
  paused=true;world.process_mode=Node.PROCESS_MODE_DISABLED;rules.command("human","move",{"vector":Vector2.ZERO});rules.command("human","cancel_rescue")
  var box:=popup("일시정지 · 월하의 서원")
- box.add_child(text("도사 6명 vs 요괴 2명 · 10분간 술래잡기",17,Color("f0dcae")))
- box.add_child(text("요괴에게 봉인된 도사는 45초 뒤 탈락합니다. 동료가 4초간 구조하면 풀려납니다.\n항아리·나무 상자·등불·고양이·비석 5종에 둔갑해 숨을 수 있습니다.",14,Color("cfd7ea")))
+ box.add_child(text("도사 6명 vs 요괴 2명 · 10분간 술래잡기",19,Color("f0dcae")))
+ box.add_child(text("요괴에게 봉인된 도사는 45초 뒤 탈락합니다. 동료가 4초간 구조하면 풀려납니다.\n항아리·나무 상자·등불·고양이·비석 5종에 둔갑해 숨을 수 있습니다.",16,Color("cfd7ea")))
  box.add_child(button("계속하기",resume_match,true));box.add_child(button("설정",show_settings));box.add_child(button("로비로 나가기",func()->void:confirm("경기를 나가시겠습니까?",func()->void:cleanup_match();room={};paused=false;transition("lobby"))))
 func resume_match() -> void:
  close_popup();paused=false
@@ -673,14 +688,24 @@ func update_avatars() -> void:
  for info in visible:
   var id: String=info.id if info.id!="" else "shape:"+str(info.position)
   seen.append(id)
+  var target: Vector2=info.position+Vector2(0,-L.elevation(info.position))
   if not avatars.has(id):
-   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2(1.5,1.5);world.add_child(actor);actor.ingame_art=true;actor.art_id=String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
+   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(actor);actor.ingame_art=true;actor.art_id=String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
    if info.id=="human":actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
+   actor.position=target;actor.set_meta("target",target)
    avatars[id]=actor
-   var label:=text("",8);label.name="Name";label.position=Vector2(-52,-84);label.size=Vector2(104,14);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
+   var label:=text("",11);label.name="Name";label.position=Vector2(-58,-88);label.size=Vector2(116,18);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
    var mark:=preload("res://scripts/seal/color_marker.gd").new();mark.actor=actor;mark.name="Identity";actor.add_child(mark)
    var aura:=preload("res://scripts/survival/actor_aura.gd").new();aura.name="Aura";actor.add_child(aura)
-  var actor: WooActor=avatars[id];var previous:=actor.position;actor.position=info.position+Vector2(0,-L.elevation(info.position));actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=minf(20,actor.position.distance_to(previous))*.13;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;actor.appearance_form="seowon:"+info.form if info.form!="" else "human";actor.running=rules.players.get(info.id,{}).get("running",false)
+  var actor: WooActor=avatars[id]
+  # 60Hz 목표점을 매 프레임 부드럽게 따라가 뚝뚝 끊기는 이동을 없앤다.
+  var previous: Vector2=actor.get_meta("target",target)
+  var moved: float=previous.distance_to(target)
+  actor.set_meta("target",target)
+  var frame: float=clampf(get_process_delta_time(),0.001,0.05)
+  if target.distance_to(actor.position)>AVATAR_SNAP:actor.position=target
+  else:actor.position=actor.position.lerp(target,1.0-exp(-AVATAR_FOLLOW*frame))
+  actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=moved/22.0*PI;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;actor.appearance_form="seowon:"+info.form if info.form!="" else "human";actor.running=rules.players.get(info.id,{}).get("running",false)
   var tint: Color=C.tint(String(info.get("character","")))
   actor.tint=tint
   var aura: Node2D=actor.get_node_or_null("Aura")
@@ -700,11 +725,19 @@ func update_avatars() -> void:
   if effect.kind!="clone":continue
   var key: String=str(effect.id);live_effects.append(key)
   if not clones.has(key):
-   var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic;clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(1.5,1.5);world.add_child(clone);clones[key]=clone
+   var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic;clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clones[key]=clone
   var clone: WooActor=clones[key];clone.position=effect.position;clone.facing=effect.facing;clone.velocity=Vector2(36,0);clone.gait_phase+=.15;clone.gait_weight=1
  for key in clones.keys():
   if not live_effects.has(key):clones[key].queue_free();clones.erase(key)
- if is_instance_valid(camera):camera.position=rules.players[spectate].position+Vector2(0,-L.CAMERA_LIFT-L.elevation(rules.players[spectate].position));world.observer=rules.players[spectate].position
+ if is_instance_valid(camera):
+  var focus: Dictionary=rules.players.get(spectate,{})
+  var spot: Vector2=Vector2(focus.get("position",L.SPAWN))
+  var anchor:=spot-Vector2(0,L.elevation(spot))
+  # 화면 속 캐릭터 위치(이미 보간된 값)를 그대로 따라가 카메라 지연·떨림을 없앤다.
+  var rendered: Node2D=avatars.get(spectate)
+  if rendered!=null:anchor=rendered.position
+  camera.position=anchor+Vector2(0,-L.CAMERA_LIFT)
+  world.observer=rules.players[spectate].position
 func safe_layout() -> void:
  if not is_instance_valid(content):return
  var left:=26;var right:=26;var bottom:=18
@@ -719,23 +752,24 @@ func _process(delta: float) -> void:
  if screen=="selection" and rules!=null:
   if not backgrounded:
    fixed_clock+=minf(delta,.25)
-   while fixed_clock>=.05:rules.tick(.05);fixed_clock-=.05
+   while fixed_clock>=STEP:rules.tick(STEP);fixed_clock-=STEP
   if rules.phase=="loading":sequence+=1;changing=true;load_match(sequence);return
-  var timer: Label=ui.find_child("SelectionTimer",true,false)
-  if timer!=null:timer.text="선택 시간 %d초"%ceili(rules.selection_left)
-  var team_label: Label=ui.find_child("TeamSelection",true,false)
-  if team_label!=null:
-   var lines: Array[String]=[]
-   for p in rules.selection_view("human"):lines.append(p.name+" · "+("확정" if p.confirmed else "선택 중"))
-   team_label.text="\n".join(lines)
+  if is_instance_valid(selection_view):
+   selection_view.set_timer(rules.selection_left)
+   var done:=0;var total:=0
+   for entry in rules.selection_view("human"):
+    if entry.id=="human":continue
+    total+=1
+    if entry.confirmed:done+=1
+   selection_view.set_team({"done":done,"total":total})
   return
  if screen!="match" or rules==null or not is_instance_valid(world):return
  var me: Dictionary=rules.players.human
  if not paused and not backgrounded and modal==null:
   if rules.available(me):rules.command("human","move",{"vector":stick.vector*float(storage.data.sensitivity)})
   fixed_clock+=minf(delta,.25)
-  while fixed_clock>=.05:
-   rules.tick(.05);fixed_clock-=.05;bot_clock+=.05
+  while fixed_clock>=STEP:
+   rules.tick(STEP);fixed_clock-=STEP;bot_clock+=STEP
    if bot_clock>=.35 and rules.phase=="live":
     var spent:=bot_clock;bot_clock=0
     for bot in bots:bot.think(spent)
@@ -806,9 +840,8 @@ func update_hud() -> void:
  if me.captured:hint="봉인됨 · 동료가 구조 버튼을 4초 유지하면 풀려납니다"
  elif me.eliminated:hint="탈락 · 남은 경기를 관전합니다"
  elif me.outside>0:hint="안전구역 밖입니다 · 원 안으로 이동하세요"
- elif transformed:hint=""
- set_text(hint_label,hint)
- hint_label.visible=hint!=""
+ # 하단 힌트 바는 그리지 않는다(가림 방지). 상호작용 안내는 버튼 캡션에만 남긴다.
+ if is_instance_valid(hint_label):hint_label.visible=false
  if rules.phase=="countdown":
   var number:=ceili(rules.countdown)
   if number!=last_count:sound.play_clip("button");last_count=number
@@ -871,16 +904,33 @@ func advance_matching(delta: float) -> void:
  if target!=match_slots:
   match_slots=target
   if is_instance_valid(quick):quick.set_slots(match_slots)
- if match_slots>=8:finish_matching()
 
+## LoL처럼 중간 대기실 없이 바로 캐릭터 선택 → 맵 로딩 → 인게임으로 직행한다.
 func finish_matching() -> void:
  if screen!="quick" or changing:return
- match_slots=8
+ if match_slots<8:match_slots=8
  room={"name":"빠른 매치 · 월하의 서원","count":8,"fill":true,"code":generate_code(),"yokai":2,"quick":true}
  room_code=String(room.code)
  remember_code(room_code)
  setup_participants()
- transition("room")
+ rules.players.human.ready=true
+ if not begin_match():room={};transition("lobby")
+
+## 연습 (봇): 옛 연습장 대신 최신 월하의 서원 8인 봇전으로 직행한다(선택·로딩도 자동).
+func start_practice_match() -> void:
+ if screen!="lobby" or changing:return
+ cleanup_match()
+ room={"name":"연습 · 월하의 서원 봇전","count":8,"fill":true,"code":generate_code(),"yokai":2,"practice":true}
+ room_code=String(room.code)
+ setup_participants()
+ rules.players.human.ready=true
+ if not begin_match():room={};transition("lobby");return
+ # 봇과 내 캐릭터를 곧바로 확정하고 대기 없이 전장으로 들어간다.
+ for i in range(120):
+  if rules.phase!="selection":break
+  rules.tick(.1)
+  if not rules.players.human.confirmed:rules.confirm_character("human")
+ if rules.phase=="loading":sequence+=1;changing=true;load_match(sequence)
 
 ## 친구와 함께: 방 코드를 만들어 공유하거나, 받은 코드로 같은 방에 들어간다.
 func friends_screen() -> void:

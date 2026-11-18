@@ -30,9 +30,9 @@ func build() -> void:
 	for i in range(TABS.size()):
 		var spec: Dictionary=TABS[i]
 		var key: String=spec.id
-		var target:=button(String(spec.label),func()->void:set_tab(key),self,key==tab,15)
+		var target:=button(String(spec.label),func()->void:set_tab(key),self,key==tab,18)
 		target.name="ShopTab_"+key
-		place(target,Rect2(26,96+i*72,112,64))
+		place(target,Rect2(26,96+i*72,122,64))
 		var accent:=ColorRect.new()
 		accent.color=Color(0.85,0.72,0.47,0.95)
 		accent.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -42,11 +42,11 @@ func build() -> void:
 		tab_buttons[key]={"button":target,"accent":accent}
 	# 페이지 이동
 	for spec in [["‹",-1],["›",1]]:
-		var target:=button(String(spec[0]),func()->void:turn_page(int(spec[1])),self,false,18)
+		var target:=button(String(spec[0]),func()->void:turn_page(int(spec[1])),self,false,20)
 		page_buttons.append(target)
-	page_label=label(self,"1 / 1",12.5,T.MUTED)
+	page_label=label(self,"1 / 1",15,T.MUTED)
 	page_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	grid_hint=label(self,"카드를 눌러 오른쪽에서 미리 보세요",11.5,Color(0.72,0.76,0.86,0.8))
+	grid_hint=label(self,"카드를 눌러 오른쪽에서 미리 보세요",15,Color(0.76,0.80,0.90,0.9))
 	# 미리보기 판
 	var frame:=panel(self,Color(0.035,0.043,0.09,0.93),14,Color(0.55,0.45,1.0,0.16))
 	place(frame,Rect2(PANEL_POS,PANEL_SIZE))
@@ -131,7 +131,7 @@ func _rebuild_cards() -> void:
 
 func _make_card(item: Dictionary,rect: Rect2) -> void:
 	var id: String=String(item.id)
-	var card:=button("",func()->void:select_item(id),self,false,13)
+	var card:=button("",func()->void:select_item(id),self,false,15)
 	card.name="ShopCard_"+id.replace(":","_")
 	place(card,rect)
 	var trim:=Art.Filigree.new()
@@ -139,18 +139,25 @@ func _make_card(item: Dictionary,rect: Rect2) -> void:
 	trim.arm=17.0
 	trim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	card.add_child(trim)
-	# 그림
+	# 그림: card의 자식들은 card 안쪽 로컬 좌표(3,3)부터 채운다.
 	match String(item.kind):
 		"character":
 			card.clip_contents=true
 			cover_art(card,String(item.portrait),Rect2(rect.position+Vector2(3,3),rect.size-Vector2(6,6)),0.0)
-			var emblem:=chip(card,"도" if String(item.team)=="daoist" else "요",T.DAO if String(item.team)=="daoist" else T.YOKAI,11,
+			var emblem:=chip(card,"도" if String(item.team)=="daoist" else "요",T.DAO if String(item.team)=="daoist" else T.YOKAI,15,
 				Color(0.07,0.05,0.02,1.0) if String(item.team)=="daoist" else Color(0.06,0.03,0.10,1.0))
-			place(emblem,Rect2(rect.position.x+11,rect.position.y+11,26,20))
+			emblem.custom_minimum_size=Vector2(32,26)
+			place(emblem,Rect2(rect.position.x+11,rect.position.y+11,32,26))
 		"skin":
 			card.clip_contents=true
-			var portrait:=String(C.find(String(game.storage.data.daoist)).get("portrait",""))
-			cover_art(card,portrait,Rect2(rect.position+Vector2(3,3),rect.size-Vector2(6,6)),0.0,Color(item.color).lerp(Color.WHITE,.45))
+			# 도포 색은 얼굴 확대 대신 실제 인게임 캐릭터에 입혀 보여 준다.
+			var wash:=ColorRect.new()
+			wash.color=Color(item.color).lerp(Color(0.04,0.05,0.11),.78)
+			wash.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			card.add_child(wash)
+			place(wash,Rect2(rect.position+Vector2(3,3),rect.size-Vector2(6,6)))
+			var holder:=figure(card,String(game.storage.data.daoist),Vector2(rect.size.x-30,96),Color(item.color).lerp(Color.WHITE,.45))
+			place(holder,Rect2(rect.position.x+15,rect.position.y+4,rect.size.x-30,96))
 
 		"effect":
 			var orb:=Art.Orb.new()
@@ -165,41 +172,42 @@ func _make_card(item: Dictionary,rect: Rect2) -> void:
 			var plaque:=Art.Plaque.new()
 			card.add_child(plaque)
 			plaque.position=Vector2(24,4);plaque.size=Vector2(rect.size.x-48,118)
-			var plate_text:=label(card,String(item.name),20,T.GOLD_SOFT,true)
+			var plate_text:=label(card,String(item.name),24,T.GOLD_SOFT,true)
 			plate_text.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			plate_text.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-			place(plate_text,Rect2(rect.position.x+24,rect.position.y+26,rect.size.x-48,44))
-	# 아래쪽 이름 띠
+			place(plate_text,Rect2(rect.position.x+24,rect.position.y+26,rect.size.x-48,48))
+	# 아래쪽 이름 띠(카드 로컬 좌표)
 	var fade:=TextureRect.new()
 	fade.texture=T.fade_texture(Color(0.03,0.035,0.08,0.0),Color(0.03,0.035,0.08,0.97))
 	fade.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 	fade.stretch_mode=TextureRect.STRETCH_SCALE
 	fade.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	card.add_child(fade)
-	fade.position=Vector2(3,rect.size.y*.42);fade.size=Vector2(rect.size.x-6,rect.size.y*.58)
-	var name_label:=label(card,String(item.name),16,T.IVORY,true)
+	fade.position=Vector2(3,rect.size.y*.40);fade.size=Vector2(rect.size.x-6,rect.size.y*.60)
+	# 이름·상태 글씨가 원화 얼굴 위에서도 또렷하게 읽히도록 진한 띠를 깐다.
+	var shade:=ColorRect.new()
+	shade.color=Color(0.02,0.026,0.062,0.82)
+	shade.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	card.add_child(shade)
+	place(shade,Rect2(rect.position.x+3,rect.position.y+rect.size.y-98,rect.size.x-6,95))
+	var name_label:=label(card,String(item.name),20,T.IVORY,true)
 	name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(name_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-62,rect.size.x-16,24))
+	place(name_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-86,rect.size.x-16,30))
 	var sub:=String(item.role)
-	var sub_label:=label(card,sub,10.5,T.MUTED)
+	var sub_label:=label(card,sub,15,T.MUTED)
 	sub_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(sub_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-38,rect.size.x-16,16))
+	place(sub_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-56,rect.size.x-16,22))
 	var state:=_price_text(item)
-	var state_label:=label(card,state,11.5,T.GOLD if _owned(item) else Color("cdbb92"))
+	var state_label:=label(card,state,16,T.GOLD if _owned(item) else Color("cdbb92"))
 	state_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(state_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-21,rect.size.x-16,16))
-	# 옷감 색 띠는 이름 띠 위에 올린다(스킨 카드에서만).
+	place(state_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-32,rect.size.x-16,24))
+	# 옷감 색 띠는 이름 띠 바로 위에 얇게 올린다(스킨 카드에서만).
 	if String(item.kind)=="skin":
 		var band:=Panel.new()
 		band.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		band.add_theme_stylebox_override("panel",T.panel_box(Color(item.color).lerp(Color.WHITE,.08),4,Color(0.95,0.85,0.6,0.8),1))
+		band.add_theme_stylebox_override("panel",T.panel_box(Color(item.color).lerp(Color.WHITE,.08),3,Color(0.95,0.85,0.6,0.8),1))
 		card.add_child(band)
-		place(band,Rect2(rect.position.x+14,rect.position.y+rect.size.y-98,rect.size.x-28,12))
-		var knot:=Panel.new()
-		knot.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		knot.add_theme_stylebox_override("panel",T.panel_box(Color(item.color),8,Color(0.95,0.85,0.6,0.95),1))
-		card.add_child(knot)
-		place(knot,Rect2(rect.position.x+rect.size.x*.5-9,rect.position.y+rect.size.y-112,18,18))
+		place(band,Rect2(rect.position.x+12,rect.position.y+rect.size.y-99,rect.size.x-24,6))
 	card.set_meta("name_label",name_label)
 	card.set_meta("trim",trim)
 	card.set_meta("id",id)
@@ -258,10 +266,10 @@ func _rebuild_preview() -> void:
 	preview_body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(preview_body)
 	var item:=view_item(_raw(selected_id))
-	var heading:=label(preview_body,"달빛 미리보기",11,T.gold(.8))
-	place(heading,Rect2(PANEL_POS.x+14,PANEL_POS.y+8,200,18))
+	var heading:=label(preview_body,"달빛 미리보기",15,T.gold(.85))
+	place(heading,Rect2(PANEL_POS.x+16,PANEL_POS.y+8,220,22))
 	var heading_rule:=divider(preview_body,Color(0.85,0.72,0.47,0.2))
-	place(heading_rule,Rect2(PANEL_POS.x+14,PANEL_POS.y+28,PANEL_SIZE.x-28,1))
+	place(heading_rule,Rect2(PANEL_POS.x+14,PANEL_POS.y+32,PANEL_SIZE.x-28,1))
 	var pedestal:=Art.Pedestal.new()
 	preview_body.add_child(pedestal)
 	place(pedestal,Rect2(PANEL_POS.x+4,PANEL_POS.y+22,PANEL_SIZE.x-8,228))
@@ -284,40 +292,40 @@ func _rebuild_preview() -> void:
 		plate.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		plate.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 		place(plate,Rect2(PANEL_POS.x+PANEL_SIZE.x*.5-92,PANEL_POS.y+44,184,30))
-	var name_label:=label(preview_body,String(item.name),26,T.GOLD_SOFT,true)
+	var name_label:=label(preview_body,String(item.name),28,T.GOLD_SOFT,true)
 	name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(name_label,Rect2(PANEL_POS.x+8,PANEL_POS.y+254,PANEL_SIZE.x-16,34))
+	place(name_label,Rect2(PANEL_POS.x+8,PANEL_POS.y+256,PANEL_SIZE.x-16,38))
 	var chips:=HBoxContainer.new()
 	chips.alignment=BoxContainer.ALIGNMENT_CENTER
 	chips.add_theme_constant_override("separation",8)
 	chips.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	preview_body.add_child(chips)
-	place(chips,Rect2(PANEL_POS.x+8,PANEL_POS.y+292,PANEL_SIZE.x-16,22))
+	place(chips,Rect2(PANEL_POS.x+8,PANEL_POS.y+298,PANEL_SIZE.x-16,26))
 	var team_name:="도사" if _team_of(character_id)=="daoist" else "요괴"
-	var team_chip:=chip(chips,team_name,T.DAO if team_name=="도사" else T.YOKAI,11,
+	var team_chip:=chip(chips,team_name,T.DAO if team_name=="도사" else T.YOKAI,15,
 		Color(0.07,0.05,0.02,1.0) if team_name=="도사" else Color(0.06,0.03,0.10,1.0))
-	team_chip.custom_minimum_size=Vector2(46,22)
-	var role_chip:=chip(chips,String(item.role),Color(0.12,0.14,0.22,0.92),11,T.MUTED)
-	role_chip.custom_minimum_size=Vector2(maxf(64.0,T.FONT.get_string_size(String(item.role),HORIZONTAL_ALIGNMENT_LEFT,-1,11).x+22),22)
-	var desc:=label(preview_body,String(item.intro),12.5,Color(0.80,0.84,0.93))
+	team_chip.custom_minimum_size=Vector2(58,26)
+	var role_chip:=chip(chips,String(item.role),Color(0.12,0.14,0.22,0.92),15,T.MUTED)
+	role_chip.custom_minimum_size=Vector2(maxf(76.0,T.FONT.get_string_size(String(item.role),HORIZONTAL_ALIGNMENT_LEFT,-1,15).x+26),26)
+	var desc:=label(preview_body,String(item.intro),16,Color(0.82,0.86,0.94))
 	desc.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	desc.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(desc,Rect2(PANEL_POS.x+20,PANEL_POS.y+320,PANEL_SIZE.x-40,44))
-	var detail:=label(preview_body,_detail_text(item),11.5,T.gold(.8))
+	place(desc,Rect2(PANEL_POS.x+20,PANEL_POS.y+330,PANEL_SIZE.x-40,54))
+	var detail:=label(preview_body,_detail_text(item),15,T.gold(.85))
 	detail.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(detail,Rect2(PANEL_POS.x+18,PANEL_POS.y+372,PANEL_SIZE.x-36,20))
+	place(detail,Rect2(PANEL_POS.x+18,PANEL_POS.y+388,PANEL_SIZE.x-36,22))
 	var line:=divider(preview_body,Color(0.85,0.72,0.47,0.18))
-	place(line,Rect2(PANEL_POS.x+24,PANEL_POS.y+402,PANEL_SIZE.x-48,1))
-	var state_label:=label(preview_body,_state_text(item),12,T.GOLD_SOFT if _equipped(item) else T.MUTED)
+	place(line,Rect2(PANEL_POS.x+24,PANEL_POS.y+416,PANEL_SIZE.x-48,1))
+	var state_label:=label(preview_body,_state_text(item),15,T.GOLD_SOFT if _equipped(item) else T.MUTED)
 	state_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(state_label,Rect2(PANEL_POS.x+8,PANEL_POS.y+412,PANEL_SIZE.x-16,20))
-	action_button=button(_action_text(item),func()->void:_act(item),preview_body,not _equipped(item),17)
+	place(state_label,Rect2(PANEL_POS.x+8,PANEL_POS.y+424,PANEL_SIZE.x-16,22))
+	action_button=button(_action_text(item),func()->void:_act(item),preview_body,not _equipped(item),19)
 	action_button.name="ShopAction"
-	place(action_button,Rect2(PANEL_POS.x+16,PANEL_POS.y+442,PANEL_SIZE.x-32,52))
+	place(action_button,Rect2(PANEL_POS.x+16,PANEL_POS.y+452,PANEL_SIZE.x-32,54))
 	action_button.disabled=_equipped(item)
-	var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",10.5,Color(0.68,0.72,0.82,0.75))
+	var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",14,Color(0.74,0.78,0.88,0.85))
 	pay_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+500,PANEL_SIZE.x-16,16))
+	place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+512,PANEL_SIZE.x-16,20))
 
 func _raw(id: String) -> Dictionary:
 	for item in _items():
@@ -380,9 +388,9 @@ func select_item(id: String) -> void:
 
 func arrange() -> void:
 	if page_buttons.size()==2:
-		place(page_buttons[0],Rect2(GRID_POS.x+GRID_WIDTH*.5-150,542,34,32))
-		place(page_buttons[1],Rect2(GRID_POS.x+GRID_WIDTH*.5+116,542,34,32))
+		place(page_buttons[0],Rect2(GRID_POS.x+GRID_WIDTH*.5-160,538,42,40))
+		place(page_buttons[1],Rect2(GRID_POS.x+GRID_WIDTH*.5+120,538,42,40))
 	if is_instance_valid(page_label):
-		place(page_label,Rect2(GRID_POS.x+GRID_WIDTH*.5-80,544,160,26))
+		place(page_label,Rect2(GRID_POS.x+GRID_WIDTH*.5-84,542,168,30))
 	if is_instance_valid(grid_hint):
-		place(grid_hint,Rect2(GRID_POS.x,576,GRID_WIDTH,18))
+		place(grid_hint,Rect2(GRID_POS.x,578,GRID_WIDTH,22))

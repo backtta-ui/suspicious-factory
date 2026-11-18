@@ -35,7 +35,11 @@ func run() -> void:
  var dao: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist")[0]
  var other: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist")[1]
  var evil: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai")[0]
+ # 시작 직후 요괴는 6초 유예를 받는다(같은 자리 봉인 방지).
+ check(float(evil.cd.get("seal",0.0))-r.elapsed>5.9,"yokai starts with the six second seal grace")
  dao.position=L.SPAWN;evil.position=L.SPAWN+Vector2(30,0);evil.facing=0
+ check(not r.command(evil.id,"seal") and not dao.captured,"grace blocks the instant seal")
+ evil.cd={}
  check(r.command(evil.id,"seal") and not dao.captured,"wrong-facing seal misses")
  check(is_equal_approx(evil.cd.seal-r.elapsed,6),"miss cooldown six")
  evil.cd={};evil.facing=4;check(r.command(evil.id,"seal") and dao.captured,"forward cone seals")
@@ -50,12 +54,33 @@ func run() -> void:
  evil.cd={};check(r.command(evil.id,"seal") and not dao.captured,"immunity blocks recapture")
  check(not r.command(dao.id,"seal"),"daoist cannot seal")
  dao.position=L.SPAWN;dao.intent=Vector2.ZERO;r.command(dao.id,"move",{"vector":Vector2(1,1)});var before: Vector2=dao.position;r.tick(.1)
- print("diagonal distance ",dao.position.distance_to(before));check(absf(dao.position.distance_to(before)-8.8)<.01,"diagonal normalized")
- r.command(dao.id,"run",{"held":true});before=dao.position;r.tick(.1);check(dao.position.distance_to(before)>14.1 and dao.stamina<100,"running faster and drains stamina")
+ print("diagonal distance ",dao.position.distance_to(before));check(absf(dao.position.distance_to(before)-13.5)<.02,"diagonal normalized")
+ r.command(dao.id,"run",{"held":true});before=dao.position;r.tick(.1);check(dao.position.distance_to(before)>20.9 and dao.stamina<100,"running faster and drains stamina")
  dao.stamina=.1;r.tick(.1);check(dao.exhausted,"stamina exhaustion latch")
  dao.intent=Vector2.ZERO;r.command(dao.id,"run",{"held":false})
  for i in range(20):r.tick(.1)
  check(not dao.exhausted and dao.stamina>=25,"stamina recovery")
+ # 6) 시작 배치: 도사는 중앙~서남, 요괴는 600px 이상 떨어진 외곽
+ var spawn_room:=room()
+ for p in spawn_room.players.values():p.ready=true
+ check(spawn_room.start(),"spawn split room starts")
+ var daoists: Array=spawn_room.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist")
+ var yokai: Array=spawn_room.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai")
+ var legal:=true;var separated:=true;var spread:=true
+ for p in spawn_room.players.values():
+  legal=legal and L.can_stand(p.position)
+  if p.role=="daoist":legal=legal and p.position.distance_to(L.SPAWN)<520
+  else:legal=legal and p.position.distance_to(L.SPAWN)>520
+ for y in yokai:
+  for d in daoists:
+   separated=separated and y.position.distance_to(d.position)>=600
+ for i in range(daoists.size()):
+  for j in range(i+1,daoists.size()):
+   spread=spread and (daoists[i].position as Vector2).distance_to(daoists[j].position)>=40
+ check(legal,"every starter stands on legal ground inside the courtyard")
+ check(separated,"yokai spawn at least 600px away from every daoist")
+ check(spread,"daoists do not stack on the same tile")
+ print("SPAWN daoists ",daoists.map(func(p: Dictionary)->String:return str(p.position))," yokai ",yokai.map(func(p: Dictionary)->String:return str(p.position)))
  var obstacle: Rect2=L.LOW[0];var a:=Vector2(obstacle.position.x+50,obstacle.position.y-35);var b:=a+Vector2(0,85)
  check(L.move(a,b).y<obstacle.end.y,"low obstacle blocks ground walk")
  check(L.move(a,b,true).distance_to(b)<1,"jump crosses low obstacle")

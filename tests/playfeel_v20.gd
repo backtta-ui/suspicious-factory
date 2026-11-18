@@ -1,0 +1,171 @@
+extends SceneTree
+## 2.0.18 플레이 감각·UI 점검: 60Hz 고정 스텝, 카메라/캐릭터 비율, 도사·요괴 분리 스폰,
+## 시작 6초 봉인 유예, 20:9 와이드 화면에서 로비 하위 화면이 밀리지 않는지,
+## 뒤로가기 버튼, 빠른 매치 직행, 연습(봇) 최신 서원 봇전, 이동 속도, 캐릭터 생동감.
+const App=preload("res://scenes/survival.tscn")
+const AppScript=preload("res://scripts/survival/app.gd")
+const C=preload("res://scripts/survival/characters.gd")
+const L=preload("res://scripts/survival/layout.gd")
+const Rules=preload("res://scripts/survival/rules.gd")
+const Actor=preload("res://scripts/woo/actor.gd")
+var checks:=0
+var failures:=0
+var game: Node
+func check(ok: bool,message: String) -> void:
+ checks+=1
+ if not ok:failures+=1;push_error(message)
+func frames(n: int=5) -> void:
+ for i in range(n):await process_frame
+func named(root: Node,key: String) -> Node:
+ return root.find_child(key,true,false)
+func labels_outside(card: Control) -> int:
+ var box:=card.get_global_rect().grow(2.0)
+ var count:=0
+ for child in card.get_children():
+  if child is Label and child.visible:
+   if not box.encloses((child as Label).get_global_rect()):count+=1
+ return count
+func _initialize() -> void:run.call_deferred()
+func run() -> void:
+ # 1) 60Hz 고정 스텝 · 시점/캐릭터 비율 · 이동 속도
+ check(is_equal_approx(float(AppScript.STEP),1.0/60.0),"gameplay fixed step is 60Hz")
+ check(L.CAMERA_ZOOM>=1.2 and L.CAMERA_ZOOM<=1.45,"camera zoom widened to about 1.32")
+ check(L.CAMERA_LIFT<=40.0,"camera lift trimmed to the new zoom")
+ check(is_equal_approx(float(C.find("daoist:woochi").speed),135.0),"walk speed raised to 135")
+ check(is_equal_approx(float(C.find("daoist:woochi").run_speed),210.0),"run speed raised to 210")
+ # 2) 분리 스폰 · 시작 유예
+ var daoists:=L.daoist_spawns()
+ var yokai:=L.yokai_spawns()
+ check(daoists.size()==6 and yokai.size()==2,"six daoist spawns and two yokai spawns are defined")
+ var legal:=true;var separated:=true
+ for p in daoists:legal=legal and L.can_stand(p)
+ for p in yokai:legal=legal and L.can_stand(p)
+ for y in yokai:
+  for d in daoists:separated=separated and (y as Vector2).distance_to(d)>=L.SPAWN_SEPARATION
+ check(legal,"every spawn point stands on legal ground")
+ check(separated,"yokai spawn at least 600px from every daoist")
+ var room:=Rules.new(9)
+ for i in range(8):room.add("p%d"%i,"참가자%d"%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[i%4].id)
+ for p in room.players.values():p.ready=true
+ check(room.start(),"room starts with split spawns")
+ var spaced:=true
+ for y in room.players.values():
+  if y.role!="yokai":continue
+  for d in room.players.values():
+   if d.role=="daoist":spaced=spaced and (y.position as Vector2).distance_to(d.position)>=L.SPAWN_SEPARATION
+ check(spaced,"real match players use the separated spawn list")
+ for i in range(400):
+  if room.phase=="loading":break
+  room.tick(.1)
+ check(room.phase=="loading","bots finish character selection")
+ room.ready_map()
+ for i in range(31):room.tick(.1)
+ var sealed_early:=false
+ for p in room.players.values():
+  if p.role!="yokai":continue
+  sealed_early=sealed_early or float(p.cd.get("seal",0.0))-room.elapsed<5.5
+ check(room.phase=="live" and not sealed_early,"yokai receive the six second seal grace at live")
+ # 3) 와이드(20:9) 화면에서 하위 화면이 origin만큼 밀리지 않는다
+ root.size=Vector2i(2340,1080)
+ game=App.instantiate();root.add_child(game);await frames(8)
+ check(is_equal_approx(root.get_visible_rect().size.x,1560.0) and is_equal_approx(root.get_visible_rect().size.y,720.0),"20:9 phone viewport expands to 1560x720")
+ game.storage.data.coins=2400
+ game.build("market");await frames(4)
+ var back: Node=named(game.ui,"LobbyBack")
+ check(back!=null and (back as Control).is_visible_in_tree() and (back.get_global_rect().get_center().x)<260.0,"back button sits at the left edge on a wide screen")
+ var title: Label=game.shop.title_label
+ check(not (back as Control).get_global_rect().intersects(title.get_global_rect()),"wide screen back button never overlaps the title")
+ var outside:=0
+ for card in game.shop.cards:outside+=labels_outside(card as Control)
+ check(outside==0,"shop card labels stay inside their card on a wide screen")
+ game.shop.set_tab("skin");await frames(3)
+ outside=0
+ for card in game.shop.cards:outside+=labels_outside(card as Control)
+ check(outside==0,"skin cards keep their labels inside on a wide screen")
+ var readable:=true
+ for card in game.shop.cards:
+  for child in card.get_children():
+   if child is Label:
+    var size: int=int((child as Label).get_theme_font_size("font_size"))
+    readable=readable and size>=13
+ check(readable,"every shop card label is at least 13pt")
+ # 4) 화면마다 뒤로가기가 실제로 보인다
+ for destination in ["friends","achievements","mail","alerts","quick"]:
+  game.build(destination);await frames(3)
+  var button: Node=named(game.ui,"LobbyBack")
+  check(button!=null and (button as Control).is_visible_in_tree(),"visible back button on "+destination)
+  if destination=="quick":
+   check(String((button as Control).get("text")).contains("뒤로"),"quick match back button is labelled")
+ game.build("characters");await frames(4)
+ check(named(game.ui,"CodexBack")!=null and (named(game.ui,"CodexBack") as Control).size.x>=60.0,"codex back button is large enough for touch")
+ # 5) 빠른 매치 직행: 대기실 없이 캐릭터 선택
+ game.build("lobby");await frames(2)
+ game.open_quick()
+ for i in range(200):
+  await process_frame
+  if game.screen=="quick" and not game.changing:break
+ for i in range(30):game.advance_matching(.5)
+ game.finish_matching()
+ for i in range(200):
+  await process_frame
+  if game.screen=="selection" and not game.changing:break
+ check(game.screen=="selection","quick match accept goes straight to character selection")
+ check(named(game.ui,"SelectionBack")!=null and named(game.ui,"SelectionConfirm")!=null,"selection screen has back and confirm buttons")
+ check(game.rules.players.size()==8 and game.rules.yokai_count==2,"quick match keeps eight players with two yokai")
+ var cards_outside:=0
+ for child in game.ui.find_children("SelectCard_*","Button",true,false):cards_outside+=labels_outside(child as Control)
+ check(cards_outside==0,"selection card labels stay inside their cards")
+ game.back();await frames(2)
+ if game.modal!=null:game.close_popup()
+ game.build("lobby");await frames(2)
+ # 6) 연습(봇)은 최신 월하의 서원 봇전으로 직행한다
+ game.start_practice_match()
+ for i in range(600):
+  await process_frame
+  if game.screen=="match" and not game.changing:break
+ check(game.screen=="match" and is_instance_valid(game.world),"practice hotspot opens the real seowon bot match")
+ check(game.room.get("practice",false)==true and game.rules.yokai_count==2,"practice match keeps the six daoist two yokai setup")
+ # 7) 인게임: 캐릭터 배율·생동감·부드러운 추적
+ var human: Node2D=game.avatars.get("human",null)
+ check(human!=null and (human as Node2D).scale.x<1.3 and (human as Node2D).scale.x>1.0,"in-game actor uses the smaller 1.12 scale")
+ check(is_instance_valid(game.camera) and not game.camera.position_smoothing_enabled,"camera tracks the 60Hz avatar without extra smoothing")
+ var me: Dictionary=game.rules.players.human
+ game.bots.clear()
+ game.rules.phase="live";game.rules.elapsed=1.0
+ var art: Node=human.get("ingame_sprite")
+ # 마당 가운데(L.SPAWN)에서 서쪽으로 걸어 애니메이션을 확인한다(사방이 열린 자리).
+ me.position=L.SPAWN;me.ground=L.SPAWN;me.facing=4
+ game.update_avatars()
+ var seen_bob:=false
+ var start_pos: Vector2=(human as Node2D).position
+ var start_sim: Vector2=me.position
+ # 앱 자체 _process가 스틱을 0으로 되돌리지 않게 잠시 끄고 시뮬레이션을 직접 돌린다.
+ game.set_process(false)
+ var accepted:=0
+ for i in range(60):
+  game.rules.phase="live"
+  if game.rules.command("human","move",{"vector":Vector2(-1,0)}):accepted+=1
+  game.rules.tick(1.0/60.0)
+  game.update_avatars()
+  await process_frame
+  if art!=null:
+   var inner: Sprite2D=art.get("sprite")
+   if inner!=null and absf(inner.position.y)>0.7:seen_bob=true
+ game.set_process(true)
+ print("MOVE accepted=",accepted," phase=",game.rules.phase," moved=",me.position.distance_to(start_sim)," human_moved=",(human as Node2D).position.distance_to(start_pos)," role=",me.role)
+ me.intent=Vector2.ZERO
+ check(seen_bob,"walking sprite bobs off the ground instead of sliding")
+ check(me.position.distance_to(start_sim)>20.0,"real simulation moved the player")
+ check((human as Node2D).position.distance_to(me.position)<8.0,"avatar tracks the moving simulation closely")
+ check(art!=null and (art.get("dust") as Array)!=null,"footstep dust buffer exists")
+ me.intent=Vector2.ZERO
+ # 8) 뒤로가기: 인게임 일시정지 메뉴에도 로비로 나가기가 있다
+ game.pause_menu();await frames(3)
+ var leave: Node=null
+ for child in game.modal.find_children("*","Button",true,false):
+  if String((child as Control).get("text")).contains("로비로") or String((child as Control).get("text")).contains("나가기"):leave=child
+ check(leave!=null,"match pause menu keeps a visible lobby exit")
+ game.close_popup();await frames(2)
+ print("PLAYFEEL V2.0: ",checks," checks / ",failures," failures")
+ game.queue_free();await frames(4)
+ quit(1 if failures else 0)

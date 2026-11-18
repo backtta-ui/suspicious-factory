@@ -69,7 +69,7 @@ static func character(team: String,entry: Dictionary) -> Dictionary:
    break
  return {"id":team+":"+id,"name":entry.name,"team":team,"team_name":TEAM_NAMES[team],"role":entry.role,"intro":entry.intro,
   "body":entry.body,"sprite":PORTRAIT_DIR+id+"-full.png","portrait":PORTRAIT_DIR+id+"-portrait.png","animation":"native-eight-direction-rig",
-  "speed":88.0,"run_speed":142.0,"jump_seconds":.8,
+  "speed":135.0,"run_speed":210.0,"jump_seconds":.8,
   "passive":"지속 능력 없음 · 공통 이동 성능","active":active,"skill":skill,
   "abilities":entry.abilities.duplicate(true),"description":entry.intro}
 static func roster() -> Array:

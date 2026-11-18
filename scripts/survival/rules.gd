@@ -34,15 +34,23 @@ func add(id: String,name: String,daoist: String,yokai: String) -> bool:
  if phase!="room" or players.size()>=8 or C.find(daoist).is_empty() or C.find(yokai).is_empty():return false
  players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"wobble":0.0,"form_origin":L.SPAWN,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stats":{"seals":0,"misses":0,"rescues":0},"confirmed":false,"ready":id!="human","color":players.size()}
  return true
+## 시작 직후 요괴가 바로 봉인하지 못하도록 주는 유예(초).
+const SEAL_GRACE=6.0
 func start() -> bool:
  if phase!="room" or players.size() not in [6,8]:return false
  if not players.values().all(func(p: Dictionary)->bool:return p.ready):return false
  var ids: Array=players.keys()
  for i in range(ids.size()-1,0,-1):
   var j:=rng.randi_range(0,i);var value=ids[i];ids[i]=ids[j];ids[j]=value
+ var daoist_index:=0;var yokai_index:=0
  for i in range(ids.size()):
   var p: Dictionary=players[ids[i]];p.role="yokai" if i<yokai_count else "daoist";p.character=""
-  p.position=L.safe(L.SPAWN+Vector2.from_angle(i*TAU/ids.size())*150);p.ground=p.position
+  # 도사는 중앙~서남 안전 지대, 요괴는 600px 이상 떨어진 외곽에서 시작한다.
+  var seat:=yokai_index if p.role=="yokai" else daoist_index
+  var spot: Vector2=L.spawns_for(p.role,seat)
+  if p.role=="yokai":yokai_index+=1
+  else:daoist_index+=1
+  p.position=spot;p.ground=spot;p.origin=spot;p.form_origin=spot;p.intent=Vector2.ZERO;p.facing=6 if p.role=="daoist" else 2
  phase="selection";selection_left=25;selection_elapsed=0;return true
 func select_character(id: String,character_id: String) -> bool:
  if phase!="selection" or not players.has(id) or players[id].confirmed:return false
@@ -170,7 +178,11 @@ func tick(delta: float) -> void:
   return
  if phase=="countdown":
   countdown=maxf(0,countdown-delta)
-  if countdown<=0:phase="live"
+  if countdown<=0:
+   phase="live"
+   # 시작 신호와 동시에 요괴가 바로 앞 도사를 봉인하던 문제: 6초 유예를 준다.
+   for p in players.values():
+    if p.role=="yokai":p.cd["seal"]=maxf(float(p.cd.get("seal",0.0)),elapsed+SEAL_GRACE)
   return
  if phase!="live":return
  elapsed=minf(600,elapsed+delta)
