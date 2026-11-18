@@ -1,89 +1,82 @@
 extends "res://scripts/ui/lobby_screen.gd"
-## 2.0.23 우편·알림 — 봉인된 편지 목록 + 펼친 한지 두루마리.
-## 왼쪽: 붉은 낙관으로 봉인된 편지 카드(선택 시 금테 광) / 오른쪽: 한지 편지지에 먹글씨 본문,
-## 아래에 동봉 보상과 입체 황동 수령 버튼. 읽음·수령 상태는 실제 저장과 연결된다.
+## 2.0.25 우편함 — 시안(월하의 서원 우편함) 복제.
+## 왼쪽: 금테 레일(우편/알림) + 봉인된 편지 목록 카드, 오른쪽: 한지 두루마리에 먹글씨 본문과
+## 동봉 보상 타일·금빛 촉 수령 버튼. 읽음·수령 상태는 실제 저장과 연결된다.
 const UIK=preload("res://scripts/ui/ui_kit.gd")
 const P=preload("res://scripts/ui/ui_palette.gd")
 const G=preload("res://scripts/ui/room_glyphs.gd")
 const LC=T
-const LIST_POS:=Vector2(26,132)
-const LIST_W:=366.0
-const LIST_H:=500.0
-const SHEET_POS:=Vector2(410,132)
-const SHEET_W:=844.0
-const SHEET_H:=500.0
-const INK=Color("2a2016")
-const INK_SOFT=Color("584634")
+const RAIL:=Rect2(18,138,140,196)
+const LIST:=Rect2(174,82,500,596)
+const CARD_H:=106.0
+const CARD_GAP:=10.0
+const SHEET_Y:=76.0
+const SHEET_H:=600.0
+const INK=Color("2c2115")
+const INK_SOFT=Color("5b4834")
 var tab:="mail"
 var initial:="mail"
 var selected_id:=""
 var items: Array=[]
 var paper: Control
+var paper_frame: NinePatchRect
 var tabs: Dictionary={}
+var side_buttons: Dictionary={}
+var sheet_js: Array=[]
 
 func build() -> void:
 	tab=initial
-	header("우편" if tab=="mail" else "알림","서원에서 도착한 봉인된 편지 · 낙관을 눌러 확인합니다")
-	note("수령한 보상은 저장에 남고 다시 받을 수 없습니다 · 모두 무료 재화입니다")
+	header("우편" if tab=="mail" else "알림","서원으로 도착한 편지와 중요 안내를 확인하세요","mail")
 	for index in range(2):
-		var spec: Array=[["mail","우편"],["alerts","알림"]][index]
+		var spec: Array=[["mail","우편","mail"],["alerts","알림","spark"]][index]
 		var key: String=spec[0]
-		var target:=button(String(spec[1]),func()->void:switch_tab(key),self,key==tab,16)
+		var target:=V.Tab.new()
+		target.text=String(spec[1])
+		target.glyph=String(spec[2])
+		target.font_size=19
 		target.name="LetterTab_"+key
-		place(target,Rect2(26+index*124,90,112,34))
+		target.custom_minimum_size=Vector2.ZERO
+		target.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+		target.pressed.connect(func()->void:
+			if target.usable():game.sound.play_clip("button");switch_tab(key))
+		add_child(target)
+		game.button_feel(target)
 		tabs[key]=target
-	var list_frame:=UIK.nine(self,UIK.TEX_PANEL_SOFT,20)
-	place(list_frame,Rect2(LIST_POS.x-4,LIST_POS.y-4,LIST_W+8,LIST_H+8))
+	var list_frame:=V.frame(self,Rect2(0,0,1,1))
+	list_frame.name="MailListFrame"
+	place(list_frame,LIST)
 	paper=_paper()
 	refresh()
 
-## 한지 편지지: 크림색 결, 붉은 괘선, 위아래 마구리, 낙관 자리.
 func _paper() -> Control:
 	var node:=Control.new()
 	node.name="MailPaper"
 	node.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(node)
-	place(node,Rect2(SHEET_POS,Vector2(SHEET_W,SHEET_H)))
-	var drawing:=Control.new()
-	drawing.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	node.add_child(drawing)
-	drawing.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	drawing.draw.connect(func()->void:
-		var box:=Rect2(Vector2(10,10),drawing.size-Vector2(20,20))
-		var w:=box.size.x
-		var h:=box.size.y
-		# 바깥 그림자
-		for i in range(4):
-			var grow:=2.0+float(i)*2.6
-			LC.rounded_outline(drawing,box.grow(grow),Color(0,0,0,.16-float(i)*.03),8.0+grow,3.0)
-		# 한지 그라데이션
-		LC.gradient_rounded(drawing,box,Color(.965,.905,.780,1.0),Color(.870,.795,.640,1.0),6.0)
-		# 섬유 결(가로 세로 가는 줄)
-		var rng:=RandomNumberGenerator.new()
-		rng.seed=20261119
-		for i in range(46):
-			var y:=box.position.y+rng.randf_range(6.0,h-6.0)
-			var x0:=box.position.x+rng.randf_range(4.0,w*.4)
-			var x1:=x0+rng.randf_range(w*.15,w*.55)
-			drawing.draw_line(Vector2(x0,y),Vector2(minf(x1,box.end.x-4.0),y),Color(.55,.44,.28,rng.randf_range(.03,.075)),1.0)
-		for i in range(16):
-			var x:=box.position.x+rng.randf_range(6.0,w-6.0)
-			drawing.draw_line(Vector2(x,box.position.y+6.0),Vector2(x,box.end.y-6.0),Color(.6,.48,.30,.035),1.0)
-		# 위아래 마구리(나무 축)
-		for y in [box.position.y-2.0,box.end.y-10.0]:
-			LC.rounded(drawing,Rect2(Vector2(box.position.x-6.0,y),Vector2(w+12.0,12.0)),Color(.10,.08,.11,1.0),6.0)
-			drawing.draw_line(Vector2(box.position.x,y+2.0),Vector2(box.end.x,y+2.0),Color(.95,.84,.60,.35),1.4)
-		for side in [box.position.x-6.0,box.end.x+6.0]:
-			drawing.draw_circle(Vector2(side,box.position.y+4.0),5.0,Color(.08,.06,.09,1.0))
-			drawing.draw_arc(Vector2(side,box.position.y+4.0),5.0,0,TAU,16,Color(.86,.72,.47,.7),1.2,true)
-			drawing.draw_circle(Vector2(side,box.end.y-4.0),5.0,Color(.08,.06,.09,1.0))
-			drawing.draw_arc(Vector2(side,box.end.y-4.0),5.0,0,TAU,16,Color(.86,.72,.47,.7),1.2,true)
-		# 붉은 괘선(왼쪽 여백선)
-		drawing.draw_line(Vector2(box.position.x+46.0,box.position.y+18.0),Vector2(box.position.x+46.0,box.end.y-30.0),Color(.62,.22,.20,.30),1.4)
-		drawing.draw_line(Vector2(box.position.x+52.0,box.position.y+18.0),Vector2(box.position.x+52.0,box.end.y-30.0),Color(.62,.22,.20,.16),1.0)
-		# 안쪽 테두리
-		LC.rounded_outline(drawing,box.grow(-1.0),Color(.46,.34,.20,.35),6.0,1.2)
-		LC.rounded_outline(drawing,box.grow(-6.0),Color(.46,.34,.20,.14),4.0,1.0))
+	paper_frame=V.patch(node,V.TEX_PARCHMENT,Rect2(0,0,1,1),42)
+	paper_frame.name="MailSheet"
+	# 오른쪽 위 매화 가지 장식
+	var branch:=TextureRect.new()
+	branch.texture=V.TEX_BRANCH
+	branch.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	branch.stretch_mode=TextureRect.STRETCH_SCALE
+	branch.modulate=Color(1,1,1,.95)
+	branch.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	node.add_child(branch)
+	branch.set_meta("deco","branch")
+	# 왼쪽 위 매듭 술
+	var tassel:=TextureRect.new()
+	tassel.texture=V.TEX_TASSEL
+	tassel.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	tassel.stretch_mode=TextureRect.STRETCH_SCALE
+	tassel.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	node.add_child(tassel)
+	tassel.set_meta("deco","tassel")
+	var seal:=SealStamp.new()
+	seal.tint=Color(.62,.20,.18)
+	node.add_child(seal)
+	seal.name="PaperSeal"
+	seal.set_meta("content",true)
 	return node
 
 func switch_tab(key: String) -> void:
@@ -91,7 +84,7 @@ func switch_tab(key: String) -> void:
 	tab=key
 	selected_id=""
 	title_label.text="우편" if tab=="mail" else "알림"
-	subtitle_label.text="서원에서 도착한 봉인된 편지 · 낙관을 눌러 확인합니다" if tab=="mail" else "서원의 공지 · 새 소식은 금빛 점으로 표시됩니다"
+	subtitle_label.text="서원으로 도착한 편지와 중요 안내를 확인하세요" if tab=="mail" else "서원의 공지와 새 소식을 확인하세요"
 	refresh()
 
 func _list() -> Array:
@@ -116,68 +109,88 @@ func refresh() -> void:
 
 func _paint_tabs() -> void:
 	for key in tabs:
-		var target: WooMobileButton=tabs[key]
-		var chosen: bool=key==tab
-		for state in ["normal","hover","pressed","hover_pressed","disabled"]:
-			var box:=T.panel_box(Color(0.13,0.10,0.06,0.96) if chosen else Color(0.05,0.055,0.11,0.9),10,Color(0.90,0.76,0.48,0.95) if chosen else Color(0.85,0.72,0.47,0.30),1,Color(0.85,0.72,0.47,0.35) if chosen else Color(0,0,0,0),12 if chosen else 0)
-			target.add_theme_stylebox_override(state,box)
-		for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:
-			target.add_theme_color_override(state,T.GOLD_SOFT if chosen else Color(0.82,0.86,0.96))
+		var target: V.Tab=tabs[key]
+		target.paint(key==tab)
+	for spec in [["mail",Market.MAILS,"mail"],["alerts",Market.ALERTS,"alerts"]]:
+		var unread:=0
+		for entry in spec[1]:
+			if not (game.storage.data[spec[2]].read as Array).has(String(entry.id)):unread+=1
+		var target: V.Tab=tabs[spec[0]]
+		var previous: Node=target.get_node_or_null("UnreadBadge")
+		if unread<=0:
+			if previous!=null:previous.queue_free()
+			continue
+		var badge: TextureRect=previous
+		if badge==null:
+			badge=TextureRect.new()
+			badge.name="UnreadBadge"
+			badge.texture=V.TEX_BADGE
+			badge.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+			badge.stretch_mode=TextureRect.STRETCH_SCALE
+			badge.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			target.add_child(badge)
+		var extent:=minf(target.size.y*.30,22.0*s)
+		badge.size=Vector2(extent,extent)
+		badge.position=Vector2(target.size.x-extent*1.4,extent*.25)
 
+## 봉인된 편지 카드 — 시안처럼 봉투 그림 · 제목 · 발신/상태 · 선물 표시.
 func _make_card(entry: Dictionary,index: int) -> void:
 	var id:=String(entry.id)
-	var height:=104.0
-	var rect:=Rect2(LIST_POS.x+8,LIST_POS.y+8+index*(height+9),LIST_W-16,height)
+	var rect:=Rect2(LIST.position.x+10,LIST.position.y+62+index*(CARD_H+CARD_GAP),LIST.size.x-20,CARD_H)
 	var card:=button("",func()->void:open_item(id),self,false,15)
 	card.name="Letter_"+id
-	place(card,rect)
-	var chosen: bool=id==selected_id
 	for state in ["normal","hover","pressed","hover_pressed","disabled"]:
 		card.add_theme_stylebox_override(state,StyleBoxEmpty.new())
-	var glow:=UIK.Glow.new()
-	glow.color=Color(1,.84,.46)
-	glow.radius=10.0*s
-	glow.visible=chosen
-	card.add_child(glow)
-	place(glow,Rect2(0,0,rect.size.x,rect.size.y))
-	var frame:=UIK.nine(card,UIK.TEX_CARD_LIT if chosen else UIK.TEX_CARD,22)
-	frame.position=Vector2.ZERO
-	frame.size=rect.size*s
-	# 낙관
-	var stamp:=Control.new()
-	stamp.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	stamp.draw.connect(func()->void:
-		var c: Vector2=stamp.size*.5
-		var rad:=minf(stamp.size.x,stamp.size.y)*.5-1.0
-		stamp.draw_circle(c,rad,Color(.56,.16,.15,.98) if tab=="mail" else Color(.72,.56,.24,.98))
-		stamp.draw_circle(c,rad*.86,Color(.72,.24,.22,1.0) if tab=="mail" else Color(.84,.68,.34,1.0))
-		stamp.draw_arc(c,rad,0,TAU,28,Color(1,.94,.86,.35),1.2,true)
-		G.draw_glyph(stamp,"seal",Rect2(c-Vector2(rad*.52,rad*.52),Vector2(rad*1.04,rad*1.04)),Color(1,.94,.88,.92),1.2))
-	card.add_child(stamp)
-	stamp.position=Vector2(12,16)*s
-	stamp.size=Vector2(42,42)*s
+	for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:
+		card.add_theme_color_override(state,Color(0,0,0,0))
+	card.text=""
+	place(card,rect)
+	var chosen: bool=id==selected_id
+	if chosen:
+		var glow:=UIK.Glow.new()
+		glow.color=Color(1,.82,.44)
+		glow.radius=14.0*s
+		glow.strength=1.0
+		card.add_child(glow)
+		glow.position=Vector2(-2,-2)*s
+		glow.size=rect.size*s+Vector2(4,4)*s
+	var frame:=V.patch(card,V.TEX_CARD_LIT if chosen else V.TEX_CARD,Rect2(Vector2.ZERO,rect.size),26)
+	frame.name="CardFrame"
 	var read: bool=(game.storage.data[_read_key()].read as Array).has(id)
-	var title:=label(card,String(entry.title),16.5,T.GOLD_SOFT if chosen else T.IVORY,true)
-	title.clip_text=true
-	place(title,Rect2(rect.position.x+64,rect.position.y+10,rect.size.x-110,24))
 	var claimed: bool=(game.storage.data.mail.claimed as Array).has(id)
-	var status:=("새 편지" if not read else "읽음")
-	if tab=="mail":status+=" · 보상 %s 코인"%number(int(entry.reward))+(" · 수령 완료" if claimed else "")
-	var status_label:=label(card,status,13.5,Color(0.86,.88,.96) if chosen else T.MUTED)
-	place(status_label,Rect2(rect.position.x+64,rect.position.y+36,rect.size.x-88,20))
-	var preview_text:=String(entry.get("body",""))
-	if preview_text.length()>28:preview_text=preview_text.substr(0,28)+"…"
-	var body_preview:=label(card,preview_text,13,Color(0.74,.76,.86,0.95))
-	body_preview.clip_text=true
-	place(body_preview,Rect2(rect.position.x+14,rect.position.y+64,rect.size.x-28,20))
-	# 수령 대기 표시
+	var icon:=TextureRect.new()
+	icon.texture=V.TEX_ICON_LETTER
+	icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	card.add_child(icon)
+	icon.position=Vector2(12,rect.size.y*.5-27)*s
+	icon.size=Vector2(68,54)*s
 	if tab=="mail" and not claimed:
-		var dot:=UIK.Seal.new()
-		dot.glowing=false
-		dot.color=Color(.86,.70,.40)
-		card.add_child(dot)
-		dot.position=Vector2(rect.size.x*s-30.0*s,10.0*s)
-		dot.size=Vector2(20,20)*s
+		var gift:=TextureRect.new()
+		gift.texture=V.TEX_ICON_GIFT
+		gift.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		gift.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		gift.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		card.add_child(gift)
+		gift.position=Vector2(rect.size.x-46,rect.size.y*.5-15)*s
+		gift.size=Vector2(32,32)*s
+	var title:=label(card,String(entry.title),18.5,V.GOLD_BRIGHT if chosen else V.IVORY,true)
+	title.clip_text=true
+	title.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	place(title,Rect2(LIST.position.x+94,rect.position.y+16,rect.size.x-146,28))
+	var role_text: String="서원의 편지" if tab=="mail" else "서원의 공지"
+	var status_text: String="수령 가능" if tab=="mail" and not claimed else ("수령 완료" if tab=="mail" else "새 소식")
+	if read:status_text=("읽음" if tab=="mail" else "확인함")
+	var meta:=label(card,role_text,16,Color(.86,.80,.94))
+	place(meta,Rect2(LIST.position.x+94,rect.position.y+50,170,22))
+	var bar:=label(card,"|",16,Color(.86,.80,.94))
+	place(bar,Rect2(LIST.position.x+94+108,rect.position.y+50,10,22))
+	var status:=label(card,status_text,16,Color(1,.84,.52))
+	place(status,Rect2(LIST.position.x+94+126,rect.position.y+50,160,22))
+	# 아래 구분선
+	var under:=divider(card,Color(.85,.72,.47,.22))
+	place(under,Rect2(LIST.position.x+94,rect.position.y+80,rect.size.x-120,1))
 	items.append(card)
 
 func open_item(id: String) -> void:
@@ -194,6 +207,7 @@ func focus_item(id: String) -> void:
 	selected_id=id
 	refresh()
 
+## 오른쪽 한지 두루마리 — 붉은 낙관 · 제목 · 본문 · 동봉 보상 타일 · 금빛 수령 버튼.
 func _paint_sheet() -> void:
 	for child in paper.get_children():
 		if child.has_meta("content"):child.queue_free()
@@ -201,80 +215,73 @@ func _paint_sheet() -> void:
 	for candidate in _list():
 		if String(candidate.id)==selected_id:entry=candidate
 	if entry.is_empty():return
+	var area:=paper_rect()
 	var id:=String(entry.id)
 	var read: bool=(game.storage.data[_read_key()].read as Array).has(id)
 	var claimed: bool=(game.storage.data.mail.claimed as Array).has(id)
-	# 낙관(제목 옆)
-	var stamp:=Control.new()
-	stamp.set_meta("content",true)
-	stamp.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	paper.add_child(stamp)
-	place(stamp,Rect2(SHEET_POS.x+34,SHEET_POS.y+30,58,58))
-	stamp.draw.connect(func()->void:
-		var c: Vector2=stamp.size*.5
-		var rad:=minf(stamp.size.x,stamp.size.y)*.5-1.0
-		stamp.draw_circle(c,rad,Color(.60,.18,.17,.96) if tab=="mail" else Color(.74,.58,.26,.96))
-		stamp.draw_circle(c,rad*.82,Color(.96,.90,.80,.20))
-		G.draw_glyph(stamp,"seal",Rect2(c-Vector2(rad*.56,rad*.56),Vector2(rad*1.12,rad*1.12)),Color(1,.94,.86,.92),1.3))
-	var title:=label(paper,String(entry.title),27,INK,true)
+	var seal: Control=paper.get_node_or_null("PaperSeal")
+	if seal!=null:
+		seal.set_meta("content",true)
+		place(seal,Rect2(area.position.x+area.size.x-92,area.position.y+30,44,44))
+		seal.queue_redraw()
+	var title:=label(paper,String(entry.title),28,INK,true)
 	title.set_meta("content",true)
-	place(title,Rect2(SHEET_POS.x+108,SHEET_POS.y+34,SHEET_W-160,36))
-	var meta_text:="월하의 서원 지기 · "+("읽음" if read else "새 편지")
-	if tab=="mail":meta_text+=" · 동봉 %s 코인"%number(int(entry.reward))+(" · 수령 완료" if claimed else " · 수령 전")
-	var meta:=label(paper,meta_text,13.5,INK_SOFT)
+	place(title,Rect2(area.position.x+40,area.position.y+30,area.size.x-150,38))
+	var meta_text: String="보내는 이 : 서원의 편지" if tab=="mail" else "보내는 이 : 서원의 공지"
+	var meta:=label(paper,meta_text,15,INK_SOFT)
 	meta.set_meta("content",true)
-	place(meta,Rect2(SHEET_POS.x+108,SHEET_POS.y+70,SHEET_W-160,20))
-	var line:=divider(paper,Color(.45,.33,.20,.35))
+	place(meta,Rect2(area.position.x+42,area.position.y+74,area.size.x-160,20))
+	var line:=gold_divider(paper,Rect2(area.position.x+30,area.position.y+100,area.size.x-60,12))
 	line.set_meta("content",true)
-	place(line,Rect2(SHEET_POS.x+40,SHEET_POS.y+104,SHEET_W-80,1))
-	var body:=label(paper,String(entry.get("body","")),17,Color(.22,.16,.12))
+	var body_text:=String(entry.get("body",""))
+	var body:=label(paper,body_text,19,Color(.19,.14,.09))
 	body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	body.vertical_alignment=VERTICAL_ALIGNMENT_TOP
+	body.add_theme_constant_override("line_spacing",14)
 	body.set_meta("content",true)
-	place(body,Rect2(SHEET_POS.x+64,SHEET_POS.y+118,SHEET_W-128,214))
-	var signature:=label(paper,"— 월하의 서원 지기",14.5,Color(.40,.30,.20),true)
+	var body_w:=area.size.x-84
+	var per_line:=maxi(8,int(body_w/(19.0*1.02)))
+	var lines:=maxi(1,int(ceil(float(body_text.length())/float(per_line))))
+	var body_h:=float(lines)*19.0*1.62+8.0
+	place(body,Rect2(area.position.x+42,area.position.y+116,body_w,body_h))
+	var lower:=area.position.y+116.0+body_h+34.0
+	lower=minf(lower,area.position.y+area.size.y-226.0)
+	var signature:=label(paper,"— 월하의 서원 지기",14,Color(.40,.30,.20),true)
 	signature.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	signature.set_meta("content",true)
-	place(signature,Rect2(SHEET_POS.x+SHEET_W-270,SHEET_POS.y+340,214,24))
-	# 워터마크 낙관
-	var water:=Control.new()
-	water.set_meta("content",true)
-	water.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	water.modulate.a=0.13
-	paper.add_child(water)
-	place(water,Rect2(SHEET_POS.x+SHEET_W-206,SHEET_POS.y+140,150,150))
-	water.draw.connect(func()->void:
-		var c: Vector2=water.size*.5
-		var rad:=minf(water.size.x,water.size.y)*.5-2.0
-		water.draw_arc(c,rad,0,TAU,48,Color(.55,.18,.16),4.0,true)
-		water.draw_arc(c,rad*.86,0,TAU,48,Color(.55,.18,.16),2.0,true)
-		G.draw_glyph(water,"seal",Rect2(c-Vector2(rad*.5,rad*.5),Vector2(rad,rad)),Color(.55,.18,.16),2.0))
-	var rule_line:=divider(paper,Color(.45,.33,.20,.28))
-	rule_line.set_meta("content",true)
-	place(rule_line,Rect2(SHEET_POS.x+40,SHEET_POS.y+372,SHEET_W-80,1))
+	place(signature,Rect2(area.position.x+area.size.x-310,lower-58,260,22))
+	var caption: Label=label(paper,"동봉된 보상",16,INK_SOFT,true)
+	caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	caption.set_meta("content",true)
+	place(caption,Rect2(area.position.x+40,lower,area.size.x-80,22))
+	var caption_line:=divider(paper,Color(.52,.38,.20,.40))
+	caption_line.set_meta("content",true)
+	place(caption_line,Rect2(area.position.x+60,lower+24,area.size.x-120,1))
 	if tab=="mail":
-		var reward:=label(paper,"동봉된 보상",13.5,INK_SOFT)
-		reward.set_meta("content",true)
-		place(reward,Rect2(SHEET_POS.x+56,SHEET_POS.y+384,240,20))
-		var amount:=label(paper,"%s 코인"%number(int(entry.reward)),23,Color(.34,.22,.06),true)
-		amount.set_meta("content",true)
-		place(amount,Rect2(SHEET_POS.x+78,SHEET_POS.y+406,260,32))
-		var coin:=Control.new()
-		coin.set_meta("content",true)
+		var tile:=V.patch(paper,V.TEX_TILE,Rect2(Vector2.ZERO,Vector2(110,110)),30)
+		tile.set_meta("content",true)
+		place(tile,Rect2(area.position.x+44,lower+42,110,110))
+		var coin:=TextureRect.new()
+		coin.texture=V.TEX_ICON_COIN
+		coin.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+		coin.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		coin.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		paper.add_child(coin)
-		place(coin,Rect2(SHEET_POS.x+46,SHEET_POS.y+412,26,26))
-		coin.draw.connect(func()->void:
-			var c: Vector2=coin.size*.5
-			coin.draw_circle(c,coin.size.x*.46,Color(.80,.60,.24))
-			coin.draw_arc(c,coin.size.x*.46,0,TAU,24,Color(.55,.36,.10),1.4,true)
-			coin.draw_circle(c,coin.size.x*.16,Color(.40,.26,.06,.85)))
-		var claim=UIK.MetalButton.new()
+		coin.set_meta("content",true)
+		place(coin,Rect2(area.position.x+70,lower+48,58,58))
+		var amount:=label(paper,"×%s"%number(int(entry.reward)),16,V.GOLD_BRIGHT,true)
+		amount.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		amount.set_meta("content",true)
+		place(amount,Rect2(area.position.x+40,lower+108,118,24))
+		var coin_caption:=label(paper,"코인",12.5,Color(.84,.74,.56))
+		coin_caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		coin_caption.set_meta("content",true)
+		place(coin_caption,Rect2(area.position.x+40,lower+134,118,18))
+		var claim:=V.PlateButton.new()
 		claim.kind="gold"
 		claim.text="보상 수령 완료" if claimed else "보상 수령"
-		claim.glyph="check" if claimed else "mail"
-		claim.font_size=int(17)
-		claim.use_title_font=false
+		claim.glyph="check" if claimed else "seal"
+		claim.font_size=21
 		claim.name="MailClaim"
 		claim.custom_minimum_size=Vector2.ZERO
 		claim.disabled=claimed
@@ -284,28 +291,128 @@ func _paint_sheet() -> void:
 				game.sound.play_clip("button");game.claim_mail(entry))
 		claim.set_meta("content",true)
 		paper.add_child(claim)
-		place(claim,Rect2(SHEET_POS.x+SHEET_W-286,SHEET_POS.y+396,250,58))
+		place(claim,Rect2(area.position.x+area.size.x-292,lower+58,256,62))
 		game.button_feel(claim)
-		var hint:=label(paper,"보상은 한 번만 받을 수 있습니다.",12.5,Color(.44,.34,.24,0.9))
+		var hint:=label(paper,"보상은 한 번만 받을 수 있습니다.",12.5,Color(.44,.34,.24,.9))
+		hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 		hint.set_meta("content",true)
-		place(hint,Rect2(SHEET_POS.x+56,SHEET_POS.y+448,360,18))
+		place(hint,Rect2(area.position.x+24,lower+132,area.size.x-330,18))
 	else:
-		var confirm=UIK.MetalButton.new()
+		var confirm:=V.PlateButton.new()
 		confirm.kind="gold"
 		confirm.text="읽음 표시"
 		confirm.glyph="check"
-		confirm.font_size=int(17)
+		confirm.font_size=21
 		confirm.custom_minimum_size=Vector2.ZERO
 		confirm.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
 		confirm.pressed.connect(func()->void:
 			if confirm.usable():game.sound.play_clip("button");game.refresh_correspondence())
 		confirm.set_meta("content",true)
 		paper.add_child(confirm)
-		place(confirm,Rect2(SHEET_POS.x+SHEET_W-266,SHEET_POS.y+400,230,54))
+		place(confirm,Rect2(area.position.x+area.size.x-272,lower+58,236,60))
 		game.button_feel(confirm)
-		var hint2:=label(paper,"새 소식은 로비 알림에 금빛 점으로 표시됩니다.",12.5,Color(.44,.34,.24,0.9))
+		var hint2:=label(paper,"새 소식은 로비 알림에 금빛 점으로 표시됩니다.",12.5,Color(.44,.34,.24,.9))
 		hint2.set_meta("content",true)
-		place(hint2,Rect2(SHEET_POS.x+56,SHEET_POS.y+412,420,18))
+		place(hint2,Rect2(area.position.x+44,lower+64,420,18))
+	var footer:=label(paper,"달빛 아래, 월하의 서원",12,Color(.44,.34,.24,.65),true)
+	footer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	footer.set_meta("content",true)
+	place(footer,Rect2(area.position.x+40,area.position.y+area.size.y-40,area.size.x-80,20))
+	_paint_sides()
+
+## 목록 판 아래 금빛·어두운 버튼.
+func _paint_sides() -> void:
+	for key in side_buttons:
+		var node: Node=side_buttons[key]
+		if is_instance_valid(node):node.queue_free()
+	side_buttons.clear()
+	var left:=Rect2(LIST.position.x+14,LIST.position.y+LIST.size.y-62,212,48)
+	var right:=Rect2(LIST.position.x+234,LIST.position.y+LIST.size.y-62,LIST.size.x-248,48)
+	var specs: Array=[]
+	if tab=="mail":
+		specs=[[left,"모두 수령","gold","mail",func()->void:game.claim_all_mail()],[right,"모두 읽음","dark","check",func()->void:game.read_all_mail()]]
+	else:
+		specs=[[left,"모두 읽음","gold","check",func()->void:game.read_all_alerts()],[right,"우편함 열기","dark","mail",func()->void:switch_tab("mail")]]
+	for spec in specs:
+		var node:=V.PlateButton.new()
+		node.kind=String(spec[2])
+		node.text=String(spec[1])
+		node.glyph=String(spec[3])
+		node.font_size=16
+		node.name="MailSide_"+String(spec[1])
+		node.custom_minimum_size=Vector2.ZERO
+		var action: Callable=spec[4]
+		node.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+		node.pressed.connect(func()->void:
+			if node.usable():game.sound.play_clip("button");action.call())
+		add_child(node)
+		game.button_feel(node)
+		place(node,spec[0])
+		side_buttons[node.name]=node
+
+func place_deco(key: String,rect: Rect2) -> void:
+	for child in paper.get_children():
+		if String(child.get_meta("deco",""))==key:
+			place(child as Control,rect)
+
+func paper_rect() -> Rect2:
+	return Rect2(690,SHEET_Y,right_edge()-690,SHEET_H)
 
 func arrange() -> void:
-	pass
+	if not built:return
+	reshape(tabs["mail"],Rect2(RAIL.position.x+2,RAIL.position.y+2,RAIL.size.x-4,88))
+	reshape(tabs["alerts"],Rect2(RAIL.position.x+2,RAIL.position.y+100,RAIL.size.x-4,88))
+	for key in tabs:tabs[key].queue_redraw()
+	var frame: Node=self.get_node_or_null("MailListFrame")
+	if frame!=null:reshape(frame,LIST)
+	reshape(paper,paper_rect())
+	if paper_frame!=null:
+		paper_frame.size=paper.size
+		V.refit(paper_frame)
+		var area:=paper_rect()
+		place_deco("branch",Rect2(area.position.x+area.size.x-236,area.position.y-6,236,146))
+		place_deco("tassel",Rect2(area.position.x-15,area.position.y+28,32,112))
+
+	_paint_sheet()
+
+## 붉은 낙관(봉인).
+class SealStamp extends Control:
+	var tint:=Color(.62,.20,.18)
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		var c:=size*.5
+		var rad:=minf(size.x,size.y)*.5-1.0
+		draw_circle(c,rad,Color(tint.r*.72,tint.g*.72,tint.b*.72,1))
+		draw_circle(c,rad*.86,tint)
+		draw_arc(c,rad*.97,0,TAU,28,Color(1,.92,.84,.35),1.1,true)
+		G.draw_glyph(self,"seal",Rect2(c-Vector2(rad*.52,rad*.52),Vector2(rad*1.04,rad*1.04)),Color(1,.94,.88,.92),1.3)
+
+## 금빛 동전.
+class CoinGlyph extends Control:
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		var c:=size*.5
+		var r:=minf(size.x,size.y)*.5
+		draw_circle(c,r,Color(.78,.57,.22))
+		draw_circle(c,r*.82,Color(.93,.76,.38))
+		draw_arc(c,r*.96,0,TAU,26,Color(.55,.36,.10),1.2,true)
+		draw_arc(c,r*.52,0,TAU,22,Color(.58,.40,.12,.9),1.4,true)
+
+## 리본 선물 아이콘(수령 전 표시).
+class GiftGlyph extends Control:
+	var tint:=Color(1,.92,.70)
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		var w:=size.x
+		var box:=Rect2(w*.12,w*.36,w*.76,w*.52)
+		draw_rect(box,tint)
+		draw_rect(Rect2(w*.30,box.position.y,w*.10,box.size.y),Color(tint.r*.72,tint.g*.72,tint.b*.72,1))
+		draw_rect(Rect2(box.position.x,w*.46,box.size.x,w*.08),Color(tint.r*.72,tint.g*.72,tint.b*.72,1))
+		draw_arc(Vector2(w*.34,w*.24),w*.14,0,TAU,20,tint,1.6,true)
+		draw_arc(Vector2(w*.64,w*.24),w*.14,0,TAU,20,tint,1.6,true)
