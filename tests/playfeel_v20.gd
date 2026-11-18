@@ -32,7 +32,7 @@ func _initialize() -> void:run.call_deferred()
 func run() -> void:
  # 1) 60Hz 고정 스텝 · 시점/캐릭터 비율 · 이동 속도
  check(is_equal_approx(float(AppScript.STEP),1.0/60.0),"gameplay fixed step is 60Hz")
- check(L.CAMERA_ZOOM>=1.55 and L.CAMERA_ZOOM<=1.8,"camera zoom pulled in to about 1.68")
+ check(L.CAMERA_ZOOM>=1.85 and L.CAMERA_ZOOM<=1.95,"camera zoom pulled in to about 1.90 for the closer amogus-like view")
  check(L.CAMERA_LIFT<=40.0,"camera lift trimmed to the new zoom")
  check(is_equal_approx(float(C.find("daoist:woochi").speed),135.0),"walk speed raised to 135")
  check(is_equal_approx(float(C.find("daoist:woochi").run_speed),210.0),"run speed raised to 210")
@@ -256,7 +256,8 @@ func run() -> void:
  var second_pose: String=String(walker.ingame_sprite.pose_name)
  walker.gait_phase=PI*2.05;walker.ingame_sprite._process(.016)
  var third_pose: String=String(walker.ingame_sprite.pose_name)
- check(first_pose=="walk1" and second_pose=="idle" and third_pose=="walk2","walk cycle swaps front and back leg frames")
+ # 2.0.23: 정지 프레임 없이 두 발이 번갈아 딛는 2프레임 교차 보행.
+ check(first_pose=="walk1" and second_pose=="walk2" and third_pose=="walk1","walk cycle alternates front and back leg frames")
  # 2.0.21: 걷기 프레임 위에서 바운스·스쿼시가 과해 젤리처럼 튀지 않는지 실제 변환으로 확인한다.
  var sprite_node: Node2D=walker.ingame_sprite
  var low:=9.0;var high:=0.0;var bob_low:=0.0;var bob_high:=0.0

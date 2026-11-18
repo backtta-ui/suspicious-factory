@@ -402,7 +402,7 @@ class HexButton extends "res://scripts/ui/metal_button.gd":
 		ShopOrnaments.stroke(self,outer,Color(1,.87,.55,.55*dim),1.4*k)
 		# 금판
 		var plate:=box.grow(-5.5*k)
-		ShopOrnaments.chamfer_gradient(self,plate,cut,Color(.99+lift,.92+lift,.70,.99) if not off else Color(.30,.28,.24,.95),Color(.80,.58,.22,.99) if not off else Color(.19,.17,.15,.96))
+		ShopOrnaments.chamfer_gradient(self,plate,cut,Color(.99+lift,.92+lift,.70,.99) if not off else Color(.19,.19,.23,.97),Color(.80,.58,.22,.99) if not off else Color(.07,.07,.10,.98))
 		# 안쪽 베벨(위 밝게, 아래 어둡게)
 		ShopOrnaments.stroke(self,ShopOrnaments.chamfer(plate.grow(-1.2*k),cut-1.2*k),Color(1,.99,.90,.55*dim),1.4*k)
 		ShopOrnaments.stroke(self,ShopOrnaments.chamfer(plate.grow(-2.6*k),cut-2.6*k),Color(.55,.36,.08,.30*dim),1.0*k)
@@ -421,7 +421,8 @@ class HexButton extends "res://scripts/ui/metal_button.gd":
 		var width:=ShopOrnaments.text_width(font,caption,extent)
 		var total:=width+icon_size+10.0*k
 		var start:=Vector2((box.size.x-total)*.5,0)
-		var ink:=Color(.22,.14,.02,.55) if off else Color(.20,.12,.02,1)
+		# 비활성(보유 중)일 때도 글자가 죽지 않도록 크림색 고대비를 쓴다.
+		var ink:=Color(.90,.84,.70,.97) if off else Color(.20,.12,.02,1)
 		var icon_box:=Rect2(Vector2(start.x,box.size.y*.5-icon_size*.5),Vector2(icon_size,icon_size))
 		if icon_kind=="coin":
 			ShopOrnaments.coin(self,icon_box)
@@ -431,7 +432,7 @@ class HexButton extends "res://scripts/ui/metal_button.gd":
 			_hanger(icon_box,ink,k)
 		start.x+=icon_size+10.0*k
 		var at:=ShopOrnaments.baseline(font,extent,Rect2(Vector2(start.x,0),Vector2(width,box.size.y)))
-		draw_string_outline(font,at,caption,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(1,int(round(extent))),2,Color(1,.97,.85,.35))
+		draw_string_outline(font,at,caption,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(1,int(round(extent))),2,Color(0,0,0,.7) if off else Color(1,.97,.85,.35))
 		draw_string(font,at,caption,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(1,int(round(extent))),ink)
 	## 옷걸이 글리프(시안의 장착 아이콘).
 	func _hanger(rect: Rect2,color: Color,k: float) -> void:

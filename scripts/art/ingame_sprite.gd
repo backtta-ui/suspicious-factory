@@ -12,14 +12,16 @@ const SHADOW=Color(.01,.02,.05,.42)
 ## 2.5D 걷기 프레임(walk1·idle·walk2)을 쓰면서 2.0.21에 보행 바운스·기울기·
 ## 스쿼시를 발이 땅에 붙는 수준으로 낮췄다. 예전 정지 원화 시절 값(5.5/9.0,
 ## 1.07↔0.92)은 프레임이 바뀔 때 젤리처럼 통통 튀어 보였다.
-const WALK_BOUNCE=1.2
-const RUN_BOUNCE=2.2
+const WALK_BOUNCE=0.9
+const RUN_BOUNCE=1.7
 const WALK_TILT=.03
 const RUN_TILT=.07
 ## 8방향 → (원화 시트 방향, 좌우 반전). 남/남서/남동은 정면, 북/북서/북동은 뒷모습,
 ## 동/서는 측면이다. 대각선은 정면·뒷모습을 좌우 반전해 이동 벡터 쪽으로 기울인다.
 ## 걷기 4박자: 왼발 앞 → 정지 → 오른발 앞 → 정지. 방향별 walk1·walk2 원화를 쓴다.
-const GAIT_CYCLE=["walk1","idle","walk2","idle"]
+## 2.0.23: 어몽어스처럼 두 발이 번갈아 딛는 2프레임 교차 보행.
+## 정지 프레임을 끼우지 않아 걸음 템포가 끊기지 않고, 바운스는 낮춰 젤리 느낌을 없앤다.
+const GAIT_CYCLE=["walk1","walk2"]
 const VIEW={0:"right",1:"front",2:"front",3:"front",4:"left",5:"back",6:"back",7:"back"}
 const FLIP={0:false,1:true,2:false,3:false,4:false,5:false,6:false,7:true}
 ## 이동 방향별 상체 기울기 부호(오른쪽 +, 왼쪽 -). 정면/뒷면은 기울이지 않는다.

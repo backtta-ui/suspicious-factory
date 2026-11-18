@@ -1,10 +1,12 @@
 extends "res://scripts/ui/lobby_screen.gd"
 ## 빠른 매치: 달빛 부적 진법 위에 8인의 원형 인장이 차례로 들어오는 연출.
 ## 구성은 도사 6 : 요괴 2로 고정(사용자·ChatGPT 합의). 오프라인 봇 매칭임을 숨기지 않는다.
+const UIK=preload("res://scripts/ui/ui_kit.gd")
+const P=preload("res://scripts/ui/ui_palette.gd")
 const SLOTS:=8
 const DAOISTS:=6
-const CENTER:=Vector2(640,396)
-const RING:=158.0
+const CENTER:=Vector2(640,376)
+const RING:=150.0
 const SLOT_SIZE:=82.0
 const NAMES=["나","달빛여우","서원지기","밤도사","호랑이님","그림자","연꽃","도깨비"]
 var slots: Array=[]
@@ -32,19 +34,22 @@ func build() -> void:
 	composition.add_theme_stylebox_override("normal",T.panel_box(Color(0.04,0.045,0.1,0.72),13,Color(0.85,0.72,0.47,0.5),1))
 	place(composition,Rect2(CENTER.x-116,102,232,30))
 	# 롤 포지션 선택처럼 희망 진영을 먼저 고른다(도사 6 : 요괴 2 비율은 유지).
-	for spec in [["도사 희망","daoist",Color(0.95,0.79,0.45)],["요괴 희망","yokai",Color(0.72,0.58,1.0)],["상관없음","any",Color(0.62,0.68,0.85)]]:
+	for spec in [["도사 희망","daoist","lotus"],["요괴 희망","yokai","fox"],["상관없음","any","shuffle"]]:
 		var value: String=String(spec[1])
-		var accent: Color=spec[2]
-		var target:=button(String(spec[0]),func()->void:game.set_preferred_role(value),self,false,16)
+		var target:=UIK.MetalButton.new()
+		target.kind="tab"
+		target.text=String(spec[0])
+		target.glyph=String(spec[2])
+		target.font_size=int(15)
 		target.name="QuickSide_"+value
-		place(target,Rect2(CENTER.x-184+(0 if value=="daoist" else (124 if value=="yokai" else 248)),140,116,38))
+		target.custom_minimum_size=Vector2.ZERO
+		target.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+		target.pressed.connect(func()->void:
+			if target.usable():game.sound.play_clip("button");game.set_preferred_role(value))
+		add_child(target)
+		place(target,Rect2(CENTER.x-190+(0 if value=="daoist" else (126 if value=="yokai" else 252)),136,120,42))
+		game.button_feel(target)
 		side_buttons[value]=target
-		var line:=ColorRect.new()
-		line.color=accent
-		line.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		add_child(line)
-		place(line,Rect2(CENTER.x-184+(0 if value=="daoist" else (124 if value=="yokai" else 248))+10,176,96,3))
-		side_accents[value]=line
 	refresh_sides()
 	var halo:=T.soft_glow(self,Color(0.56,0.46,1.0,0.22),Rect2(CENTER.x-230,CENTER.y-230,460,460))
 	halo.name="MatchHalo"
@@ -60,12 +65,32 @@ func build() -> void:
 		add_child(slot)
 		place(slot,Rect2(at.x-SLOT_SIZE*.5,at.y-SLOT_SIZE*.5,SLOT_SIZE,SLOT_SIZE))
 		slots.append(slot)
-	var cancel:=button("매칭 취소",func()->void:game.transition("lobby"),self,false,19)
+	var cancel=UIK.MetalButton.new()
+	cancel.kind="iron"
+	cancel.text="매칭 취소"
+	cancel.glyph="cross"
+	cancel.font_size=int(18)
 	cancel.name="MatchCancel"
-	place(cancel,Rect2(366,608,250,54))
-	var start:=button("매치 수락 · 시작",func()->void:game.finish_matching(),self,true,20)
+	cancel.custom_minimum_size=Vector2.ZERO
+	cancel.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+	cancel.pressed.connect(func()->void:
+		if cancel.usable():game.sound.play_clip("button");game.transition("lobby"))
+	add_child(cancel)
+	place(cancel,Rect2(360,600,254,58))
+	game.button_feel(cancel)
+	var start=UIK.MetalButton.new()
+	start.kind="gold"
+	start.text="매치 수락 · 시작"
+	start.glyph="swords"
+	start.font_size=int(19)
 	start.name="MatchStart"
-	place(start,Rect2(632,608,282,54))
+	start.custom_minimum_size=Vector2.ZERO
+	start.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+	start.pressed.connect(func()->void:
+		if start.usable():game.sound.play_clip("button");game.finish_matching())
+	add_child(start)
+	place(start,Rect2(626,600,294,58))
+	game.button_feel(start)
 	for side in [0,1]:
 		var flourish:=Flourish.new()
 		flourish.flip=side==1
@@ -111,14 +136,10 @@ func set_slots(count: int) -> void:
 func refresh_sides() -> void:
 	var picked: String=String(game.preferred_role) if game!=null else "any"
 	for value in side_buttons:
-		var target: Control=side_buttons[value]
+		var target=side_buttons[value]
 		if not is_instance_valid(target):continue
-		target.modulate=Color.WHITE if value==picked else Color(1,1,1,0.62)
-		if value==picked:
-			for state in ["normal","hover","pressed","hover_pressed"]:
-				target.add_theme_stylebox_override(state,T.panel_box(Color(0.13,0.10,0.06,0.95),11,Color(0.95,0.79,0.45,0.95),2))
-		var line: ColorRect=side_accents.get(value)
-		if is_instance_valid(line):line.visible=value==picked
+		target.set_kind("tab_lit" if value==picked else "tab")
+		target.modulate=Color.WHITE if value==picked else Color(1,1,1,0.86)
 	if is_instance_valid(status_label):
 		var role_text: String="상관없음" if picked=="any" else ("도사 희망" if picked=="daoist" else "요괴 희망")
 		status_label.set_meta("preferred",role_text)
