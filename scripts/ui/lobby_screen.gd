@@ -19,7 +19,6 @@ var title_label: Label
 var subtitle_label: Label
 var header_rule: Control
 var back_button: WooMobileButton
-var back_arrow: Label
 var wallet_row: HBoxContainer
 var note_label: Label
 var built:=false
@@ -45,19 +44,19 @@ func arrange() -> void:
 
 # ---------------------------------------------------------------- 기본 틀
 func header(title: String,subtitle: String,on_back: Callable=Callable()) -> void:
-	back_button=button("",on_back if on_back.is_valid() else func()->void:game.transition("lobby"),self)
+	back_button=button("← 뒤로",on_back if on_back.is_valid() else func()->void:game.transition("lobby"),self,false,18)
 	back_button.name="LobbyBack"
-	var disc:=Panel.new()
-	disc.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	disc.add_theme_stylebox_override("panel",T.panel_box(Color(0.06,0.055,0.12,0.85),21,Color(0.85,0.72,0.47,0.6),1,Color(0.62,0.5,1.0,0.28),12))
-	back_button.add_child(disc)
-	disc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	back_arrow=label(back_button,"←",20,T.IVORY)
-	back_arrow.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	back_arrow.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-	place(back_arrow,Rect2(0,0,42,42))
-	title_label=label(self,title,31,T.GOLD_SOFT,true)
-	subtitle_label=label(self,subtitle,13,T.MUTED)
+	for state in ["normal","hover","pressed","hover_pressed","disabled"]:
+		var box:=T.button_box(state,false)
+		box.set_border_width_all(2)
+		box.border_color=Color(0.92,0.79,0.52,0.9)
+		back_button.add_theme_stylebox_override(state,box)
+	for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color"]:
+		back_button.add_theme_color_override(state,T.IVORY)
+	back_button.set_meta("base_font",18)
+	title_label=label(self,title,34,T.GOLD_SOFT,true)
+	subtitle_label=label(self,subtitle,15,T.MUTED)
+	subtitle_label.clip_text=true
 	header_rule=Rule.new()
 	add_child(header_rule)
 	wallet_row=wallet(self)
@@ -70,10 +69,10 @@ func wallet(parent: Node) -> HBoxContainer:
 	row.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	parent.add_child(row)
 	for spec in [["칭호 · "+Market.title(game.storage.equipped("title")).name,T.IVORY],["보석 "+number(int(game.storage.data.gems)),Color("9fe8ff")],["코인 "+number(int(game.storage.data.coins)),Color("f4d98a")]]:
-		var pill:=label(row,String(spec[0]),13,spec[1])
+		var pill:=label(row,String(spec[0]),15,spec[1])
 		pill.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 		pill.add_theme_stylebox_override("normal",T.pill_box())
-		pill.custom_minimum_size=Vector2(T.FONT.get_string_size(String(spec[0]),HORIZONTAL_ALIGNMENT_LEFT,-1,13).x+22,26)
+		pill.custom_minimum_size=Vector2(T.FONT.get_string_size(String(spec[0]),HORIZONTAL_ALIGNMENT_LEFT,-1,15).x+26,30)
 	return row
 
 func number(value: int) -> String:
@@ -87,7 +86,7 @@ func number(value: int) -> String:
 	return ("-" if value<0 else "")+out
 
 func note(text_value: String) -> void:
-	note_label=label(self,text_value,11.5,Color(0.72,0.76,0.86,0.85))
+	note_label=label(self,text_value,14,Color(0.76,0.80,0.90,0.92))
 	note_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 
 # ---------------------------------------------------------------- 구성 요소
@@ -95,10 +94,13 @@ func place(node: Control,rect: Rect2) -> void:
 	node.set_meta("design",rect)
 	node.set_meta("design_base",_base_of(node))
 	if not design.has(node):design.append(node)
-	node.position=origin+(rect.position-_base_of(node))*s
+	# origin은 화면(self)에 직접 놓인 노드에만 더한다. 카드·판 안의 자식은
+	# 부모가 이미 origin만큼 이동했으므로 로컬 좌표만 적용해야 겹치거나 밀리지 않는다.
+	var local: Vector2=(rect.position-_base_of(node))*s
+	node.position=(origin+local) if node.get_parent()==self else local
 	node.size=rect.size*s
 	if node is Label and node.has_meta("base_font"):
-		node.add_theme_font_size_override("font_size",maxi(7,int(float(node.get_meta("base_font"))*s)))
+		node.add_theme_font_size_override("font_size",maxi(9,int(float(node.get_meta("base_font"))*s)))
 
 ## 부모가 이미 디자인 좌표를 가진 컨트롤이면 그 위치를 빼고 배치한다.
 func _base_of(node: Node) -> Vector2:
@@ -124,7 +126,7 @@ func label(parent: Node,text_value: String,extent: float,color: Color,brush: boo
 	parent.add_child(node)
 	return node
 
-func button(caption: String,callback: Callable,parent: Node,primary: bool=false,font_size: int=15) -> WooMobileButton:
+func button(caption: String,callback: Callable,parent: Node,primary: bool=false,font_size: int=17) -> WooMobileButton:
 	var node: WooMobileButton=game.button(caption,callback,primary,parent)
 	node.custom_minimum_size=Vector2.ZERO
 	node.add_theme_font_size_override("font_size",font_size)
@@ -203,7 +205,7 @@ func portrait_circle(parent: Node,path: String,extent: Vector2,focus: float=0.44
 	node.custom_minimum_size=extent
 	return node
 
-func chip(parent: Node,text_value: String,accent: Color,font_size: int=12,ink: Color=Color(0.05,0.04,0.02,1.0)) -> Label:
+func chip(parent: Node,text_value: String,accent: Color,font_size: int=15,ink: Color=Color(0.05,0.04,0.02,1.0)) -> Label:
 	var node:=label(parent,text_value,font_size,ink)
 	node.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	node.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
@@ -231,32 +233,37 @@ func layout() -> void:
 		alive.append(node)
 		var rect: Rect2=node.get_meta("design")
 		var base: Vector2=node.get_meta("design_base",Vector2.ZERO)
-		node.position=origin+(rect.position-base)*s
+		var local: Vector2=(rect.position-base)*s
+		# 자식 컨트롤은 부모 기준 로컬 좌표만 쓴다(origin 중복 금지).
+		node.position=(origin+local) if node.get_parent()==self else local
 		node.size=rect.size*s
 		if node is Label and node.has_meta("base_font"):
-			node.add_theme_font_size_override("font_size",maxi(7,int(float(node.get_meta("base_font"))*s)))
+			node.add_theme_font_size_override("font_size",maxi(9,int(float(node.get_meta("base_font"))*s)))
 	design=alive
-	if is_instance_valid(back_button):place(back_button,Rect2(26,14,42,42))
+	if is_instance_valid(back_button):place(back_button,Rect2(20,10,118,52))
 	if is_instance_valid(title_label):
-		title_label.position=origin+Vector2(80,4)*s
-		title_label.size=Vector2(760,46)*s
+		title_label.position=origin+Vector2(152,4)*s
+		title_label.size=Vector2(560,48)*s
+		title_label.add_theme_font_size_override("font_size",maxi(14,int(34.0*s)))
 	if is_instance_valid(subtitle_label):
-		subtitle_label.position=origin+Vector2(82,42)*s
-		subtitle_label.size=Vector2(760,24)*s
+		subtitle_label.position=origin+Vector2(154,50)*s
+		subtitle_label.size=Vector2(600,24)*s
+		subtitle_label.add_theme_font_size_override("font_size",maxi(11,int(15.0*s)))
 	if is_instance_valid(wallet_row):
-		wallet_row.position=origin+Vector2(604,16)*s
-		wallet_row.size=Vector2(650,30)*s
+		wallet_row.position=origin+Vector2(DESIGN_WIDTH-26-430,14)*s
+		wallet_row.size=Vector2(430,34)*s
 		for child in wallet_row.get_children():
 			if child is Label:
-				child.add_theme_font_size_override("font_size",maxi(7,int(13.0*s)))
-				child.custom_minimum_size=Vector2(0,26*s)
+				child.add_theme_font_size_override("font_size",maxi(11,int(15.0*s)))
+				child.custom_minimum_size=Vector2(0,30*s)
 	if is_instance_valid(header_rule):
-		header_rule.position=origin+Vector2(26,76)*s
+		header_rule.position=origin+Vector2(26,84)*s
 		header_rule.size=Vector2(DESIGN_WIDTH-52,8)*s
 		header_rule.queue_redraw()
 	if is_instance_valid(note_label):
-		note_label.position=origin+Vector2(26,T.DESIGN_HEIGHT-30)*s
-		note_label.size=Vector2(DESIGN_WIDTH-52,20)*s
+		note_label.position=origin+Vector2(26,T.DESIGN_HEIGHT-34)*s
+		note_label.size=Vector2(DESIGN_WIDTH-52,24)*s
+		note_label.add_theme_font_size_override("font_size",maxi(11,int(14.0*s)))
 	arrange()
 
 ## 상단 제목 아래 가로 장식.

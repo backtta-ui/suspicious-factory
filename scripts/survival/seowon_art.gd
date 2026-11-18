@@ -49,19 +49,67 @@ static func draw_moon(node: Node2D) -> void:
  for i in range(7):
   var p:=Vector2(1330+i*62,205+cos(i*1.3)*10);node.draw_circle(p,16+shade(i,41)*10,Color(.48,.5,.72,.12))
 static func draw_base(node: Node2D) -> void:
- node.draw_rect(Rect2(Vector2(-40,-40),L.SIZE+Vector2(80,80)),Color("070d18"))
+ node.draw_rect(Rect2(Vector2(-40,-40),L.SIZE+Vector2(80,80)),Color("04070d"))
+ # 1) 기본 돌바닥(원화 타일) + 이음매를 가리는 얼룩
  for gy in range(0,int(L.SIZE.y)+1,512):
   for gx in range(0,int(L.SIZE.x)+1,512):
    node.draw_texture_rect(TILE,Rect2(gx,gy,512,512),false)
- node.draw_rect(Rect2(Vector2(0,0),L.SIZE),Color(.04,.06,.15,.34))
- for p in [Vector2(860,720),Vector2(430,1060),Vector2(1180,860)]:glow(node,p,320,Color(.5,.58,.95,.07))
+ node.draw_rect(Rect2(Vector2(0,0),L.SIZE),Color(.04,.05,.12,.30))
+ for i in range(420):
+  var p:=Vector2(shade(i,91)*L.SIZE.x,shade(i,92)*L.SIZE.y)
+  var radius:=18.0+shade(i,93)*54.0
+  var light:=shade(i,94)>.5
+  node.draw_circle(p,radius,Color(1,1,1,.020) if light else Color(.01,.02,.05,.030))
+ # 2) 갈 수 있는 길/마당은 달빛 돌톤으로 밝게, 막힌 곳은 어두운 풀밭으로
+ #    칸을 겹쳐 그려 경계가 격자처럼 딱딱해지지 않게 한다.
+ var cell:=20.0
+ var cols:=int(ceil(L.SIZE.x/cell));var rows:=int(ceil(L.SIZE.y/cell))
+ var walk: Array=[]
+ walk.resize(cols*rows)
+ for gy in range(rows):
+  for gx in range(cols):
+   walk[gy*cols+gx]=L.can_stand(Vector2((gx+.5)*cell,(gy+.5)*cell),12)
+ for gy in range(rows):
+  for gx in range(cols):
+   var t:=shade(gx,gy,11)
+   var dst:=Rect2(gx*cell-0.5,gy*cell-0.5,cell+1.0,cell+1.0)
+   if walk[gy*cols+gx]:
+    node.draw_rect(dst,Color(.78,.84,1,.15))
+    node.draw_rect(dst,Color(.95,.97,1,.05))
+   else:
+    node.draw_rect(dst,Color(.008,.020,.016,.88))
+ # 3) 경계 바깥은 한 단 더 어둡게(밤 그림자)
+ for gy in range(rows):
+  for gx in range(cols):
+   if walk[gy*cols+gx]:continue
+   var touching:=false
+   for d in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),Vector2i(0,-1)]:
+    var nx: int=gx+int(d.x);var ny: int=gy+int(d.y)
+    if nx<0 or ny<0 or nx>=cols or ny>=rows:continue
+    if walk[ny*cols+nx]:touching=true;break
+   if touching:node.draw_rect(Rect2(gx*cell-0.5,gy*cell-0.5,cell+1.0,cell+1.0),Color(.004,.008,.014,.35))
+ # 4) 걸을 수 있는 쪽에는 밝은 돌 턱선(경계 0.1초 인지)
+ for gy in range(rows):
+  for gx in range(cols):
+   if not walk[gy*cols+gx]:continue
+   var x0:=gx*cell;var y0:=gy*cell
+   for d in [Vector2i(1,0),Vector2i(-1,0),Vector2i(0,1),Vector2i(0,-1)]:
+    var nx: int=gx+int(d.x);var ny: int=gy+int(d.y)
+    var blocked: bool=nx<0 or ny<0 or nx>=cols or ny>=rows or not walk[ny*cols+nx]
+    if not blocked:continue
+    var a:=Color(.98,.99,1,.55)
+    if d.x==1:node.draw_line(Vector2(x0+cell,y0),Vector2(x0+cell,y0+cell),a,2.0)
+    elif d.x==-1:node.draw_line(Vector2(x0,y0),Vector2(x0,y0+cell),a,2.0)
+    elif d.y==1:node.draw_line(Vector2(x0,y0+cell),Vector2(x0+cell,y0+cell),a,2.0)
+    else:node.draw_line(Vector2(x0,y0),Vector2(x0+cell,y0),a,2.0)
+ for p in [Vector2(860,720),Vector2(430,1060),Vector2(1180,860)]:glow(node,p,320,Color(.55,.62,1,.06))
  path(node,PackedVector2Array(L.PATH),34)
- draw_petals(node,180,Rect2(500,470,760,720),Color(.95,.6,.78,.45))
+ draw_petals(node,180,Rect2(500,470,760,720),Color(.95,.6,.78,.42))
  # 팔각 문양 주변의 디딤돌
  for i in range(8):
   var angle:=i*TAU/8
   var p:=Vector2(860,720)+Vector2.from_angle(angle)*(136+14)
-  node.draw_circle(p,7,Color(.32,.31,.4,.5));node.draw_circle(p+Vector2(-1,-2),4.5,Color(.45,.44,.52,.45))
+  node.draw_circle(p,7,Color(.34,.33,.42,.5));node.draw_circle(p+Vector2(-1,-2),4.5,Color(.5,.49,.58,.45))
 static func draw_walls(node: Node2D) -> void:
  var segments: Array=[Rect2(60,120,820,14),Rect2(930,120,810,14)]
  for seg in segments:wall_sprite(node,seg)

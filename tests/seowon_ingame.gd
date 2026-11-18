@@ -68,7 +68,8 @@ func run() -> void:
  human.position=L.door(first_door).center+Vector2(0,26)
  check(r.command("human","interact") and r.doors.get(first_door,0.0)>r.elapsed,"front door opens by interaction")
  check(r.events.any(func(e: Dictionary)->bool:return e.kind=="door"),"door event for sound")
- var jar_point: Vector2=L.OBJECTS[0].p
+ # 시작 스폰과 겹치지 않는 동쪽 항아리에서 둔갑·근접 봉인을 확인한다.
+ var jar_point: Vector2=Vector2(1430,556)
  human.position=jar_point;human.facing=2;human.cd.erase("transform")
  check(r.command("human","interact") and human.form=="jar","jar disguise still works")
  check(L.door_near(jar_point,70)=="","no door reported far from a hanok")
@@ -92,13 +93,13 @@ func run() -> void:
   if game.screen=="match" and not game.changing:break
  game.rules.phase="live";game.rules.elapsed=2.0
  check(game.screen=="match" and is_instance_valid(game.camera),"match world with camera")
- check(is_instance_valid(game.camera) and is_equal_approx(game.camera.zoom.x,L.CAMERA_ZOOM) and L.CAMERA_ZOOM>=1.65,"camera zoom 1.75 keeps the 2.5D ratio")
+ check(is_instance_valid(game.camera) and is_equal_approx(game.camera.zoom.x,L.CAMERA_ZOOM) and L.CAMERA_ZOOM>=1.2 and L.CAMERA_ZOOM<1.55,"camera zoom 1.32 widens the 2.5D view without shrinking the actor")
  var hall: Dictionary=L.buildings()[0]
  var front: Vector2=(hall.doors as Dictionary).front
  var me: Dictionary=game.rules.players.human
  me.position=front+Vector2(0,16);me.facing=6
  game.update_avatars();game.update_hud();await frames(3)
- check(game.camera.position.distance_to(me.position+Vector2(0,-L.CAMERA_LIFT))<1.5,"camera follows the player with the 42px lift")
+ check(game.camera.position.distance_to(me.position+Vector2(0,-L.CAMERA_LIFT))<1.5,"camera follows the player with the 36px lift")
  check(game.action_button.get_node("Caption").text=="문 열기","door context label at the enlarged hanok")
  check(game.ui.find_children("*","Button",true,false).size()>=6,"HUD buttons present")
  check(game.world.buildings.size()==3,"world draws three hanok")

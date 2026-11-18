@@ -176,11 +176,7 @@ func build_garden() -> void:
   sprite.position=Vector2(-texture.get_width()*s*.5,-target_height)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
   var holder:=Node2D.new();holder.position=data.p;holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(data.p-Vector2(40,70),Vector2(80,90))})
-  var tag:=Label.new();tag.text=String(L.form(data.kind).get("name","사물"))
-  tag.add_theme_font_override("font",FONT);tag.add_theme_font_size_override("font_size",12)
-  tag.add_theme_color_override("font_color",Color("f4e4bf"));tag.add_theme_color_override("font_outline_color",Color(.04,.04,.09));tag.add_theme_constant_override("outline_size",3)
-  tag.position=data.p+Vector2(-40,-76);tag.size=Vector2(80,16);tag.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-  tag.visible=false;add_child(tag);tag.set_meta("object",data.kind);tags.append(tag)
+  # 사물 이름 라벨은 화면을 가려 쓰지 않는다. 가까우면 옅은 빛테만 남긴다.
 ## 실내에 들어가면 방 바깥을 어두운 밤안개로 덮어 시야를 차단한다.
 func draw_interior_fog(node: Node2D,rect: Rect2) -> void:
  var step:=46.0
@@ -212,10 +208,6 @@ func _process(delta: float) -> void:
  if water_tick>=.1:water_tick=0;water.queue_redraw()
  update_buildings(delta)
  var near:=L.object_near(observer,150)
- for tag in tags:
-  if not tag.has_meta("object"):continue
-  tag.visible=not near.is_empty() and tag.get_meta("object")==near.kind and observer.distance_to(near.p)<150
-  if tag.visible:tag.modulate.a=.7+.3*sin(clock*3)
  fx_tick+=delta
  var busy: bool=aim_active or (rules!=null and not rules.effects.is_empty()) or not String(L.door_near(observer)).is_empty() or not near.is_empty()
  if busy and fx_tick>=1.0/20.0:fx_tick=0;effects_dirty=true
@@ -283,17 +275,18 @@ func draw_effects() -> void:
     effects.draw_rect(frame.grow(4+i*4),Color(1,.8,.42,.44*open*(1-i*.2)),false,2)
    effects.draw_rect(Rect2(frame.position+Vector2(0,-2),Vector2(frame.size.x,5)),Color(1,.9,.58,.34*open*pulse))
    Art.glow(effects,center,74,Color(1,.68,.3,.24*open))
-   if observer.distance_to(entry.center)<120:tag(effects,entry.center+Vector2(0,-104),"문 열기" if entry.side=="front" else "뒷문 열기",Color("ffe9b8"))
-  var near:=L.object_near(observer,150)
-  if not near.is_empty():
-   var my: Dictionary=rules.players.get("human",{})
-   var ready: bool=not my.is_empty() and my.character!="" and my.buff.get("transform",0)<=rules.elapsed and String(my.get("form",""))==""
-   if ready:tag(effects,near.p+Vector2(0,-118),"둔갑 가능",Color("9fe8ff"))
-   hand(effects,near.p+Vector2(-44,-86))
-func hand(node: Node2D,at: Vector2) -> void:
- node.draw_circle(at+Vector2(0,5),6.5,Color(1,.92,.72,.85))
- for k in range(4):node.draw_line(at+Vector2(-5+k*3.4,0),at+Vector2(-6+k*3.4,-8),Color(1,.92,.72,.8),2)
- node.draw_line(at+Vector2(-7,4),at+Vector2(-13,0),Color(1,.92,.72,.8),2.4)
+  # 화면을 가리던 월드 팝업(문 열기·둔갑 가능·손 아이콘·사물 이름)은 없앴다.
+  # 둔갑 가능 여부는 도사에게만, 가까운 사물에 옅은 빛테로만 알린다.
+  var near:=L.object_near(observer,96)
+  if not near.is_empty() and not human.is_empty() and String(human.get("role",""))=="daoist":
+   var ready: bool=String(human.get("character",""))!="" and float(human.buff.get("transform",0.0))<=rules.elapsed and String(human.get("form",""))==""
+   if ready:
+    var pulse: float=.5+.5*sin(clock*3.2)
+    Art.glow(effects,near.p+Vector2(0,-14),30,Color(.75,.9,1,.10+.05*pulse))
+    effects.draw_arc(near.p+Vector2(0,-2),20,.15*PI,.85*PI,18,Color(.82,.92,1,.34+.16*pulse),2.0,true)
+func hand(_node: Node2D,_at: Vector2) -> void:
+ # 월드 위 손 아이콘은 쓰지 않는다(화면을 가림).
+ pass
 func tag(node: Node2D,at: Vector2,text: String,color: Color) -> void:
  var width: float=54.0+text.length()*11.0
  var rect:=Rect2(at-Vector2(width*.5,15),Vector2(width,24))

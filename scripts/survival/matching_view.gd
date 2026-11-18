@@ -18,17 +18,17 @@ func build() -> void:
 	note("※ 오프라인 봇 8인과 매칭됩니다 · 매칭이 끝나면 대기방에서 준비하고 캐릭터를 고릅니다")
 	title_label.text="빠른 매치"
 	title_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	title_label.add_theme_font_size_override("font_size",34)
-	title_label.set_meta("base_font",34)
+	title_label.add_theme_font_size_override("font_size",36)
+	title_label.set_meta("base_font",36)
 	subtitle_label.text="월하의 생존전"
 	subtitle_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	status_label=label(self,"대전 상대를 찾고 있습니다 · 1 / 8",16,T.IVORY)
+	status_label=label(self,"대전 상대를 찾고 있습니다 · 1 / 8",19,T.IVORY)
 	status_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	var composition:=label(self,"도사 6  ·  요괴 2",12.5,T.GOLD_SOFT)
+	var composition:=label(self,"도사 6  ·  요괴 2",15,T.GOLD_SOFT)
 	composition.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	composition.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 	composition.add_theme_stylebox_override("normal",T.panel_box(Color(0.04,0.045,0.1,0.72),13,Color(0.85,0.72,0.47,0.5),1))
-	place(composition,Rect2(CENTER.x-104,104,208,26))
+	place(composition,Rect2(CENTER.x-116,102,232,30))
 	var halo:=T.soft_glow(self,Color(0.56,0.46,1.0,0.22),Rect2(CENTER.x-230,CENTER.y-230,460,460))
 	halo.name="MatchHalo"
 	var circle:=Art.TalismanCircle.new()
@@ -43,12 +43,12 @@ func build() -> void:
 		add_child(slot)
 		place(slot,Rect2(at.x-SLOT_SIZE*.5,at.y-SLOT_SIZE*.5,SLOT_SIZE,SLOT_SIZE))
 		slots.append(slot)
-	var cancel:=button("매칭 취소",func()->void:game.transition("lobby"),self,false,17)
+	var cancel:=button("매칭 취소",func()->void:game.transition("lobby"),self,false,19)
 	cancel.name="MatchCancel"
-	place(cancel,Rect2(378,612,238,52))
-	var start:=button("바로 시작",func()->void:game.finish_matching(),self,true,18)
+	place(cancel,Rect2(366,608,250,54))
+	var start:=button("매치 수락 · 시작",func()->void:game.finish_matching(),self,true,20)
 	start.name="MatchStart"
-	place(start,Rect2(632,612,270,52))
+	place(start,Rect2(632,608,282,54))
 	for side in [0,1]:
 		var flourish:=Flourish.new()
 		flourish.flip=side==1
@@ -74,13 +74,13 @@ func set_slots(count: int) -> void:
 		var name_tag: Label=null
 		if slot.has_meta("name_tag"):name_tag=slot.get_meta("name_tag")
 		if name_tag==null:
-			name_tag=label(self,"",10.5,T.MUTED)
+			name_tag=label(self,"",14,T.MUTED)
 			name_tag.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			slot.set_meta("name_tag",name_tag)
 		name_tag.text=NAMES[i] if filled else "탐색 중"
 		name_tag.add_theme_color_override("font_color",T.IVORY if filled else Color(0.62,0.64,0.78,0.8))
 		var at:=CENTER+Vector2.from_angle(-PI*.5+i*TAU/SLOTS)*RING
-		place(name_tag,Rect2(at.x-70,at.y+SLOT_SIZE*.5+2,140,16))
+		place(name_tag,Rect2(at.x-74,at.y+SLOT_SIZE*.5,148,20))
 		if filled and not slot.get_meta("popped",false):
 			slot.set_meta("popped",true)
 			slot.modulate.a=0.0
@@ -112,17 +112,24 @@ class Flourish extends Control:
 
 func arrange() -> void:
 	if is_instance_valid(title_label):
-		title_label.position=origin+Vector2(240,2)*s
-		title_label.size=Vector2(800,46)*s
-		title_label.add_theme_font_size_override("font_size",maxi(9,int(34.0*s)))
+		title_label.position=origin+Vector2(240,0)*s
+		title_label.size=Vector2(800,50)*s
+		title_label.add_theme_font_size_override("font_size",maxi(14,int(36.0*s)))
 	if is_instance_valid(subtitle_label):
-		subtitle_label.position=origin+Vector2(240,44)*s
-		subtitle_label.size=Vector2(800,22)*s
-		subtitle_label.add_theme_font_size_override("font_size",maxi(8,int(13.0*s)))
+		subtitle_label.position=origin+Vector2(240,48)*s
+		subtitle_label.size=Vector2(800,26)*s
+		subtitle_label.add_theme_font_size_override("font_size",maxi(11,int(16.0*s)))
 		subtitle_label.add_theme_color_override("font_color",T.gold(.85))
 	if is_instance_valid(status_label):
-		status_label.position=origin+Vector2(240,72)*s
-		status_label.size=Vector2(800,26)*s
+		status_label.position=origin+Vector2(240,78)*s
+		status_label.size=Vector2(800,30)*s
+		status_label.add_theme_font_size_override("font_size",maxi(11,int(19.0*s)))
+	if is_instance_valid(banner_left):
+		banner_left.position=origin+Vector2(30,206)*s
+		banner_left.size=Vector2(34,286)*s
+	if is_instance_valid(banner_right):
+		banner_right.position=origin+Vector2(1216,206)*s
+		banner_right.size=Vector2(34,286)*s
 	if is_instance_valid(banner_left):
 		banner_left.position=origin+Vector2(30,206)*s
 		banner_left.size=Vector2(34,286)*s

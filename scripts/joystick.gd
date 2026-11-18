@@ -39,9 +39,9 @@ func _input(event: InputEvent) -> void:
 		update_vector(event.position - center)
 
 func update_vector(offset: Vector2) -> void:
-	vector = offset.limit_length(RADIUS) / RADIUS
-	if vector.length() < 0.12:
-		vector = Vector2.ZERO
+	# 데드존을 0.12 → 0.08로 낮춰 살짝 미는 터치도 바로 부드럽게 들어가게 한다.
+	var raw := offset.limit_length(RADIUS) / RADIUS
+	vector = Vector2.ZERO if raw.length() < 0.08 else raw
 	queue_redraw()
 
 func reset() -> void:
