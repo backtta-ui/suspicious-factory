@@ -102,6 +102,12 @@ func run() -> void:
  check(int(game.storage.data.coins)==before_coins-Market.character_price(locked),"character price is taken from coins")
  var owned_now:=Storage.new()
  check(owned_now.owns_character(locked),"character unlock persists to disk")
+ # 2.0.22: 상점 해금은 보유만 하고, 대표 캐릭터는 매칭 후 선택창에서 고른다.
+ var rep_before:=String(game.storage.data.daoist)
+ game.storage.data.coins=3000
+ game.shop_unlock_character("daoist:hongryeon")
+ check(game.storage.owns_character("daoist:hongryeon"),"shop unlock records the character")
+ check(String(game.storage.data.daoist)==rep_before,"shop unlock leaves the team representative untouched")
  check(game.owned_characters("daoist").has(locked),"owned character appears in the selection pool")
  game.storage.data.coins=50;game.shop_buy_character("yokai:haechi");await frames(2)
  check(game.modal!=null and not game.storage.owns_character("yokai:haechi"),"character purchase without coins is refused")
