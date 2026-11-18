@@ -44,3 +44,13 @@ SHA256: `f016310102e7a36bb1450fd159992aa7df4748e81a8d309d85a83b352a81b669`.
 APK를 설치하고 화면 터치 → 빠른 매칭(오프라인) 또는 게임 방 만들기 → 준비 완료 → 시작 → 진영에 맞는 캐릭터 확정 → 경기. 8인전은 방 만들기에서 선택합니다. 도술 시험은 로비의 기록 미반영 시험 버튼을 사용합니다.
 
 실제 갤럭시 설치·멀티터치·홈 복귀·장시간 플레이·FPS/메모리는 BLOCKED(연결된 Android 기기 없음). 온라인 동기화는 검증하지 않았고 오프라인 참가자는 봇으로 표시합니다. 최종 능력/3·4슬롯 성장/자기장 밖 페널티는 구현하지 않았습니다. 사용자에게 앱 제거·데이터 초기화를 요구하지 않습니다.
+
+## GitHub와 다운로드 검증
+
+- 구현 커밋: `8f42bfe65b9dbbd8902e58c6aa3123373facfc1f`, main 푸시 완료. 위 두 백업 브랜치도 원격 보존 완료.
+- [GitHub 소스 빌드 검사 성공](https://github.com/backtta-ui/suspicious-factory/actions/runs/44246498654).
+- [서명 유지 APK 다운로드](https://github.com/backtta-ui/suspicious-factory/actions/runs/44246585279/artifacts/14401667270). 전달 워크플로 성공.
+- APK는 apk-downloads 브랜치의 `6013b7ff576f12e8278b31cf553fd67f0a2e70cf`에 이전 APK를 유지하며 분할 보존했습니다. 공개 HTTPS로 모든 조각을 재다운로드해 원본 SHA256 일치를 확인했습니다. proof JSON 참조.
+- 휴대폰 브라우저에서 GitHub에 로그인하고 위 다운로드의 `jeon-woochi-verified-apk` ZIP을 받아 내 파일에서 압축을 푼 뒤 APK를 설치합니다. 기존 앱 제거·데이터 삭제 없이 업데이트합니다. Actions 다운로드 보존기간은 14일입니다. 내부 /workspace 경로는 다운로드 링크가 아닙니다.
+
+[변경 파일 목록](FILES.md) · [경기 화면](06-match.png) · [캐릭터 선택](04-role-selection.png) · [도술 시험](11-spell-clone.png)

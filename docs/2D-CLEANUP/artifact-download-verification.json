@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "artifact_id": 14401667270,
+  "run": 44246585279,
+  "apk": "jeon-woochi-2.0.16.apk",
+  "bytes": 127606063,
+  "sha256": "f016310102e7a36bb1450fd159992aa7df4748e81a8d309d85a83b352a81b669",
+  "method": "Downloaded delivery artifact ZIP and hashed extracted APK"
+}

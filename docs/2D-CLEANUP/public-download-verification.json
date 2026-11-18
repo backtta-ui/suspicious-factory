@@ -1,0 +1,8 @@
+{
+  "status": "passed",
+  "immutable_ref": "6013b7ff576f12e8278b31cf553fd67f0a2e70cf",
+  "bytes": 127606063,
+  "sha256": "f016310102e7a36bb1450fd159992aa7df4748e81a8d309d85a83b352a81b669",
+  "source": "8f42bfe65b9dbbd8902e58c6aa3123373facfc1f",
+  "method": "HTTPS public manifest and every APK part redownloaded and hashed"
+}
