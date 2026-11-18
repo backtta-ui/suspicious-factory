@@ -3,8 +3,8 @@ extends "res://scripts/ui/lobby_screen.gd"
 ## 구성은 도사 6 : 요괴 2로 고정(사용자·ChatGPT 합의). 오프라인 봇 매칭임을 숨기지 않는다.
 const SLOTS:=8
 const DAOISTS:=6
-const CENTER:=Vector2(640,372)
-const RING:=176.0
+const CENTER:=Vector2(640,396)
+const RING:=158.0
 const SLOT_SIZE:=82.0
 const NAMES=["나","달빛여우","서원지기","밤도사","호랑이님","그림자","연꽃","도깨비"]
 var slots: Array=[]
@@ -12,6 +12,8 @@ var status_label: Label
 var match_slots:=0
 var banner_left: Control
 var banner_right: Control
+var side_buttons: Dictionary={}
+var side_accents: Dictionary={}
 
 func build() -> void:
 	header("빠른 매치","월하의 생존전 · 8인 자동 매칭 (오프라인 봇)")
@@ -29,6 +31,21 @@ func build() -> void:
 	composition.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 	composition.add_theme_stylebox_override("normal",T.panel_box(Color(0.04,0.045,0.1,0.72),13,Color(0.85,0.72,0.47,0.5),1))
 	place(composition,Rect2(CENTER.x-116,102,232,30))
+	# 롤 포지션 선택처럼 희망 진영을 먼저 고른다(도사 6 : 요괴 2 비율은 유지).
+	for spec in [["도사 희망","daoist",Color(0.95,0.79,0.45)],["요괴 희망","yokai",Color(0.72,0.58,1.0)],["상관없음","any",Color(0.62,0.68,0.85)]]:
+		var value: String=String(spec[1])
+		var accent: Color=spec[2]
+		var target:=button(String(spec[0]),func()->void:game.set_preferred_role(value),self,false,16)
+		target.name="QuickSide_"+value
+		place(target,Rect2(CENTER.x-184+(0 if value=="daoist" else (124 if value=="yokai" else 248)),140,116,38))
+		side_buttons[value]=target
+		var line:=ColorRect.new()
+		line.color=accent
+		line.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		add_child(line)
+		place(line,Rect2(CENTER.x-184+(0 if value=="daoist" else (124 if value=="yokai" else 248))+10,176,96,3))
+		side_accents[value]=line
+	refresh_sides()
 	var halo:=T.soft_glow(self,Color(0.56,0.46,1.0,0.22),Rect2(CENTER.x-230,CENTER.y-230,460,460))
 	halo.name="MatchHalo"
 	var circle:=Art.TalismanCircle.new()
@@ -89,6 +106,22 @@ func set_slots(count: int) -> void:
 	if is_instance_valid(status_label):
 		status_label.text="대전 상대를 찾고 있습니다 · %d / 8"%match_slots
 		status_label.add_theme_color_override("font_color",T.GOLD_SOFT if match_slots>=SLOTS else T.IVORY)
+
+## 희망 진영 선택 상태를 금빛·보랏빛 강조선으로 표시한다.
+func refresh_sides() -> void:
+	var picked: String=String(game.preferred_role) if game!=null else "any"
+	for value in side_buttons:
+		var target: Control=side_buttons[value]
+		if not is_instance_valid(target):continue
+		target.modulate=Color.WHITE if value==picked else Color(1,1,1,0.62)
+		if value==picked:
+			for state in ["normal","hover","pressed","hover_pressed"]:
+				target.add_theme_stylebox_override(state,T.panel_box(Color(0.13,0.10,0.06,0.95),11,Color(0.95,0.79,0.45,0.95),2))
+		var line: ColorRect=side_accents.get(value)
+		if is_instance_valid(line):line.visible=value==picked
+	if is_instance_valid(status_label):
+		var role_text: String="상관없음" if picked=="any" else ("도사 희망" if picked=="daoist" else "요괴 희망")
+		status_label.set_meta("preferred",role_text)
 
 func _character(index: int,role: String) -> String:
 	if index==0:

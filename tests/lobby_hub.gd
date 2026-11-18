@@ -75,13 +75,15 @@ func run() -> void:
  check(game.shop.cards.size()==6,"shop shows a two by three gold card grid")
  check(is_instance_valid(game.ui.find_child("ShopTab_character",true,false)),"shop has a character tab")
  check(is_instance_valid(game.ui.find_child("ShopTab_skin",true,false)) and is_instance_valid(game.ui.find_child("ShopTab_aura",true,false)),"shop has skin and title tabs")
- var moon: Dictionary=Market.SKINS[1]
+ # 2.0.19: 스킨 상점은 기본 도포 1종만 노출한다. 예전 색상 스킨 id는 저장 데이터 호환용으로 남는다.
+ check(Market.shop_items("skin").size()==1 and String(Market.shop_items("skin")[0].id)=="default","skin shop only lists the default robe")
+ var moon: Dictionary=Market.skin("moon")
  game.market_buy(moon,"skin");await frames(2)
  check(game.storage.owns("moon") and game.storage.equipped("skin")=="moon","skin unlock and equip")
  check(int(game.storage.data.coins)==3000-int(moon.price),"skin price is taken from coins")
  var reload:=Storage.new()
  check(reload.equipped("skin")=="moon" and reload.owns("moon"),"market state persists to disk")
- game.storage.data.coins=100;game.market_buy(Market.SKINS[4],"skin");await frames(2)
+ game.storage.data.coins=100;game.market_buy(Market.skin("ember"),"skin");await frames(2)
  check(game.modal!=null and not game.storage.owns("ember"),"not enough coins is explained, nothing is bought")
  game.close_popup()
  var title: Dictionary=Market.TITLES[2]

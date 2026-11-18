@@ -15,6 +15,8 @@ const WALK_TILT=.055
 const RUN_TILT=.115
 ## 8방향 → (원화 시트 방향, 좌우 반전). 남/남서/남동은 정면, 북/북서/북동은 뒷모습,
 ## 동/서는 측면이다. 대각선은 정면·뒷모습을 좌우 반전해 이동 벡터 쪽으로 기울인다.
+## 걷기 4박자: 왼발 앞 → 정지 → 오른발 앞 → 정지. 방향별 walk1·walk2 원화를 쓴다.
+const GAIT_CYCLE=["walk1","idle","walk2","idle"]
 const VIEW={0:"right",1:"front",2:"front",3:"front",4:"left",5:"back",6:"back",7:"back"}
 const FLIP={0:false,1:true,2:false,3:false,4:false,5:false,6:false,7:true}
 ## 이동 방향별 상체 기울기 부호(오른쪽 +, 왼쪽 -). 정면/뒷면은 기울이지 않는다.
@@ -35,6 +37,9 @@ var wind: Array=[]
 var step_phase:=0.0
 var previous_facing:=-1
 var turn:=0.0
+var textures: Dictionary={}
+var pose_name:="idle"
+var current_pose:=""
 func _ready() -> void:
  sprite=Sprite2D.new();sprite.name="IngameArt";sprite.centered=true;sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  add_child(sprite)
@@ -48,23 +53,37 @@ func data_for(id: String) -> Dictionary:
  for key in characters:
   if key==id:return characters[key]
  return {}
-func set_pose(facing: int,id: String) -> void:
+## 방향별 정지/걷기 프레임 항목을 고른다(걷기 원화가 없으면 정지로 돌아간다).
+func frame_entry(data: Dictionary,entry: Dictionary,pose: String) -> Dictionary:
+ if pose=="idle":return entry
+ var walk: Array=entry.get("walk",[])
+ if pose=="walk1" and walk.size()>0:return walk[0]
+ if pose=="walk2" and walk.size()>1:return walk[1]
+ return entry
+func set_pose(facing: int,id: String,pose: String="idle") -> void:
  var data:=data_for(id)
  if data.is_empty():sprite.visible=false;return
  var view: String=VIEW.get(posmod(facing,8),"front")
  var directions: Dictionary=data.get("directions",{})
  var entry: Dictionary=directions.get(view,{})
  if entry.is_empty():sprite.visible=false;return
+ var frame: Dictionary=frame_entry(data,entry,pose)
+ # current_key는 "id:view" 형식을 유지한다(테스트·다른 코드가 방향 판별에 쓴다).
  var key: String="%s:%s" % [id,view]
- if key!=current_key:
-  current_key=key
-  var texture: Texture2D=load(String(entry.path))
+ var cache_key: String="%s:%s" % [key,pose]
+ if cache_key!=current_pose:
+  current_pose=cache_key;current_key=key
+  var texture: Texture2D=textures.get(cache_key)
+  if texture==null:
+   texture=load(String(frame.path))
+   textures[cache_key]=texture
   sprite.texture=texture;last_texture=texture
-  var height: float=float(entry.size[1])
-  var scale_value: float=float(entry.get("scale",data.get("scale",1.0)))
+  var height: float=float(frame.size[1])
+  var scale_value: float=float(frame.get("scale",data.get("scale",1.0)))
   sprite.scale=Vector2(scale_value,scale_value)
   sprite.offset=Vector2(0,-height/2.0)
   base_scale=scale_value
+ pose_name=pose
  sprite.flip_h=bool(FLIP.get(posmod(facing,8),false))
  sprite.modulate=actor.skin_tint if actor!=null else Color.WHITE
  sprite.visible=true
@@ -91,8 +110,16 @@ func _process(delta: float) -> void:
  breath+=delta
  var id: String=String(actor.art_id)
  if id=="":id=String(actor.cosmetic.get("character","woochi"))
- set_pose(actor.facing,id)
  var height: float=actor.jump_height
+ # 걷기·달리기: 이동 거리로 4박자 사이클(왼발·정지·오른발·정지)을 돌린다.
+ # 점프 중에는 다리 그림이 바뀌지 않도록 정지 포즈를 유지한다.
+ var pose: String="idle"
+ var below: float=actor.gait_weight
+ if below>=.1 and height<=2.0:
+  # gait_phase는 22px마다 PI씩 오른다 → 박자마다 한 프레임.
+  var index: int=posmod(int(floor(actor.gait_phase/PI)),GAIT_CYCLE.size())
+  pose=String(GAIT_CYCLE[index])
+ set_pose(actor.facing,id,pose)
  var height_moved: bool=absf(height-previous_height)>0.01
  if previous_height>4.0 and height<=.01:landing=.24
  previous_height=height

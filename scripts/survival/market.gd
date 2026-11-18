@@ -2,8 +2,12 @@ extends RefCounted
 ## 무료 꾸미기 마켓·업적·우편·알림 카탈로그.
 ## 결제(인앱결제·광고)는 없다. 재화는 경기·업적·우편 보상으로만 얻고,
 ## 모든 아이템은 게임 안에서 실제로 장착되어 화면에 반영된다.
+## 2.0.19: 스킨 상점은 기본 도포 한 종만 노출한다.
+## 캐릭터 외형을 나중에 바꿀 수 있으므로 예전 색상 스킨은 판매 목록에서 뺐다.
+## (저장 데이터 호환을 위해 예전 id의 색상 값은 LEGACY_SKINS에 그대로 남긴다.)
 const SKINS=[
- {"id":"default","name":"푸른 도포","price":0,"color":"ffffff","desc":"캐릭터 원화의 기본 색입니다."},
+ {"id":"default","name":"기본 도포","price":0,"color":"ffffff","desc":"캐릭터 원화 본연의 색입니다."}]
+const LEGACY_SKINS=[
  {"id":"moon","name":"달빛 도포","price":450,"color":"cfe0ff","desc":"달빛을 머금은 옅은 청백색으로 물듭니다."},
  {"id":"lotus","name":"연꽃 도포","price":600,"color":"ffc9d8","desc":"연꽃빛 분홍이 감도는 도포."},
  {"id":"ink","name":"먹빛 도포","price":750,"color":"9aa0c8","desc":"밤 먹물처럼 깊게 가라앉은 색."},
@@ -67,7 +71,7 @@ const ALERTS=[
  {"id":"market","title":"마켓은 무료입니다","body":"결제·광고 없이 코인과 보석으로만 꾸미기를 해금합니다. 보상은 경기·업적·우편에서 나옵니다."},
  {"id":"quick","title":"빠른 매치·친구 방 코드","body":"로비에서 빠른 매치와 친구와 함께(방 코드 공유)를 바로 시작할 수 있습니다. 8인 구성은 도사6:요괴2로 고정되었습니다."}]
 static func skin(id: String) -> Dictionary:
- for item in SKINS:
+ for item in SKINS+LEGACY_SKINS:
   if item.id==id:return item
  return SKINS[0]
 static func title(id: String) -> Dictionary:
