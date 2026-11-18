@@ -1,0 +1,22 @@
+{
+  "name": "jeon-woochi-2.0.20.apk",
+  "sha256": "d2fab45a46df89f6833f02559561879b9937459eb1fbfaf9a0fcc88990b60d18",
+  "source": "a20bbd33c8d143c3df898a9f11e0334c5ebe98ba",
+  "parts": [
+    {
+      "name": "jeon-woochi-2.0.20.apk.part01",
+      "bytes": 83886080,
+      "sha256": "69ef2c4afef225506ea3ab299a1e0a8b41a6cf7834d7593884b4ac0bf7a74d54"
+    },
+    {
+      "name": "jeon-woochi-2.0.20.apk.part02",
+      "bytes": 83886080,
+      "sha256": "bb4833f7bf5a5ef9957b0660dd8d1284682570880cef832125370abc160d9258"
+    },
+    {
+      "name": "jeon-woochi-2.0.20.apk.part03",
+      "bytes": 427385,
+      "sha256": "f3af5249803180ca7e8a0f8a537d6d97232abaf41f4823406f7f2ef6c2fb0561"
+    }
+  ]
+}
