@@ -3,1008 +3,1008 @@
   "target_height": 56.0,
   "characters": {
     "woochi": {
-      "scale": 0.102004,
-      "height": 549.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/woochi-front.png",
           "size": [
-            317,
-            544
+            482,
+            540
           ],
-          "scale": 0.102004,
+          "scale": 0.103704,
           "foot": [
-            158.5,
-            544.0
+            241.0,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/woochi-front-walk1.png",
               "size": [
-                189,
-                326
+                465,
+                509
               ],
-              "scale": 0.170215
+              "scale": 0.11002
             },
             {
               "path": "res://assets/woo/ingame/woochi-front-walk2.png",
               "size": [
-                189,
-                326
+                459,
+                528
               ],
-              "scale": 0.170215
+              "scale": 0.106061
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/woochi-back.png",
           "size": [
-            316,
-            543
+            456,
+            562
           ],
-          "scale": 0.102004,
+          "scale": 0.099644,
           "foot": [
-            158.0,
-            543.0
+            228.0,
+            562.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/woochi-back-walk1.png",
               "size": [
-                185,
-                326
+                447,
+                540
               ],
-              "scale": 0.169902
+              "scale": 0.103704
             },
             {
               "path": "res://assets/woo/ingame/woochi-back-walk2.png",
               "size": [
-                185,
-                326
+                446,
+                562
               ],
-              "scale": 0.169902
+              "scale": 0.099644
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/woochi-left.png",
           "size": [
-            305,
-            549
+            507,
+            585
           ],
-          "scale": 0.102004,
+          "scale": 0.095726,
           "foot": [
-            152.5,
-            549.0
+            253.5,
+            585.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/woochi-left-walk1.png",
               "size": [
-                192,
-                329
+                484,
+                562
               ],
-              "scale": 0.170213
+              "scale": 0.099644
             },
             {
               "path": "res://assets/woo/ingame/woochi-left-walk2.png",
               "size": [
-                192,
-                329
+                505,
+                585
               ],
-              "scale": 0.170213
+              "scale": 0.095726
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/woochi-right.png",
           "size": [
-            305,
-            549
+            507,
+            585
           ],
-          "scale": 0.102004,
+          "scale": 0.095726,
           "foot": [
-            152.5,
-            549.0
+            253.5,
+            585.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/woochi-right-walk1.png",
               "size": [
-                184,
-                329
+                508,
+                561
               ],
-              "scale": 0.170213
+              "scale": 0.099822
             },
             {
               "path": "res://assets/woo/ingame/woochi-right-walk2.png",
               "size": [
-                184,
-                329
+                487,
+                586
               ],
-              "scale": 0.170213
+              "scale": 0.095563
             }
           ]
         }
       }
     },
     "yeonhwa": {
-      "scale": 0.093023,
-      "height": 602.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/yeonhwa-front.png",
           "size": [
-            332,
-            602
+            353,
+            540
           ],
-          "scale": 0.093023,
+          "scale": 0.103704,
           "foot": [
-            166.0,
-            602.0
+            176.5,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/yeonhwa-front-walk1.png",
               "size": [
-                205,
-                361
+                333,
+                510
               ],
-              "scale": 0.155124
+              "scale": 0.109804
             },
             {
               "path": "res://assets/woo/ingame/yeonhwa-front-walk2.png",
               "size": [
-                205,
-                361
+                335,
+                526
               ],
-              "scale": 0.155124
+              "scale": 0.106464
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/yeonhwa-back.png",
           "size": [
-            326,
-            600
+            339,
+            543
           ],
-          "scale": 0.093023,
+          "scale": 0.103131,
           "foot": [
-            163.0,
-            600.0
+            169.5,
+            543.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/yeonhwa-back-walk1.png",
               "size": [
-                193,
-                360
+                330,
+                522
               ],
-              "scale": 0.155038
+              "scale": 0.10728
             },
             {
               "path": "res://assets/woo/ingame/yeonhwa-back-walk2.png",
               "size": [
-                193,
-                360
+                332,
+                544
               ],
-              "scale": 0.155038
+              "scale": 0.102941
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/yeonhwa-left.png",
           "size": [
-            350,
-            598
+            347,
+            537
           ],
-          "scale": 0.093023,
+          "scale": 0.104283,
           "foot": [
-            175.0,
-            598.0
+            173.5,
+            537.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/yeonhwa-left-walk1.png",
               "size": [
-                223,
-                359
+                342,
+                514
               ],
-              "scale": 0.154952
+              "scale": 0.108949
             },
             {
               "path": "res://assets/woo/ingame/yeonhwa-left-walk2.png",
               "size": [
-                223,
-                359
+                337,
+                540
               ],
-              "scale": 0.154952
+              "scale": 0.103704
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/yeonhwa-right.png",
           "size": [
-            351,
-            598
+            347,
+            537
           ],
-          "scale": 0.093023,
+          "scale": 0.104283,
           "foot": [
-            175.5,
-            598.0
+            173.5,
+            537.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/yeonhwa-right-walk1.png",
               "size": [
-                216,
-                359
+                336,
+                519
               ],
-              "scale": 0.154952
+              "scale": 0.1079
             },
             {
               "path": "res://assets/woo/ingame/yeonhwa-right-walk2.png",
               "size": [
-                216,
-                359
+                340,
+                536
               ],
-              "scale": 0.154952
+              "scale": 0.104478
             }
           ]
         }
       }
     },
     "muyeong": {
-      "scale": 0.095238,
-      "height": 588.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/muyeong-front.png",
           "size": [
-            320,
-            588
+            343,
+            540
           ],
-          "scale": 0.095238,
+          "scale": 0.103704,
           "foot": [
-            160.0,
-            588.0
+            171.5,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/muyeong-front-walk1.png",
               "size": [
-                172,
-                353
+                333,
+                509
               ],
-              "scale": 0.15864
+              "scale": 0.11002
             },
             {
               "path": "res://assets/woo/ingame/muyeong-front-walk2.png",
               "size": [
-                172,
-                353
+                312,
+                526
               ],
-              "scale": 0.15864
+              "scale": 0.106464
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/muyeong-back.png",
           "size": [
-            307,
-            580
+            316,
+            542
           ],
-          "scale": 0.095238,
+          "scale": 0.103321,
           "foot": [
-            153.5,
-            580.0
+            158.0,
+            542.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/muyeong-back-walk1.png",
               "size": [
-                184,
-                348
+                296,
+                523
               ],
-              "scale": 0.15873
+              "scale": 0.107075
             },
             {
               "path": "res://assets/woo/ingame/muyeong-back-walk2.png",
               "size": [
-                184,
-                348
+                318,
+                543
               ],
-              "scale": 0.15873
+              "scale": 0.103131
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/muyeong-left.png",
           "size": [
-            265,
-            584
+            300,
+            558
           ],
-          "scale": 0.095238,
+          "scale": 0.100358,
           "foot": [
-            132.5,
-            584.0
+            150.0,
+            558.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/muyeong-left-walk1.png",
               "size": [
-                176,
-                350
+                294,
+                536
               ],
-              "scale": 0.158911
+              "scale": 0.104478
             },
             {
               "path": "res://assets/woo/ingame/muyeong-left-walk2.png",
               "size": [
-                176,
-                350
+                296,
+                558
               ],
-              "scale": 0.158911
+              "scale": 0.100358
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/muyeong-right.png",
           "size": [
-            271,
-            584
+            300,
+            558
           ],
-          "scale": 0.095238,
+          "scale": 0.100358,
           "foot": [
-            135.5,
-            584.0
+            150.0,
+            558.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/muyeong-right-walk1.png",
               "size": [
-                176,
-                350
+                298,
+                537
               ],
-              "scale": 0.158911
+              "scale": 0.104283
             },
             {
               "path": "res://assets/woo/ingame/muyeong-right-walk2.png",
               "size": [
-                176,
-                350
+                292,
+                558
               ],
-              "scale": 0.158911
+              "scale": 0.100358
             }
           ]
         }
       }
     },
     "hongryeon": {
-      "scale": 0.091503,
-      "height": 612.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/hongryeon-front.png",
           "size": [
-            388,
-            611
+            398,
+            540
           ],
-          "scale": 0.091503,
+          "scale": 0.103704,
           "foot": [
-            194.0,
-            611.0
+            199.0,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/hongryeon-front-walk1.png",
               "size": [
-                259,
-                367
+                382,
+                515
               ],
-              "scale": 0.152339
+              "scale": 0.108738
             },
             {
               "path": "res://assets/woo/ingame/hongryeon-front-walk2.png",
               "size": [
-                259,
-                367
+                377,
+                523
               ],
-              "scale": 0.152339
+              "scale": 0.107075
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/hongryeon-back.png",
           "size": [
-            444,
-            610
+            350,
+            531
           ],
-          "scale": 0.091503,
+          "scale": 0.105461,
           "foot": [
-            222.0,
-            610.0
+            175.0,
+            531.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/hongryeon-back-walk1.png",
               "size": [
-                209,
-                366
+                339,
+                508
               ],
-              "scale": 0.152505
+              "scale": 0.110236
             },
             {
               "path": "res://assets/woo/ingame/hongryeon-back-walk2.png",
               "size": [
-                209,
-                366
+                343,
+                533
               ],
-              "scale": 0.152505
+              "scale": 0.105066
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/hongryeon-left.png",
           "size": [
-            429,
-            612
+            320,
+            539
           ],
-          "scale": 0.091503,
+          "scale": 0.103896,
           "foot": [
-            214.5,
-            612.0
+            160.0,
+            539.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/hongryeon-left-walk1.png",
               "size": [
-                211,
-                367
+                324,
+                514
               ],
-              "scale": 0.152588
+              "scale": 0.108949
             },
             {
               "path": "res://assets/woo/ingame/hongryeon-left-walk2.png",
               "size": [
-                211,
-                367
+                310,
+                543
               ],
-              "scale": 0.152588
+              "scale": 0.103131
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/hongryeon-right.png",
           "size": [
-            380,
-            609
+            320,
+            539
           ],
-          "scale": 0.091503,
+          "scale": 0.103896,
           "foot": [
-            190.0,
-            609.0
+            160.0,
+            539.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/hongryeon-right-walk1.png",
               "size": [
-                260,
-                365
+                310,
+                523
               ],
-              "scale": 0.152672
+              "scale": 0.107075
             },
             {
               "path": "res://assets/woo/ingame/hongryeon-right-walk2.png",
               "size": [
-                260,
-                365
+                321,
+                537
               ],
-              "scale": 0.152672
+              "scale": 0.104283
             }
           ]
         }
       }
     },
     "gumiho": {
-      "scale": 0.104089,
-      "height": 538.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/gumiho-front.png",
           "size": [
-            386,
-            538
+            498,
+            540
           ],
-          "scale": 0.104089,
+          "scale": 0.103704,
           "foot": [
-            193.0,
-            538.0
+            249.0,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/gumiho-front-walk1.png",
               "size": [
-                219,
-                323
+                478,
+                504
               ],
-              "scale": 0.173374
+              "scale": 0.111111
             },
             {
               "path": "res://assets/woo/ingame/gumiho-front-walk2.png",
               "size": [
-                219,
-                323
+                479,
+                531
               ],
-              "scale": 0.173374
+              "scale": 0.105461
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/gumiho-back.png",
           "size": [
-            365,
-            528
+            500,
+            537
           ],
-          "scale": 0.104089,
+          "scale": 0.104283,
           "foot": [
-            182.5,
-            528.0
+            250.0,
+            537.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/gumiho-back-walk1.png",
               "size": [
-                201,
-                317
+                490,
+                519
               ],
-              "scale": 0.173372
+              "scale": 0.1079
             },
             {
               "path": "res://assets/woo/ingame/gumiho-back-walk2.png",
               "size": [
-                201,
-                317
+                494,
+                539
               ],
-              "scale": 0.173372
+              "scale": 0.103896
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/gumiho-left.png",
           "size": [
-            354,
-            519
+            387,
+            550
           ],
-          "scale": 0.104089,
+          "scale": 0.101818,
           "foot": [
-            177.0,
-            519.0
+            193.5,
+            550.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/gumiho-left-walk1.png",
               "size": [
-                208,
-                311
+                382,
+                531
               ],
-              "scale": 0.173705
+              "scale": 0.105461
             },
             {
               "path": "res://assets/woo/ingame/gumiho-left-walk2.png",
               "size": [
-                208,
-                311
+                374,
+                550
               ],
-              "scale": 0.173705
+              "scale": 0.101818
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/gumiho-right.png",
           "size": [
-            352,
-            517
+            387,
+            550
           ],
-          "scale": 0.104089,
+          "scale": 0.101818,
           "foot": [
-            176.0,
-            517.0
+            193.5,
+            550.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/gumiho-right-walk1.png",
               "size": [
-                202,
-                310
+                372,
+                530
               ],
-              "scale": 0.173594
+              "scale": 0.10566
             },
             {
               "path": "res://assets/woo/ingame/gumiho-right-walk2.png",
               "size": [
-                202,
-                310
+                381,
+                552
               ],
-              "scale": 0.173594
+              "scale": 0.101449
             }
           ]
         }
       }
     },
     "jangsanbeom": {
-      "scale": 0.081159,
-      "height": 690.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/jangsanbeom-front.png",
           "size": [
-            361,
-            690
+            277,
+            540
           ],
-          "scale": 0.081159,
+          "scale": 0.103704,
           "foot": [
-            180.5,
-            690.0
+            138.5,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/jangsanbeom-front-walk1.png",
               "size": [
-                199,
-                414
+                259,
+                508
               ],
-              "scale": 0.135265
+              "scale": 0.110236
             },
             {
               "path": "res://assets/woo/ingame/jangsanbeom-front-walk2.png",
               "size": [
-                199,
-                414
+                263,
+                528
               ],
-              "scale": 0.135265
+              "scale": 0.106061
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/jangsanbeom-back.png",
           "size": [
-            324,
-            690
+            346,
+            473
           ],
-          "scale": 0.081159,
+          "scale": 0.118393,
           "foot": [
-            162.0,
-            690.0
+            173.0,
+            473.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/jangsanbeom-back-walk1.png",
               "size": [
-                205,
-                414
+                343,
+                458
               ],
-              "scale": 0.135265
+              "scale": 0.122271
             },
             {
               "path": "res://assets/woo/ingame/jangsanbeom-back-walk2.png",
               "size": [
-                205,
-                414
+                341,
+                470
               ],
-              "scale": 0.135265
+              "scale": 0.119149
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/jangsanbeom-left.png",
           "size": [
-            322,
-            687
+            326,
+            485
           ],
-          "scale": 0.081159,
+          "scale": 0.115464,
           "foot": [
-            161.0,
-            687.0
+            163.0,
+            485.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/jangsanbeom-left-walk1.png",
               "size": [
-                233,
-                412
+                322,
+                467
               ],
-              "scale": 0.135331
+              "scale": 0.119914
             },
             {
               "path": "res://assets/woo/ingame/jangsanbeom-left-walk2.png",
               "size": [
-                233,
-                412
+                315,
+                483
               ],
-              "scale": 0.135331
+              "scale": 0.115942
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/jangsanbeom-right.png",
           "size": [
-            322,
-            685
+            326,
+            485
           ],
-          "scale": 0.081159,
+          "scale": 0.115464,
           "foot": [
-            161.0,
-            685.0
+            163.0,
+            485.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/jangsanbeom-right-walk1.png",
               "size": [
-                239,
-                411
+                314,
+                464
               ],
-              "scale": 0.135265
+              "scale": 0.12069
             },
             {
               "path": "res://assets/woo/ingame/jangsanbeom-right-walk2.png",
               "size": [
-                239,
-                411
+                321,
+                486
               ],
-              "scale": 0.135265
+              "scale": 0.115226
             }
           ]
         }
       }
     },
     "dokkaebi": {
-      "scale": 0.091354,
-      "height": 613.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/dokkaebi-front.png",
           "size": [
-            377,
-            613
+            493,
+            540
           ],
-          "scale": 0.091354,
+          "scale": 0.103704,
           "foot": [
-            188.5,
-            613.0
+            246.5,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/dokkaebi-front-walk1.png",
               "size": [
-                218,
-                368
+                483,
+                510
               ],
-              "scale": 0.152174
+              "scale": 0.109804
             },
             {
               "path": "res://assets/woo/ingame/dokkaebi-front-walk2.png",
               "size": [
-                218,
-                368
+                467,
+                526
               ],
-              "scale": 0.152174
+              "scale": 0.106464
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/dokkaebi-back.png",
           "size": [
-            374,
-            608
+            496,
+            545
           ],
-          "scale": 0.091354,
+          "scale": 0.102752,
           "foot": [
-            187.0,
-            608.0
+            248.0,
+            545.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/dokkaebi-back-walk1.png",
               "size": [
-                212,
-                365
+                479,
+                524
               ],
-              "scale": 0.152173
+              "scale": 0.10687
             },
             {
               "path": "res://assets/woo/ingame/dokkaebi-back-walk2.png",
               "size": [
-                212,
-                365
+                493,
+                546
               ],
-              "scale": 0.152173
+              "scale": 0.102564
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/dokkaebi-left.png",
           "size": [
-            356,
-            596
+            357,
+            537
           ],
-          "scale": 0.091354,
+          "scale": 0.104283,
           "foot": [
-            178.0,
-            596.0
+            178.5,
+            537.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/dokkaebi-left-walk1.png",
               "size": [
-                220,
-                358
+                356,
+                514
               ],
-              "scale": 0.152087
+              "scale": 0.108949
             },
             {
               "path": "res://assets/woo/ingame/dokkaebi-left-walk2.png",
               "size": [
-                220,
-                358
+                342,
+                539
               ],
-              "scale": 0.152087
+              "scale": 0.103896
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/dokkaebi-right.png",
           "size": [
-            354,
-            598
+            357,
+            537
           ],
-          "scale": 0.091354,
+          "scale": 0.104283,
           "foot": [
-            177.0,
-            598.0
+            178.5,
+            537.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/dokkaebi-right-walk1.png",
               "size": [
-                232,
-                359
+                340,
+                519
               ],
-              "scale": 0.152172
+              "scale": 0.1079
             },
             {
               "path": "res://assets/woo/ingame/dokkaebi-right-walk2.png",
               "size": [
-                232,
-                359
+                354,
+                537
               ],
-              "scale": 0.152172
+              "scale": 0.104283
             }
           ]
         }
       }
     },
     "haechi": {
-      "scale": 0.104869,
-      "height": 534.0,
+      "scale": 0.103704,
+      "height": 540,
       "directions": {
         "front": {
           "path": "res://assets/woo/ingame/haechi-front.png",
           "size": [
-            357,
-            534
+            382,
+            540
           ],
-          "scale": 0.104869,
+          "scale": 0.103704,
           "foot": [
-            178.5,
-            534.0
+            191.0,
+            540.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/haechi-front-walk1.png",
               "size": [
-                205,
-                320
+                369,
+                508
               ],
-              "scale": 0.175
+              "scale": 0.110236
             },
             {
               "path": "res://assets/woo/ingame/haechi-front-walk2.png",
               "size": [
-                205,
-                320
+                364,
+                529
               ],
-              "scale": 0.175
+              "scale": 0.10586
             }
           ]
         },
         "back": {
           "path": "res://assets/woo/ingame/haechi-back.png",
           "size": [
-            339,
-            528
+            379,
+            555
           ],
-          "scale": 0.104869,
+          "scale": 0.100901,
           "foot": [
-            169.5,
-            528.0
+            189.5,
+            555.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/haechi-back-walk1.png",
               "size": [
-                183,
-                317
+                370,
+                538
               ],
-              "scale": 0.174671
+              "scale": 0.104089
             },
             {
               "path": "res://assets/woo/ingame/haechi-back-walk2.png",
               "size": [
-                183,
-                317
+                370,
+                552
               ],
-              "scale": 0.174671
+              "scale": 0.101449
             }
           ]
         },
         "left": {
           "path": "res://assets/woo/ingame/haechi-left.png",
           "size": [
-            384,
-            521
+            491,
+            569
           ],
-          "scale": 0.104869,
+          "scale": 0.098418,
           "foot": [
-            192.0,
-            521.0
+            245.5,
+            569.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/haechi-left-walk1.png",
               "size": [
-                227,
-                313
+                489,
+                546
               ],
-              "scale": 0.174558
+              "scale": 0.102564
             },
             {
               "path": "res://assets/woo/ingame/haechi-left-walk2.png",
               "size": [
-                227,
-                313
+                476,
+                569
               ],
-              "scale": 0.174558
+              "scale": 0.098418
             }
           ]
         },
         "right": {
           "path": "res://assets/woo/ingame/haechi-right.png",
           "size": [
-            384,
-            511
+            491,
+            569
           ],
-          "scale": 0.104869,
+          "scale": 0.098418,
           "foot": [
-            192.0,
-            511.0
+            245.5,
+            569.0
           ],
           "walk": [
             {
               "path": "res://assets/woo/ingame/haechi-right-walk1.png",
               "size": [
-                253,
-                307
+                474,
+                547
               ],
-              "scale": 0.174554
+              "scale": 0.102377
             },
             {
               "path": "res://assets/woo/ingame/haechi-right-walk2.png",
               "size": [
-                253,
-                307
+                488,
+                568
               ],
-              "scale": 0.174554
+              "scale": 0.098592
             }
           ]
         }
