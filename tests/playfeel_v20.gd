@@ -9,6 +9,8 @@ const L=preload("res://scripts/survival/layout.gd")
 const Rules=preload("res://scripts/survival/rules.gd")
 const Actor=preload("res://scripts/woo/actor.gd")
 const Looks=preload("res://scripts/wardrobe/catalog.gd")
+const IngameSprite=preload("res://scripts/art/ingame_sprite.gd")
+const Shop=preload("res://scripts/survival/shop_view.gd")
 var checks:=0
 var failures:=0
 var game: Node
@@ -30,7 +32,7 @@ func _initialize() -> void:run.call_deferred()
 func run() -> void:
  # 1) 60Hz 고정 스텝 · 시점/캐릭터 비율 · 이동 속도
  check(is_equal_approx(float(AppScript.STEP),1.0/60.0),"gameplay fixed step is 60Hz")
- check(L.CAMERA_ZOOM>=1.2 and L.CAMERA_ZOOM<=1.45,"camera zoom widened to about 1.32")
+ check(L.CAMERA_ZOOM>=1.55 and L.CAMERA_ZOOM<=1.8,"camera zoom pulled in to about 1.68")
  check(L.CAMERA_LIFT<=40.0,"camera lift trimmed to the new zoom")
  check(is_equal_approx(float(C.find("daoist:woochi").speed),135.0),"walk speed raised to 135")
  check(is_equal_approx(float(C.find("daoist:woochi").run_speed),210.0),"run speed raised to 210")
@@ -90,6 +92,21 @@ func run() -> void:
     var size: int=int((child as Label).get_theme_font_size("font_size"))
     readable=readable and size>=13
  check(readable,"every shop card label is at least 13pt")
+ # 2.0.21: 미리보기 본문이 패널 밖(20:9 왼쪽)으로 새지 않고, 카드 글씨가 얼굴을 가리지 않는다.
+ var shop: Node=game.shop
+ var panel_rect:=Rect2(shop.origin+Shop.PANEL_POS,Shop.PANEL_SIZE)
+ var leaked:=0
+ for child in shop.preview_body.get_children():
+  if child is Control and (child as Control).is_visible_in_tree():
+   var box: Rect2=(child as Control).get_global_rect()
+   if box.size.x>1.0 and box.size.y>1.0 and not panel_rect.grow(2.0).encloses(box):leaked+=1
+ check(leaked==0,"preview panel contents stay inside the panel on a wide screen")
+ var band_ok:=true
+ for card in shop.cards:
+  var card_box: Rect2=(card as Control).get_global_rect()
+  var name_node: Label=card.get_meta("name_label")
+  if name_node!=null and name_node.get_global_rect().position.y<card_box.position.y+card_box.size.y*.60:band_ok=false
+ check(band_ok,"card name band sits low so the portrait face stays uncovered")
  # 4) 화면마다 뒤로가기가 실제로 보인다
  for destination in ["friends","achievements","mail","alerts","quick"]:
   game.build(destination);await frames(3)
@@ -220,6 +237,24 @@ func run() -> void:
  walker.gait_phase=PI*2.05;walker.ingame_sprite._process(.016)
  var third_pose: String=String(walker.ingame_sprite.pose_name)
  check(first_pose=="walk1" and second_pose=="idle" and third_pose=="walk2","walk cycle swaps front and back leg frames")
+ # 2.0.21: 걷기 프레임 위에서 바운스·스쿼시가 과해 젤리처럼 튀지 않는지 실제 변환으로 확인한다.
+ var sprite_node: Node2D=walker.ingame_sprite
+ var low:=9.0;var high:=0.0;var bob_low:=0.0;var bob_high:=0.0
+ walker.gait_weight=1.0
+ for i in range(24):
+  walker.gait_phase=TAU*float(i)/24.0
+  sprite_node._process(.016)
+  var sy: float=sprite_node.sprite.scale.y/sprite_node.base_scale
+  var sx: float=sprite_node.sprite.scale.x/sprite_node.base_scale
+  low=minf(low,minf(sy,sx));high=maxf(high,maxf(sy,sx))
+  bob_low=minf(bob_low,sprite_node.sprite.position.y);bob_high=maxf(bob_high,sprite_node.sprite.position.y)
+ check(low>=.975 and high<=1.03,"walk squash stays within about 2.5% so the feet stay on the ground")
+ check(IngameSprite.WALK_BOUNCE<=2.0 and IngameSprite.RUN_BOUNCE<=3.0,"walk/run vertical bounce toned down for the new walk frames")
+ check(absf(bob_low)<=3.0 and absf(bob_high)<=3.0,"walk bob stays within a few pixels")
+ check(IngameSprite.WALK_TILT<=.04 and IngameSprite.RUN_TILT<=.08,"walk/run lean toned down")
+ # 2.0.21: 기기 네이티브 해상도 렌더(canvas_items) + 픽셀 스냅으로 글자가 번지지 않게 한다.
+ check(String(ProjectSettings.get_setting("display/window/stretch/mode"))=="canvas_items","stretch mode renders UI at device resolution")
+ check(bool(ProjectSettings.get_setting("gui/common/snap_controls_to_pixels")),"controls snap to whole pixels for crisp text")
  walker.queue_free();await frames(2)
  print("PLAYFEEL V2.0: ",checks," checks / ",failures," failures")
  game.queue_free();await frames(4)

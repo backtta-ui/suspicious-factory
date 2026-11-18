@@ -9,10 +9,13 @@ extends Node2D
 ## (4) 발밑 흙먼지, (5) 달릴 때의 바람 자국, (6) 방향 전환 탄성을 함께 그린다.
 const MANIFEST_PATH="res://assets/woo/ingame/frames.json"
 const SHADOW=Color(.01,.02,.05,.42)
-const WALK_BOUNCE=5.5
-const RUN_BOUNCE=9.0
-const WALK_TILT=.055
-const RUN_TILT=.115
+## 2.5D 걷기 프레임(walk1·idle·walk2)을 쓰면서 2.0.21에 보행 바운스·기울기·
+## 스쿼시를 발이 땅에 붙는 수준으로 낮췄다. 예전 정지 원화 시절 값(5.5/9.0,
+## 1.07↔0.92)은 프레임이 바뀔 때 젤리처럼 통통 튀어 보였다.
+const WALK_BOUNCE=1.2
+const RUN_BOUNCE=2.2
+const WALK_TILT=.03
+const RUN_TILT=.07
 ## 8방향 → (원화 시트 방향, 좌우 반전). 남/남서/남동은 정면, 북/북서/북동은 뒷모습,
 ## 동/서는 측면이다. 대각선은 정면·뒷모습을 좌우 반전해 이동 벡터 쪽으로 기울인다.
 ## 걷기 4박자: 왼발 앞 → 정지 → 오른발 앞 → 정지. 방향별 walk1·walk2 원화를 쓴다.
@@ -136,8 +139,8 @@ func _process(delta: float) -> void:
  # 2) 닿는 순간(cos=±1)은 눌리고, 뜨는 순간(cos=0)은 길게 편다.
  var contact: float=absf(cos(phase))*weight
  var breathe: float=1.0+0.015*sin(breath*2.1)*(1.0-weight)
- var stretch: float=float(lerpf(1.07,0.92,contact))
- var width: float=float(lerpf(0.95,1.08,contact))
+ var stretch: float=float(lerpf(1.015,0.985,contact))
+ var width: float=float(lerpf(0.99,1.015,contact))
  # 3) 진행 방향 기울기(달리면 더 크게).
  var lean: float=float(LEAN.get(posmod(actor.facing,8),0.0))
  var tilt: float=lean*bob*0.012+lean*(RUN_TILT if running else WALK_TILT)*weight+swing*0.02*weight
