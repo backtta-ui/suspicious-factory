@@ -130,7 +130,7 @@ func _make_card(item: Dictionary,index: int) -> void:
 	claim.kind="gold" if (done and not claimed) else "iron"
 	claim.text="수령 완료" if claimed else "보상 받기"
 	claim.glyph="check" if claimed else "trophy"
-	claim.font_size=int(14)
+	claim.font_size=int(13)
 	claim.name="Claim_"+String(item.id)
 	claim.custom_minimum_size=Vector2.ZERO
 	claim.disabled=claimed or not done
@@ -138,7 +138,7 @@ func _make_card(item: Dictionary,index: int) -> void:
 	claim.pressed.connect(func()->void:
 		if claim.usable():game.sound.play_clip("button");game.claim_achievement(item))
 	holder.add_child(claim)
-	place(claim,Rect2(rect.position.x+CARD_W-124,rect.position.y+CARD_H-50,110,40))
+	place(claim,Rect2(rect.position.x+CARD_W-136,rect.position.y+CARD_H-48,124,38))
 	game.button_feel(claim)
 	if claimed:
 		var seal:=UIK.Seal.new()
