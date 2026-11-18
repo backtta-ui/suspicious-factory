@@ -3,7 +3,8 @@ extends Control
 ## Read-only roster: tabs filter the grid, a card swaps the standing figure and the
 ## detail panel, and an ability row reveals its cooldown and full description.
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
-const TITLE_FONT=preload("res://assets/fonts/WooTitle.otf")
+const TITLE_FONT=preload("res://assets/fonts/BlackHanSans.ttf")
+const V=preload("res://scripts/ui/ui_v25.gd")
 const BG=preload("res://assets/woo/codex/codex_bg.jpg")
 const GLOW=preload("res://assets/woo/light.png")
 const AURA=preload("res://assets/woo/codex/aura.png")
@@ -21,14 +22,14 @@ const DAOIST_COLOR=Color("f0d79b")
 const YOKAI_COLOR=Color("cfa9ff")
 const DESIGN_HEIGHT=720.0
 const MARGIN=28.0
-const CARD_SIZE=Vector2(126,176)
-const CARD_GAP=10.0
-const GRID_Y=130.0
+const CARD_SIZE=Vector2(96,124)
+const CARD_GAP=8.0
+const GRID_Y=136.0
 const PANEL_W=344.0
 const PANEL_Y=88.0
-const PANEL_H=576.0
-const GUIDE_Y=508.0
-const GUIDE_H=152.0
+const PANEL_H=560.0
+const GUIDE_Y=534.0
+const GUIDE_H=136.0
 const STAND_H=340.0
 const FILTERS=[{"id":"all","label":"전체","icon":""},{"id":"daoist","label":"도사 (생존/지원)","icon":"talisman"},{"id":"yokai","label":"요괴 (추적/봉인)","icon":"mask"}]
 const WATERMARK_CODE="""shader_type canvas_item;
@@ -73,6 +74,12 @@ var title_label: Label
 var subtitle: Label
 var back_button: WooMobileButton
 var back_arrow: Label
+var header_medallion: TextureRect
+var emblem_icon: Control
+var wallet: Control
+var grid_panel: NinePatchRect
+var detail_sheet: NinePatchRect
+var wallet_pills: Array=[]
 var guide: Panel
 var active_ability:=-1
 var clock:=0.0
@@ -225,6 +232,8 @@ func _build() -> void:
  aura=TextureRect.new();aura.texture=AURA;aura.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;aura.stretch_mode=TextureRect.STRETCH_SCALE;aura.modulate=Color(1,1,1,.72);aura.mouse_filter=Control.MOUSE_FILTER_IGNORE;add_child(aura)
  stand_shadow=soft(self,Color(0,0,0,.6),Rect2(0,0,1,1))
  stand=TextureRect.new();stand.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;stand.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;stand.mouse_filter=Control.MOUSE_FILTER_IGNORE;add_child(stand)
+ grid_panel=V.patch(self,V.TEX_PANEL,Rect2(MARGIN-10,GRID_Y-12,1,1),64)
+ grid_panel.name="CodexGridPanel"
  grid=Control.new();grid.mouse_filter=Control.MOUSE_FILTER_IGNORE;add_child(grid)
  _build_guide()
  _build_detail()
@@ -233,32 +242,78 @@ func _build() -> void:
  _select("daoist:woochi")
 
 func _build_header() -> void:
- title_label=label_text(self,"캐릭터 안내",36,GOLD,true)
- subtitle=label_text(self,"게임에 등장하는 도사와 요괴를 확인하세요.",16,Color("ddd2f0"))
- back_button=button("",func()->void:game.back(),self)
+ title_label=label_text(self,"도감",34,Color("ffe6b4"),true)
+ subtitle=label_text(self,"월하의 서원에 등장하는 도사와 요괴를 확인하세요",14,Color("d8cfe8"))
+ back_button=V.PlateButton.new()
+ back_button.kind="dark"
+ back_button.text="뒤로"
+ back_button.glyph="back"
+ back_button.font_size=17
  back_button.name="CodexBack"
- var disc:=Panel.new();disc.mouse_filter=Control.MOUSE_FILTER_IGNORE
- var disc_box:=glass(Color(.09,.07,.20,.95),Color(1,.88,.62,.95),24,Color(VIOLET.r,VIOLET.g,VIOLET.b,.5))
- disc_box.set_border_width_all(2)
- disc.add_theme_stylebox_override("panel",disc_box)
- back_button.add_child(disc);disc.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- back_arrow=label_text(back_button,"←",28,TEXT)
- back_arrow.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;back_arrow.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
- place(back_arrow,Rect2(0,0,64,64))
+ back_button.custom_minimum_size=Vector2.ZERO
+ back_button.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+ back_button.pressed.connect(func()->void:
+  if back_button.usable():game.sound.play_clip("button");game.back())
+ add_child(back_button)
+ game.button_feel(back_button)
+ header_medallion=TextureRect.new()
+ header_medallion.texture=V.TEX_MEDALLION
+ header_medallion.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+ header_medallion.stretch_mode=TextureRect.STRETCH_SCALE
+ header_medallion.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ add_child(header_medallion)
+ var emblem:=Control.new()
+ emblem.set_script(V.Glyph)
+ emblem.set("glyph","scroll")
+ emblem.set("tint",Color("f0d9a2"))
+ emblem.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ header_medallion.add_child(emblem)
+ emblem_icon=emblem
+ _build_wallet()
  for spec in FILTERS:
   var key: String=spec.id
-  var target:=button("",func()->void:_set_filter(key),self)
+  var target:=V.Tab.new()
+  target.text=spec.label
+  target.glyph="lotus" if key=="daoist" else ("fox" if key=="yokai" else "grid")
+  target.font_size=17
   target.name="CodexTab_"+key
-  var pill:=Panel.new();pill.mouse_filter=Control.MOUSE_FILTER_IGNORE;target.add_child(pill);pill.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-  var text:=label_text(target,spec.label,17,TEXT)
-  text.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;text.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-  var badge: Painted=null
-  if spec.icon!="":
-   badge=Painted.new();badge.icon=spec.icon;badge.bare=true;target.add_child(badge)
-   place(text,Rect2(38,0,float(spec.label.length())*17.6+24.0,44))
-  else:place(text,Rect2(0,0,float(spec.label.length())*17.6+40.0,44))
-  tabs[key]={"button":target,"pill":pill,"label":text,"icon":badge,"width":float(spec.label.length())*17.6+66.0}
+  target.custom_minimum_size=Vector2.ZERO
+  target.allowed=func()->bool:return game!=null and not game.changing and game.modal==null
+  target.pressed.connect(func()->void:
+   if target.usable():game.sound.play_clip("button");_set_filter(key))
+  add_child(target)
+  game.button_feel(target)
+  tabs[key]={"button":target,"width":float(spec.label.length())*17.0+64.0}
  _paint_tabs()
+
+## 상단 지갑 알약(칭호·보석·코인).
+func _build_wallet() -> void:
+ wallet=Control.new()
+ wallet.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ add_child(wallet)
+ var specs: Array=[[V.TEX_ICON_LOTUS,"칭호 ","0",Color("9fe8ff")],
+  [V.TEX_ICON_GEM,"보석 ",str(int(game.storage.data.gems)),Color("c9a6ff")],
+  [V.TEX_ICON_COIN,"코인 ",str(int(game.storage.data.coins)),Color("f6d896")]]
+ var owned:=0
+ for item in (game.storage.data.market.owned as Array):
+  if String(item).begins_with("title:"):owned+=1
+ specs[0][2]=str(owned)
+ for spec in specs:
+  var pill:=Control.new()
+  pill.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  wallet.add_child(pill)
+  var bg:=V.patch(pill,V.TEX_PILL,Rect2(Vector2.ZERO,Vector2(1,1)),40)
+  var art:=TextureRect.new()
+  art.texture=spec[0]
+  art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+  art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+  art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  pill.add_child(art)
+  var label:=label_text(pill,String(spec[1])+String(spec[2]),15,spec[3])
+  pill.set_meta("bg",bg)
+  pill.set_meta("icon",art)
+  pill.set_meta("label",label)
+  wallet_pills.append({"node":pill,"caption":String(spec[1])+String(spec[2])})
 
 func _build_guide() -> void:
  guide=Panel.new();guide.name="CodexRoleGuide";guide.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -274,7 +329,10 @@ func _build_guide() -> void:
 func _build_detail() -> void:
  detail=Control.new();detail.name="CodexDetail";detail.mouse_filter=Control.MOUSE_FILTER_PASS;detail.clip_contents=true;add_child(detail)
  detail_panel=Panel.new();detail_panel.mouse_filter=Control.MOUSE_FILTER_IGNORE
- detail_panel.add_theme_stylebox_override("panel",glass(INK,Color(GOLD.r,GOLD.g,GOLD.b,.45),14,Color(VIOLET.r,VIOLET.g,VIOLET.b,.4)))
+ detail_panel.add_theme_stylebox_override("panel",flat(Color(0,0,0,0)))
+ var sheet:=V.patch(detail,V.TEX_PANEL,Rect2(Vector2.ZERO,Vector2(1,1)),64)
+ sheet.name="CodexDetailSheet"
+ detail_sheet=sheet
  detail.add_child(detail_panel);detail_panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  watermark=TextureRect.new();watermark.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;watermark.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;watermark.mouse_filter=Control.MOUSE_FILTER_IGNORE
  var shader:=Shader.new();shader.code=WATERMARK_CODE
@@ -380,27 +438,42 @@ func _entries() -> Array:
 func _refresh_grid() -> void:
  for child in grid.get_children():child.free()
  cards.clear()
+ var k:=get_viewport().get_visible_rect().size.y/DESIGN_HEIGHT
  var entries:=_entries()
  for i in range(entries.size()):
   var entry: Dictionary=entries[i]
   var id: String=entry.id
   var target:=button("",func()->void:_select(id),grid)
   target.name="CodexCard_"+id.split(":")[1]
-  var row_offset:=0.0 if entries.size()>4 else (CARD_SIZE.y+CARD_GAP)*.5
-  place(target,Rect2((i%4)*(CARD_SIZE.x+CARD_GAP),row_offset+float(i/4)*(CARD_SIZE.y+CARD_GAP),CARD_SIZE.x,CARD_SIZE.y))
-  var art:=TextureRect.new();art.texture=load(entry.get("portrait",entry.get("sprite","")));art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-  art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE
-  target.add_child(art);place(art,Rect2(0,0,CARD_SIZE.x,CARD_SIZE.y))
-  var fade:=shade_child(Color(.03,.02,.08,0),Color(.03,.02,.08,.92))
-  target.add_child(fade);place(fade,Rect2(0,CARD_SIZE.y-72,CARD_SIZE.x,72))
-  var plate:=ColorRect.new();plate.color=Color(.02,.015,.06,.34);plate.mouse_filter=Control.MOUSE_FILTER_IGNORE;target.add_child(plate)
-  place(plate,Rect2(0,CARD_SIZE.y-36,CARD_SIZE.x,36))
-  var edge:=rule(target,Color(GOLD.r,GOLD.g,GOLD.b,.35));place(edge,Rect2(14,CARD_SIZE.y-37,CARD_SIZE.x-28,1))
-  var name_label:=label_text(target,entry.get("name",""),17,TEXT)
-  name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-  place(name_label,Rect2(0,CARD_SIZE.y-36,CARD_SIZE.x,34))
-  var sheen:=soft(target,Color(1,.86,.55,.0),Rect2(-16,-40,CARD_SIZE.x+32,120))
-  target.set_meta("sheen",sheen);target.set_meta("name",name_label);target.set_meta("id",id)
+  var col:=i%3
+  var row:=i/3
+  place(target,Rect2(col*(CARD_SIZE.x+CARD_GAP),float(row)*(CARD_SIZE.y+CARD_GAP),CARD_SIZE.x,CARD_SIZE.y))
+  for state in ["normal","hover","pressed","hover_pressed","disabled"]:
+   target.add_theme_stylebox_override(state,flat(Color(0,0,0,0)))
+  var path:=String(entry.get("portrait",entry.get("sprite","")))
+  if path!="" and ResourceLoader.exists(path):
+   var portrait_node:=V.CirclePortrait.new()
+   portrait_node.texture=load(path)
+   portrait_node.focus=0.50
+   portrait_node.zoom=1.0
+   target.add_child(portrait_node)
+   portrait_node.position=Vector2.ZERO
+   portrait_node.size=Vector2(CARD_SIZE.x,CARD_SIZE.x)*k
+  var ring:=TextureRect.new()
+  ring.texture=V.TEX_RING_FRAME
+  ring.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+  ring.stretch_mode=TextureRect.STRETCH_SCALE
+  ring.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  target.add_child(ring)
+  ring.position=Vector2.ZERO
+  ring.size=Vector2(CARD_SIZE.x,CARD_SIZE.x)*k
+  var name_label:=label_text(target,String(entry.get("name","")),16,Color("f2e6cc"))
+  name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+  name_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+  place(name_label,Rect2(0,CARD_SIZE.x-2,CARD_SIZE.x,26))
+  target.set_meta("ring",ring)
+  target.set_meta("name",name_label)
+  target.set_meta("id",id)
   cards[id]=target
  _paint_cards()
 
@@ -417,17 +490,14 @@ func _paint_cards() -> void:
   if not is_instance_valid(cards[id]):continue
   var card: WooMobileButton=cards[id]
   var chosen: bool=id==selected_id
-  if chosen:
-   var box:=glass(Color(.16,.10,.26,.62),Color(GOLD.r,GOLD.g,GOLD.b,.95),2,10)
-   box.set_border_width_all(2)
-   box.shadow_color=Color(GOLD.r,GOLD.g,GOLD.b,.55);box.shadow_size=18
-   for state in ["normal","hover","pressed","hover_pressed","disabled"]:card.add_theme_stylebox_override(state,box)
-  else:
-   var box:=flat(Color(.05,.04,.12,.55),Color(VIOLET.r,VIOLET.g,VIOLET.b,.4),1,10)
-   box.shadow_color=Color(VIOLET.r,VIOLET.g,VIOLET.b,.18);box.shadow_size=8
-   for state in ["normal","hover","pressed","hover_pressed","disabled"]:card.add_theme_stylebox_override(state,box)
-  var sheen: TextureRect=card.get_meta("sheen");sheen.modulate.a=.5 if chosen else .0
-  var name_label: Label=card.get_meta("name");name_label.add_theme_color_override("font_color",GOLD if chosen else TEXT)
+  var ring: TextureRect=card.get_meta("ring")
+  if is_instance_valid(ring):
+   ring.modulate=Color(1.10,1.02,.86,1.0) if chosen else Color(.72,.66,.86,.92)
+   ring.scale=Vector2(1.06,1.06) if chosen else Vector2.ONE
+   ring.pivot_offset=ring.size*.5
+  var name_label: Label=card.get_meta("name")
+  if is_instance_valid(name_label):
+   name_label.add_theme_color_override("font_color",Color("ffe6b4") if chosen else Color("cbbfe0"))
 
 func _set_filter(id: String) -> void:
  filter=id
@@ -439,22 +509,8 @@ func _set_filter(id: String) -> void:
 func _paint_tabs() -> void:
  for key in tabs:
   var spec: Dictionary=tabs[key]
-  var chosen: bool=key==filter
-  var pill: Panel=spec.pill
-  if chosen:
-   var box:=flat(Color(.80,.62,.32,.94),Color(1,.92,.72,.95),1,18)
-   box.shadow_color=Color(GOLD.r,GOLD.g,GOLD.b,.6);box.shadow_size=18
-   pill.add_theme_stylebox_override("panel",box)
-  else:
-   var box:=glass(Color(.07,.05,.16,.8),Color(VIOLET.r,VIOLET.g,VIOLET.b,.55),18,Color(VIOLET.r,VIOLET.g,VIOLET.b,.3))
-   pill.add_theme_stylebox_override("panel",box)
-  var text: Label=spec.label
-  text.add_theme_color_override("font_color",Color("2a1e0c") if chosen else Color("ded2f2"))
-  var badge: Painted=spec.icon
-  if badge!=null:
-   badge.ring=Color("2a1e0c") if chosen else GOLD_DEEP
-   badge.ring2=Color("7a5b2a") if chosen else VIOLET
-   badge.queue_redraw()
+  var target=spec.button
+  if is_instance_valid(target):target.paint(key==filter)
 
 func _select(id: String) -> void:
  var entry:=C.find(id)
@@ -485,7 +541,7 @@ func _layout() -> void:
  var scale_factor:=maxf(w/BG_SIZE.x,view.y/BG_SIZE.y)*1.15
  var drawn:=BG_SIZE*scale_factor
  var panel_x:=w-MARGIN*s-PANEL_W*s
- var grid_w:=CARD_SIZE.x*4.0+CARD_GAP*3.0
+ var grid_w:=CARD_SIZE.x*3.0+CARD_GAP*2.0
  var center_x:=(MARGIN*s+grid_w*s+panel_x)*.5
  var feet:=586.0*s
  var origin:=Vector2(clampf(center_x-DAIS.x*drawn.x,w-drawn.x,0.0),clampf(feet-DAIS.y*drawn.y,view.y-drawn.y,0.0))
@@ -499,28 +555,57 @@ func _layout() -> void:
   if not is_instance_valid(node):continue
   alive.append(node);_apply(node,node.get_meta("design"),s)
  design=alive
- title_label.position=Vector2(52*s,4*s);title_label.size=Vector2(340*s,50*s)
- var title_width:=TITLE_FONT.get_string_size(title_label.text,HORIZONTAL_ALIGNMENT_LEFT,-1,int(36*s)).x
- subtitle.position=Vector2(52*s+title_width+22*s,24*s);subtitle.size=Vector2(470*s,28*s)
- trim.title_box=Rect2(Vector2(52*s,50*s),Vector2(title_width,0))
+ title_label.position=Vector2(202*s,0);title_label.size=Vector2(300*s,44*s)
+ subtitle.position=Vector2(204*s,42*s);subtitle.size=Vector2(560*s,24*s)
+ trim.title_box=Rect2(Vector2.ZERO,Vector2.ZERO)
  trim.queue_redraw()
- back_button.position=Vector2(w-MARGIN*s-64*s,8*s);back_button.size=Vector2(64*s,64*s)
+ back_button.position=Vector2(16*s,10*s);back_button.size=Vector2(116*s,42*s)
+ back_button.set("font_size",maxi(10,int(17*s)))
+ header_medallion.position=Vector2(154*s,4*s);header_medallion.size=Vector2(48*s,48*s)
+ if emblem_icon!=null:
+  emblem_icon.position=Vector2(11*s,11*s);emblem_icon.size=Vector2(26*s,26*s)
+ if wallet!=null:
+  var total:=0.0
+  for item in wallet_pills:
+   var pill: Control=item.node
+   var font: Font=FONT
+   total+=font.get_string_size(String(item.caption),HORIZONTAL_ALIGNMENT_LEFT,-1,int(15*s)).x+48*s
+  wallet.position=Vector2(w-16*s-total,14*s)
+  wallet.size=Vector2(total,36*s)
+  var x:=0.0
+  for item in wallet_pills:
+   var pill: Control=item.node
+   var font: Font=FONT
+   var pw:=font.get_string_size(String(item.caption),HORIZONTAL_ALIGNMENT_LEFT,-1,int(15*s)).x+48*s
+   pill.position=Vector2(x,0);pill.size=Vector2(pw,36*s)
+   var bg: NinePatchRect=pill.get_meta("bg")
+   bg.position=Vector2.ZERO;bg.size=pill.size;V.refit(bg)
+   var art: TextureRect=pill.get_meta("icon")
+   art.position=Vector2(12*s,8*s);art.size=Vector2(20*s,20*s)
+   var lbl: Label=pill.get_meta("label")
+   lbl.position=Vector2(38*s,0);lbl.size=Vector2(pw-42*s,36*s)
+   lbl.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+   lbl.add_theme_font_size_override("font_size",maxi(10,int(15*s)))
+   x+=pw+8*s
  var x:=MARGIN*s
  for spec in FILTERS:
   var entry: Dictionary=tabs[spec.id]
-  var target: WooMobileButton=entry.button
+  var target=entry.button
   var tab_width: float=float(entry.width)*s
-  target.position=Vector2(x,80*s);target.size=Vector2(tab_width,44*s)
-  var badge: Painted=entry.icon
-  var label: Label=entry.label
-  label.position=Vector2(38*s,0) if badge!=null else Vector2.ZERO
-  label.size=Vector2((tab_width-44*s) if badge!=null else tab_width,44*s)
-  if badge!=null:
-   badge.position=Vector2(10*s,10*s);badge.size=Vector2(24*s,24*s)
+  target.position=Vector2(x,76*s);target.size=Vector2(tab_width,44*s)
+  target.set("font_size",maxi(10,int(17*s)))
   x+=tab_width+8*s
  grid.position=Vector2(MARGIN*s,GRID_Y*s)
  guide.position=Vector2(MARGIN*s,GUIDE_Y*s);guide.size=Vector2(grid_w*s,GUIDE_H*s)
+ if grid_panel!=null:
+  grid_panel.position=Vector2((MARGIN-12)*s,(GRID_Y-14)*s)
+  grid_panel.size=Vector2((grid_w+24)*s,(GUIDE_Y+GUIDE_H-GRID_Y+26)*s)
+  V.refit(grid_panel)
  detail.position=Vector2(panel_x,PANEL_Y*s);detail.size=Vector2(PANEL_W*s,PANEL_H*s)
+ if detail_sheet!=null:
+  detail_sheet.position=Vector2.ZERO
+  detail_sheet.size=detail.size
+  V.refit(detail_sheet)
  var aspect:=1.0
  if stand.texture!=null:aspect=float(stand.texture.get_width())/maxf(1.0,float(stand.texture.get_height()))
  var height:=STAND_H*s

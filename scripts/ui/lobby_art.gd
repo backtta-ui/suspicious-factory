@@ -58,6 +58,12 @@ class Embers extends Control:
 class Backdrop extends Control:
 	const T=preload("res://scripts/ui/lobby_theme.gd")
 	var mood:=0.80
+	## 2.0.25: 시안처럼 원화를 밝게 살리고 창살 격자는 끈다.
+	var shade_strength:=0.52
+	var lattice_on:=true
+	var warm_strength:=0.16
+	var vignette_strength:=0.5
+	var dim_strength:=0.16
 	## 화면 전용 배경 아트(상점 2.0.22). 비워 두면 지금까지의 공용 달빛 한옥 배경을 쓴다.
 	var art: Texture2D=null
 	func _ready() -> void:
@@ -83,14 +89,14 @@ class Backdrop extends Control:
 		add_child(image)
 		image.position=Vector2.ZERO;image.size=size
 		var shade:=ColorRect.new()
-		shade.color=Color(0.03,0.035,0.075,0.52) if not custom else Color(0.03,0.03,0.07,0.16)
+		shade.color=Color(0.03,0.035,0.075,shade_strength) if not custom else Color(0.03,0.03,0.07,0.16)
 		shade.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(shade);shade.position=Vector2.ZERO;shade.size=size
 		var warm:=TextureRect.new()
 		warm.texture=T.GLOW
 		warm.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		warm.stretch_mode=TextureRect.STRETCH_SCALE
-		warm.modulate=Color(1.0,0.74,0.42,0.16) if not custom else Color(1.0,0.74,0.42,0.08)
+		warm.modulate=Color(1.0,0.74,0.42,warm_strength) if not custom else Color(1.0,0.74,0.42,0.08)
 		warm.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(warm)
 		warm.position=Vector2(-size.x*.18,size.y*.52);warm.size=Vector2(size.x*.9,size.y*.9)
@@ -102,20 +108,21 @@ class Backdrop extends Control:
 		moon.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(moon)
 		moon.position=Vector2(size.x*.60,-size.y*.30);moon.size=Vector2(size.y*.95,size.y*.95)
-		var lattice:=Lattice.new()
-		lattice.color=Color(0.85,0.72,0.47,0.06)
-		add_child(lattice);lattice.position=Vector2.ZERO;lattice.size=size
+		if lattice_on:
+			var lattice:=Lattice.new()
+			lattice.color=Color(0.85,0.72,0.47,0.06)
+			add_child(lattice);lattice.position=Vector2.ZERO;lattice.size=size
 		var embers:=Embers.new()
 		add_child(embers);embers.position=Vector2.ZERO;embers.size=size
 		var dim:=ColorRect.new()
-		dim.color=Color(0.02,0.025,0.06,0.16)
+		dim.color=Color(0.02,0.025,0.06,dim_strength)
 		dim.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(dim);dim.position=Vector2.ZERO;dim.size=size
 		var vignette:=TextureRect.new()
 		vignette.texture=T.VIGNETTE
 		vignette.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		vignette.stretch_mode=TextureRect.STRETCH_SCALE
-		vignette.modulate=Color(1,1,1,0.5)
+		vignette.modulate=Color(1,1,1,vignette_strength)
 		vignette.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(vignette);vignette.position=Vector2.ZERO;vignette.size=size
 		var frame:=ScreenFrame.new()
