@@ -6,6 +6,11 @@ const Storage=preload("res://scripts/survival/storage.gd")
 const Actor=preload("res://scripts/woo/actor.gd")
 const ButtonType=preload("res://scripts/woo/mobile_button.gd")
 const L=preload("res://scripts/survival/layout.gd")
+const TITLE_ART="res://assets/woo/title_bg.png"
+const TITLE_IMAGE=Vector2(1846,852)
+## The settings capsule already painted into the key art (relative to the image).
+const TITLE_SETTINGS_CENTER=Vector2(.949,.073)
+const TITLE_SETTINGS_EXTENT=Vector2(.086,.08)
 var storage: RefCounted
 var sound: WooSound
 var layer: CanvasLayer
@@ -131,18 +136,26 @@ func build(destination: String) -> void:
   "match":hud()
   "result":result_screen()
  safe_layout()
+func title_background() -> void:
+ var night:=ColorRect.new();night.color=Color(.22,.16,.28);night.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(night,ui)
+ var art:=TextureRect.new();art.texture=load(TITLE_ART);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(art,ui)
 func title_screen() -> void:
- background()
+ title_background()
+ # Full-screen native start target; the painted controls stay above it.
  var start:=button("",func()->void:transition("lobby"));full(start,ui)
  for state in ["normal","pressed","hover","hover_pressed"]:start.add_theme_stylebox_override(state,StyleBoxEmpty.new())
- var box:=VBoxContainer.new();content.add_child(box)
- var logo:=text("우울할 땐 도사",64,Color("fff1d1"));logo.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;logo.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));box.add_child(logo)
- var sub:=text("월하의 생존전",24,Color("bcb0df"));sub.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(sub)
- portrait(box,storage.data.daoist,Vector2(340,340))
- var prompt:=text("화면을 터치하여 시작",26);prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;box.add_child(prompt)
- var pulse:=prompt.create_tween().set_loops();pulse.tween_property(prompt,"modulate:a",.5,.9);pulse.tween_property(prompt,"modulate:a",1,.9)
- var settings:=button("설정",show_settings);ui.add_child(settings);settings.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);settings.offset_left=-145;settings.offset_right=-28;settings.offset_top=25;settings.offset_bottom=83
- # Keep the full-screen native touch target behind the real settings control.
+ var view:=get_viewport().get_visible_rect().size
+ var scale:=minf(view.x/TITLE_IMAGE.x,view.y/TITLE_IMAGE.y)
+ var shown:=TITLE_IMAGE*scale
+ var center:=(view-shown)/2+TITLE_SETTINGS_CENTER*shown
+ var extent:=TITLE_SETTINGS_EXTENT*shown+Vector2(16,16)
+ # Invisible native target exactly over the painted gear capsule.
+ var settings:=button("설정",show_settings)
+ settings.custom_minimum_size=Vector2.ZERO
+ for state in ["normal","hover","pressed","hover_pressed","disabled"]:settings.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:settings.add_theme_color_override(state,Color(0,0,0,0))
+ ui.add_child(settings)
+ settings.position=center-extent/2;settings.size=extent
  ui.move_child(start,0)
 func lobby_screen() -> void:
  var box:=page("우울할 땐 도사 · 메인 로비")
