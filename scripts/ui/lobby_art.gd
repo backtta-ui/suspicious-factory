@@ -58,32 +58,39 @@ class Embers extends Control:
 class Backdrop extends Control:
 	const T=preload("res://scripts/ui/lobby_theme.gd")
 	var mood:=0.80
+	## 화면 전용 배경 아트(상점 2.0.22). 비워 두면 지금까지의 공용 달빛 한옥 배경을 쓴다.
+	var art: Texture2D=null
 	func _ready() -> void:
 		mouse_filter=Control.MOUSE_FILTER_IGNORE
 		resized.connect(_rebuild)
+		_rebuild()
+	## 배경 아트를 갈아 끼우고 즉시 다시 그린다.
+	func use_texture(texture: Texture2D) -> void:
+		art=texture
 		_rebuild()
 	func _rebuild() -> void:
 		if size.x<2.0:return
 		for child in get_children():
 			remove_child(child)
 			child.queue_free()
+		var custom:=art!=null
 		var image:=TextureRect.new()
-		image.texture=T.BG
+		image.texture=art if custom else T.BG
 		image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
-		image.modulate=Color(mood*.92,mood*.84,mood*1.16)
+		image.modulate=Color(mood*.92,mood*.84,mood*1.16) if not custom else Color(1.10,1.02,1.14)
 		image.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(image)
 		image.position=Vector2.ZERO;image.size=size
 		var shade:=ColorRect.new()
-		shade.color=Color(0.03,0.035,0.075,0.52)
+		shade.color=Color(0.03,0.035,0.075,0.52) if not custom else Color(0.03,0.03,0.07,0.16)
 		shade.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(shade);shade.position=Vector2.ZERO;shade.size=size
 		var warm:=TextureRect.new()
 		warm.texture=T.GLOW
 		warm.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		warm.stretch_mode=TextureRect.STRETCH_SCALE
-		warm.modulate=Color(1.0,0.74,0.42,0.16)
+		warm.modulate=Color(1.0,0.74,0.42,0.16) if not custom else Color(1.0,0.74,0.42,0.08)
 		warm.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(warm)
 		warm.position=Vector2(-size.x*.18,size.y*.52);warm.size=Vector2(size.x*.9,size.y*.9)
@@ -91,7 +98,7 @@ class Backdrop extends Control:
 		moon.texture=T.GLOW
 		moon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		moon.stretch_mode=TextureRect.STRETCH_SCALE
-		moon.modulate=Color(0.72,0.78,1.0,0.18)
+		moon.modulate=Color(0.72,0.78,1.0,0.18) if not custom else Color(0.72,0.78,1.0,0.10)
 		moon.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		add_child(moon)
 		moon.position=Vector2(size.x*.60,-size.y*.30);moon.size=Vector2(size.y*.95,size.y*.95)

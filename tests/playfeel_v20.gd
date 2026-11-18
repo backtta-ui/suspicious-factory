@@ -107,6 +107,26 @@ func run() -> void:
   var name_node: Label=card.get_meta("name_label")
   if name_node!=null and name_node.get_global_rect().position.y<card_box.position.y+card_box.size.y*.60:band_ok=false
  check(band_ok,"card name band sits low so the portrait face stays uncovered")
+ # 2.0.22: 캐릭터는 매칭 수락 후 선택창에서 고르므로 상점 캐릭터 탭에 '장착'이 없다.
+ game.shop.set_tab("character");await frames(3)
+ game.shop.select_item("daoist:woochi");await frames(3)
+ var no_equip_text:=true
+ var owned_reads_buy:=false
+ for card in game.shop.cards:
+  var state_node: Label=card.get_meta("state_label")
+  if state_node==null:continue
+  if String(state_node.text)=="장착 중":no_equip_text=false
+  if String(card.get_meta("id"))=="daoist:woochi" and String(state_node.text)=="보유":owned_reads_buy=true
+ check(no_equip_text,"character shop cards never read 장착 중")
+ check(owned_reads_buy,"owned character card reads 보유")
+ var shop_cta: Button=game.shop.action_button
+ check(shop_cta!=null and String(shop_cta.text)=="보유 중" and shop_cta.disabled,"owned character CTA is a finished 보유 중 button")
+ game.shop.select_item("daoist:muyeong");await frames(3)
+ shop_cta=game.shop.action_button
+ check(shop_cta!=null and String(shop_cta.text)=="해금하기" and not shop_cta.disabled,"locked character CTA offers 해금하기")
+ game.shop.set_tab("skin");await frames(3)
+ check(String(game.shop.action_button.text)!="보유 중","skin tab keeps its equip action")
+ game.shop.set_tab("character");await frames(2)
  # 4) 화면마다 뒤로가기가 실제로 보인다
  for destination in ["friends","achievements","mail","alerts","quick"]:
   game.build(destination);await frames(3)

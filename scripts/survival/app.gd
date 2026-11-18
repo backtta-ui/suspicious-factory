@@ -1276,6 +1276,16 @@ func market_buy(item: Dictionary,kind: String) -> void:
  if storage.save()!=OK:notice("장착 상태를 저장하지 못했습니다.")
  refresh_shop()
 
+## 캐릭터 해금만 한다(2.0.22 상점). 경기 수락 후 캐릭터 선택창에서 고르므로
+## 상점 해금은 대표 캐릭터를 바꾸지 않는다.
+func shop_unlock_character(id: String) -> void:
+ if storage.owns_character(id):refresh_shop();return
+ var price:=Market.character_price(id)
+ if price>int(storage.data.coins):notice("코인이 부족합니다. 업적·우편 보상으로 모아 주세요.");return
+ storage.add_coins(-price);storage.own_character(id)
+ if storage.save()!=OK:notice("캐릭터를 저장하지 못했습니다.")
+ refresh_shop()
+
 ## 캐릭터 해금: 코인을 내고 보유 목록에 넣은 뒤 그 팀의 대표 캐릭터로 장착한다.
 func shop_buy_character(id: String) -> void:
  var team:=String(C.find(id).get("team","daoist"))
