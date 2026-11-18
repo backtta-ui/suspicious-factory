@@ -2,7 +2,10 @@ extends "res://scripts/ui/lobby_screen.gd"
 ## 캐릭터 & 캐릭터 스킨 상점.
 ## 왼쪽: 탭 + 2×3 금빛 장식 카드 그리드 / 오른쪽: 달빛 단상 대형 미리보기 + 해금·장착 버튼 하나.
 ## 인앱결제·광고는 없고, 모든 해금은 경기·업적·우편 보상으로 모은 게임 재화로만 한다.
+const RoomButton=preload("res://scripts/ui/metal_button.gd")
 const TABS=[{"id":"character","label":"캐릭터"},{"id":"skin","label":"스킨"},{"id":"aura","label":"칭호·기운"}]
+## 탭 아이콘은 대기실과 같은 벡터 글리프를 쓴다(텍스처 없음 → 어떤 해상도에서도 선명).
+const TAB_GLYPHS={"character":"lotus","skin":"flower","aura":"diamond"}
 const COLS:=3
 const ROWS:=2
 const PER_PAGE:=COLS*ROWS
@@ -12,6 +15,8 @@ const CARD_GAP:=12.0
 const CARD_HEIGHT:=208.0
 const PANEL_POS:=Vector2(882,96)
 const PANEL_SIZE:=Vector2(372,556)
+## 카드에서 이름·역할·가격이 차지하는 아래 띠 높이. 초상화는 그 위까지만 그린다.
+const PORTRAIT_INSET:=64.0
 var tab:="character"
 var page:=0
 var selected_id:=""
@@ -30,16 +35,19 @@ func build() -> void:
 	for i in range(TABS.size()):
 		var spec: Dictionary=TABS[i]
 		var key: String=spec.id
-		var target:=button(String(spec.label),func()->void:set_tab(key),self,key==tab,18)
+		# 2.0.21: 대기실과 같은 입체 금속 버튼(RoomButton)으로 탭을 그린다.
+		var target=RoomButton.new()
+		target.text=String(spec.label)
+		target.glyph=String(TAB_GLYPHS.get(key,"lotus"))
+		target.variant="lit" if key==tab else "metal"
+		target.font_size=18
+		target.accent=T.GOLD
 		target.name="ShopTab_"+key
+		target.custom_minimum_size=Vector2(122,64)
+		target.pressed.connect(func()->void:set_tab(key))
+		add_child(target)
 		place(target,Rect2(26,96+i*72,122,64))
-		var accent:=ColorRect.new()
-		accent.color=Color(0.85,0.72,0.47,0.95)
-		accent.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		target.add_child(accent)
-		accent.position=Vector2(0,12);accent.size=Vector2(3,32)
-		accent.set_meta("accent",true)
-		tab_buttons[key]={"button":target,"accent":accent}
+		tab_buttons[key]={"button":target}
 	# 페이지 이동
 	for spec in [["‹",-1],["›",1]]:
 		var target:=button(String(spec[0]),func()->void:turn_page(int(spec[1])),self,false,20)
@@ -47,8 +55,15 @@ func build() -> void:
 	page_label=label(self,"1 / 1",15,T.MUTED)
 	page_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	grid_hint=label(self,"카드를 눌러 오른쪽에서 미리 보세요",15,Color(0.76,0.80,0.90,0.9))
-	# 미리보기 판
-	var frame:=panel(self,Color(0.035,0.043,0.09,0.93),14,Color(0.55,0.45,1.0,0.16))
+	# 미리보기 판: 대기실 RoomPanel과 같은 먹색 그라데이션 + 황동 모서리 장식.
+	var frame:=Art.RoomPanel.new()
+	frame.fill_top=Color(0.105,0.085,0.170,0.94)
+	frame.fill_bottom=Color(0.030,0.026,0.060,0.95)
+	frame.radius=14.0
+	frame.arm=22.0
+	frame.edge=Color(0.85,0.72,0.47,0.66)
+	frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	add_child(frame)
 	place(frame,Rect2(PANEL_POS,PANEL_SIZE))
 	refresh()
 
@@ -143,7 +158,19 @@ func _make_card(item: Dictionary,rect: Rect2) -> void:
 	match String(item.kind):
 		"character":
 			card.clip_contents=true
-			cover_art(card,String(item.portrait),Rect2(rect.position+Vector2(3,3),rect.size-Vector2(6,6)),0.0)
+			# 2.0.21: 카드 전체를 덮던 원화 크롭을 이름 띠 위쪽으로 줄이고, 세로는
+			# 가운데 기준으로 잘라 8명 모두 얼굴·눈코입이 카드 안에 들어오게 한다.
+			var art_height:=rect.size.y-PORTRAIT_INSET
+			cover_art(card,String(item.portrait),Rect2(rect.position+Vector2(3,3),Vector2(rect.size.x-6,art_height)),0.4)
+			# 이름 띠 위로 어두워지는 그라데이션(불투명 띠 대신)로 글자만 또렷하게.
+			var veil:=TextureRect.new()
+			veil.texture=T.fade_texture(Color(0.03,0.028,0.06,0.0),Color(0.03,0.028,0.06,0.96))
+			veil.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+			veil.stretch_mode=TextureRect.STRETCH_SCALE
+			veil.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			card.add_child(veil)
+			veil.position=Vector2(3,rect.size.y-PORTRAIT_INSET-18)
+			veil.size=Vector2(rect.size.x-6,PORTRAIT_INSET+18)
 			var emblem:=chip(card,"도" if String(item.team)=="daoist" else "요",T.DAO if String(item.team)=="daoist" else T.YOKAI,15,
 				Color(0.07,0.05,0.02,1.0) if String(item.team)=="daoist" else Color(0.06,0.03,0.10,1.0))
 			emblem.custom_minimum_size=Vector2(32,26)
@@ -176,40 +203,41 @@ func _make_card(item: Dictionary,rect: Rect2) -> void:
 			plate_text.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			plate_text.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 			place(plate_text,Rect2(rect.position.x+24,rect.position.y+26,rect.size.x-48,48))
-	# 아래쪽 이름 띠(카드 로컬 좌표)
-	var fade:=TextureRect.new()
-	fade.texture=T.fade_texture(Color(0.03,0.035,0.08,0.0),Color(0.03,0.035,0.08,0.97))
-	fade.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-	fade.stretch_mode=TextureRect.STRETCH_SCALE
-	fade.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	card.add_child(fade)
-	fade.position=Vector2(3,rect.size.y*.40);fade.size=Vector2(rect.size.x-6,rect.size.y*.60)
-	# 이름·상태 글씨가 원화 얼굴 위에서도 또렷하게 읽히도록 진한 띠를 깐다.
-	var shade:=ColorRect.new()
-	shade.color=Color(0.02,0.026,0.062,0.82)
-	shade.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	card.add_child(shade)
-	place(shade,Rect2(rect.position.x+3,rect.position.y+rect.size.y-98,rect.size.x-6,95))
-	var name_label:=label(card,String(item.name),20,T.IVORY,true)
+	# 이름·역할·가격은 카드 아래 62px 안에 세 줄로 모아, 초상화가 그 위를 넓게 쓴다.
+	var text_top:=rect.size.y-66
+	var scrim:=TextureRect.new()
+	scrim.texture=T.fade_texture(Color(0.028,0.026,0.055,0.0),Color(0.020,0.018,0.042,0.98))
+	scrim.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+	scrim.stretch_mode=TextureRect.STRETCH_SCALE
+	scrim.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	card.add_child(scrim)
+	scrim.position=Vector2(3,text_top-16);scrim.size=Vector2(rect.size.x-6,rect.size.y-text_top+13)
+	var name_label:=label(card,String(item.name),19,T.IVORY,true)
 	name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(name_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-86,rect.size.x-16,30))
+	place(name_label,Rect2(rect.position.x+8,rect.position.y+text_top,rect.size.x-16,25))
 	var sub:=String(item.role)
-	var sub_label:=label(card,sub,15,T.MUTED)
+	var sub_label:=label(card,sub,13,T.MUTED)
 	sub_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(sub_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-56,rect.size.x-16,22))
+	place(sub_label,Rect2(rect.position.x+8,rect.position.y+text_top+25,rect.size.x-16,17))
 	var state:=_price_text(item)
-	var state_label:=label(card,state,16,T.GOLD if _owned(item) else Color("cdbb92"))
+	var state_label:=label(card,state,15,T.GOLD if _owned(item) else Color("cdbb92"))
 	state_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(state_label,Rect2(rect.position.x+8,rect.position.y+rect.size.y-32,rect.size.x-16,24))
-	# 옷감 색 띠는 이름 띠 바로 위에 얇게 올린다(스킨 카드에서만).
+	place(state_label,Rect2(rect.position.x+8,rect.position.y+text_top+43,rect.size.x-16,19))
+	# 옷감 색 띠는 이름 위에 얇게 올린다(스킨 카드에서만).
 	if String(item.kind)=="skin":
 		var band:=Panel.new()
 		band.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		band.add_theme_stylebox_override("panel",T.panel_box(Color(item.color).lerp(Color.WHITE,.08),3,Color(0.95,0.85,0.6,0.8),1))
 		card.add_child(band)
-		place(band,Rect2(rect.position.x+12,rect.position.y+rect.size.y-99,rect.size.x-24,6))
+		place(band,Rect2(rect.position.x+12,rect.position.y+text_top-6,rect.size.x-24,5))
+	# 황동 테두리·모서리 장식은 원화 위에 마지막으로 얹는다(대기실 RoomPanel 톤).
+	var frame:=CardFrame.new()
+	frame.edge=Color(0.85,0.72,0.47,0.40)
+	card.add_child(frame)
+	place(frame,Rect2(rect.position,rect.size))
 	card.set_meta("name_label",name_label)
 	card.set_meta("trim",trim)
+	card.set_meta("frame",frame)
 	card.set_meta("id",id)
 	cards.append(card)
 
@@ -232,6 +260,11 @@ func _paint_cards() -> void:
 			card.add_theme_stylebox_override(state,box)
 		var trim: Control=card.get_meta("trim")
 		if trim!=null:trim.color=Color(0.95,0.82,0.52,0.85) if chosen else Color(0.85,0.72,0.47,0.36)
+		var frame: Control=card.get_meta("frame")
+		if frame!=null:
+			frame.edge=Color(0.98,0.85,0.55,0.95) if chosen else Color(0.85,0.72,0.47,0.40)
+			frame.lit=chosen
+			frame.queue_redraw()
 		var name_label: Label=card.get_meta("name_label")
 		if name_label!=null:name_label.add_theme_color_override("font_color",T.GOLD_SOFT if chosen else T.IVORY)
 		if not chosen:card.modulate=Color(0.93,0.94,1.0)
@@ -241,14 +274,11 @@ func _paint_tabs() -> void:
 	for key in tab_buttons:
 		var spec: Dictionary=tab_buttons[key]
 		var chosen: bool=key==tab
-		var target: WooMobileButton=spec.button
-		var box:=T.panel_box(Color(0.22,0.16,0.07,0.94),6,Color(0.95,0.83,0.55,0.95),2,Color(0.85,0.72,0.47,0.35),14) if chosen else T.panel_box(Color(0.05,0.06,0.12,0.86),6,Color(0.85,0.72,0.47,0.3),1)
-		for state in ["normal","hover","pressed","hover_pressed","disabled"]:
-			target.add_theme_stylebox_override(state,box)
-		for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:
-			target.add_theme_color_override(state,T.GOLD_SOFT if chosen else Color(0.82,0.86,0.95))
-		var accent: ColorRect=spec.accent
-		accent.visible=chosen
+		var target=spec.button
+		# 대기실 '희망 진영' 버튼과 같은 방식: 선택은 금테 보랏빛(lit), 나머지는 다크 메탈.
+		target.variant="lit" if chosen else "metal"
+		target.accent=T.GOLD if chosen else Color(0.85,0.72,0.47)
+		target.queue_redraw()
 
 func _paint_pager() -> void:
 	var count:=maxi(1,ceili(float(_items().size())/PER_PAGE))
@@ -263,13 +293,17 @@ func _rebuild_preview() -> void:
 	if is_instance_valid(preview_body):preview_body.queue_free()
 	preview_body=Control.new()
 	preview_body.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	preview_body.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(preview_body)
+	# 20:9에서 origin만큼 밀리지 않도록 미리보기 본문도 디자인 좌표계(0,0) 노드로
+	# place한다. 그러면 안쪽 자식은 PANEL_POS 기준 로컬 좌표로 놓이고,
+	# layout()이 화면이 바뀔 때 origin을 다시 적용한다.
+	place(preview_body,Rect2(0,0,DESIGN_WIDTH,T.DESIGN_HEIGHT))
 	var item:=view_item(_raw(selected_id))
-	var heading:=label(preview_body,"달빛 미리보기",15,T.gold(.85))
-	place(heading,Rect2(PANEL_POS.x+16,PANEL_POS.y+8,220,22))
-	var heading_rule:=divider(preview_body,Color(0.85,0.72,0.47,0.2))
-	place(heading_rule,Rect2(PANEL_POS.x+14,PANEL_POS.y+32,PANEL_SIZE.x-28,1))
+	var heading:=label(preview_body,"달빛 미리보기",16,T.gold(.92),true)
+	heading.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	place(heading,Rect2(PANEL_POS.x+30,PANEL_POS.y+12,PANEL_SIZE.x-60,24))
+	var heading_rule:=divider(preview_body,Color(0.85,0.72,0.47,0.22))
+	place(heading_rule,Rect2(PANEL_POS.x+26,PANEL_POS.y+40,PANEL_SIZE.x-52,1))
 	var pedestal:=Art.Pedestal.new()
 	preview_body.add_child(pedestal)
 	place(pedestal,Rect2(PANEL_POS.x+4,PANEL_POS.y+22,PANEL_SIZE.x-8,228))
@@ -319,10 +353,22 @@ func _rebuild_preview() -> void:
 	var state_label:=label(preview_body,_state_text(item),15,T.GOLD_SOFT if _equipped(item) else T.MUTED)
 	state_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	place(state_label,Rect2(PANEL_POS.x+8,PANEL_POS.y+424,PANEL_SIZE.x-16,22))
-	action_button=button(_action_text(item),func()->void:_act(item),preview_body,not _equipped(item),19)
-	action_button.name="ShopAction"
-	place(action_button,Rect2(PANEL_POS.x+16,PANEL_POS.y+452,PANEL_SIZE.x-32,54))
-	action_button.disabled=_equipped(item)
+	# 2.0.21: 대기실 '게임 시작'과 같은 금빛 입체 CTA.
+	var cta=RoomButton.new()
+	cta.text=_action_text(item)
+	cta.variant="gold" if not _equipped(item) else "metal"
+	cta.glyph="check" if _owned(item) else "diamond"
+	cta.font_size=21
+	cta.use_title_font=true
+	cta.accent=T.GOLD
+	cta.name="ShopAction"
+	cta.custom_minimum_size=Vector2(PANEL_SIZE.x-32,54)
+	cta.pressed.connect(func()->void:
+		if not _equipped(item):_act(item))
+	preview_body.add_child(cta)
+	place(cta,Rect2(PANEL_POS.x+16,PANEL_POS.y+452,PANEL_SIZE.x-32,54))
+	cta.disabled=_equipped(item)
+	action_button=cta
 	var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",14,Color(0.74,0.78,0.88,0.85))
 	pay_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+512,PANEL_SIZE.x-16,20))
@@ -394,3 +440,30 @@ func arrange() -> void:
 		place(page_label,Rect2(GRID_POS.x+GRID_WIDTH*.5-84,542,168,30))
 	if is_instance_valid(grid_hint):
 		place(grid_hint,Rect2(GRID_POS.x,578,GRID_WIDTH,22))
+
+## 카드 한 장의 황동 테두리·모서리 장식. 원화 위에 겹쳐 그려 대기실 RoomPanel과
+## 같은 상업용 톤을 내고, 선택된 카드는 금빛 발광으로 바뀐다.
+class CardFrame extends Control:
+	const T=preload("res://scripts/ui/lobby_theme.gd")
+	var edge:=Color(0.85,0.72,0.47,0.40)
+	var lit:=false
+	func _ready() -> void:
+		mouse_filter=Control.MOUSE_FILTER_IGNORE
+		resized.connect(queue_redraw)
+	func _draw() -> void:
+		if size.x<8.0 or size.y<8.0:return
+		var box:=Rect2(Vector2.ZERO,size)
+		var r:=10.0
+		if lit:
+			for i in range(4):
+				var grow:=1.0+float(i)*2.2
+				T.rounded_outline(self,box.grow(grow),Color(1,.86,.52,.18-float(i)*.035),r+grow,2.2)
+		T.rounded_outline(self,box,Color(0,0,0,.42),r,2.0)
+		T.rounded_outline(self,box.grow(-1.2),edge,r-1.2,1.6)
+		T.rounded_outline(self,box.grow(-4.8),Color(edge.r,edge.g,edge.b,.34 if lit else .14),r-4.8,1.0)
+		var arm:=minf(22.0,minf(size.x,size.y)*.17)
+		var brass:=Color(edge.r,edge.g,edge.b,minf(1.0,edge.a+.3))
+		T.corner_flourish(self,Vector2(2,2),Vector2(1,1),arm,brass)
+		T.corner_flourish(self,Vector2(size.x-2,2),Vector2(-1,1),arm,brass)
+		T.corner_flourish(self,Vector2(2,size.y-2),Vector2(1,-1),arm,brass)
+		T.corner_flourish(self,Vector2(size.x-2,size.y-2),Vector2(-1,-1),arm,brass)

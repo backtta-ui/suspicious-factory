@@ -93,7 +93,7 @@ func run() -> void:
   if game.screen=="match" and not game.changing:break
  game.rules.phase="live";game.rules.elapsed=2.0
  check(game.screen=="match" and is_instance_valid(game.camera),"match world with camera")
- check(is_instance_valid(game.camera) and is_equal_approx(game.camera.zoom.x,L.CAMERA_ZOOM) and L.CAMERA_ZOOM>=1.2 and L.CAMERA_ZOOM<1.55,"camera zoom 1.32 widens the 2.5D view without shrinking the actor")
+ check(is_instance_valid(game.camera) and is_equal_approx(game.camera.zoom.x,L.CAMERA_ZOOM) and L.CAMERA_ZOOM>=1.55 and L.CAMERA_ZOOM<=1.8,"camera zoom 1.68 pulls the 2.5D view close to the actor")
  var hall: Dictionary=L.buildings()[0]
  var front: Vector2=(hall.doors as Dictionary).front
  var me: Dictionary=game.rules.players.human
