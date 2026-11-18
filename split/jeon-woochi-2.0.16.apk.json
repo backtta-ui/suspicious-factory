@@ -1,17 +1,17 @@
 {
   "name": "jeon-woochi-2.0.16.apk",
-  "sha256": "48a03e26c8abd8eaad02702f351da50c76f706ff4df82adc8f788024513439ac",
-  "source": "01d297e28088149408fe2ab847b02f0a5a04a1d0",
+  "sha256": "b9fdea200f85c0251860e5be1642a93a840a2ddf5b32ff80e68e37e5ec599266",
+  "source": "3ba0be80476af71708cf0a194df36ee24382b876",
   "parts": [
     {
       "name": "jeon-woochi-2.0.16.apk.part01",
       "bytes": 83886080,
-      "sha256": "9df98d74de6383ea7ae33dd556fe27c228398ef0ed5f53881eb4e441995eb0df"
+      "sha256": "966f7f5c9db91c608610266e3ff69bd8b75006deed5adac1bd0b449bcbd4fbfc"
     },
     {
       "name": "jeon-woochi-2.0.16.apk.part02",
-      "bytes": 45510137,
-      "sha256": "7d33283a53258cf16587548093ea766c0c0a88a9aba236512bbf4538de6f5179"
+      "bytes": 47423171,
+      "sha256": "457b5b436cfb5aa474bfac51380188e78fadcfb3a8e64bdeec49a67581d4c97b"
     }
   ]
 }
