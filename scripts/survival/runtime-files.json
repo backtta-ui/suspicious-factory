@@ -33,6 +33,7 @@
   "scripts/survival/backdrop.gd",
   "scripts/survival/bot.gd",
   "scripts/survival/characters.gd",
+  "scripts/survival/codex.gd",
   "scripts/survival/layout.gd",
   "scripts/survival/minimap.gd",
   "scripts/survival/practice_view.gd",

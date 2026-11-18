@@ -202,7 +202,7 @@ func lobby_layout() -> void:
 func lobby_screen() -> void:
  lobby_hotspots={}
  lobby_background()
- lobby_hotspot("characters","캐릭터 선택",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"))
+ lobby_hotspot("characters","캐릭터 안내",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"))
  lobby_hotspot("quick","빠른 매치 · 봇 6인",func()->void:confirm("오프라인 봇 6인 방을 만듭니다.",func()->void:create_room("달빛 모의전",6,true)))
  lobby_hotspot("friends","게임 방",func()->void:transition("rooms"))
  lobby_hotspot("practice","연습 (봇)",enter_practice)
@@ -260,25 +260,10 @@ func room_screen() -> void:
  buttons.add_child(button("준비 취소" if rules.players.human.ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),true))
  buttons.add_child(button("게임 시작",start_match,true));buttons.add_child(button("방 나가기",leave_room))
 func characters_screen() -> void:
- var box:=page("캐릭터 안내 · 기존 기본 외형")
- var tabs:=HBoxContainer.new();box.add_child(tabs)
- for team in ["daoist","yokai"]:tabs.add_child(button("도사 · 생존/지원" if team=="daoist" else "요괴 · 추적/봉인",func()->void:selection_team=team;selection_id=storage.data[team];build("characters"),selection_team==team))
- var row:=HBoxContainer.new();row.add_theme_constant_override("separation",24);row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
- var list:=panel(row)
- for entry in C.catalog(selection_team):
-  var b:=button(("✓ " if selection_id==entry.id else "")+entry.name,func()->void:selection_id=entry.id;build("characters"),selection_id==entry.id);list.add_child(b)
- var detail:=panel(row);var display:=HBoxContainer.new();detail.add_child(display);portrait(display,selection_id,Vector2(270,310));var selected:=C.find(selection_id)
- var info:=VBoxContainer.new();info.custom_minimum_size.x=290;info.size_flags_horizontal=Control.SIZE_EXPAND_FILL;display.add_child(info)
- info.add_child(text(selected.name,28,D.GOLD))
- var passive:=text(selected.passive,18);passive.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;info.add_child(passive);info.add_child(text(selected.skill.name+" · %d초"%selected.skill.cd,23))
- var desc:=text(selected.skill.description,19);desc.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;info.add_child(desc)
- var bottom:=HBoxContainer.new();box.add_child(bottom)
- bottom.add_child(button("대표 외형 저장",func()->void:
-  storage.data[selection_team]=selection_id
-  if storage.save()!=OK:notice("선택 상태 저장에 실패했습니다.");return
-  if rules!=null and rules.phase=="room":rules.players.human.choices[selection_team]=selection_id;rules.players.human.ready=false
-  transition(selection_return),true))
- bottom.add_child(button("뒤로가기 · 취소",func()->void:transition(selection_return)))
+ # The painted roster guide; it is read-only, so nothing here writes the save.
+ var codex:=preload("res://scripts/survival/codex.gd").new()
+ codex.game=self
+ full(codex,ui)
 func start_match() -> void:
  if changing or screen!="room":return
  if rules.players.size()!=room.count:notice("필요한 인원이 없습니다. 빈 칸을 봇으로 채워 주세요.");return
@@ -299,7 +284,11 @@ func selection_screen() -> void:
  info.add_child(text(spec.name,27,D.GOLD));info.add_child(text(spec.skill.name+" · "+spec.skill.description,18))
  var team_label:=text("",18);team_label.name="TeamSelection";info.add_child(team_label)
  var confirm_button:=button("선택 확정" if not rules.players.human.confirmed else "확정 완료 · 팀원 대기",func()->void:
-  if rules.confirm_character("human"):build("selection"),true,box);confirm_button.disabled=rules.players.human.confirmed
+  if not rules.confirm_character("human"):return
+  # Remember the confirmed character as this team's representative look.
+  storage.data[rules.players.human.role]=selection_id
+  storage.save()
+  build("selection"),true,box);confirm_button.disabled=rules.players.human.confirmed
  box.add_child(text("상대팀의 캐릭터는 VS 화면에서 공개합니다. 같은 캐릭터 선택은 허용됩니다.",17))
 func loading_screen() -> void:
  var box:=page("월하의 서원 · 경기 준비")
