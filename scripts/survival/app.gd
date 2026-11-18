@@ -7,76 +7,10 @@ const Actor=preload("res://scripts/woo/actor.gd")
 const ButtonType=preload("res://scripts/woo/mobile_button.gd")
 const L=preload("res://scripts/survival/layout.gd")
 const TITLE_ART="res://assets/woo/title_bg.png"
-const TITLE_BRUSH=preload("res://assets/fonts/EastSeaDokdo-Regular.ttf")
-## Pointed gold banner around the start prompt, drawn rather than a rounded panel.
-class TitleBanner extends Control:
- var clock:=0.0
- func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE
- func _process(delta: float) -> void:
-  clock+=delta;queue_redraw()
- func silhouette(width: float,height: float,inset: float) -> PackedVector2Array:
-  var tip:=height*.62
-  return PackedVector2Array([Vector2(inset*1.7,height/2),Vector2(tip,inset),Vector2(width-tip,inset),Vector2(width-inset*1.7,height/2),Vector2(width-tip,height-inset),Vector2(tip,height-inset)])
- func _draw() -> void:
-  var w:=size.x;var h:=size.y
-  var body:=silhouette(w,h,1.5)
-  draw_colored_polygon(body,Color(.04,.06,.14,.92))
-  var shine:=.55+.45*sin(clock*2.2)
-  var outline:=body.duplicate();outline.append(body[0])
-  for i in range(4):draw_polyline(outline,Color(1,.78,.4,.05+.05*shine),5.0+i*6.0,true)
-  draw_polyline(outline,Color("e9c17c"),2.6,true)
-  var trim:=silhouette(w,h,11.0);var trim_line:=trim.duplicate();trim_line.append(trim[0])
-  draw_polyline(trim_line,Color(1,.86,.58,.26+.2*shine),1.3,true)
-  for x in [h*.55,w-h*.55]:
-   var center:=Vector2(x,h/2)
-   draw_colored_polygon(PackedVector2Array([center+Vector2(0,-7),center+Vector2(6,0),center+Vector2(0,7),center+Vector2(-6,0)]),Color("eccb8a"))
-## Rising blue taoist flames drawn as tapered, flickering tongues.
-class TitleFlames extends Control:
- var clock:=0.0
- var tongues:=9
- var alpha:=.7
- var reach:=.34
- var tint:=Color(.6,.93,1)
- func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE
- func _process(delta: float) -> void:
-  clock+=delta;queue_redraw()
- func tongue(base_x: float,floor_y: float,phase: float,width_scale: float,height_scale: float,strength: float) -> void:
-  var stretch:=height_scale*(.62+.38*absf(sin(phase*1.3+clock*.9)))
-  var height:=size.y*reach*stretch
-  var half:=maxf(5.0,size.x*.017)*width_scale
-  var sway:=sin(clock*2.1+phase)*size.y*.035
-  var steps:=9
-  var points:=PackedVector2Array();var colors:=PackedColorArray()
-  for side in [-1.0,1.0]:
-   var order: Array=range(steps+1) if side<0 else range(steps,-1,-1)
-   for k in order:
-    var f:=float(k)/float(steps)
-    var taper:=(1.0-f)*(.35+.75*sin(f*PI))*(1.0+.16*sin(f*9.0+clock*6.0+phase))
-    points.append(Vector2(base_x+side*half*taper+sway*f*f,floor_y-height*f))
-    colors.append(Color(tint.r,tint.g,tint.b,strength*(1.0-f)*(1.0-f)))
-  draw_polygon(points,colors)
- func _draw() -> void:
-  var floor_y:=size.y*.85
-  for i in range(tongues):
-   var jitter:=fmod(float(i)*.37,1.0)
-   var spread:=float(i)/maxf(1.0,float(tongues-1))
-   var base_x:=size.x*(.16+.68*spread+(jitter-.5)*.06)
-   var phase:=float(i)*1.9
-   var width_scale:=.7+1.0*jitter
-   var height_scale:=.55+.85*fmod(float(i)*.61,1.0)
-   tongue(base_x,floor_y,phase,width_scale*1.8,height_scale*.7,alpha*.3)
-   tongue(base_x,floor_y,phase,width_scale,height_scale,alpha)
-## Small gear mark that precedes the settings label.
-class GearGlyph extends Control:
- var color:=Color("ece7f6")
- func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE
- func _draw() -> void:
-  var center:=size/2;var radius:=minf(size.x,size.y)*.5;var grip:=maxf(1.4,radius*.17)
-  for i in range(8):
-   var angle:=i*TAU/8.0
-   draw_line(center+Vector2.from_angle(angle)*radius*.55,center+Vector2.from_angle(angle)*radius,color,grip,true)
-  draw_arc(center,radius*.6,0,TAU,28,color,grip,true)
-  draw_circle(center,maxf(1.2,radius*.16),color)
+const TITLE_IMAGE=Vector2(1846,852)
+## The settings capsule already painted into the key art (relative to the image).
+const TITLE_SETTINGS_CENTER=Vector2(.949,.073)
+const TITLE_SETTINGS_EXTENT=Vector2(.086,.08)
 var storage: RefCounted
 var sound: WooSound
 var layer: CanvasLayer
@@ -202,79 +136,26 @@ func build(destination: String) -> void:
   "match":hud()
   "result":result_screen()
  safe_layout()
-func radial_glow(stops: Array) -> GradientTexture2D:
- var offsets:=PackedFloat32Array();var colors:=PackedColorArray()
- for stop in stops:offsets.append(stop[0]);colors.append(stop[1])
- var gradient:=Gradient.new();gradient.offsets=offsets;gradient.colors=colors
- var texture:=GradientTexture2D.new();texture.gradient=gradient;texture.width=256;texture.height=256
- texture.fill=GradientTexture2D.FILL_RADIAL;texture.fill_from=Vector2(.5,.5);texture.fill_to=Vector2(1,.5)
- return texture
-func glow_at(parent: Control,center: Vector2,extent: Vector2,stops: Array) -> TextureRect:
- var glow:=TextureRect.new();glow.texture=radial_glow(stops);glow.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;glow.stretch_mode=TextureRect.STRETCH_SCALE;glow.mouse_filter=Control.MOUSE_FILTER_IGNORE
- glow.position=center-extent/2;glow.size=extent;parent.add_child(glow);return glow
-func breathe(node: CanvasItem,low: float,high: float,seconds: float) -> void:
- var tween:=node.create_tween().set_loops();tween.set_trans(Tween.TRANS_SINE)
- tween.tween_property(node,"modulate:a",high,seconds).from(low)
- tween.tween_property(node,"modulate:a",low,seconds)
 func title_background() -> void:
- var art:=TextureRect.new();art.texture=load(TITLE_ART);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(art,ui)
- var shade:=ColorRect.new();shade.color=Color(.02,.025,.07,.16);shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(shade,ui)
- var petals:=preload("res://scripts/survival/backdrop.gd").new();petals.moon=false;petals.low=storage.data.quality=="낮음";full(petals,ui)
- ui.move_child(art,0);ui.move_child(shade,1);ui.move_child(petals,2)
+ var night:=ColorRect.new();night.color=Color(.22,.16,.28);night.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(night,ui)
+ var art:=TextureRect.new();art.texture=load(TITLE_ART);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(art,ui)
 func title_screen() -> void:
  title_background()
- # Full-screen native start target; every visible control sits above it.
+ # Full-screen native start target; the painted controls stay above it.
  var start:=button("",func()->void:transition("lobby"));full(start,ui)
  for state in ["normal","pressed","hover","hover_pressed"]:start.add_theme_stylebox_override(state,StyleBoxEmpty.new())
  var view:=get_viewport().get_visible_rect().size
- var logo:=VBoxContainer.new();logo.mouse_filter=Control.MOUSE_FILTER_IGNORE;logo.add_theme_constant_override("separation",0);ui.add_child(logo)
- logo.set_anchors_and_offsets_preset(Control.PRESET_CENTER_TOP);logo.offset_left=-600;logo.offset_right=600;logo.offset_top=0;logo.offset_bottom=214
- var line:=HBoxContainer.new();line.alignment=BoxContainer.ALIGNMENT_CENTER;line.add_theme_constant_override("separation",24);logo.add_child(line)
- var white:=text("우울할 땐",112,Color("fdf6ea"));white.vertical_alignment=VERTICAL_ALIGNMENT_BOTTOM
- white.add_theme_font_override("font",TITLE_BRUSH);white.add_theme_constant_override("outline_size",14);white.add_theme_color_override("font_outline_color",Color(.02,.03,.08,.9))
- white.add_theme_constant_override("shadow_offset_x",3);white.add_theme_constant_override("shadow_offset_y",11);white.add_theme_color_override("font_shadow_color",Color(0,0,0,.55));line.add_child(white)
- var red:=text("도사",140,Color("e0281f"));red.vertical_alignment=VERTICAL_ALIGNMENT_BOTTOM
- red.add_theme_font_override("font",TITLE_BRUSH);red.add_theme_constant_override("outline_size",12);red.add_theme_color_override("font_outline_color",Color(.12,.01,.02,.92))
- red.add_theme_constant_override("shadow_offset_x",3);red.add_theme_constant_override("shadow_offset_y",11);red.add_theme_color_override("font_shadow_color",Color(.08,0,0,.6));line.add_child(red)
- var sub:=text("— 월하의 생존전 —",25,Color("e2d8f2"));sub.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
- sub.add_theme_constant_override("outline_size",7);sub.add_theme_color_override("font_outline_color",Color(.02,.03,.09,.85));logo.add_child(sub)
- # Chibi Woochi on the moonlit pavement, wrapped in blue taoist flames.
- var height:=clampf(view.y*.6,300,560);var width:=height*1.45
- var stage:=Control.new();stage.mouse_filter=Control.MOUSE_FILTER_IGNORE;ui.add_child(stage)
- stage.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
- var top:=view.y*.245-height*.85
- stage.offset_left=-width/2;stage.offset_right=width/2;stage.offset_top=top;stage.offset_bottom=top+height
- var feet:=Vector2(width/2,height*.85)
- breathe(glow_at(stage,feet+Vector2(0,-2),Vector2(width*.55,height*.16),[[0.0,Color(.55,.92,1,.6)],[0.5,Color(.35,.72,1,.24)],[1.0,Color(.2,.5,1,0)]]),.4,.95,1.5)
- var back_flames:=TitleFlames.new();back_flames.tongues=11;back_flames.alpha=.7;back_flames.reach=.34;full(back_flames,stage)
- var front_flames:=TitleFlames.new();front_flames.tongues=4;front_flames.alpha=.3;front_flames.reach=.12;full(front_flames,stage)
- var hero:=portrait(stage,storage.data.daoist,Vector2(width,height))
- hero.pivot_offset=Vector2(width/2,height*.85);hero.scale=Vector2(.9,.9)
- stage.move_child(front_flames,stage.get_child_count()-1)
- # Start banner: pointed navy plaque with a glowing gold double border.
- var banner:=TitleBanner.new();ui.add_child(banner)
- banner.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM);banner.offset_left=-312;banner.offset_right=312;banner.offset_top=-158;banner.offset_bottom=-62
- var begin:=button("화면을 터치하여 시작",func()->void:transition("lobby"))
- for state in ["normal","hover","pressed","hover_pressed","disabled"]:begin.add_theme_stylebox_override(state,StyleBoxEmpty.new())
- begin.add_theme_font_size_override("font_size",30)
- for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color"]:begin.add_theme_color_override(state,Color("ffeac4"))
- ui.add_child(begin);begin.set_anchors_and_offsets_preset(Control.PRESET_CENTER_BOTTOM);begin.offset_left=-312;begin.offset_right=312;begin.offset_top=-158;begin.offset_bottom=-62
- # Settings stays inside the Android safe area.
- var inset:=0
- if OS.get_name()=="Android":
-  var area:=DisplayServer.get_display_safe_area();var display:=DisplayServer.screen_get_size();var screen_size:=get_viewport().get_visible_rect().size
-  if display.x>0:inset=maxi(0,int((display.x-area.end.x)*screen_size.x/display.x))
+ var scale:=minf(view.x/TITLE_IMAGE.x,view.y/TITLE_IMAGE.y)
+ var shown:=TITLE_IMAGE*scale
+ var center:=(view-shown)/2+TITLE_SETTINGS_CENTER*shown
+ var extent:=TITLE_SETTINGS_EXTENT*shown+Vector2(16,16)
+ # Invisible native target exactly over the painted gear capsule.
  var settings:=button("설정",show_settings)
- settings.custom_minimum_size=Vector2(132,64);settings.add_theme_font_size_override("font_size",22);settings.alignment=HORIZONTAL_ALIGNMENT_LEFT
- for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color"]:settings.add_theme_color_override(state,Color("ece7f6"))
- var frame:=StyleBoxFlat.new();frame.bg_color=Color(.05,.07,.16,.72);frame.border_color=Color(.62,.7,.86,.8);frame.set_border_width_all(1);frame.set_corner_radius_all(32)
- frame.content_margin_left=46;frame.content_margin_right=14
- var frame_hot:=frame.duplicate() as StyleBoxFlat;frame_hot.bg_color=Color(.11,.15,.28,.85);frame_hot.border_color=Color("e6bd77")
- settings.add_theme_stylebox_override("normal",frame);settings.add_theme_stylebox_override("disabled",frame)
- for state in ["hover","pressed","hover_pressed"]:settings.add_theme_stylebox_override(state,frame_hot)
+ settings.custom_minimum_size=Vector2.ZERO
+ for state in ["normal","hover","pressed","hover_pressed","disabled"]:settings.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:settings.add_theme_color_override(state,Color(0,0,0,0))
  ui.add_child(settings)
- var gear:=GearGlyph.new();gear.size=Vector2(22,22);gear.position=Vector2(16,21);settings.add_child(gear)
- settings.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT);settings.offset_left=-160-inset;settings.offset_right=-28-inset;settings.offset_top=24;settings.offset_bottom=88
+ settings.position=center-extent/2;settings.size=extent
  ui.move_child(start,0)
 func lobby_screen() -> void:
  var box:=page("우울할 땐 도사 · 메인 로비")
