@@ -216,8 +216,9 @@ func run() -> void:
  prey.facing=6;hunter.facing=2;hunter.cd.seal=0
  check(not bout.seal(prey),"a daoist can never seal anyone")
  check(hunter.get("captured",false)==false,"no seal happened from the daoist side")
- hunter.position=prey.position-Vector2(0,10);hunter.facing=2;hunter.cd.seal=0;prey.immune=0
- check(bout.seal(hunter) and prey.captured,"only a yokai seals a daoist")
+ hunter.position=prey.position-Vector2(0,10);hunter.facing=2;hunter.cd={};prey.immune=0;prey.form=""
+ bout.phase="live";bout.elapsed=1.0;bout.contact_seal()
+ check(prey.captured,"only a yokai seals a daoist by touching")
  var preferred:=Rules.new(9)
  preferred.preferred_role="yokai"
  preferred.add("human","나","daoist:woochi","yokai:gumiho")

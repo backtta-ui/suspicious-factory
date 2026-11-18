@@ -4,7 +4,7 @@ extends RefCounted
 const Village=preload("res://scripts/woo/village_layout.gd")
 const Forest=preload("res://scripts/woo/forest_layout.gd")
 const REGISTRY={
- "seowon":{"playable":false,"survival_playable":true,"name":"월하의 서원","size":Vector2(1800,1400),"spawn":Vector2(860,720),"altar":Vector2(860,720),"jail":Vector2(860,720),"stations":[Vector2(860,720),Vector2(435,760),Vector2(1250,880),Vector2(430,1060)],"layout":"res://scripts/survival/layout.gd","scene":"res://scripts/survival/world.gd"},
+ "seowon":{"playable":false,"survival_playable":true,"name":"월하의 서원","size":Vector2(3400,2600),"spawn":Vector2(1700,1400),"altar":Vector2(1700,1400),"jail":Vector2(1700,1400),"stations":[Vector2(1700,1400),Vector2(1080,1360),Vector2(2200,1200),Vector2(660,1000),Vector2(2400,1700),Vector2(1700,1900),Vector2(900,2000),Vector2(2900,1400)],"layout":"res://scripts/survival/layout.gd","scene":"res://scripts/survival/world.gd"},
  "village":{"playable":true,"name":"달빛 계월촌","size":Vector2(3400,1900),"spawn":Vector2(900,690),"altar":Vector2(1140,670),"jail":Vector2(2380,1210),"stations":[Vector2(900,700),Vector2(1180,950),Vector2(1840,650),Vector2(2260,900),Vector2(2640,560),Vector2(1440,1300),Vector2(2200,1120),Vector2(780,980)],"layout":"res://scripts/woo/village_layout.gd","scene":"res://scripts/woo/village.gd"},
  "forest":{"playable":true,"name":"안개 속 여우의 숲","size":Vector2(3000,2160),"spawn":Vector2(320,780),"altar":Vector2(1150,690),"jail":Vector2(2520,1400),"stations":[Vector2(490,690),Vector2(980,580),Vector2(1320,1080),Vector2(1800,1100),Vector2(2180,1080),Vector2(2460,700),Vector2(2600,1300),Vector2(2650,1690)],"layout":"res://scripts/woo/forest_layout.gd","scene":"res://scripts/woo/forest.gd"}}
 const KINDS={

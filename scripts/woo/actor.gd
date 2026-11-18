@@ -24,6 +24,12 @@ var jump_phase:="ground"
 var network_remote:=false
 var identity_concealed:=false
 var appearance_form:="human"
+## 둔갑 사물의 월드 크기와 발밑 그림자 반지름. 부르는 쪽(app.gd)이 layout.gd의
+## FORM_VISUALS 값을 넣어, 맵에 놓인 같은 사물과 픽셀 크기·위치가 같아진다.
+var form_height:=46.0
+var form_shadow:=16.0
+## 이 액터 노드에 걸린 배율(actor.scale). 둔갑 그림은 월드 크기를 이 값으로 나눠 쓴다.
+var costume_scale:=1.0
 ## 인게임 2.5D 원화 캐릭터 사용 여부. 코드/테스트의 기존 wardrobe 경로는 그대로 둔다.
 var ingame_art:=false:
 	set(value):
@@ -203,13 +209,15 @@ func update_sprite() -> void:
 	if appearance_form.begins_with("seowon:"):
 		var form_kind:=appearance_form.trim_prefix("seowon:")
 		var form_texture: Texture2D=SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar)
-		var form_height:=44.0/1.5
+		# 맵 사물과 같은 월드 높이. 액터 배율만큼 나눠 로컬 크기를 맞춘다.
+		var local_height: float=form_height/maxf(costume_scale,.01)
 		sprite.texture=form_texture;sprite.region_enabled=false;sprite.centered=true
-		sprite.scale=Vector2.ONE*(form_height/form_texture.get_height())
-		sprite.offset=Vector2.ZERO;sprite.position=Vector2(0,-form_height*.5)
-		sprite.visible=true;sprite.flip_h=facing in [3,4,5]
+		sprite.scale=Vector2.ONE*(local_height/form_texture.get_height())
+		sprite.offset=Vector2.ZERO;sprite.position=Vector2(0,-local_height*.5)
+		sprite.visible=true;sprite.flip_h=false
 		if is_instance_valid(extracted_visual):extracted_visual.visible=false
-		sprite.modulate=tint.lerp(Color("e5d8ff"),0.5+sin(transforming*30)*0.25) if transforming>0 else tint
+		# 둔갑 중에는 캐릭터 색조를 섮지 않는다(진짜 사물과 같은 색).
+		sprite.modulate=Color("e5d8ff") if transforming>0 else Color.WHITE
 		return
 	var region: Array
 	var ratio: float

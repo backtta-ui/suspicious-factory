@@ -4,9 +4,17 @@ extends Node2D
 var color:=Color.WHITE
 var yokai:=false
 var lit:=false
+## 둔갑 중이면 이 반지름의 사물 그림자만 그린다(맵의 사물 그림자와 같은 모양).
+## 0보다 크면 캐릭터 그림자·불꽃·기운을 모두 숨긴다.
+var form_shadow:=0.0
 func _ready() -> void:
  z_index=-1
 func _draw() -> void:
+ if form_shadow>0:
+  draw_set_transform(Vector2(0,1),0,Vector2(1,.36))
+  draw_circle(Vector2.ZERO,form_shadow,Color(.01,.01,.03,.45))
+  draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  return
  # 부드러운 검은 땅 그림자(겹으로 그려 가장자리를 흐리게)
  draw_set_transform(Vector2(0,1),0,Vector2(1,.34))
  for i in range(3):

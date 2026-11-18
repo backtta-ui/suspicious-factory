@@ -34,7 +34,8 @@ func _initialize() -> void:
   "lanterns":[],
   "trees":[],
   "objects":[],
-  "path":[]}
+  "path":[],
+  "paths":[]}
  for r in L.HARD:data.hard.append(rect(r))
  for r in L.LOW:data.low.append(rect(r))
  for r in L.BAMBOO:data.bamboo.append(rect(r))
@@ -49,6 +50,10 @@ func _initialize() -> void:
  for p in Art.TREES:data.trees.append(vec(p))
  for o in L.OBJECTS:data.objects.append({"kind":String(o.kind),"p":vec(o.p)})
  for p in L.PATH:data.path.append(vec(p))
+ for route in L.PATHS:
+  var route_points: Array=[]
+  for q in route.p:route_points.append(vec(q))
+  data.paths.append({"w":float(route.w),"p":route_points})
  var file:=FileAccess.open(path,FileAccess.WRITE)
  if file==null:
   printerr("cannot write ",path);quit(1);return

@@ -35,23 +35,95 @@ func run() -> void:
  var dao: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist")[0]
  var other: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist")[1]
  var evil: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai")[0]
- # 시작 직후 요괴는 6초 유예를 받는다(같은 자리 봉인 방지).
+ # 1) 시작 직후 요괴는 6초 유예를 받는다(같은 자리 봉인 방지).
  check(float(evil.cd.get("seal",0.0))-r.elapsed>5.9,"yokai starts with the six second seal grace")
- dao.position=L.SPAWN;evil.position=L.SPAWN+Vector2(30,0);evil.facing=0
- check(not r.command(evil.id,"seal") and not dao.captured,"grace blocks the instant seal")
- evil.cd={}
- check(r.command(evil.id,"seal") and not dao.captured,"wrong-facing seal misses")
- check(is_equal_approx(evil.cd.seal-r.elapsed,6),"miss cooldown six")
- evil.cd={};evil.facing=4;check(r.command(evil.id,"seal") and dao.captured,"forward cone seals")
- check(is_equal_approx(dao.deadline-r.elapsed,45) and is_equal_approx(evil.cd.seal-r.elapsed,12),"45 deadline and 12 success cooldown")
+ dao.position=L.SPAWN;dao.immune=0;evil.position=L.SPAWN+Vector2(24,0);evil.facing=0
+ r.tick(.1)
+ check(not dao.captured,"grace blocks the instant contact seal")
+ # 2) 접촉 봉인: 버튼 없이 몸이 닿으면 즉시 봉인되고 요괴는 1.5초만 쉰다.
+ evil.cd={};evil.stagger=0
+ r.tick(.1)
+ check(dao.captured,"touching an untransformed daoist seals without a button")
+ check(is_equal_approx(float(evil.cd.get("seal",0.0))-r.elapsed,1.5),"seal recovery is one and a half seconds")
+ check(is_equal_approx(dao.deadline-r.elapsed,10),"ten second deadline")
  check(not r.command(dao.id,"jump"),"captured cannot jump")
- other.position=dao.position+Vector2(0,15);check(r.command(other.id,"rescue",{"target":dao.id}),"ally rescue starts")
+ # 3) 후딜 중에는 옆에 있는 다음 도사를 연속으로 잡지 못한다.
+ other.position=dao.position+Vector2(0,20);other.immune=0
+ r.tick(.1)
+ check(not other.captured,"recovery blocks chain sealing")
+ # 4) 둔갑한 도사는 접촉으로 잡히지 않고 '확인' 타격으로만 잡힌다.
+ evil.cd={};evil.stagger=0
+ other.form="jar";other.buff.transform=r.elapsed+9
+ other.position=evil.position+Vector2(18,0);evil.facing=0
+ r.tick(.1)
+ check(other.form=="jar" and not other.captured,"contact cannot unmask a disguised daoist")
+ check(r.command(evil.id,"seal") and other.captured and other.form=="","confirm strike unmasks and seals")
+ check(is_equal_approx(float(evil.cd.get("seal",0.0))-r.elapsed,1.5),"confirm success also recovers in one and a half seconds")
+ # 5) 빈 사물·허공을 확인하면 2초 헛방 후딜.
+ evil.cd={};evil.stagger=0;evil.facing=6
+ check(r.command(evil.id,"seal") and is_equal_approx(float(evil.cd.get("seal",0.0))-r.elapsed,2.0),"empty check costs two seconds")
+ check(evil.stats.misses>=1,"empty check counts as a miss")
+ # 6) 호신부는 접촉 봉인을 한 번 막고, 짧은 면역과 넉백만 준다.
+ var shielded: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.captured)[0]
+ shielded.form="";shielded.immune=0;shielded.buff.shield=r.elapsed+8
+ evil.cd={};evil.stagger=0;shielded.position=evil.position+Vector2(20,0)
+ r.tick(.1)
+ check(not shielded.captured and not shielded.buff.has("shield"),"shield absorbs one contact seal")
+ check(shielded.immune>r.elapsed,"shield grants short immunity")
+ check(shielded.position.distance_to(evil.position)>40,"shield knocks the daoist back")
+ evil.cd={};evil.stagger=0;shielded.position=evil.position+Vector2(20,0)
+ r.tick(.1)
+ check(not shielded.captured,"immunity blocks recapture")
+ # 7) 구출: 동료가 2.5초 붙어 있으면 풀리고 3초 면역이 붙는다.
+ var rescuer: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.captured and not p.eliminated and p.id!=dao.id)[0]
+ rescuer.position=dao.position+Vector2(0,26);check(r.command(rescuer.id,"rescue",{"target":dao.id}),"ally rescue starts")
  for i in range(20):r.tick(.1)
- r.command(other.id,"cancel_rescue");check(other.progress==0 and dao.captured,"release cancels rescue")
- r.command(other.id,"rescue",{"target":dao.id})
- for i in range(40):r.tick(.1)
- check(not dao.captured and dao.immune-r.elapsed>2.9,"four-second rescue and immunity")
- evil.cd={};check(r.command(evil.id,"seal") and not dao.captured,"immunity blocks recapture")
+ r.command(rescuer.id,"cancel_rescue");check(rescuer.progress==0 and dao.captured,"release cancels rescue")
+ r.command(rescuer.id,"rescue",{"target":dao.id})
+ var rescue_ticks:=0
+ while dao.captured and rescue_ticks<80:
+  r.tick(.1);rescue_ticks+=1
+ check(not dao.captured,"rescue frees the sealed daoist")
+ check(rescue_ticks==25,"rescue needs exactly two and a half seconds")
+ check(is_equal_approx(dao.immune-r.elapsed,3.0),"rescue grants three seconds of immunity")
+ check(dao.lives==3,"a rescued daoist keeps every life")
+ # 7-1) 구조에 실패하면 10초 뒤 목숨 1개를 잃고 시작 자리에서 다시 일어난다.
+ var martyr: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.captured and not p.eliminated and p.id!=dao.id and int(p.lives)==3)[0]
+ martyr.form="";martyr.immune=0;evil.cd={};evil.stagger=0;martyr.position=evil.position+Vector2(20,0)
+ r.tick(.1)
+ check(martyr.captured and martyr.lives==3,"a seal alone does not cost a life")
+ check(is_equal_approx(martyr.deadline-r.elapsed,10),"ten second deadline")
+ dao.position=Vector2(800,2000)
+ var wait:=0
+ while martyr.captured and wait<140:r.tick(.1);wait+=1
+ check(wait<=101,"deadline resolves after ten seconds")
+ check(not martyr.captured and not martyr.eliminated and martyr.lives==2,"unrescued seal costs one life and revives")
+ check(martyr.immune>r.elapsed,"revival immunity")
+ check(martyr.position.distance_to(L.SPAWN)<400,"revived at the starting area")
+ # 7-2) 목숨을 모두 잃으면 그때 최종 탈락한다.
+ for round in range(2):
+  martyr.immune=0;evil.cd={};evil.stagger=0;martyr.position=evil.position+Vector2(20,0)
+  r.tick(.1)
+  if not martyr.captured:check(false,"martyr was sealed again")
+  var left:=0
+  while martyr.captured and left<140:r.tick(.1);left+=1
+ check(martyr.eliminated and martyr.lives==0,"third lost life eliminates for good")
+ dao.position=L.SPAWN;dao.immune=r.elapsed+3
+ evil.cd={};evil.stagger=0;dao.position=evil.position+Vector2(20,0)
+ r.tick(.1)
+ check(not dao.captured,"immunity blocks the instant re-seal")
+ # 8) 둔갑한 채로도 걸을 수 있고, 속도만 사물답게 느려진다.
+ var walker: Dictionary=r.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.captured and not p.eliminated)[0]
+ walker.immune=99;walker.form="jar";walker.buff.transform=r.elapsed+9;walker.stamina=100;walker.exhausted=false
+ walker.position=L.SPAWN;walker.intent=Vector2.ZERO
+ r.command(walker.id,"run",{"held":false})
+ r.command(walker.id,"move",{"vector":Vector2(1,0)})
+ var before_walk: Vector2=walker.position
+ for i in range(10):r.tick(.1)
+ check(walker.form=="jar","disguise survives walking")
+ var walked: float=walker.position.distance_to(before_walk)
+ check(walked>100.0 and walked<130.0,"disguised walking is slower than the open walk")
+ check(r.command(walker.id,"interact") and walker.form=="","pressing again leaves the disguise")
  check(not r.command(dao.id,"seal"),"daoist cannot seal")
  dao.position=L.SPAWN;dao.intent=Vector2.ZERO;r.command(dao.id,"move",{"vector":Vector2(1,1)});var before: Vector2=dao.position;r.tick(.1)
  print("diagonal distance ",dao.position.distance_to(before));check(absf(dao.position.distance_to(before)-13.5)<.02,"diagonal normalized")
@@ -73,7 +145,7 @@ func run() -> void:
   else:legal=legal and p.position.distance_to(L.SPAWN)>520
  for y in yokai:
   for d in daoists:
-   separated=separated and y.position.distance_to(d.position)>=600
+   separated=separated and y.position.distance_to(d.position)>=L.SPAWN_SEPARATION
  for i in range(daoists.size()):
   for j in range(i+1,daoists.size()):
    spread=spread and (daoists[i].position as Vector2).distance_to(daoists[j].position)>=40
@@ -95,7 +167,7 @@ func run() -> void:
   doors_ok=doors_ok and L.can_stand(front+Vector2(0,12)) and L.can_stand(front+Vector2(0,-40)) and L.can_stand((building.interior as Rect2).get_center()) and L.can_stand(back+Vector2(0,-12))
  check(doors_ok,"every hanok front door, room and back door passable")
  for time in [0,180,360,480]:r.elapsed=time;check(r.circle().stage==[0,180,360,480].find(time),"circle stage %d"%time)
- r.elapsed=510;check(is_equal_approx(r.circle().radius,360),"final zone still playable size")
+ r.elapsed=510;check(r.circle().radius>=600 and r.circle().radius<L.MEDALLION_RADIUS*5,"final zone still playable size")
  for p in r.players.values():p.intent=Vector2.ZERO;p.captured=false;p.eliminated=false;p.deadline=0
  r.elapsed=599.9;r.tick(.1);check(r.phase=="result" and r.winner=="daoist","surviving daoist wins ten minutes")
  var elapsed: float=r.elapsed;r.tick(.1);check(r.elapsed==elapsed and not r.command(evil.id,"seal"),"result freezes time and actions")
