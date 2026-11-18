@@ -240,8 +240,7 @@ func _rebuild_cards() -> void:
 		mark.text_width=0.0
 		mark.color=Color(0.85,0.72,0.47,0.22)
 		slot.add_child(mark)
-		mark.position=Vector2(rect.size.x*.5-40,rect.size.y*.5-13)
-		mark.size=Vector2(80,26)
+		place(mark,Rect2(rect.position.x+rect.size.x*.5-40,rect.position.y+rect.size.y*.5-13,80,26))
 		slots.append(slot)
 	_paint_cards()
 
