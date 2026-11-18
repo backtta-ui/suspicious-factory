@@ -20,6 +20,15 @@ func run() -> void:
  var r:=room();check(r.start(),"start six-player room")
  check(r.players.values().filter(func(p: Dictionary)->bool:return p.role=="yokai").size()==2,"two random yokai")
  check(not r.command("human","jump"),"loading blocks gameplay")
+ check(r.phase=="selection" and r.selection_left==25,"role assignment precedes timed selection")
+ var role: String=r.players.human.role
+ check(not r.select_character("human",C.catalog("yokai" if role=="daoist" else "daoist")[0].id),"other-team choice rejected")
+ check(r.select_character("human",C.catalog(role)[0].id) and r.confirm_character("human"),"own-team confirmation")
+ check(not r.select_character("human",C.catalog(role)[1].id),"confirmed choice locks")
+ check(r.selection_view("human").all(func(p: Dictionary)->bool:return r.players[p.id].role==role),"opponent selection private")
+ for i in range(250):
+  if r.phase=="loading":break
+  r.tick(.1)
  r.ready_map();check(not r.command("human","move",{"vector":Vector2.RIGHT}),"countdown blocks input")
  for i in range(30):r.tick(.1)
  r.tick(.001);check(r.phase=="live" and r.elapsed<.01,"three seconds before ten-minute clock")
@@ -58,7 +67,9 @@ func run() -> void:
  for p in r.players.values():p.intent=Vector2.ZERO;p.captured=false;p.eliminated=false;p.deadline=0
  r.elapsed=599.9;r.tick(.1);check(r.phase=="result" and r.winner=="daoist","surviving daoist wins ten minutes")
  var elapsed: float=r.elapsed;r.tick(.1);check(r.elapsed==elapsed and not r.command(evil.id,"seal"),"result freezes time and actions")
- r=room();r.start();r.ready_map();r.phase="live"
+ r=room();r.start()
+ for i in range(251):r.tick(.1)
+ r.ready_map();r.phase="live"
  for p in r.players.values():
   if p.role=="daoist":p.eliminated=true
  r.tick(.1);check(r.winner=="yokai","all permanently eliminated yields yokai win")
@@ -74,8 +85,9 @@ func run() -> void:
  game.create_room("QA",6,true);await create_timer(.4).timeout
  check(game.screen=="room" and game.rules.players.size()==6,"real room with five bots")
  game.start_match();check(game.screen=="room" and game.modal!=null,"unready start explains failure")
- game.close_popup();game.rules.players.human.ready=true;game.start_match()
- for i in range(250):
+ game.close_popup();game.rules.players.human.ready=true;game.start_match();game.rules.confirm_character("human")
+ for i in range(650):
+  if game.rules.phase=="selection":game.rules.tick(.1)
   await process_frame
   if game.screen=="match" and not game.changing:break
  check(game.screen=="match" and is_instance_valid(game.world) and is_instance_valid(game.camera),"VS hands over to actual seowon")

@@ -1,0 +1,24 @@
+[
+  {
+    "misses": 6,
+    "phase": "result",
+    "players": 6,
+    "rescues": 1,
+    "seals": 5,
+    "skills": 9,
+    "time": 74.7999999999979,
+    "wall_ms": 206,
+    "winner": "yokai"
+  },
+  {
+    "misses": 7,
+    "phase": "result",
+    "players": 8,
+    "rescues": 3,
+    "seals": 9,
+    "skills": 24,
+    "time": 122.749999999995,
+    "wall_ms": 490,
+    "winner": "yokai"
+  }
+]

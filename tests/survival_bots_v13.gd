@@ -8,7 +8,9 @@ func run() -> void:
  for count in [6,8]:
   var r:=R.new(count+3)
   for i in range(count):r.add("human" if i==0 else str(i),"도사%d"%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[(i+1)%4].id)
-  r.players.human.ready=true;r.start();r.ready_map()
+  r.players.human.ready=true;r.start()
+  for i in range(251):r.tick(.1)
+  r.ready_map()
   var bots: Array=[]
   for i in range(1,count):bots.append(preload("res://scripts/survival/bot.gd").new(r,nav,str(i),i))
   var decision:=0.0;var began:=Time.get_ticks_msec()

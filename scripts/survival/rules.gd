@@ -9,15 +9,17 @@ var countdown:=3.0
 var winner:=""
 var effects: Array=[]
 var events: Array=[]
-var circle_penalty_after:=8.0
-var circle_speed_factor:=.65
+var circle_penalty_after:=INF
+var circle_speed_factor:=1.0
 var serial:=0
+var selection_left:=25.0
+var selection_elapsed:=0.0
 func _init(seed_value: int=0) -> void:
  if seed_value==0:rng.randomize()
  else:rng.seed=seed_value
 func add(id: String,name: String,daoist: String,yokai: String) -> bool:
  if phase!="room" or players.size()>=8 or C.find(daoist).is_empty() or C.find(yokai).is_empty():return false
- players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stats":{"seals":0,"misses":0,"rescues":0},"ready":id!="human","color":players.size()}
+ players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stats":{"seals":0,"misses":0,"rescues":0},"confirmed":false,"ready":id!="human","color":players.size()}
  return true
 func start() -> bool:
  if phase!="room" or players.size() not in [6,8]:return false
@@ -26,9 +28,26 @@ func start() -> bool:
  for i in range(ids.size()-1,0,-1):
   var j:=rng.randi_range(0,i);var value=ids[i];ids[i]=ids[j];ids[j]=value
  for i in range(ids.size()):
-  var p: Dictionary=players[ids[i]];p.role="yokai" if i<2 else "daoist";p.character=p.choices[p.role]
+  var p: Dictionary=players[ids[i]];p.role="yokai" if i<2 else "daoist";p.character=""
   p.position=L.safe(L.SPAWN+Vector2.from_angle(i*TAU/ids.size())*150);p.ground=p.position
- phase="loading";return true
+ phase="selection";selection_left=25;selection_elapsed=0;return true
+func select_character(id: String,character_id: String) -> bool:
+ if phase!="selection" or not players.has(id) or players[id].confirmed:return false
+ var spec:=C.find(character_id)
+ if spec.is_empty() or spec.team!=players[id].role:return false
+ players[id].character=character_id;return true
+func confirm_character(id: String) -> bool:
+ if phase!="selection" or not players.has(id) or players[id].confirmed:return false
+ if C.find(players[id].character).is_empty():return false
+ players[id].confirmed=true
+ if players.values().all(func(p: Dictionary)->bool:return p.confirmed):phase="loading"
+ return true
+func selection_view(id: String) -> Array:
+ if not players.has(id):return []
+ var out: Array=[]
+ for p in players.values():
+  if p.role==players[id].role:out.append({"id":p.id,"name":p.name,"character":p.character,"confirmed":p.confirmed})
+ return out
 func ready_map() -> void:
  if phase=="loading":phase="countdown";countdown=3
 func available(p: Dictionary) -> bool:return phase=="live" and not p.captured and not p.eliminated
@@ -103,6 +122,14 @@ func circle() -> Dictionary:
  return {"stage":stage,"center":centers[stage-1].lerp(centers[stage],blend) if stage>0 else centers[0],"radius":lerpf(radii[stage-1],radii[stage],blend) if stage>0 else radii[0],"next_center":centers[next],"next_radius":radii[next],"until":maxf(0,due-elapsed)}
 func tick(delta: float) -> void:
  delta=clampf(delta,0,.1)
+ if phase=="selection":
+  selection_elapsed+=delta;selection_left=maxf(0,25-selection_elapsed)
+  for p in players.values():
+   if p.confirmed:continue
+   if selection_left<=.00001 or (p.id!="human" and selection_elapsed>=1.2+p.color*.35):
+    if C.find(p.character).is_empty():p.character=C.catalog(p.role)[rng.randi_range(0,C.catalog(p.role).size()-1)].id
+    confirm_character(p.id)
+  return
  if phase=="countdown":
   countdown=maxf(0,countdown-delta)
   if countdown<=0:phase="live"
@@ -119,7 +146,7 @@ func tick(delta: float) -> void:
   p.outside=p.outside+delta if p.position.distance_to(zone.center)>zone.radius else 0.0
   if p.exhausted and p.stamina>=25:p.exhausted=false
   var fast: bool=p.running and p.stamina>0 and not p.exhausted and p.intent.length()>.05
-  p.stamina=clampf(p.stamina+(-25 if fast else (0 if p.outside>circle_penalty_after else 18))*delta,0,100)
+  p.stamina=clampf(p.stamina+(-25 if fast else 18)*delta,0,100)
   if p.stamina<=0:p.exhausted=true
   if p.jump>0:
    p.jump=maxf(0,p.jump-delta);p.height=sin((.8-p.jump)/.8*PI)*36

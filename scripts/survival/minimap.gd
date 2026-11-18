@@ -1,7 +1,7 @@
 extends Control
 var rules: RefCounted
 var observer:="human"
-func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE
+func _ready() -> void:mouse_filter=Control.MOUSE_FILTER_IGNORE;clip_contents=true
 func at(p: Vector2) -> Vector2:return Vector2(8,8)+p/rules.L.SIZE*(size-Vector2(16,16))
 func _draw() -> void:
  if rules==null:return

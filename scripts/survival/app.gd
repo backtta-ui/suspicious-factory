@@ -50,6 +50,9 @@ var selection_return:="lobby"
 var status_message:=""
 var sequence:=0
 var result_seen:=false
+var practice: Node
+var settings: Dictionary={"low_effects":false}
+const GOLD=D.GOLD
 func _ready() -> void:
  process_mode=Node.PROCESS_MODE_ALWAYS
  storage=Storage.new();sound=preload("res://scripts/woo/sound.gd").new();add_child(sound)
@@ -123,6 +126,7 @@ func build(destination: String) -> void:
   "rooms":rooms_screen()
   "room":room_screen()
   "characters":characters_screen()
+  "selection":selection_screen()
   "loading":loading_screen()
   "match":hud()
   "result":result_screen()
@@ -182,7 +186,6 @@ func room_screen() -> void:
  var preview:=panel(body);preview.add_child(text("월하의 서원",29,D.GOLD))
  var image:=TextureRect.new();image.texture=load("res://assets/woo/worlds/moon_palace.png");image.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;image.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED;image.custom_minimum_size=Vector2(380,180);preview.add_child(image)
  preview.add_child(text("도사팀 vs 요괴팀 · 10분\n역할은 시작 시 무작위 배정\n오프라인 · 서버 접속 없음",20))
- preview.add_child(button("도사 / 요괴 캐릭터 사전 선택",func()->void:selection_return="room";selection_team="daoist";selection_id=storage.data.daoist;transition("characters")))
  var members:=panel(body);members.add_child(text("참가자 %d/%d"%[rules.players.size(),room.count],25,D.GOLD))
  for p in rules.players.values():
   var row:=HBoxContainer.new();members.add_child(row)
@@ -193,7 +196,7 @@ func room_screen() -> void:
  buttons.add_child(button("준비 취소" if rules.players.human.ready else "준비 완료",func()->void:rules.players.human.ready=not rules.players.human.ready;build("room"),true))
  buttons.add_child(button("게임 시작",start_match,true));buttons.add_child(button("방 나가기",leave_room))
 func characters_screen() -> void:
- var box:=page("캐릭터 선택 · 임시 데이터")
+ var box:=page("캐릭터 안내 · 기존 기본 외형")
  var tabs:=HBoxContainer.new();box.add_child(tabs)
  for team in ["daoist","yokai"]:tabs.add_child(button("도사 · 생존/지원" if team=="daoist" else "요괴 · 추적/봉인",func()->void:selection_team=team;selection_id=storage.data[team];build("characters"),selection_team==team))
  var row:=HBoxContainer.new();row.add_theme_constant_override("separation",24);row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
@@ -206,7 +209,7 @@ func characters_screen() -> void:
  var passive:=text(selected.passive,18);passive.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;info.add_child(passive);info.add_child(text(selected.skill.name+" · %d초"%selected.skill.cd,23))
  var desc:=text(selected.skill.description,19);desc.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;info.add_child(desc)
  var bottom:=HBoxContainer.new();box.add_child(bottom)
- bottom.add_child(button("선택하기",func()->void:
+ bottom.add_child(button("대표 외형 저장",func()->void:
   storage.data[selection_team]=selection_id
   if storage.save()!=OK:notice("선택 상태 저장에 실패했습니다.");return
   if rules!=null and rules.phase=="room":rules.players.human.choices[selection_team]=selection_id;rules.players.human.ready=false
@@ -217,7 +220,23 @@ func start_match() -> void:
  if rules.players.size()!=room.count:notice("필요한 인원이 없습니다. 빈 칸을 봇으로 채워 주세요.");return
  if not rules.players.human.ready:notice("먼저 준비 완료를 눌러 주세요.");return
  if not rules.start():notice("캐릭터·봇 참가 상태를 확인하세요.");return
- sequence+=1;changing=true;load_match(sequence)
+ selection_team=rules.players.human.role;selection_id=storage.data[selection_team]
+ rules.select_character("human",selection_id);build("selection")
+func selection_screen() -> void:
+ var box:=page("캐릭터 선택 · "+("도사팀" if rules.players.human.role=="daoist" else "요괴팀"))
+ var timer:=text("선택 시간 25초",25,D.GOLD);timer.name="SelectionTimer";box.add_child(timer)
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",24);row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
+ var list:=panel(row)
+ for item in C.catalog(rules.players.human.role):
+  var b:=button(("✓ " if selection_id==item.id else "")+item.name,func()->void:
+   if rules.select_character("human",item.id):selection_id=item.id;build("selection"),selection_id==item.id,list)
+  b.disabled=rules.players.human.confirmed
+ var info:=panel(row);portrait(info,selection_id,Vector2(370,220));var spec:=C.find(selection_id)
+ info.add_child(text(spec.name,27,D.GOLD));info.add_child(text(spec.skill.name+" · "+spec.skill.description,18))
+ var team_label:=text("",18);team_label.name="TeamSelection";info.add_child(team_label)
+ var confirm_button:=button("선택 확정" if not rules.players.human.confirmed else "확정 완료 · 팀원 대기",func()->void:
+  if rules.confirm_character("human"):build("selection"),true,box);confirm_button.disabled=rules.players.human.confirmed
+ box.add_child(text("상대팀의 캐릭터는 VS 화면에서 공개합니다. 같은 캐릭터 선택은 허용됩니다.",17))
 func loading_screen() -> void:
  var box:=page("월하의 서원 · 경기 준비")
  var row:=HBoxContainer.new();row.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(row)
@@ -288,8 +307,8 @@ func hud() -> void:
  count_label=text("3",80,D.GOLD);ui.add_child(count_label);count_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER);count_label.offset_left=-220;count_label.offset_right=220;count_label.offset_top=-80;count_label.offset_bottom=80;count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  var spectator:=button("관전 대상",spectator_menu);spectator.name="Spectator";spectator.position=Vector2(28,185);ui.add_child(spectator)
 func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,callback: Callable=Callable(),type: Script=ButtonType) -> WooMobileButton:
- var b:=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type);b.custom_minimum_size=extent;ui.add_child(b);b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.position=offset;b.size=extent
- for state in ["normal","hover","pressed","hover_pressed"]:b.add_theme_stylebox_override(state,StyleBoxEmpty.new())
+ var b:=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type);b.custom_minimum_size=extent;ui.add_child(b);b.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT);b.offset_left=offset.x;b.offset_top=offset.y;b.offset_right=offset.x+extent.x;b.offset_bottom=offset.y+extent.y
+ for state in ["normal","hover","pressed","hover_pressed","disabled"]:b.add_theme_stylebox_override(state,StyleBoxEmpty.new())
  for state in ["font_color","font_hover_color","font_pressed_color","font_hover_pressed_color","font_disabled_color"]:b.add_theme_color_override(state,Color(0,0,0,0))
  var caption:=text(name_value,19);caption.name="Caption";caption.position=Vector2(0,extent.y-28);caption.size=Vector2(extent.x,28);caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;b.add_child(caption)
  var badge:=preload("res://scripts/woo/skill_badge.gd").new();badge.name="Badge";badge.skill=icon;badge.position=Vector2(4,0);badge.size=Vector2(extent.x-8,extent.y-28);b.add_child(badge)
@@ -355,6 +374,12 @@ func result_screen() -> void:
  stats.add_child(text("내 역할: "+("도사" if me.role=="daoist" else "요괴"),24));stats.add_child(text("봉인 %d회 · 구조 %d회 · 생존 %.0f초"%[me.stats.seals,me.stats.rescues,me.alive_seconds],22))
  for p in rules.players.values():stats.add_child(text(p.name+" · "+("도사" if p.role=="daoist" else "요괴")+" · "+("탈락" if p.eliminated else "생존"),18))
  var row:=HBoxContainer.new();box.add_child(row);row.add_child(button("재경기",func()->void:cleanup_match();setup_participants();transition("room"),true));row.add_child(button("메인 로비",func()->void:cleanup_match();room={};transition("lobby")))
+func enter_practice() -> void:
+ if screen!="lobby" or changing:return
+ clear_ui();screen="practice";practice=preload("res://scripts/survival/practice_view.gd").new();practice.game=self;add_child(practice)
+func practice_done() -> void:
+ if is_instance_valid(practice):practice.queue_free()
+ practice=null;transition("lobby")
 func cleanup_match() -> void:
  sequence+=1
  if is_instance_valid(world):world.queue_free()
@@ -399,6 +424,19 @@ func safe_layout() -> void:
  if screen=="match" and is_instance_valid(stick):D.position_stick(stick)
 func _process(delta: float) -> void:
  render_clock+=delta
+ if screen=="selection" and rules!=null:
+  if not backgrounded:
+   fixed_clock+=minf(delta,.25)
+   while fixed_clock>=.05:rules.tick(.05);fixed_clock-=.05
+  if rules.phase=="loading":sequence+=1;changing=true;load_match(sequence);return
+  var timer: Label=ui.find_child("SelectionTimer",true,false)
+  if timer!=null:timer.text="선택 시간 %d초"%ceili(rules.selection_left)
+  var team_label: Label=ui.find_child("TeamSelection",true,false)
+  if team_label!=null:
+   var lines: Array[String]=[]
+   for p in rules.selection_view("human"):lines.append(p.name+" · "+("확정" if p.confirmed else "선택 중"))
+   team_label.text="\n".join(lines)
+  return
  if screen!="match" or rules==null or not is_instance_valid(world):return
  var me: Dictionary=rules.players.human
  if not paused and not backgrounded and modal==null:
@@ -444,6 +482,9 @@ func back() -> void:
   "rooms":transition("lobby")
   "room":leave_room()
   "characters":transition(selection_return)
+  "selection":confirm("선택을 취소하고 로비로 돌아가시겠습니까?",func()->void:cleanup_match();room={};transition("lobby"))
+  "practice":
+   if is_instance_valid(practice):practice.request_leave()
   "match":pause_menu()
   "result":cleanup_match();room={};transition("lobby")
 func _notification(what: int) -> void:

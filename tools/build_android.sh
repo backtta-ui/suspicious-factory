@@ -18,12 +18,14 @@ APK_PATH="$PROJECT_DIR/builds/jeon-woochi-$APK_VERSION.apk"
 mkdir -p "$PROJECT_DIR/builds"
 # A failed new build must not be confused with an earlier APK or success report.
 rm -f "$PROJECT_DIR/builds/apk-verification.json" "$PROJECT_DIR/builds/apk-verification.txt"
+python3 "$PROJECT_DIR/tools/runtime_dependencies.py" > "$PROJECT_DIR/builds/runtime-dependencies.txt"
 python3 "$PROJECT_DIR/tools/prepare_android_template.py" "$GODOT_ANDROID_TEMPLATE"
 "$GODOT_BIN" --headless --editor --path "$PROJECT_DIR" --import --quit
 python3 "$PROJECT_DIR/tools/source_snapshot.py" capture "$PROJECT_DIR/builds/source-snapshot.json"
 # Mandatory native touch, gameplay, saving and real process-restart checks.
 bash "$PROJECT_DIR/tools/test.sh"
 python3 "$PROJECT_DIR/tools/source_snapshot.py" check "$PROJECT_DIR/builds/source-snapshot.json"
+bash "$PROJECT_DIR/tools/check_runtime_pack.sh"
 # Export to a temporary directory; preserve the last working APK on failure.
 STAGING_DIR="$(mktemp -d "$PROJECT_DIR/builds/.android-export.XXXXXX")"
 trap 'rm -rf "$STAGING_DIR"' EXIT
