@@ -69,12 +69,12 @@ func run() -> void:
 	game.camera.limit_right=int(L.SIZE.x);game.camera.limit_bottom=int(L.SIZE.y)
 	game.camera.zoom=Vector2(L.CAMERA_ZOOM,L.CAMERA_ZOOM)
 	# 중앙 마당의 사물 무리 곁에 내 도사를 둔갑시켜 세우고, 요괴를 바로 앞에 둔다.
-	var spot: Vector2=Vector2(1620,1816)
-	me.position=spot+Vector2(0,26);me.ground=me.position;me.facing=6
+	var spot: Vector2=Vector2(700,1075)
+	me.position=spot+Vector2(0,18);me.ground=me.position;me.facing=6
 	me.form="crate";me.buff.transform=game.rules.elapsed+9
 	me.lives=2
 	if not yokai.is_empty():
-		yokai[0].position=spot+Vector2(40,70);yokai[0].ground=yokai[0].position;yokai[0].facing=6
+		yokai[0].position=spot+Vector2(-118,44);yokai[0].ground=yokai[0].position;yokai[0].facing=2
 	var other: Dictionary=daoists[0] if not daoists.is_empty() else me
 	other.captured=true;other.deadline=game.rules.elapsed+7
 	other.position=spot+Vector2(-120,40);other.ground=other.position

@@ -1,7 +1,10 @@
 extends Node2D
 ## 월하의 서원 인게임 월드: 2.5D 원화 스프라이트 + 상태 변화만 다시 그리는 경량 레이어.
-## 출입 한옥 3채(청월당·서고·별채)의 외관·실내·지붕 크로스페이드·실내 안개가
+## 출입 한옥 6채의 외관·실내·지붕 크로스페이드·실내 안개가
 ## layout.gd의 rect/interior/doors 수치를 그대로 사용한다.
+## 2.0.26 비주얼 개편: 검은 사각 그림자를 없애고, 모든 사물·건물·나무가
+## 부드러운 접지 그림자(shadow_soft)를 공유한다. 담장은 벽 길이에 맞춰
+## 기와 띠를 그려서 줌 1.90에서도 결이 살아 있다.
 const L=preload("res://scripts/survival/layout.gd")
 const Art=preload("res://scripts/survival/seowon_art.gd")
 const FX=preload("res://scripts/survival/fx.gd")
@@ -14,6 +17,12 @@ const BAMBOO=preload("res://assets/woo/seowon/bamboo_cluster.png")
 const POND_TEX=preload("res://assets/woo/seowon/pond_night.png")
 const BRIDGE_TEX=preload("res://assets/woo/seowon/bridge_wood.png")
 const MEDALLION_TEX=preload("res://assets/woo/seowon/medallion_octagon.png")
+const SHADOW_TEX=preload("res://assets/woo/seowon/shadow_soft.png")
+const GROUND_SHADER=preload("res://assets/woo/seowon/ground_detail.gdshader")
+const GROUND_MASK=preload("res://assets/woo/seowon/seowon_ground_mask.png")
+const DETAIL_GRASS=preload("res://assets/woo/seowon/seowon_detail_grass.png")
+const DETAIL_STONE=preload("res://assets/woo/seowon/seowon_detail_stone.png")
+const DETAIL_YARD=preload("res://assets/woo/seowon/seowon_detail_yard.png")
 const PROPS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
 var observer:=L.SPAWN
 var roofs: Array=[]
@@ -23,6 +32,7 @@ var aim:=Vector2.ZERO
 var aim_active:=false
 var aim_cancelled:=false
 var ground: Node2D
+var under: Node2D
 var water: Node2D
 var effects: Node2D
 var orbs: Node2D
@@ -38,7 +48,10 @@ var current_interior:=""
 var fog_strength:=0.0
 func _ready() -> void:
  texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;y_sort_enabled=true
- ground=Node2D.new();ground.z_index=-100;ground.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;ground.draw.connect(draw_ground);add_child(ground)
+ build_ground()
+ ground=Node2D.new();ground.z_index=-99;ground.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;ground.draw.connect(draw_ground);add_child(ground)
+ # 그림자·물빛처럼 바닥 위, 사물 아래에 깔리는 층.
+ under=Node2D.new();under.z_index=-95;under.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;add_child(under)
  build_medallion()
  build_pond()
  build_bridge()
@@ -47,6 +60,36 @@ func _ready() -> void:
  water=Node2D.new();water.z_index=-88;water.draw.connect(func()->void:Art.draw_water_glints(water,L.POND,clock));add_child(water)
  effects=Node2D.new();effects.z_index=8;effects.draw.connect(draw_effects);add_child(effects)
  orbs=Node2D.new();orbs.z_index=-70;orbs.draw.connect(draw_orbs);add_child(orbs)
+## 부드러운 접지 그림자 한 장. (center=발밑, size=가로세로 지름)
+func shadow(center: Vector2,size: Vector2,alpha: float=1.0,z: int=-94) -> Sprite2D:
+ var sprite:=Sprite2D.new();sprite.texture=SHADOW_TEX;sprite.centered=true
+ sprite.z_index=z;sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+ sprite.position=center
+ sprite.scale=Vector2(size.x/SHADOW_TEX.get_width(),size.y/SHADOW_TEX.get_height())
+ sprite.modulate=Color(1,1,1,alpha)
+ under.add_child(sprite)
+ return sprite
+## 바닥: 베이크한 색·조명(저해상도) + 결 타일 셰이더(1:1) + 담장·잔디 장식(벡터).
+func build_ground() -> void:
+ var void_back:=Node2D.new();void_back.z_index=-110
+ void_back.draw.connect(func()->void:void_back.draw_rect(Rect2(Vector2(-200,-200),L.SIZE+Vector2(400,400)),Color("04070d")))
+ add_child(void_back)
+ var back:=Sprite2D.new();back.name="GroundBack";back.centered=false
+ back.texture=Art.GROUND_ART;back.z_index=-100
+ back.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+ back.scale=Vector2(L.SIZE.x/back.texture.get_width(),L.SIZE.y/back.texture.get_height())
+ var material:=ShaderMaterial.new()
+ material.shader=GROUND_SHADER
+ material.set_shader_parameter("mask_tex",GROUND_MASK)
+ material.set_shader_parameter("grass_tex",DETAIL_GRASS)
+ material.set_shader_parameter("stone_tex",DETAIL_STONE)
+ material.set_shader_parameter("yard_tex",DETAIL_YARD)
+ material.set_shader_parameter("world_size",L.SIZE)
+ material.set_shader_parameter("stone_tile",180.0)
+ material.set_shader_parameter("grass_tile",200.0)
+ material.set_shader_parameter("strength",0.80)
+ back.material=material
+ add_child(back)
 func draw_ground() -> void:
  Art.draw_base(ground)
  Art.draw_walls(ground)
@@ -57,14 +100,10 @@ func build_medallion() -> void:
  var diameter:=L.MEDALLION_RADIUS*2.0
  var side: float=maxf(MEDALLION_TEX.get_width(),MEDALLION_TEX.get_height())
  var s:=diameter/side
- sprite.scale=Vector2(s,s*1.02);sprite.position=L.MEDALLION+Vector2(0,14)
- sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;sprite.modulate=Color(.92,.92,1,.96)
+ sprite.scale=Vector2(s,s*1.02);sprite.position=L.MEDALLION+Vector2(0,10)
+ sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;sprite.modulate=Color(.95,.94,.98,.97)
  add_child(sprite)
 func build_pond() -> void:
- var shadow:=Node2D.new();shadow.z_index=-93;shadow.draw.connect(func()->void:
-  for i in range(3):
-   var grow:=6+i*7
-   Art.round_rect(shadow,L.POND.grow(grow),Color(.02,.03,.07,.16),20+grow*.4));add_child(shadow)
  var sprite:=Sprite2D.new();sprite.texture=POND_TEX;sprite.centered=false;sprite.z_index=-92
  sprite.position=L.POND.position-Vector2(6,6)
  sprite.scale=Vector2((L.POND.size.x+12)/POND_TEX.get_width(),(L.POND.size.y+12)/POND_TEX.get_height())
@@ -73,11 +112,11 @@ func build_pond() -> void:
 ## 아치 목교: 원화를 다리 축에 맞춰 눕히고, 물 위 그림자를 따로 깐다.
 func build_bridge() -> void:
  var axis:=L.BRIDGE_B-L.BRIDGE_A;var length:=axis.length();var angle:=axis.angle()
- var shadow:=Sprite2D.new();shadow.texture=BRIDGE_TEX;shadow.centered=true;shadow.z_index=-86
- shadow.position=L.BRIDGE_A.lerp(L.BRIDGE_B,.5)+Vector2(0,10)
- shadow.rotation=angle;shadow.scale=Vector2(length/BRIDGE_TEX.get_width()*.98,.42)
- shadow.modulate=Color(.02,.04,.09,.55);shadow.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
- add_child(shadow)
+ var shadow_node:=Sprite2D.new();shadow_node.texture=SHADOW_TEX;shadow_node.centered=true;shadow_node.z_index=-86
+ shadow_node.position=L.BRIDGE_A.lerp(L.BRIDGE_B,.5)+Vector2(0,12)
+ shadow_node.rotation=angle;shadow_node.scale=Vector2(length/SHADOW_TEX.get_width()*1.3,58.0/SHADOW_TEX.get_height())
+ shadow_node.modulate=Color(1,1,1,.55);shadow_node.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+ add_child(shadow_node)
  var deck:=Sprite2D.new();deck.texture=BRIDGE_TEX;deck.centered=true;deck.z_index=-80
  deck.position=L.BRIDGE_A.lerp(L.BRIDGE_B,.5)
  deck.rotation=angle
@@ -97,6 +136,8 @@ func build_buildings() -> void:
   var interior_rect: Rect2=data.interior
   var door: Vector2=(data.doors as Dictionary).front
   var anchor: Vector2=data.anchor
+  # 건물 발치의 부드러운 그림자(사각 상자가 아니라 건물 폭을 따라 번진다).
+  shadow(Vector2(rect.get_center().x,rect.end.y-6),Vector2(rect.size.x*.92,rect.size.y*.34),.85)
   var holder:=Node2D.new();holder.name="Hanok_"+String(data.id);holder.position=door
   var exterior:=Sprite2D.new();exterior.texture=HANOK_OUT;exterior.centered=false
   var s: float=rect.size.x/HANOK_OUT.get_width()
@@ -117,7 +158,8 @@ func build_buildings() -> void:
   # 현판: 문 위에 금빛 이름패
   var sign:=Label.new();sign.text=String(data.name);sign.name="Sign_"+String(data.id)
   sign.add_theme_font_override("font",TITLE_FONT);sign.add_theme_font_size_override("font_size",22)
-  sign.add_theme_color_override("font_color",Color("f6e0a8"));sign.add_theme_color_override("font_outline_color",Color(.03,.03,.06));sign.add_theme_constant_override("outline_size",4)
+  sign.add_theme_color_override("font_color",Color("f6e0a8"));sign.add_theme_color_override("font_outline_color",Color(.03,.03,.06))
+  sign.add_theme_constant_override("outline_size",4)
   sign.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;sign.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
   var sign_width:=44.0+String(data.name).length()*15.0
   var painted: Vector2=data.painted_door
@@ -131,54 +173,51 @@ func build_buildings() -> void:
   culled.append({"node":holder,"rect":Rect2(Vector2(rect.position.x-40,rect.position.y-260),Vector2(rect.size.x+80,rect.size.y+280))})
   for entry in L.building_doors(String(data.id)):door_open[entry.id]=0.0
 func build_garden() -> void:
+ # 벚꽃나무: 줄기 밑에 부드러운 그림자와 떨어진 꽃잎.
  for p in Art.TREES:
+  shadow(p+Vector2(0,6),Vector2(200,78),.9)
   var sprite:=Sprite2D.new();sprite.texture=Art.ATLAS;sprite.region_enabled=true;sprite.region_rect=Art.CHERRY_CELL
-  var s:=280.0/512.0;sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-140,-470*s)
+  var s:=255.0/512.0;sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-127.5,-470*s)
+  sprite.modulate=Color(.94,.90,.96)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
-  var holder:=Node2D.new();holder.position=p;holder.add_child(sprite);culled.append({"node":holder,"rect":Rect2(p-Vector2(160,320),Vector2(320,340))})
-  var glow_node:=Node2D.new();glow_node.z_index=-1;glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-90),150,Color(.85,.45,.7,.14)));holder.add_child(glow_node)
+  var holder:=Node2D.new();holder.position=p;holder.add_child(sprite);culled.append({"node":holder,"rect":Rect2(p-Vector2(190,360),Vector2(380,400))})
+  var glow_node:=Node2D.new();glow_node.z_index=-1;glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-90),135,Color(.85,.45,.7,.12)));holder.add_child(glow_node)
   add_child(holder)
  # 대나무 군락
  for rect in L.BAMBOO:
   var count:=maxi(1,int(rect.size.y/150))
   for i in range(count):
+   var base:=Vector2(rect.position.x+rect.size.x*.5,rect.position.y+40+i*(rect.size.y-60)/maxf(1,count))
+   shadow(base+Vector2(0,2),Vector2((rect.size.x+40)*.85,44),.7)
    var sprite:=Sprite2D.new();sprite.texture=BAMBOO
    var s: float=(rect.size.x+40.0)/BAMBOO.get_width()
    sprite.scale=Vector2(s,s);sprite.centered=false
    sprite.position=Vector2(-(rect.size.x+40)*.5,-BAMBOO.get_height()*s*.98)
    sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
-   var holder:=Node2D.new();holder.position=Vector2(rect.position.x+rect.size.x*.5,rect.position.y+40+i*(rect.size.y-60)/maxf(1,count))
-   holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(holder.position-Vector2(120,300),Vector2(240,330))})
- # 연못 동쪽 정자
- var pavilion:=Sprite2D.new();pavilion.texture=Art.ATLAS;pavilion.region_enabled=true;pavilion.region_rect=Art.PAVILION_CELL
- var pav_scale:=220.0/512.0;pavilion.scale=Vector2(pav_scale,pav_scale);pavilion.centered=false
- pavilion.position=Vector2(-110,-470*pav_scale);pavilion.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
- var pav_holder:=Node2D.new();pav_holder.position=Vector2(2260,1120);pav_holder.add_child(pavilion)
- var pav_glow:=Node2D.new();pav_glow.draw.connect(func()->void:Art.glow(pav_glow,Vector2(0,-60),110,Color(1,.66,.32,.2)));pav_holder.add_child(pav_glow)
- add_child(pav_holder)
- # 석등(장식)
+   var holder:=Node2D.new();holder.position=base
+   holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(base-Vector2(130,320),Vector2(260,350))})
+ # 석등(장식): 부드러운 발밑 그림자 + 따뜻한 빛무리
  for p in Art.LANTERNS:
-  var sprite:=Sprite2D.new();sprite.texture=PROPS.lantern;var s:=64.0/PROPS.lantern.get_height()
-  sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-PROPS.lantern.get_width()*s*.5,-64)
+  shadow(p+Vector2(0,2),Vector2(72,30),.85)
+  var sprite:=Sprite2D.new();sprite.texture=PROPS.lantern;var s:=78.0/PROPS.lantern.get_height()
+  sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-PROPS.lantern.get_width()*s*.5,-78)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
   var holder:=Node2D.new();holder.position=p;holder.add_child(sprite)
-  var glow_node:=Node2D.new();glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-40),90,Color(1,.68,.32,.3)));holder.add_child(glow_node)
-  add_child(holder);culled.append({"node":holder,"rect":Rect2(p-Vector2(60,90),Vector2(120,110))})
- # 둔갑 사물(군집)
+  var glow_node:=Node2D.new();glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-46),96,Color(1,.68,.32,.26)));holder.add_child(glow_node)
+  add_child(holder);culled.append({"node":holder,"rect":Rect2(p-Vector2(70,100),Vector2(140,120))})
+ # 둔갑 사물(군집): 같은 부드러운 그림자를 공유한다.
  for data in L.OBJECTS:
-  var shadow:=Node2D.new();shadow.z_index=-2;shadow.position=data.p;shadow.draw.connect(func()->void:
-   var side: float=16.0 if data.kind!="cat" else 11.0
-   shadow.draw_set_transform(Vector2(0,1),0,Vector2(1,.36));shadow.draw_circle(Vector2.ZERO,side,Color(.01,.01,.03,.45));shadow.draw_set_transform(Vector2.ZERO,0,Vector2.ONE))
-  add_child(shadow)
+  var visual: Dictionary=L.form_visual(String(data.kind))
+  var shadow_side: float=float(visual.shadow)
+  shadow(data.p+Vector2(0,1),Vector2(shadow_side*2.6,shadow_side*1.15),.9)
   var texture: Texture2D=PROPS.get(data.kind,PROPS.jar)
   var sprite:=Sprite2D.new();sprite.texture=texture
-  var target_height: float=44.0 if data.kind=="cat" else (52.0 if data.kind=="stele" else 46.0)
+  var target_height: float=float(visual.height)
   var s: float=target_height/texture.get_height()
   sprite.scale=Vector2(s,s);sprite.centered=false
   sprite.position=Vector2(-texture.get_width()*s*.5,-target_height)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
   var holder:=Node2D.new();holder.position=data.p;holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(data.p-Vector2(40,70),Vector2(80,90))})
-  # 사물 이름 라벨은 화면을 가려 쓰지 않는다. 가까우면 옅은 빛테만 남긴다.
 ## 실내에 들어가면 방 바깥을 어두운 밤안개로 덮어 시야를 차단한다.
 func draw_interior_fog(node: Node2D,rect: Rect2) -> void:
  var step:=46.0
@@ -289,7 +328,6 @@ func draw_effects() -> void:
    effects.draw_rect(Rect2(frame.position+Vector2(0,-2),Vector2(frame.size.x,5)),Color(1,.9,.58,.34*open*pulse))
    Art.glow(effects,center,74,Color(1,.68,.3,.24*open))
   # 화면을 가리던 월드 팝업(문 열기·둔갑 가능·손 아이콘·사물 이름)은 없앴다.
-  # 둔갑 가능 여부는 도사에게만, 가까운 사물에 옅은 빛테로만 알린다.
   var near:=L.object_near(observer,96)
   if not near.is_empty() and not human.is_empty() and String(human.get("role",""))=="daoist":
    var ready: bool=String(human.get("character",""))!="" and float(human.buff.get("transform",0.0))<=rules.elapsed and String(human.get("form",""))==""
@@ -298,7 +336,6 @@ func draw_effects() -> void:
     Art.glow(effects,near.p+Vector2(0,-14),30,Color(.75,.9,1,.10+.05*pulse))
     effects.draw_arc(near.p+Vector2(0,-2),20,.15*PI,.85*PI,18,Color(.82,.92,1,.34+.16*pulse),2.0,true)
 func hand(_node: Node2D,_at: Vector2) -> void:
- # 월드 위 손 아이콘은 쓰지 않는다(화면을 가림).
  pass
 func tag(node: Node2D,at: Vector2,text: String,color: Color) -> void:
  var width: float=54.0+text.length()*11.0
