@@ -236,7 +236,7 @@ func run() -> void:
  check(side_daoist.players.human.role=="daoist","preferred daoist side is honoured")
  check(side_daoist.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist").size()==6,"daoist count stays at six")
  var Market=preload("res://scripts/survival/market.gd")
- check(Market.shop_items("skin").size()==1 and String(Market.shop_items("skin")[0].id)=="default","skin shop keeps only the default robe")
+ check(Market.shop_items("skin").size()==6 and String(Market.shop_items("skin")[0].id)=="default","skin shop keeps six robes, default free")
  check(Market.skin("moon").get("id","")=="moon","legacy skin ids still resolve for saved data")
  var manifest: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/woo/ingame/frames.json"))
  var walk_ok:=true
@@ -269,7 +269,9 @@ func run() -> void:
   var sy: float=sprite_node.sprite.scale.y/sprite_node.base_scale
   var sx: float=sprite_node.sprite.scale.x/sprite_node.base_scale
   low=minf(low,minf(sy,sx));high=maxf(high,maxf(sy,sx))
-  bob_low=minf(bob_low,sprite_node.sprite.position.y);bob_high=maxf(bob_high,sprite_node.sprite.position.y)
+  # 4x4 시트는 발끝 앵커(sheet_base)만큼 위로 올라가 있으므로 그 기준으로 바운스를 잰다.
+  var bob_y: float=sprite_node.sprite.position.y-sprite_node.sheet_base.y
+  bob_low=minf(bob_low,bob_y);bob_high=maxf(bob_high,bob_y)
  check(low>=.975 and high<=1.03,"walk squash stays within about 2.5% so the feet stay on the ground")
  check(IngameSprite.WALK_BOUNCE<=2.0 and IngameSprite.RUN_BOUNCE<=3.0,"walk/run vertical bounce toned down for the new walk frames")
  check(absf(bob_low)<=3.0 and absf(bob_high)<=3.0,"walk bob stays within a few pixels")

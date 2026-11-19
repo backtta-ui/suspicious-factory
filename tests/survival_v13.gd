@@ -27,8 +27,11 @@ func run() -> void:
  check(not r.select_character("human",C.catalog(role)[1].id),"confirmed choice locks")
  check(r.selection_view("human").all(func(p: Dictionary)->bool:return r.players[p.id].role==role),"opponent selection private")
  for i in range(250):
-  if r.phase=="loading":break
+  if r.phase=="ready":break
   r.tick(.1)
+ check(r.phase=="ready" and r.ready_left>2.0 and r.ready_left<=3.0,"all confirmed wait for the short ready countdown")
+ for i in range(35):r.tick(.1)
+ check(r.phase=="loading","ready countdown hands over to map loading")
  r.ready_map();check(not r.command("human","move",{"vector":Vector2.RIGHT}),"countdown blocks input")
  for i in range(30):r.tick(.1)
  r.tick(.001);check(r.phase=="live" and r.elapsed<.01,"three seconds before ten-minute clock")

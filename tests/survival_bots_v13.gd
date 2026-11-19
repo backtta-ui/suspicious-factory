@@ -9,7 +9,10 @@ func run() -> void:
   var r:=R.new(count+3)
   for i in range(count):r.add("human" if i==0 else str(i),"도사%d"%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[(i+1)%4].id)
   r.players.human.ready=true;r.start()
-  for i in range(251):r.tick(.1)
+  # 2.0.27: 확정 뒤 3초 준비 카운트다운을 거쳐 로딩으로 넘어간다.
+  for i in range(320):
+   if r.phase=="loading":break
+   r.tick(.1)
   r.ready_map()
   var bots: Array=[]
   for i in range(1,count):bots.append(preload("res://scripts/survival/bot.gd").new(r,nav,str(i),i))

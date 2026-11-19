@@ -5,8 +5,15 @@ extends RefCounted
 ## 2.0.19: 스킨 상점은 기본 도포 한 종만 노출한다.
 ## 캐릭터 외형을 나중에 바꿀 수 있으므로 예전 색상 스킨은 판매 목록에서 뺐다.
 ## (저장 데이터 호환을 위해 예전 id의 색상 값은 LEGACY_SKINS에 그대로 남긴다.)
+## 2.0.27: 도감에서 바로 갈아입을 수 있도록 도포 스킨을 판매 목록으로 되살렸다.
+## 구매는 마켓(코인)에서만, 장착은 도감·마켓 어디서든 할 수 있다.
 const SKINS=[
- {"id":"default","name":"기본 도포","price":0,"color":"ffffff","desc":"캐릭터 원화 본연의 색입니다."}]
+ {"id":"default","name":"기본 도포","price":0,"color":"ffffff","desc":"캐릭터 원화 본연의 색입니다."},
+ {"id":"moon","name":"달빛 도포","price":450,"color":"cfe0ff","desc":"달빛을 머금은 옅은 청백색으로 물듭니다."},
+ {"id":"lotus","name":"연꽃 도포","price":600,"color":"ffc9d8","desc":"연꽃빛 분홍이 감도는 도포."},
+ {"id":"ink","name":"먹빛 도포","price":750,"color":"9aa0c8","desc":"밤 먹물처럼 깊게 가라앉은 색."},
+ {"id":"ember","name":"불꽃 도포","price":900,"color":"ffb27a","desc":"홍련의 불씨를 닮은 주황빛."},
+ {"id":"jade","name":"옥빛 도포","price":1100,"color":"a8f0d8","desc":"서원의 이끼 낀 옥빛."}]
 const LEGACY_SKINS=[
  {"id":"moon","name":"달빛 도포","price":450,"color":"cfe0ff","desc":"달빛을 머금은 옅은 청백색으로 물듭니다."},
  {"id":"lotus","name":"연꽃 도포","price":600,"color":"ffc9d8","desc":"연꽃빛 분홍이 감도는 도포."},

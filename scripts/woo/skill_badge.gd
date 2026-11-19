@@ -6,6 +6,8 @@ const INDEX={"attack":0,"jump":1,"dodge":2,"talisman":3,"jar":4,"transform":4,"b
 var skill:="attack"
 var remaining:=0.0
 var maximum:=1.0
+## 궁극기 배지: 시간 대신 '모은 기운'을 채워지는 호로만 보여 준다.
+var fill_mode:=false
 var locked:=false
 var glow:=0.0
 var previous_remaining:=0.0
@@ -25,7 +27,13 @@ func _draw() -> void:
   var cell:=Vector2(SHEET.get_width()/4.0,SHEET.get_height()/4.0)
   var extent:=radius*1.7
   draw_texture_rect_region(SHEET,Rect2(center-Vector2.ONE*extent/2,Vector2.ONE*extent),Rect2(Vector2(index%4,floori(index/4.0))*cell,cell),Color(.4,.4,.5,.8) if remaining>0 or unavailable else Color.WHITE)
- if remaining>0:
+ if fill_mode:
+  var charge: float=clampf(1.0-remaining/maxf(maximum,.01),0,1)
+  draw_arc(center,radius-2,-PI/2,-PI/2+TAU*charge,48,Color("ffe6a8") if charge>=.999 else Color("c79bff"),4,true)
+  if charge>=.999:
+   draw_string_outline(FONT,center+Vector2(-17,7),"READY",HORIZONTAL_ALIGNMENT_LEFT,-1,15,3,Color("121528"))
+   draw_string(FONT,center+Vector2(-17,7),"READY",HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff0c9"))
+ elif remaining>0:
   draw_arc(center,radius-2,-PI/2,-PI/2+TAU*clampf(remaining/maxf(maximum,.01),0,1),48,Color("7fbded"),4,true)
   draw_string_outline(FONT,center+Vector2(-13,8),"%.1f"%remaining,HORIZONTAL_ALIGNMENT_LEFT,-1,20,3,Color("121528"))
   draw_string(FONT,center+Vector2(-13,8),"%.1f"%remaining,HORIZONTAL_ALIGNMENT_LEFT,-1,20,Color("fff0c9"))

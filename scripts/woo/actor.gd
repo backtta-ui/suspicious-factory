@@ -43,7 +43,13 @@ var ingame_art:=false:
 var ingame_sprite: Node2D
 var extracted_visual: SealEnvironmentAsset
 const SKILL_SHEET=preload("res://assets/woo/v20/skills.png")
-const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
+const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png"),"dog":preload("res://assets/woo/seowon/prop_crate.png")}
+## 2.0.27: 맵을 실제로 걷는 고양이·강아지의 2프레임 걷기 원화. 둔갑하면 그 동물과
+## 같은 원화·같은 걷기 박자로 움직인다.
+const C=preload("res://scripts/survival/characters.gd")
+var animal_textures: Dictionary={}
+const ANIMAL_KINDS=["cat","dog"]
+const ANIMAL_HEIGHT={"cat":40.0,"dog":46.0}
 var dash_left:=0.0
 var dash_direction:=Vector2.ZERO
 var combat_frozen:=false
@@ -208,6 +214,38 @@ func update_sprite() -> void:
 		if is_instance_valid(ingame_sprite):ingame_sprite.visible=appearance_form=="" or appearance_form=="human"
 	if appearance_form.begins_with("seowon:"):
 		var form_kind:=appearance_form.trim_prefix("seowon:")
+		if form_kind in ANIMAL_KINDS:
+			# 동물 둔갑: 맵의 고양이·강아지와 같은 4x4 걷기 시트를 같은 박자로 재생한다.
+			var sheet: Dictionary=C.animal_sheet(form_kind)
+			var animal_height: float=float(ANIMAL_HEIGHT.get(form_kind,40.0))
+			var local_animal: float=animal_height/maxf(costume_scale,.01)
+			if not sheet.is_empty():
+				var sheet_path: String=String(sheet.get("sheet",""))
+				var animal_sheet_texture: Texture2D=animal_textures.get(sheet_path)
+				if animal_sheet_texture==null:animal_sheet_texture=load(sheet_path);animal_textures[sheet_path]=animal_sheet_texture
+				var cell: Array=sheet.get("cell",[300,260])
+				var rows: Array=sheet.get("rows",["front","left","right","back"])
+				var animal_view: String="front"
+				if facing==0 or facing==1 or facing==7:animal_view="right"
+				elif facing==3 or facing==4 or facing==5:animal_view="left"
+				elif facing==6:animal_view="back"
+				var row: int=maxi(0,rows.find(animal_view))
+				var cols: int=int(sheet.get("cols",4))
+				var column: int=posmod(int(floor(gait_phase/(PI*.62))),cols) if gait_weight>.05 else 0
+				var extent:=Vector2(float(cell[0]),float(cell[1]))
+				var animal_scale: float=local_animal/maxf(1.0,float(sheet.get("target_height",44.0)))
+				sprite.texture=animal_sheet_texture;sprite.region_enabled=true
+				sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(row)*extent.y),extent)
+				sprite.centered=false;sprite.offset=Vector2.ZERO
+				sprite.scale=Vector2(animal_scale,animal_scale)
+				var foot: Array=sheet.get("foot",[150.0,232.0])
+				sprite.position=-Vector2(float(foot[0]),float(foot[1]))*animal_scale
+				sprite.flip_h=false
+			form_height=animal_height
+			sprite.visible=true
+			sprite.modulate=Color("e5d8ff") if transforming>0 else Color.WHITE
+			if is_instance_valid(extracted_visual):extracted_visual.visible=false
+			return
 		var form_texture: Texture2D=SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar)
 		# 맵 사물과 같은 월드 높이. 액터 배율만큼 나눠 로컬 크기를 맞춘다.
 		var local_height: float=form_height/maxf(costume_scale,.01)

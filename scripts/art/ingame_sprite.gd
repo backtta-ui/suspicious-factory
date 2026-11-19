@@ -8,6 +8,10 @@ extends Node2D
 ## (1) 2박자 수직 바운스, (2) 닿는 순간의 스쿼시-스트레치, (3) 진행 방향 기울기,
 ## (4) 발밑 흙먼지, (5) 달릴 때의 바람 자국, (6) 방향 전환 탄성을 함께 그린다.
 const MANIFEST_PATH="res://assets/woo/ingame/frames.json"
+const C=preload("res://scripts/survival/characters.gd")
+## 2.0.27 4x4 걷기 시트: 방향(행) x 프레임(열). 셀 안 발끝 앵커(160,350)에 맞춰
+## 그리므로 프레임이 바뀌어도 캐릭터가 흔들리지 않는다. 4프레임을 10~12fps로 재생한다.
+const SHEET_SWING=0.62
 const SHADOW=Color(.01,.02,.05,.42)
 ## 2.5D 걷기 프레임(walk1·idle·walk2)을 쓰면서 2.0.21에 보행 바운스·기울기·
 ## 스쿼시를 발이 땅에 붙는 수준으로 낮췄다. 예전 정지 원화 시절 값(5.5/9.0,
@@ -29,6 +33,11 @@ const LEAN={0:1.0,1:0.55,2:0.0,3:-0.55,4:-1.0,5:-0.55,6:0.0,7:0.55}
 static var manifest: Dictionary={}
 var actor: WooActor
 var sprite: Sprite2D
+## 2.0.27 보행 개선: 상체와 하체(다리)를 나눠 그려 팔·다리가 실제로 움직이게 한다.
+## 정지 상태에서는 두 조각의 오프셋이 0이라 원화 한 장과 픽셀 단위로 같다.
+var legs: Sprite2D
+const BODY_SPLIT=0.72
+const LEGS_TOP=0.62
 var current_key:=""
 var landing:=0.0
 var previous_height:=0.0
@@ -45,9 +54,37 @@ var turn:=0.0
 var textures: Dictionary={}
 var pose_name:="idle"
 var current_pose:=""
+## 걷기 시트 사용 상태
+var sheet_data: Dictionary={}
+var sheet_key:=""
+var sheet_mode:=false
+var sheet_base:=Vector2.ZERO
+var last_column:=-1
+func sheet_for(id: String) -> Dictionary:
+ if sheet_key==id:return sheet_data
+ sheet_key=id
+ sheet_data=C.walk_sheet(C.fallback_art(id))
+ return sheet_data
+func sheet_rows(sheet: Dictionary) -> Array:
+ var rows: Array=sheet.get("rows",["front","left","right","back"])
+ return rows
+## 8방향 → 시트 행. 대각선은 옆모습을 써서 진행 방향이 읽히게 한다.
+func sheet_view(facing: int) -> String:
+ match posmod(facing,8):
+  0:return "right"
+  1:return "right"
+  2:return "front"
+  3:return "left"
+  4:return "left"
+  5:return "left"
+  6:return "back"
+  7:return "right"
+ return "front"
 func _ready() -> void:
  sprite=Sprite2D.new();sprite.name="IngameArt";sprite.centered=true;sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  add_child(sprite)
+ legs=Sprite2D.new();legs.name="IngameLegs";legs.centered=true;legs.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+ add_child(legs)
  if manifest.is_empty():load_manifest()
 func load_manifest() -> void:
  if not FileAccess.file_exists(MANIFEST_PATH):return
@@ -66,8 +103,16 @@ func frame_entry(data: Dictionary,entry: Dictionary,pose: String) -> Dictionary:
  if pose=="walk2" and walk.size()>1:return walk[1]
  return entry
 func set_pose(facing: int,id: String,pose: String="idle") -> void:
+ var sheet:=sheet_for(id)
+ if not sheet.is_empty():
+  set_sheet_pose(facing,sheet,pose)
+  return
+ sheet_mode=false
+ sheet_base=Vector2.ZERO
+ if is_instance_valid(legs):legs.visible=true
  var data:=data_for(id)
  if data.is_empty():sprite.visible=false;return
+
  var view: String=VIEW.get(posmod(facing,8),"front")
  var directions: Dictionary=data.get("directions",{})
  var entry: Dictionary=directions.get(view,{})
@@ -84,15 +129,67 @@ func set_pose(facing: int,id: String,pose: String="idle") -> void:
    textures[cache_key]=texture
   sprite.texture=texture;last_texture=texture
   var height: float=float(frame.size[1])
+  var width: float=float(frame.size[0])
   var scale_value: float=float(frame.get("scale",data.get("scale",1.0)))
   sprite.scale=Vector2(scale_value,scale_value)
-  sprite.offset=Vector2(0,-height/2.0)
   base_scale=scale_value
+  # 상체(머리·팔)와 하체(허리·다리)를 겹쳐 나눈다. 두 조각을 합치면 원화 한 장과 같다.
+  var split:=is_instance_valid(legs)
+  if split:
+   sprite.region_enabled=true
+   sprite.region_rect=Rect2(0,0,width,height*BODY_SPLIT)
+   sprite.offset=Vector2(0,-height*(1.0-BODY_SPLIT*0.5))
+   legs.texture=texture
+   legs.region_enabled=true
+   legs.region_rect=Rect2(0,height*LEGS_TOP,width,height*(1.0-LEGS_TOP))
+   legs.offset=Vector2(0,-height*(1.0-LEGS_TOP)*0.5)
+   legs.scale=Vector2(scale_value,scale_value)
+   legs.visible=true
+  else:
+   sprite.region_enabled=false
+   sprite.offset=Vector2(0,-height/2.0)
  pose_name=pose
  sprite.flip_h=bool(FLIP.get(posmod(facing,8),false))
  sprite.modulate=actor.skin_tint if actor!=null else Color.WHITE
  sprite.visible=true
+ if is_instance_valid(legs):legs.flip_h=sprite.flip_h;legs.modulate=sprite.modulate
 
+
+func set_sheet_pose(facing: int,sheet: Dictionary,pose: String) -> void:
+ var rows: Array=sheet_rows(sheet)
+ var sheet_view_name: String=sheet_view(facing)
+ var row: int=rows.find(sheet_view_name)
+ if row<0:row=0
+ var cols: int=int(sheet.get("cols",4))
+ var column: int=0
+ if pose!="idle" and cols>1:
+  column=posmod(int(floor(actor.gait_phase/(PI*SHEET_SWING))),cols) if actor!=null else 0
+ var cell: Array=sheet.get("cell",[320,380])
+ var extent:=Vector2(float(cell[0]),float(cell[1]))
+ var path: String=String(sheet.get("sheet",""))
+ var sheet_texture: Texture2D=textures.get(path)
+ if sheet_texture==null:
+  sheet_texture=load(path)
+  textures[path]=sheet_texture
+ var cache_key: String="%s:%s:%d:%d"%[path,sheet_view_name,column,row]
+ if cache_key!=current_pose:
+  current_pose=cache_key;current_key="%s:%s"%[path,sheet_view_name];last_column=column
+  sprite.texture=sheet_texture
+  sprite.region_enabled=true
+  sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(row)*extent.y),extent)
+  sprite.centered=false
+  sprite.offset=Vector2.ZERO
+  var scale_value: float=float(sheet.get("target_height",56.0))/maxf(1.0,float(sheet.get("height",300.0)))
+  base_scale=scale_value
+  sprite.scale=Vector2(scale_value,scale_value)
+  var foot: Array=sheet.get("foot",[160.0,350.0])
+  sheet_base=-Vector2(float(foot[0]),float(foot[1]))*scale_value
+  sheet_mode=true
+  if is_instance_valid(legs):legs.visible=false
+ sprite.flip_h=false
+ sprite.modulate=actor.skin_tint if actor!=null else Color.WHITE
+ sprite.visible=true
+ pose_name=pose
 ## 발이 땅에 닿는 순간마다 발밑 먼지를 뿌린다(걷기 1~2개, 달리기 3~4개).
 func _spawn_dust(running: bool) -> void:
  var count:=3 if running else 1
@@ -172,10 +269,28 @@ func _process(delta: float) -> void:
  var cast_amount: float=clampf(cast/.3,0,0.999)
  if cast>0.0:
   stretch*=1.04;width*=1.03;tilt-=0.10*cast_amount
- sprite.position=Vector2(0,bob-height)
- sprite.rotation=tilt
+ # 다리 조각은 걸음 박자에 맞춰 앞뒤로 흔들리고, 상체는 그 반대로 살짝 비껴간다.
+ # 정지(weight=0)면 두 조각 모두 기준 위치라 원화와 똑같다.
+ var stride: float=0.0
+ var hip_lift: float=0.0
+ if weight>.02 and height<=2.0:
+  stride=sin(phase)*0.020*weight
+  hip_lift=-absf(sin(phase))*0.006*weight
+ if sheet_mode:
+  # 시트 프레임이 이미 팔·다리를 흔들므로 바운스는 절반만 얹는다.
+  sprite.position=sheet_base+Vector2(-stride*0.45,bob*0.45-height)
+  sprite.rotation=tilt*0.5
+ else:
+  sprite.position=Vector2(-stride*0.45, bob-height)
+  sprite.rotation=tilt
  # 배율은 텍스처 기준값을 유지한 채 스쿼시·호흡만 곱한다.
  sprite.scale=Vector2(base_scale*width*breathe,base_scale*stretch*breathe)
+ if is_instance_valid(legs):
+  var leg_width: float=base_scale*width*breathe
+  legs.scale=Vector2(leg_width,base_scale*(1.0+(stretch-1.0)*0.55)*breathe)
+  legs.position=Vector2(stride, bob*0.75+hip_lift-height)
+  legs.rotation=tilt*0.35
+  legs.modulate=sprite.modulate
  var animated_particles: bool=not dust.is_empty() or not wind.is_empty()
  _tick_particles(delta)
  # 안드로이드 발열·렉 방지: _draw() 내용(그림자·먼지·바람·시전 원)이 실제로

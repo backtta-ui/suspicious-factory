@@ -48,7 +48,7 @@ func run() -> void:
  for size in [Vector2i(1280,720),Vector2i(960,540),Vector2i(2400,1080)]:
   root.size=size;await frames(8)
   var view:=game.get_viewport().get_visible_rect()
-  for b in [game.run_button,game.jump_button,game.skill_button,game.action_button]:check(view.encloses(b.get_global_rect()),"HUD inside viewport "+str(size))
+  for b in [game.run_button,game.jump_button,game.skill_buttons["main"],game.skill_buttons["sub"],game.skill_buttons["ult"],game.action_button]:check(view.encloses(b.get_global_rect()),"HUD inside viewport "+str(size))
  root.size=Vector2i(1280,720);await frames(8)
  var down:=InputEventScreenTouch.new();down.index=51;down.pressed=true;down.position=game.stick.global_position+game.stick.size/2+Vector2(50,0);Input.parse_input_event(down)
  var second:=InputEventScreenTouch.new();second.index=52;second.pressed=true;second.position=game.run_button.get_global_rect().get_center();Input.parse_input_event(second);await frames(8)
@@ -78,6 +78,11 @@ func run() -> void:
   for p2 in r.players.values():p2.ready=true
   r.start();check(r.players.values().filter(func(p2: Dictionary)->bool:return p2.role=="yokai").size()==2,"two yokai at %d players"%count)
   check(r.selection_view("0").all(func(p2: Dictionary)->bool:return r.players[p2.id].role==r.players["0"].role),"only own-team selections published")
-  for i in range(251):r.tick(.1)
+  var saw_ready:=false
+  for i in range(320):
+   if r.phase=="ready":saw_ready=true
+   if r.phase=="loading":break
+   r.tick(.1)
+  check(saw_ready,"confirmations pass through the 3 second ready countdown")
   check(r.phase=="loading" and r.players.values().all(func(p2: Dictionary)->bool:return p2.confirmed and C.find(p2.character).team==p2.role),"25 seconds auto assign valid characters")
  print("2D CLEANUP: ",checks," checks / ",failures," failures");quit(1 if failures else 0)

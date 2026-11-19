@@ -20,6 +20,13 @@ func go(p: Vector2,target: Vector2) -> void:
  while not route.is_empty() and p.distance_to(route[0])<18:route.remove_at(0)
  var v: Vector2=p.direction_to(route[0]) if not route.is_empty() else Vector2.ZERO
  command("move",{"vector":v});command("run",{"held":v.length()>0 and rules.players[id].stamina>30})
+## 궁극기 기운이 차 있으면 궁극기, 아니면 대표/보조 스킬을 번갈아 쓴다.
+func prepare_skill(aim: Vector2) -> void:
+ var me: Dictionary=rules.players[id]
+ var slot: String="main"
+ if float(me.get("ult",0.0))>=rules.ULT_MAX:slot="ult"
+ elif wait<-0.6:slot="sub"
+ command("skill",{"aim":aim,"slot":slot})
 func think(delta: float) -> void:
  var me: Dictionary=rules.players[id]
  if not rules.available(me):return
@@ -33,7 +40,7 @@ func think(delta: float) -> void:
    var threat: Vector2=threats[0].position
    var away: Vector2=(p-threat).normalized()
    go(p,rules.L.safe(p+away*230+away.orthogonal()*60*sin(index)))
-   if wait<=0:command("skill",{"aim":away});wait=1.1
+   if wait<=0:prepare_skill(away);wait=1.1
    return
   var prisoners: Array=actors.filter(func(a: Dictionary)->bool:return a.captured and a.id!="")
   if not prisoners.is_empty():
@@ -41,7 +48,7 @@ func think(delta: float) -> void:
    if p.distance_to(q.position)<55:command("move",{"vector":Vector2.ZERO});command("rescue",{"target":q.id})
    else:go(p,q.position)
    return
-  if wait<=0 and rules.C.find(me.character).active=="transform":
+  if wait<=0 and String(rules.C.ability(me.character,"main").get("skill",""))=="transform":
    if command("skill"):wait=5;command("move",{"vector":Vector2.ZERO});return
   var points: Array=[Vector2(620,1000),Vector2(1080,1360),Vector2(2260,760),Vector2(2820,1000),Vector2(3040,1880),Vector2(2400,2350),Vector2(1200,2380),Vector2(400,2300),Vector2(300,900),Vector2(1700,600),Vector2(2900,1400),Vector2(1700,1800)]
   var target: Vector2=rules.L.safe(points[(index+patrol)%points.size()])
@@ -55,7 +62,7 @@ func think(delta: float) -> void:
   if not targets.is_empty():
    var q: Dictionary=targets[0];go(p,q.position)
    if wait<=0 and p.distance_to(q.position)<220:
-    command("skill",{"aim":p.direction_to(q.position)});wait=1.1
+    prepare_skill(p.direction_to(q.position));wait=1.1
    return
   # Search real props/decoys without consulting hidden transformed player IDs.
   var objects: Array=rules.L.OBJECTS

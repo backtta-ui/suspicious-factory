@@ -24,6 +24,13 @@ const DETAIL_GRASS=preload("res://assets/woo/seowon/seowon_detail_grass.png")
 const DETAIL_STONE=preload("res://assets/woo/seowon/seowon_detail_stone.png")
 const DETAIL_YARD=preload("res://assets/woo/seowon/seowon_detail_yard.png")
 const PROPS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
+## 2.0.27 맵을 실제로 걷는 고양이·강아지: 4행(front/left/right/back) x 4열 걷기 시트.
+## 둔갑하면 이 시트와 같은 박자를 그대로 복사한다.
+const C=preload("res://scripts/survival/characters.gd")
+const ANIMAL_HEIGHT={"cat":44.0,"dog":46.0}
+const ANIMAL_SHADOW={"cat":9.0,"dog":12.0}
+var animal_textures: Dictionary={}
+var animal_nodes: Array=[]
 var observer:=L.SPAWN
 var roofs: Array=[]
 var clock:=0.0
@@ -249,8 +256,9 @@ func _process(delta: float) -> void:
  if water_tick>=.1:water_tick=0;water.queue_redraw();if is_instance_valid(orbs):orbs.queue_redraw()
  update_buildings(delta)
  var near:=L.object_near(observer,150)
+ update_animals()
  fx_tick+=delta
- var busy: bool=aim_active or (rules!=null and not rules.effects.is_empty()) or not String(L.door_near(observer)).is_empty() or not near.is_empty()
+ var busy: bool=aim_active or (rules!=null and (not rules.effects.is_empty() or not rules.walkers.is_empty() or not rules.traps.is_empty() or not rules.marks.is_empty() or rules.dark_until>rules.elapsed or rules.map_dark_until>rules.elapsed)) or not String(L.door_near(observer)).is_empty() or not near.is_empty()
  if busy and fx_tick>=1.0/20.0:fx_tick=0;effects_dirty=true
  if effects_dirty:effects_dirty=false;effects.queue_redraw()
 func update_buildings(delta: float) -> void:
@@ -294,6 +302,85 @@ func draw_orbs() -> void:
   orbs.draw_circle(at,7.0,Color(.72,.94,1,.95))
   orbs.draw_circle(at,3.4,Color(1,1,1,.92))
   orbs.draw_arc(at,11+pulse*3,0,TAU,18,Color(.62,.9,1,.34),1.4,true)
+## 걷는 동물: rules.walkers의 위치를 그대로 그린다(4방향 x 4프레임 걷기 시트).
+func update_animals() -> void:
+ if rules==null:return
+ var walkers: Array=rules.walkers
+ while animal_nodes.size()<walkers.size():
+  var sprite:=Sprite2D.new();sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+  sprite.centered=false;sprite.z_index=0
+  add_child(sprite)
+  animal_nodes.append(sprite)
+ for i in range(animal_nodes.size()):
+  var sprite: Sprite2D=animal_nodes[i]
+  if i>=walkers.size():sprite.visible=false;continue
+  var entry: Dictionary=walkers[i]
+  var kind: String=String(entry.kind)
+  var sheet: Dictionary=C.animal_sheet(kind)
+  if sheet.is_empty():sprite.visible=false;continue
+  var path: String=String(sheet.get("sheet",""))
+  var texture: Texture2D=animal_textures.get(path)
+  if texture==null:texture=load(path);animal_textures[path]=texture
+  var cell: Array=sheet.get("cell",[300,260])
+  var rows: Array=sheet.get("rows",["front","left","right","back"])
+  var direction: int=int(entry.facing)
+  var view: String="front"
+  if direction==0 or direction==1 or direction==7:view="right"
+  elif direction==3 or direction==4 or direction==5:view="left"
+  elif direction==6:view="back"
+  var row: int=maxi(0,rows.find(view))
+  var cols: int=int(sheet.get("cols",4))
+  var column: int=posmod(int(floor(float(entry.phase)/(PI*.62))),cols) if bool(entry.moving) else 0
+  var extent:=Vector2(float(cell[0]),float(cell[1]))
+  var height: float=float(ANIMAL_HEIGHT.get(kind,44.0))
+  var scale_value: float=height/maxf(1.0,float(sheet.get("target_height",44.0)))
+  sprite.texture=texture;sprite.region_enabled=true
+  sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(row)*extent.y),extent)
+  sprite.scale=Vector2(scale_value,scale_value)
+  var foot: Array=sheet.get("foot",[150.0,232.0])
+  sprite.position=(entry.p as Vector2)-Vector2(float(foot[0]),float(foot[1]))*scale_value
+  sprite.visible=true
+## 둔갑 가능 표시: 대상 사물·동물 주위의 금빛 링과 '둔갑 가능' 표시.
+func form_target() -> Dictionary:
+ if rules==null:return {}
+ var human: Dictionary=rules.players.get("human",{})
+ if human.is_empty() or String(human.get("role",""))!="daoist" or String(human.get("form",""))!="":return {}
+ var p: Vector2=observer
+ var best: Dictionary={};var gap:=96.0
+ for object in L.OBJECTS:
+  var d: float=p.distance_to(object.p)
+  if d<gap:gap=d;best={"kind":String(object.kind),"p":object.p,"animal":false}
+ for entry in rules.walkers:
+  var d: float=p.distance_to(entry.p)
+  if d<gap:gap=d;best={"kind":String(entry.kind),"p":entry.p,"animal":true}
+ return best
+func draw_form_target(node: Node2D,target: Dictionary) -> void:
+ var pulse: float=.5+.5*sin(clock*3.4)
+ var base: Vector2=target.p
+ var gold:=Color(1,.84,.42)
+ var height: float=float(ANIMAL_HEIGHT.get(String(target.kind),48.0)) if bool(target.animal) else float(L.form_visual(String(target.kind)).height)
+ # 바닥의 금빛 외곽선과 펄스 링
+ node.draw_set_transform(base,0,Vector2(1,.42))
+ node.draw_arc(Vector2.ZERO,22+pulse*4,0,TAU,32,Color(gold.r,gold.g,gold.b,.85),2.6,true)
+ node.draw_arc(Vector2.ZERO,30+pulse*10,0,TAU,36,Color(gold.r,gold.g,gold.b,.22+.18*(1-pulse)),3.2,true)
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 사물 실루엣을 따라 도는 밝은 테두리(위→아래 두 겹)
+ for i in range(2):
+  var radius: float=14.0+height*.42+i*4.0
+  var alpha: float=(.30 if i==0 else .16)+pulse*.20
+  node.draw_arc(base-Vector2(0,height*.45),radius,PI*1.08,PI*1.92,24,Color(gold.r,gold.g,gold.b,alpha),2.2-i*.6,true)
+ for i in range(6):
+  var a:=i*TAU/6+clock*1.6
+  var spark:=base+Vector2.from_angle(a)*(24+height*.36)+Vector2(0,-height*.5)
+  node.draw_circle(spark,1.7,Color(1,.94,.72,.55+.35*pulse))
+ # 선명한 '둔갑 가능' 표시(사물 위)
+ var label:="둔갑 가능"
+ var width: float=112.0
+ var box:=Rect2(base-Vector2(width*.5,height+34.0+pulse*3.0),Vector2(width,26))
+ node.draw_rect(box,Color(.05,.04,.02,.86))
+ node.draw_rect(box,Color(gold.r,gold.g,gold.b,.9),false,1.6)
+ node.draw_string(TITLE_FONT,box.position+Vector2(0,19),label,HORIZONTAL_ALIGNMENT_CENTER,width,17,Color(1,.92,.68))
+ node.draw_colored_polygon(PackedVector2Array([Vector2(base.x-6,box.end.y),Vector2(base.x+6,box.end.y),Vector2(base.x,box.end.y+7)]),Color(gold.r,gold.g,gold.b,.9))
 func draw_effects() -> void:
  if aim_active:
   var origin: Vector2=rules.players.human.position
@@ -327,14 +414,69 @@ func draw_effects() -> void:
     effects.draw_rect(frame.grow(4+i*4),Color(1,.8,.42,.44*open*(1-i*.2)),false,2)
    effects.draw_rect(Rect2(frame.position+Vector2(0,-2),Vector2(frame.size.x,5)),Color(1,.9,.58,.34*open*pulse))
    Art.glow(effects,center,74,Color(1,.68,.3,.24*open))
-  # 화면을 가리던 월드 팝업(문 열기·둔갑 가능·손 아이콘·사물 이름)은 없앴다.
-  var near:=L.object_near(observer,96)
-  if not near.is_empty() and not human.is_empty() and String(human.get("role",""))=="daoist":
+  # 둔갑 가능 표시: 사물·동물 주위 금빛 링 + 떠 있는 안내(2.0.27).
+  var target:=form_target()
+  if not target.is_empty():
    var ready: bool=String(human.get("character",""))!="" and float(human.buff.get("transform",0.0))<=rules.elapsed and String(human.get("form",""))==""
-   if ready:
-    var pulse: float=.5+.5*sin(clock*3.2)
-    Art.glow(effects,near.p+Vector2(0,-14),30,Color(.75,.9,1,.10+.05*pulse))
-    effects.draw_arc(near.p+Vector2(0,-2),20,.15*PI,.85*PI,18,Color(.82,.92,1,.34+.16*pulse),2.0,true)
+   if ready:draw_form_target(effects,target)
+  draw_detection(effects)
+  draw_traps(effects)
+## 요괴의 감지(발자국·표식·탐지)와 어둠을 바닥에 그린다.
+func draw_detection(node: Node2D) -> void:
+ var human: Dictionary=rules.players.get("human",{})
+ var sense: bool=rules.trail_all_until>rules.elapsed or (human.get("role","")=="daoist" and float(human.buff.get("sense",0.0))>rules.elapsed)
+ if sense:
+  for p in rules.players.values():
+   if p.role!="daoist" or p.eliminated or p.id=="human":continue
+   for i in range(p.trail.size()):
+    var mark: Dictionary=p.trail[i]
+    var age: float=rules.elapsed-float(mark.time)
+    var alpha: float=clampf(1.0-age/6.0,0,1)*.55
+    var facing: float=float(mark.facing)*PI/4
+    node.draw_set_transform(mark.position,0,Vector2(1,.5))
+    node.draw_arc(Vector2.ZERO,7,0,TAU,12,Color(.55,.9,1,alpha*.5),1.4,true)
+    node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+    node.draw_line(mark.position-Vector2.from_angle(facing)*5,mark.position+Vector2.from_angle(facing)*5,Color(.7,.95,1,alpha*.7),1.6,true)
+ for mark in rules.marks:
+  if String(mark.get("kind",""))=="glow":
+   var target: Dictionary=rules.players.get(String(mark.get("target","")),{})
+   if target.is_empty():continue
+   var pulse: float=.5+.5*sin(clock*3.0)
+   node.draw_set_transform(target.position,0,Vector2(1,.45))
+   node.draw_arc(Vector2.ZERO,20+pulse*6,0,TAU,26,Color(.85,1,.92,.5+.3*pulse),2.2,true)
+   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  else:
+   var pulse2: float=.5+.5*sin(clock*2.4)
+   node.draw_set_transform(mark.pos,0,Vector2(1,.42))
+   node.draw_arc(Vector2.ZERO,14+pulse2*5,0,TAU,24,Color(1,.9,.6,.5),2.0,true)
+   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ for mark in rules.pings:
+  var t: float=clampf((float(mark.until)-rules.elapsed)/3.0,0,1)
+  node.draw_set_transform(mark.pos,0,Vector2(1,.45))
+  node.draw_arc(Vector2.ZERO,18+(1.0-t)*50,0,TAU,30,Color(1,.85,.55,.34*t+.14),2.4,true)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+## 덫·어둠 표시.
+func draw_traps(node: Node2D) -> void:
+ for t in rules.traps:
+  var pulse: float=.5+.5*sin(clock*2.8+float(t.pos.x)*.01)
+  node.draw_set_transform(t.pos,0,Vector2(1,.45))
+  var color:=Color(1,.8,.4,.55) if String(t.kind)=="pressure" else Color(1,.9,.55,.65)
+  node.draw_arc(Vector2.ZERO,float(t.radius),0,TAU,28,color,2.0,true)
+  node.draw_arc(Vector2.ZERO,float(t.radius)*(.6+pulse*.3),0,TAU,24,Color(color.r,color.g,color.b,.32),1.4,true)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 등불끄기·무월야: 화면 전체와 주변을 어둡게 덮는다.
+ var dark_alpha:=0.0
+ if rules.map_dark_until>rules.elapsed:dark_alpha=maxf(dark_alpha,.42)
+ if rules.dark_until>rules.elapsed:
+  var t: float=clampf((rules.dark_until-rules.elapsed)/9.0,0,1)
+  var radius: float=rules.dark_radius*(1.0+(1.0-t)*.1)
+  Art.glow(node,rules.dark_center,radius,Color(.02,.01,.06,.55))
+  node.draw_circle(rules.dark_center,radius*.5,Color(.02,.015,.05,.42))
+ if dark_alpha>0.01:
+  var camera:=get_viewport().get_camera_2d()
+  var center: Vector2=camera.get_screen_center_position() if camera!=null else rules.players.human.position
+  var view: Vector2=get_viewport().get_visible_rect().size/(camera.zoom if camera!=null else Vector2.ONE)
+  Art.glow(node,center,view.length()*.72,Color(.01,.01,.03,dark_alpha))
 func hand(_node: Node2D,_at: Vector2) -> void:
  pass
 func tag(node: Node2D,at: Vector2,text: String,color: Color) -> void:

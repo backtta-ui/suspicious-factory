@@ -76,7 +76,7 @@ func run() -> void:
  check(is_instance_valid(game.ui.find_child("ShopTab_character",true,false)),"shop has a character tab")
  check(is_instance_valid(game.ui.find_child("ShopTab_skin",true,false)) and is_instance_valid(game.ui.find_child("ShopTab_aura",true,false)),"shop has skin and title tabs")
  # 2.0.19: 스킨 상점은 기본 도포 1종만 노출한다. 예전 색상 스킨 id는 저장 데이터 호환용으로 남는다.
- check(Market.shop_items("skin").size()==1 and String(Market.shop_items("skin")[0].id)=="default","skin shop only lists the default robe")
+ check(Market.shop_items("skin").size()==6 and String(Market.shop_items("skin")[0].id)=="default","skin shop lists the default robe plus five coin robes")
  var moon: Dictionary=Market.skin("moon")
  game.market_buy(moon,"skin");await frames(2)
  check(game.storage.owns("moon") and game.storage.equipped("skin")=="moon","skin unlock and equip")
@@ -93,7 +93,7 @@ func run() -> void:
  game.market_buy(Market.EFFECTS[1],"effect");await frames(2)
  check(game.storage.equipped("effect")=="gold","aura effect equips")
  # 캐릭터 해금: 잠긴 캐릭터를 코인으로 사고 그 팀 대표로 장착한다
- var locked: String="daoist:muyeong"
+ var locked: String="daoist:jangyeongsil"
  check(not game.storage.owns_character(locked),"locked character starts unowned")
  var before_coins:=int(game.storage.data.coins)
  game.shop_buy_character(locked);await frames(2)
@@ -105,12 +105,12 @@ func run() -> void:
  # 2.0.22: 상점 해금은 보유만 하고, 대표 캐릭터는 매칭 후 선택창에서 고른다.
  var rep_before:=String(game.storage.data.daoist)
  game.storage.data.coins=3000
- game.shop_unlock_character("daoist:hongryeon")
- check(game.storage.owns_character("daoist:hongryeon"),"shop unlock records the character")
+ game.shop_unlock_character("daoist:jangyeongsil")
+ check(game.storage.owns_character("daoist:jangyeongsil"),"shop unlock records the character")
  check(String(game.storage.data.daoist)==rep_before,"shop unlock leaves the team representative untouched")
  check(game.owned_characters("daoist").has(locked),"owned character appears in the selection pool")
  game.storage.data.coins=50;game.shop_buy_character("yokai:haechi");await frames(2)
- check(game.modal!=null and not game.storage.owns_character("yokai:haechi"),"character purchase without coins is refused")
+ check(game.modal!=null and not game.storage.owns_character("yokai:yagwangwi"),"character purchase without coins is refused")
  game.close_popup()
  # 5) 업적·우편·알림: 실제 진행도와 보상
  game.storage.data.stats.matches=3;game.storage.data.coins=0
