@@ -92,14 +92,14 @@ func run() -> void:
  check(game.storage.equipped("title")=="first_seal","title equips and shows in state")
  game.market_buy(Market.EFFECTS[1],"effect");await frames(2)
  check(game.storage.equipped("effect")=="gold","aura effect equips")
- # 캐릭터 해금: 잠긴 캐릭터를 코인으로 사고 그 팀 대표로 장착한다
+ # 2.0.28 체험판: 10인 전원이 기본 해금이라 해금 구매 없이 대표만 바뀐다.
  var locked: String="daoist:jangyeongsil"
- check(not game.storage.owns_character(locked),"locked character starts unowned")
+ check(game.storage.owns_character(locked),"every character is unlocked in the trial build")
  var before_coins:=int(game.storage.data.coins)
  game.shop_buy_character(locked);await frames(2)
  check(game.storage.owns_character(locked),"character unlock is recorded")
- check(String(game.storage.data.daoist)==locked,"unlocked character becomes the team representative")
- check(int(game.storage.data.coins)==before_coins-Market.character_price(locked),"character price is taken from coins")
+ check(String(game.storage.data.daoist)==locked,"choosing a character becomes the team representative")
+ check(int(game.storage.data.coins)==before_coins and Market.character_price(locked)==0,"an owned character costs no coins in the trial build")
  var owned_now:=Storage.new()
  check(owned_now.owns_character(locked),"character unlock persists to disk")
  # 2.0.22: 상점 해금은 보유만 하고, 대표 캐릭터는 매칭 후 선택창에서 고른다.
@@ -109,9 +109,8 @@ func run() -> void:
  check(game.storage.owns_character("daoist:jangyeongsil"),"shop unlock records the character")
  check(String(game.storage.data.daoist)==rep_before,"shop unlock leaves the team representative untouched")
  check(game.owned_characters("daoist").has(locked),"owned character appears in the selection pool")
- game.storage.data.coins=50;game.shop_buy_character("yokai:haechi");await frames(2)
- check(game.modal!=null and not game.storage.owns_character("yokai:yagwangwi"),"character purchase without coins is refused")
- game.close_popup()
+ game.storage.data.coins=50;game.shop_buy_character("yokai:yagwangwi");await frames(2)
+ check(int(game.storage.data.coins)==50 and game.storage.owns_character("yokai:yagwangwi"),"the trial build never charges coins for a character")
  # 5) 업적·우편·알림: 실제 진행도와 보상
  game.storage.data.stats.matches=3;game.storage.data.coins=0
  game.build("achievements");await frames(3)

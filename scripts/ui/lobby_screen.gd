@@ -206,7 +206,7 @@ func figure(parent: Node,id: String,extent: Vector2,tint: Color=Color.WHITE) -> 
 	actor.collision_layer=0
 	actor.collision_mask=0
 	actor.ingame_art=true
-	actor.art_id=id.trim_prefix("yokai:").trim_prefix("daoist:")
+	actor.art_id=C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"))
 	actor.skin_tint=tint
 	actor.scale=Vector2.ONE*minf(4.6,maxf(.6,extent.y/74.0))
 	holder.add_child(actor)

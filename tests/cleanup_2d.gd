@@ -48,7 +48,10 @@ func run() -> void:
  for size in [Vector2i(1280,720),Vector2i(960,540),Vector2i(2400,1080)]:
   root.size=size;await frames(8)
   var view:=game.get_viewport().get_visible_rect()
-  for b in [game.run_button,game.jump_button,game.skill_buttons["main"],game.skill_buttons["sub"],game.skill_buttons["ult"],game.action_button]:check(view.encloses(b.get_global_rect()),"HUD inside viewport "+str(size))
+  for b in [game.run_button,game.jump_button,game.skill_buttons["main"],game.skill_buttons["sub"],game.skill_buttons["ult"]]:check(view.encloses(b.get_global_rect()),"HUD inside viewport "+str(size))
+  for key in game.action_buttons:
+   var context_button: Button=game.action_buttons[key]
+   if context_button.visible:check(view.encloses(context_button.get_global_rect()),"context action inside viewport "+key+str(size))
  root.size=Vector2i(1280,720);await frames(8)
  var down:=InputEventScreenTouch.new();down.index=51;down.pressed=true;down.position=game.stick.global_position+game.stick.size/2+Vector2(50,0);Input.parse_input_event(down)
  var second:=InputEventScreenTouch.new();second.index=52;second.pressed=true;second.position=game.run_button.get_global_rect().get_center();Input.parse_input_event(second);await frames(8)

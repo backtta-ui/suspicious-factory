@@ -27,10 +27,16 @@ const PROPS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":prelo
 ## 2.0.27 맵을 실제로 걷는 고양이·강아지: 4행(front/left/right/back) x 4열 걷기 시트.
 ## 둔갑하면 이 시트와 같은 박자를 그대로 복사한다.
 const C=preload("res://scripts/survival/characters.gd")
-const ANIMAL_HEIGHT={"cat":44.0,"dog":46.0}
-const ANIMAL_SHADOW={"cat":9.0,"dog":12.0}
+## 2.0.28: 맵 위 고양이·강아지를 사물 크기(22~26px)로 대폭 줄였다. 걷기 시트의
+## 원화 키(sheet.height)로 배율을 계산하므로 시트를 바꿔도 크기가 유지된다.
+const ANIMAL_HEIGHT={"cat":22.0,"dog":26.0}
+const ANIMAL_SHADOW={"cat":5.0,"dog":6.0}
 var animal_textures: Dictionary={}
 var animal_nodes: Array=[]
+var animal_shadows: Array=[]
+## 등불끄기(어둑시니)·도깨비장난(도깨비)이 실제로 바꾸는 맵 오브젝트.
+var lantern_holders: Array=[]
+var prop_holders: Array=[]
 var observer:=L.SPAWN
 var roofs: Array=[]
 var clock:=0.0
@@ -42,6 +48,8 @@ var ground: Node2D
 var under: Node2D
 var water: Node2D
 var effects: Node2D
+## 캐릭터 발밑(액터 아래)에서 그리는 바닥 장치 레이어(덫·미끼).
+var floor_fx: Node2D
 var orbs: Node2D
 var buildings: Array=[]
 var door_open: Dictionary={}
@@ -65,6 +73,8 @@ func _ready() -> void:
  build_buildings()
  build_garden()
  water=Node2D.new();water.z_index=-88;water.draw.connect(func()->void:Art.draw_water_glints(water,L.POND,clock));add_child(water)
+ # 2.0.28: 덫·보물함 같은 바닥 장치는 캐릭터(액터)보다 아래에 깔아 몸을 가리지 않는다.
+ floor_fx=Node2D.new();floor_fx.name="FloorFx";floor_fx.z_index=-58;floor_fx.draw.connect(draw_floor);add_child(floor_fx)
  effects=Node2D.new();effects.z_index=8;effects.draw.connect(draw_effects);add_child(effects)
  orbs=Node2D.new();orbs.z_index=-70;orbs.draw.connect(draw_orbs);add_child(orbs)
 ## 부드러운 접지 그림자 한 장. (center=발밑, size=가로세로 지름)
@@ -212,8 +222,10 @@ func build_garden() -> void:
   var holder:=Node2D.new();holder.position=p;holder.add_child(sprite)
   var glow_node:=Node2D.new();glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-46),96,Color(1,.68,.32,.26)));holder.add_child(glow_node)
   add_child(holder);culled.append({"node":holder,"rect":Rect2(p-Vector2(70,100),Vector2(140,120))})
+  lantern_holders.append({"node":holder,"glow":glow_node})
  # 둔갑 사물(군집): 같은 부드러운 그림자를 공유한다.
- for data in L.OBJECTS:
+ for object_index in range(L.OBJECTS.size()):
+  var data: Dictionary=L.OBJECTS[object_index]
   var visual: Dictionary=L.form_visual(String(data.kind))
   var shadow_side: float=float(visual.shadow)
   shadow(data.p+Vector2(0,1),Vector2(shadow_side*2.6,shadow_side*1.15),.9)
@@ -225,6 +237,7 @@ func build_garden() -> void:
   sprite.position=Vector2(-texture.get_width()*s*.5,-target_height)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
   var holder:=Node2D.new();holder.position=data.p;holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(data.p-Vector2(40,70),Vector2(80,90))})
+  prop_holders.append({"node":holder,"index":object_index,"base":holder.rotation})
 ## 실내에 들어가면 방 바깥을 어두운 밤안개로 덮어 시야를 차단한다.
 func draw_interior_fog(node: Node2D,rect: Rect2) -> void:
  var step:=46.0
@@ -257,10 +270,13 @@ func _process(delta: float) -> void:
  update_buildings(delta)
  var near:=L.object_near(observer,150)
  update_animals()
+ update_props()
  fx_tick+=delta
  var busy: bool=aim_active or (rules!=null and (not rules.effects.is_empty() or not rules.walkers.is_empty() or not rules.traps.is_empty() or not rules.marks.is_empty() or rules.dark_until>rules.elapsed or rules.map_dark_until>rules.elapsed)) or not String(L.door_near(observer)).is_empty() or not near.is_empty()
  if busy and fx_tick>=1.0/20.0:fx_tick=0;effects_dirty=true
- if effects_dirty:effects_dirty=false;effects.queue_redraw()
+ if effects_dirty:
+  effects_dirty=false;effects.queue_redraw()
+  if is_instance_valid(floor_fx):floor_fx.queue_redraw()
 func update_buildings(delta: float) -> void:
  var room:=L.interior_at(observer,6)
  current_interior=String(room.get("id",""))
@@ -311,35 +327,47 @@ func update_animals() -> void:
   sprite.centered=false;sprite.z_index=0
   add_child(sprite)
   animal_nodes.append(sprite)
+  var shade:=Sprite2D.new();shade.texture=SHADOW_TEX;shade.centered=true
+  shade.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;shade.modulate=Color(1,1,1,.72)
+  under.add_child(shade)
+  animal_shadows.append(shade)
  for i in range(animal_nodes.size()):
   var sprite: Sprite2D=animal_nodes[i]
-  if i>=walkers.size():sprite.visible=false;continue
+  var shade: Sprite2D=animal_shadows[i] if i<animal_shadows.size() else null
+  if i>=walkers.size():
+   sprite.visible=false
+   if shade!=null:shade.visible=false
+   continue
   var entry: Dictionary=walkers[i]
   var kind: String=String(entry.kind)
   var sheet: Dictionary=C.animal_sheet(kind)
-  if sheet.is_empty():sprite.visible=false;continue
+  if sheet.is_empty():
+   sprite.visible=false
+   if shade!=null:shade.visible=false
+   continue
   var path: String=String(sheet.get("sheet",""))
   var texture: Texture2D=animal_textures.get(path)
   if texture==null:texture=load(path);animal_textures[path]=texture
   var cell: Array=sheet.get("cell",[300,260])
   var rows: Array=sheet.get("rows",["front","left","right","back"])
-  var direction: int=int(entry.facing)
-  var view: String="front"
-  if direction==0 or direction==1 or direction==7:view="right"
-  elif direction==3 or direction==4 or direction==5:view="left"
-  elif direction==6:view="back"
-  var row: int=maxi(0,rows.find(view))
+  var mapped: Dictionary=C.sheet_row(rows,int(entry.facing))
+  var row: int=int(mapped.row)
   var cols: int=int(sheet.get("cols",4))
   var column: int=posmod(int(floor(float(entry.phase)/(PI*.62))),cols) if bool(entry.moving) else 0
   var extent:=Vector2(float(cell[0]),float(cell[1]))
-  var height: float=float(ANIMAL_HEIGHT.get(kind,44.0))
-  var scale_value: float=height/maxf(1.0,float(sheet.get("target_height",44.0)))
+  var height: float=float(ANIMAL_HEIGHT.get(kind,22.0))
+  var scale_value: float=height/maxf(1.0,C.sheet_art_height(sheet))
   sprite.texture=texture;sprite.region_enabled=true
   sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(row)*extent.y),extent)
   sprite.scale=Vector2(scale_value,scale_value)
   var foot: Array=sheet.get("foot",[150.0,232.0])
   sprite.position=(entry.p as Vector2)-Vector2(float(foot[0]),float(foot[1]))*scale_value
   sprite.visible=true
+  if shade!=null:
+   var shadow_size: float=float(ANIMAL_SHADOW.get(kind,6.0))
+   shade.position=(entry.p as Vector2)+Vector2(0,1)
+   shade.scale=Vector2(shadow_size*2.4/SHADOW_TEX.get_width(),shadow_size*1.1/SHADOW_TEX.get_height())
+   shade.visible=true
 ## 둔갑 가능 표시: 대상 사물·동물 주위의 금빛 링과 '둔갑 가능' 표시.
 func form_target() -> Dictionary:
  if rules==null:return {}
@@ -354,6 +382,21 @@ func form_target() -> Dictionary:
   var d: float=p.distance_to(entry.p)
   if d<gap:gap=d;best={"kind":String(entry.kind),"p":entry.p,"animal":true}
  return best
+## 등불끄기·도깨비장난이 실제로 만든 변화를 그림에 반영한다.
+func update_props() -> void:
+ if rules==null:return
+ var doused: bool=float(rules.lantern_until.get("all",0.0))>rules.elapsed
+ for entry in lantern_holders:
+  var node: Node2D=entry.node
+  if not is_instance_valid(node):continue
+  node.modulate=Color(.44,.42,.54,1.0) if doused else Color.WHITE
+  var glow: Node2D=entry.glow
+  if is_instance_valid(glow):glow.visible=not doused
+ for entry in prop_holders:
+  var node: Node2D=entry.node
+  if not is_instance_valid(node):continue
+  var flipped: bool=float(rules.prop_flips.get(int(entry.index),0.0))>rules.elapsed
+  node.rotation=(-1.08 if int(entry.index)%2==0 else 1.02) if flipped else float(entry.base)
 func draw_form_target(node: Node2D,target: Dictionary) -> void:
  var pulse: float=.5+.5*sin(clock*3.4)
  var base: Vector2=target.p
@@ -373,14 +416,7 @@ func draw_form_target(node: Node2D,target: Dictionary) -> void:
   var a:=i*TAU/6+clock*1.6
   var spark:=base+Vector2.from_angle(a)*(24+height*.36)+Vector2(0,-height*.5)
   node.draw_circle(spark,1.7,Color(1,.94,.72,.55+.35*pulse))
- # 선명한 '둔갑 가능' 표시(사물 위)
- var label:="둔갑 가능"
- var width: float=112.0
- var box:=Rect2(base-Vector2(width*.5,height+34.0+pulse*3.0),Vector2(width,26))
- node.draw_rect(box,Color(.05,.04,.02,.86))
- node.draw_rect(box,Color(gold.r,gold.g,gold.b,.9),false,1.6)
- node.draw_string(TITLE_FONT,box.position+Vector2(0,19),label,HORIZONTAL_ALIGNMENT_CENTER,width,17,Color(1,.92,.68))
- node.draw_colored_polygon(PackedVector2Array([Vector2(base.x-6,box.end.y),Vector2(base.x+6,box.end.y),Vector2(base.x,box.end.y+7)]),Color(gold.r,gold.g,gold.b,.9))
+ # 화면을 가리는 글자 상자는 쓰지 않는다. 둔갑은 상황 버튼(둔갑)이 알려 준다.
 func draw_effects() -> void:
  if aim_active:
   var origin: Vector2=rules.players.human.position
@@ -393,10 +429,23 @@ func draw_effects() -> void:
   for i in range(72):
    if i%2==0:effects.draw_arc(circle.next_center,circle.next_radius,i*TAU/72,(i+1)*TAU/72,4,Color(.6,.72,1,.1),1,true)
   var human: Dictionary=rules.players.get("human",{})
+  if not human.is_empty() and rules.hidden(human) and float(human.buff.get("painting",0.0))>rules.elapsed:
+   # 화중은신: 본인 화면에서만 족자와 먹물 잔상이 감돈다(남에게는 그려지지 않는다).
+   var at: Vector2=human.position
+   var pulse: float=.5+.5*sin(clock*3.0)
+   effects.draw_set_transform(at,0,Vector2(1,.45))
+   effects.draw_arc(Vector2.ZERO,16+pulse*4,0,TAU,26,Color(.16,.1,.24,.32),2.0,true)
+   effects.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+   var box:=Rect2(at-Vector2(13,58+pulse*2.0),Vector2(26,54))
+   effects.draw_rect(box,Color(.9,.84,.7,.16))
+   effects.draw_rect(box,Color(.6,.45,.25,.35),false,1.2)
+   for i in range(3):
+    effects.draw_circle(at+Vector2(sin(clock*2.2+i*2.1)*10,-18-i*9),2.0,Color(.1,.08,.16,.35))
   if not human.is_empty() and human.buff.get("sense",0)>rules.elapsed:
    var marks: Array=[]
    for p in rules.players.values():
     if p.id=="human":continue
+    if rules.hidden(p):continue
     for i in range(p.trail.size()):
      var mark: Dictionary=p.trail[i]
      if mark.position.distance_to(human.position)<220:marks.append([mark.position.x,mark.position.y,mark.facing*PI/4,i%2,rules.elapsed-mark.time])
@@ -428,6 +477,7 @@ func draw_detection(node: Node2D) -> void:
  if sense:
   for p in rules.players.values():
    if p.role!="daoist" or p.eliminated or p.id=="human":continue
+   if rules.hidden(p):continue
    for i in range(p.trail.size()):
     var mark: Dictionary=p.trail[i]
     var age: float=rules.elapsed-float(mark.time)
@@ -455,28 +505,109 @@ func draw_detection(node: Node2D) -> void:
   node.draw_set_transform(mark.pos,0,Vector2(1,.45))
   node.draw_arc(Vector2.ZERO,18+(1.0-t)*50,0,TAU,30,Color(1,.85,.55,.34*t+.14),2.4,true)
   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
-## 덫·어둠 표시.
-func draw_traps(node: Node2D) -> void:
+## 바닥 장치(압력기관·가짜보물)는 액터보다 아래 층에서 그린다.
+func draw_floor() -> void:
+ if rules==null:return
  for t in rules.traps:
   var pulse: float=.5+.5*sin(clock*2.8+float(t.pos.x)*.01)
-  node.draw_set_transform(t.pos,0,Vector2(1,.45))
-  var color:=Color(1,.8,.4,.55) if String(t.kind)=="pressure" else Color(1,.9,.55,.65)
-  node.draw_arc(Vector2.ZERO,float(t.radius),0,TAU,28,color,2.0,true)
-  node.draw_arc(Vector2.ZERO,float(t.radius)*(.6+pulse*.3),0,TAU,24,Color(color.r,color.g,color.b,.32),1.4,true)
-  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  var reach: float=float(t.radius)
+  if String(t.kind)=="pressure":
+   pressure_trap(floor_fx,t.pos,reach,pulse)
+  else:
+   treasure_trap(floor_fx,t.pos,reach,pulse)
+## 어둠(등불끄기·무월야)은 화면 위 레이어에서 덮는다.
+func draw_traps(node: Node2D) -> void:
  # 등불끄기·무월야: 화면 전체와 주변을 어둡게 덮는다.
  var dark_alpha:=0.0
  if rules.map_dark_until>rules.elapsed:dark_alpha=maxf(dark_alpha,.42)
  if rules.dark_until>rules.elapsed:
   var t: float=clampf((rules.dark_until-rules.elapsed)/9.0,0,1)
-  var radius: float=rules.dark_radius*(1.0+(1.0-t)*.1)
-  Art.glow(node,rules.dark_center,radius,Color(.02,.01,.06,.55))
-  node.draw_circle(rules.dark_center,radius*.5,Color(.02,.015,.05,.42))
+  var dark_reach: float=rules.dark_radius*(1.0+(1.0-t)*.1)
+  Art.glow(node,rules.dark_center,dark_reach,Color(.02,.01,.06,.55))
+  node.draw_circle(rules.dark_center,dark_reach*.5,Color(.02,.015,.05,.42))
  if dark_alpha>0.01:
   var camera:=get_viewport().get_camera_2d()
   var center: Vector2=camera.get_screen_center_position() if camera!=null else rules.players.human.position
   var view: Vector2=get_viewport().get_visible_rect().size/(camera.zoom if camera!=null else Vector2.ONE)
   Art.glow(node,center,view.length()*.72,Color(.01,.01,.03,dark_alpha))
+## 압력기관: 바닥 그림자 위에 청동 톱니 테두리·팔각 압력판·나사 핀·옥빛 맥동.
+func pressure_trap(node: Node2D,at: Vector2,radius: float,pulse: float) -> void:
+ var bronze:=Color(.78,.60,.32)
+ var bronze_dark:=Color(.36,.27,.14)
+ var jade:=Color(.62,.94,.78)
+ # 1) 바닥 그림자
+ node.draw_set_transform(at+Vector2(0,3),0,Vector2(1,.45))
+ node.draw_circle(Vector2.ZERO,radius*1.06,Color(.01,.02,.04,.42))
+ node.draw_circle(Vector2.ZERO,radius*.86,Color(.02,.03,.06,.35))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ node.draw_set_transform(at,0,Vector2(1,.45))
+ # 2) 바깥 청동 테
+ node.draw_circle(Vector2.ZERO,radius,Color(.10,.09,.08,.92))
+ node.draw_arc(Vector2.ZERO,radius,0,TAU,44,bronze,3.4,true)
+ node.draw_arc(Vector2.ZERO,radius-3.0,0,TAU,44,bronze_dark,1.6,true)
+ # 3) 돌아가는 톱니 12개
+ for i in range(12):
+  var a:=i*TAU/12+clock*.7
+  var inner:=Vector2.from_angle(a)*(radius-1.0)
+  var outer:=Vector2.from_angle(a)*(radius+5.0)
+  node.draw_line(inner,outer,bronze,3.0,true)
+  node.draw_circle(outer,1.5,Color(1,.86,.52,.85))
+ # 4) 안쪽 청동 고리와 팔각 압력판
+ node.draw_circle(Vector2.ZERO,radius*.62,Color(.09,.10,.09,.9))
+ node.draw_arc(Vector2.ZERO,radius*.62,0,TAU,36,bronze_dark,2.0,true)
+ var plate: Array=PackedVector2Array()
+ for i in range(8):
+  plate.append(Vector2.from_angle(i*TAU/8+PI/8)*radius*.44)
+ node.draw_colored_polygon(plate,Color(.16,.18,.18,.95))
+ for i in range(8):
+  var a0:=Vector2.from_angle(i*TAU/8+PI/8)*radius*.44
+  var a1:=Vector2.from_angle((i+1)*TAU/8+PI/8)*radius*.44
+  node.draw_line(a0,a1,bronze,.0+2.2,true)
+ # 5) 중심 옥빛 맥동 + 나사 핀
+ node.draw_circle(Vector2.ZERO,radius*.17,Color(.04,.06,.06,.95))
+ node.draw_circle(Vector2.ZERO,radius*.13+pulse*1.6,Color(jade.r,jade.g,jade.b,.55+.35*pulse))
+ node.draw_arc(Vector2.ZERO,radius*.3+pulse*3.0,0,TAU,26,Color(jade.r,jade.g,jade.b,.18+.16*(1.0-pulse)),1.6,true)
+ for i in range(4):
+  var a:=i*TAU/4+PI/4
+  var pin:=Vector2.from_angle(a)*radius*.5
+  node.draw_circle(pin,2.2,bronze)
+  node.draw_circle(pin,.9,Color(.12,.10,.07))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 6) 은은한 황금 기운
+ Art.glow(node,at,radius*1.5,Color(1,.82,.45,.10+.06*pulse))
+## 가짜보물: 금빛 보물함·자물쇠·반짝이는 별빛 입자.
+func treasure_trap(node: Node2D,at: Vector2,radius: float,pulse: float) -> void:
+ var gold:=Color(.96,.78,.36)
+ var wood:=Color(.30,.21,.11)
+ # 바닥 그림자와 금빛 웅덩이
+ node.draw_set_transform(at+Vector2(0,2),0,Vector2(1,.45))
+ node.draw_circle(Vector2.ZERO,radius*.95,Color(.01,.02,.04,.40))
+ node.draw_circle(Vector2.ZERO,radius*.7,Color(gold.r,gold.g,gold.b,.10+.05*pulse))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ var box:=Rect2(at-Vector2(radius*.78,radius*.62),Vector2(radius*1.56,radius*.92))
+ node.draw_rect(box,wood)
+ node.draw_rect(Rect2(box.position,Vector2(box.size.x,box.size.y*.34)),Color(.38,.27,.13))
+ node.draw_rect(box,gold,false,2.2)
+ node.draw_line(Vector2(box.position.x,box.position.y+box.size.y*.34),Vector2(box.end.x,box.position.y+box.size.y*.34),gold,1.6,true)
+ # 금빛 테두리 장식과 자물쇠
+ for i in range(3):
+  var x:=box.position.x+box.size.x*(.22+.28*float(i))
+  node.draw_line(Vector2(x,box.position.y+2),Vector2(x,box.end.y-2),Color(gold.r,gold.g,gold.b,.55),1.4,true)
+ var lock:=Rect2(at-Vector2(4,4),Vector2(8,9))
+ node.draw_rect(lock,gold)
+ node.draw_rect(lock,Color(.35,.24,.08),false,1.0)
+ node.draw_arc(Vector2(at.x,lock.position.y),3.4,PI,TAU,10,gold,1.4,true)
+ node.draw_circle(Vector2(at.x,lock.position.y+4),1.4,Color(.25,.16,.05))
+ # 반짝이는 별빛
+ for i in range(7):
+  var a:=i*TAU/7+clock*1.3
+  var r: float=radius*(.75+.35*(float((i*37)%11)/11.0))+pulse*3.0
+  var star:=at+Vector2.from_angle(a)*r+Vector2(0,-radius*.55)
+  var size:=1.4+1.3*pulse
+  node.draw_line(star-Vector2(size,0),star+Vector2(size,0),Color(1,.95,.72,.85),1.0,true)
+  node.draw_line(star-Vector2(0,size),star+Vector2(0,size),Color(1,.95,.72,.85),1.0,true)
+  node.draw_circle(star,.8,Color(1,1,.94,.95))
+ Art.glow(node,at+Vector2(0,-6),radius*1.6,Color(1,.86,.48,.14+.08*pulse))
 func hand(_node: Node2D,_at: Vector2) -> void:
  pass
 func tag(node: Node2D,at: Vector2,text: String,color: Color) -> void:

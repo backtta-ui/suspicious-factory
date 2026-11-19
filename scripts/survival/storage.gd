@@ -28,6 +28,14 @@ func _init() -> void:
  for team in ["daoist","yokai"]:
   # A save written before a roster change falls back to that team's first entry.
   if roster.find(data[team]).is_empty():data[team]=roster.catalog(team)[0].id
+ # 2.0.28 테스트·체험 단계: 도사 5인 · 요괴 5인 10명 전원을 저장 상태와 무관하게
+ # 기본 해금한다(캐릭터 선택·빠른 매치·연습에서 모두 바로 고를 수 있다).
+ var owned: Array=data.characters.owned
+ for team in ["daoist","yokai"]:
+  for entry in roster.catalog(team):
+   var id: String=String(entry.id)
+   if not owned.has(id):owned.append(id)
+ data.characters.owned=owned
  data.music=clampf(data.music,0,1);data.sfx=clampf(data.sfx,0,1);data.sensitivity=clampf(data.sensitivity,.6,1.5)
 func backup_legacy() -> void:
  var dir:="user://legacy-backup-v13"

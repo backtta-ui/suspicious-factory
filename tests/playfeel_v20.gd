@@ -121,9 +121,14 @@ func run() -> void:
  check(owned_reads_buy,"owned character card reads 보유")
  var shop_cta: Button=game.shop.action_button
  check(shop_cta!=null and String(shop_cta.text)=="보유 중" and shop_cta.disabled,"owned character CTA is a finished 보유 중 button")
- game.shop.select_item("daoist:muyeong");await frames(3)
- shop_cta=game.shop.action_button
- check(shop_cta!=null and String(shop_cta.text)=="해금하기" and not shop_cta.disabled,"locked character CTA offers 해금하기")
+ # 2.0.28 체험판: 10인 전원 해금이라 어느 캐릭터를 골라도 CTA가 '보유 중'이다.
+ var all_owned:=true
+ for team in ["daoist","yokai"]:
+  for entry in C.catalog(team):
+   game.shop.select_item(String(entry.id));await frames(2)
+   shop_cta=game.shop.action_button
+   if shop_cta==null or String(shop_cta.text)!="보유 중" or not shop_cta.disabled:all_owned=false
+ check(all_owned,"every roster character is already unlocked in the trial build")
  game.shop.set_tab("skin");await frames(3)
  check(String(game.shop.action_button.text)!="보유 중","skin tab keeps its equip action")
  game.shop.set_tab("character");await frames(2)

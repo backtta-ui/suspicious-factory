@@ -1,6 +1,6 @@
 {
- "version": "2.0.27",
- "note": "4행(front/left/right/back) x 4열 프레임. 셀 안 캐릭터 키와 발끝 앵커로 그린다.",
+ "version": "2.0.28",
+ "note": "8행(정면·대각선 포함 8방향) x 4열 프레임. 셀 안 원화 키(height)와 발끝 앵커(foot)로 그린다. rows 순서: front, front_right, right, back_right, back, back_left, left, front_left. facing(0=동,1=남동,2=남,3=남서,4=서,5=북서,6=북,7=북동)이 rows의 이름을 그대로 찾는다.",
  "characters": {
   "woochi": {
    "sheet": "res://assets/woo/ingame/woochi_walk.png",
@@ -10,72 +10,13 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
-   ],
-   "cols": 4,
-   "foot": [
-    160,
-    350
-   ],
-   "height": 300,
-   "target_height": 56,
-   "fps": 11.0
-  },
-  "gumiho": {
-   "sheet": "res://assets/woo/ingame/gumiho_walk.png",
-   "cell": [
-    320,
-    380
-   ],
-   "rows": [
-    "front",
+    "back_right",
+    "back",
+    "back_left",
     "left",
-    "right",
-    "back"
-   ],
-   "cols": 4,
-   "foot": [
-    160,
-    350
-   ],
-   "height": 300,
-   "target_height": 56,
-   "fps": 11.0
-  },
-  "jangsanbeom": {
-   "sheet": "res://assets/woo/ingame/jangsanbeom_walk.png",
-   "cell": [
-    320,
-    380
-   ],
-   "rows": [
-    "front",
-    "left",
-    "right",
-    "back"
-   ],
-   "cols": 4,
-   "foot": [
-    160,
-    350
-   ],
-   "height": 300,
-   "target_height": 56,
-   "fps": 11.0
-  },
-  "dokkaebi": {
-   "sheet": "res://assets/woo/ingame/dokkaebi_walk.png",
-   "cell": [
-    320,
-    380
-   ],
-   "rows": [
-    "front",
-    "left",
-    "right",
-    "back"
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -94,9 +35,13 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -115,9 +60,13 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -136,9 +85,13 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -157,9 +110,88 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "gumiho": {
+   "sheet": "res://assets/woo/ingame/gumiho_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "jangsanbeom": {
+   "sheet": "res://assets/woo/ingame/jangsanbeom_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "dokkaebi": {
+   "sheet": "res://assets/woo/ingame/dokkaebi_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -178,9 +210,13 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -199,9 +235,13 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
@@ -222,16 +262,21 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
     150,
     232
    ],
-   "target_height": 44,
+   "height": 150,
+   "target_height": 22.0,
    "fps": 9.0
   },
   "dog": {
@@ -242,16 +287,21 @@
    ],
    "rows": [
     "front",
-    "left",
+    "front_right",
     "right",
-    "back"
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
    ],
    "cols": 4,
    "foot": [
     150,
     232
    ],
-   "target_height": 44,
+   "height": 150,
+   "target_height": 26.0,
    "fps": 9.0
   }
  }

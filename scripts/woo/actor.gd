@@ -7,6 +7,8 @@ var landing_left:=0.0
 var air_chain:=false
 var action_pose:=-1
 var action_left:=0.0
+## 마지막으로 사용한 도술 id. 발동 모션(시전 고리 색·형태)에 쓴다.
+var action_skill:=""
 var push_left:=0.0
 var push_direction:=Vector2.ZERO
 var hurt_left:=0.0
@@ -49,7 +51,8 @@ const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate
 const C=preload("res://scripts/survival/characters.gd")
 var animal_textures: Dictionary={}
 const ANIMAL_KINDS=["cat","dog"]
-const ANIMAL_HEIGHT={"cat":40.0,"dog":46.0}
+## 2.0.28: 둔갑한 고양이·강아지도 맵의 동물과 같은 22~26px 크기로 그린다.
+const ANIMAL_HEIGHT={"cat":22.0,"dog":26.0}
 var dash_left:=0.0
 var dash_direction:=Vector2.ZERO
 var combat_frozen:=false
@@ -225,15 +228,12 @@ func update_sprite() -> void:
 				if animal_sheet_texture==null:animal_sheet_texture=load(sheet_path);animal_textures[sheet_path]=animal_sheet_texture
 				var cell: Array=sheet.get("cell",[300,260])
 				var rows: Array=sheet.get("rows",["front","left","right","back"])
-				var animal_view: String="front"
-				if facing==0 or facing==1 or facing==7:animal_view="right"
-				elif facing==3 or facing==4 or facing==5:animal_view="left"
-				elif facing==6:animal_view="back"
-				var row: int=maxi(0,rows.find(animal_view))
+				var mapped: Dictionary=C.sheet_row(rows,facing)
+				var row: int=int(mapped.row)
 				var cols: int=int(sheet.get("cols",4))
 				var column: int=posmod(int(floor(gait_phase/(PI*.62))),cols) if gait_weight>.05 else 0
 				var extent:=Vector2(float(cell[0]),float(cell[1]))
-				var animal_scale: float=local_animal/maxf(1.0,float(sheet.get("target_height",44.0)))
+				var animal_scale: float=local_animal/maxf(1.0,C.sheet_art_height(sheet))
 				sprite.texture=animal_sheet_texture;sprite.region_enabled=true
 				sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(row)*extent.y),extent)
 				sprite.centered=false;sprite.offset=Vector2.ZERO
