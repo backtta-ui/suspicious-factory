@@ -568,7 +568,11 @@ func tick(delta: float) -> void:
   if p.jump>0:
    p.jump=maxf(0,p.jump-delta);p.height=sin((.8-p.jump)/.8*PI)*36
   else:p.height=0
-  var speed: float=C.find(p.character).run_speed if fast else C.find(p.character).speed
+  # 캐릭터가 아직 비어 있는 참가자(테스트·복구 중)도 기본 이동 성능으로 계속 움직인다.
+  var piece: Dictionary=C.find(p.character)
+  var walk_speed: float=float(piece.get("speed",135.0))
+  var dash_speed: float=float(piece.get("run_speed",210.0))
+  var speed: float=dash_speed if fast else walk_speed
   if p.stagger>elapsed or p.stun>elapsed:speed=0.0
   if p.slow_until>elapsed:speed*=float(p.slow_factor)
   if p.speed_until>elapsed:speed*=float(p.speed_factor)

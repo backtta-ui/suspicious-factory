@@ -19,8 +19,9 @@ func live_room(count: int=8,seed_value: int=17) -> RefCounted:
  for i in range(count):r.add("human" if i==0 else "bot-%d"%i,"참가자%d"%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[i%4].id)
  for p in r.players.values():p.ready=true
  r.start()
- for i in range(300):
-  if r.phase!="selection":break
+ # 2.0.27: selection → 3초 ready → loading 순서를 지켜 실제 매치로 들어간다.
+ for i in range(400):
+  if r.phase=="loading":break
   r.tick(.1)
  r.ready_map()
  for i in range(31):r.tick(.1)
@@ -137,20 +138,21 @@ func run() -> void:
    check(ResourceLoader.exists(path),"ingame art %s %s" % [id,direction])
  var actor:=Actor.new();actor.cosmetic=Looks.base_appearance("woochi");root.add_child(actor);actor.set_physics_process(false)
  actor.ingame_art=true;actor.art_id="woochi";actor.update_sprite()
- var mapping:=[[2,"front",false],[1,"front",true],[3,"front",false],[6,"back",false],[5,"back",false],[7,"back",true],[0,"right",false],[4,"left",false]]
- var mapped:=true;var flipped:=true
+ # 2.0.27: 4x4 걷기 시트의 행(front/left/right/back)으로 방향을 그린다(좌우반전 없음).
+ var mapping:=[[2,"front"],[1,"right"],[3,"left"],[6,"back"],[5,"left"],[7,"right"],[0,"right"],[4,"left"]]
+ var mapped:=true;var mirrored:=false
  for entry in mapping:
   actor.facing=int(entry[0]);actor.ingame_sprite._process(.016)
-  mapped=mapped and actor.ingame_sprite.current_key==String("woochi:"+String(entry[1]))
-  flipped=flipped and actor.ingame_sprite.sprite.flip_h==bool(entry[2])
- check(mapped,"south/diagonal use front, north uses back, east-west use side")
- check(flipped,"diagonal and east/west views flip with the movement direction")
+  mapped=mapped and actor.ingame_sprite.current_key.ends_with(":"+String(entry[1]))
+  mirrored=mirrored or actor.ingame_sprite.sprite.flip_h
+ check(mapped,"south uses front, north back, east/west and diagonals use the side rows")
+ check(not mirrored,"walk sheet rows replace mirroring")
  # 뒤돌아(북) 점프: 뒷모습 유지
  actor.facing=6;actor.jump_height=22;actor.jump_velocity=120;actor.update_sprite();actor.ingame_sprite._process(.016)
- check(actor.ingame_sprite.current_key=="woochi:back" and not actor.ingame_sprite.sprite.flip_h,"back view kept while jumping north")
- # 북서 대각선 점프: 뒷모습 + 반전 유지
+ check(actor.ingame_sprite.current_key.ends_with(":back") and not actor.ingame_sprite.sprite.flip_h,"back view kept while jumping north")
+ # 북서 대각선 점프: 옆모습 유지
  actor.facing=5;actor.jump_height=30;actor.update_sprite();actor.ingame_sprite._process(.016)
- check(actor.ingame_sprite.current_key=="woochi:back" and not actor.ingame_sprite.sprite.flip_h,"north-west diagonal jump keeps the back view")
+ check(actor.ingame_sprite.current_key.ends_with(":left") and not actor.ingame_sprite.sprite.flip_h,"north-west diagonal jump keeps the left row")
  check(actor.ingame_sprite.sprite.position.y<-20,"jump height lifts the sprite")
  check(actor.ingame_sprite.sprite.scale.x>0,"squash and stretch keep a positive scale")
  actor.jump_height=0;actor.jump_velocity=0;actor.update_sprite();actor.ingame_sprite._process(.016)
