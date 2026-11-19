@@ -203,8 +203,8 @@ func run() -> void:
  game.rules.players.human.role="daoist"
  game.rules.players.human.character="daoist:woochi"
  for member in game.rules.players.values():member.confirmed=true
- for i in range(60):
-  if game.rules.phase=="selection":game.rules.tick(.1)
+ for i in range(600):
+  if game.rules.phase in ["selection","ready"]:game.rules.tick(.1)
   await process_frame
  game.rules.ready_map()
  for i in range(600):
