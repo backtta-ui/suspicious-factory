@@ -66,6 +66,13 @@ var run_button: WooMobileButton
 var jump_button: WooMobileButton
 var skill_button: WooMobileButton
 var skill_badge: WooSkillBadge
+## 2.0.28: 범용 '상호작용' 버튼을 없앴다. 행동이 실제로 가능한 순간에만
+## 그 자리에 전용 버튼(문 열기 / 구출 / 둔갑 / 확인)이 하나씩 나타난다.
+var door_button: WooMobileButton
+var rescue_button: WooMobileButton
+var disguise_button: WooMobileButton
+var confirm_button: WooMobileButton
+var action_buttons: Dictionary={}
 ## 2.0.27: 대표·보조·궁극기 세 버튼과 각 배지.
 var skill_buttons: Dictionary={}
 var skill_badges: Dictionary={}
@@ -207,7 +214,7 @@ func panel(parent: Node) -> VBoxContainer:
  var box:=VBoxContainer.new();box.add_theme_constant_override("separation",12);frame.add_child(box);return box
 func portrait(parent: Node,id: String,extent: Vector2=Vector2(330,360)) -> Control:
  var holder:=Control.new();holder.custom_minimum_size=extent;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;holder.size_flags_horizontal=Control.SIZE_EXPAND_FILL;holder.mouse_filter=Control.MOUSE_FILTER_IGNORE;parent.add_child(holder)
- var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.4,extent.y/72);holder.add_child(actor);actor.ingame_art=true;actor.art_id=id.trim_prefix("yokai:").trim_prefix("daoist:");actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
+ var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.4,extent.y/72);holder.add_child(actor);actor.ingame_art=true;actor.art_id=C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"));actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
  holder.resized.connect(func()->void:
   actor.position=Vector2(holder.size.x/2,holder.size.y*.85)
   actor.scale=Vector2.ONE*minf(7.2,holder.size.y/72.0))
@@ -957,16 +964,24 @@ func hud() -> void:
    # 호환: 기존 코드·테스트가 참조하는 대표 스킬 버튼.
    skill_button=target;skill_badge=skill_badges[slot]
  ult_button=skill_buttons.get("ult")
- action_button=action("상호작용","talisman",Vector2(-200,-150),Vector2(96,96))
- if rules.players.human.role=="yokai":action_button.pressed.connect(func()->void:rules.command("human","seal"))
+ action_badge=null
+ # 2.0.28: 평상시 떠 있는 범용 버튼은 없다. 아래 네 버튼은 필요한 순간에만 보인다.
+ action_buttons={}
+ door_button=context_action("문 열기","door","talisman")
+ door_button.pressed.connect(func()->void:
+  if rules.command("human","interact"):sound.play_clip("door"))
+ if rules.players.human.role=="yokai":
+  confirm_button=context_action("확인","confirm","capture")
+  confirm_button.pressed.connect(func()->void:
+   if rules.command("human","seal"):sound.play_clip("seal"))
  else:
-  action_button.button_down.connect(func()->void:
+  rescue_button=context_action("구출","rescue","rescue")
+  rescue_button.button_down.connect(func()->void:
    var target:=rescue_target()
    if target!="":rules.command("human","rescue",{"target":target}))
-  action_button.button_up.connect(func()->void:rules.command("human","cancel_rescue"))
-  action_button.pressed.connect(func()->void:
-   if rules.players.human.rescue=="" and rescue_target()=="":rules.command("human","interact"))
- action_badge=action_button.get_node("Badge")
+  rescue_button.button_up.connect(func()->void:rules.command("human","cancel_rescue"))
+  disguise_button=context_action("둔갑","disguise","jar")
+  disguise_button.pressed.connect(func()->void:rules.command("human","interact"))
  # 둔갑 가능할 때 상호작용 버튼 뒤에서 금빛으로 숨 쉬는 링.
  form_pulse=Panel.new();form_pulse.name="FormPulse";form_pulse.mouse_filter=Control.MOUSE_FILTER_IGNORE
  var pulse_style:=D.panel(Color(0,0,0,0),48);pulse_style.border_color=Color(1,.84,.42,.95);pulse_style.set_border_width_all(3)
@@ -999,6 +1014,59 @@ func cast_slot(slot: String,direction: Vector2) -> void:
 ## 스킬 버튼 배지에 쓰는 아이콘 이름(능력 설명 문구가 아니라 아이콘).
 func ability_hint(ability: Dictionary) -> String:
  return String(ability.get("icon","talisman"))
+## 상황 버튼 하나(문·구출·둔갑·확인)를 같은 자리에 만들고 기본은 숨긴다.
+func context_action(label_value: String,kind: String,icon: String) -> WooMobileButton:
+ var b:=action(label_value,icon,Vector2(-200,-150),Vector2(96,96))
+ b.name="Action_"+kind
+ b.visible=false
+ action_buttons[kind]=b
+ return b
+## 지금 실제로 가능한 행동 하나를 고른다. 없으면 빈 사전(버튼도 뜨지 않는다).
+## 도사에게는 요괴의 '확인'이 절대 나오지 않고, 평상시 빈 상호작용 버튼도 없다.
+func interaction_context() -> Dictionary:
+ var me: Dictionary=rules.players.human
+ if me.eliminated or me.captured:return {}
+ if me.role=="yokai":
+  var door_id:=L.door_near(me.position,70)
+  var suspect: Dictionary=_suspect_near(me)
+  var door_gap: float=me.position.distance_to(L.door(door_id).center) if door_id!="" else 1e9
+  var suspect_gap: float=me.position.distance_to(suspect.p) if not suspect.is_empty() else 1e9
+  if not suspect.is_empty() and suspect_gap<=door_gap:
+   return {"kind":"confirm","label":"확인","icon":"capture","enabled":float(me.cd.get("seal",0))<=rules.elapsed,"hint":"의심스러운 사물을 쳐서 둔갑한 도사를 찾아냅니다"}
+  if door_id!="":
+   return {"kind":"door","label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 문을 열고 들어갑니다"}
+  return {}
+ # 둔갑술(transform)을 가진 도사는 윗줄 '둔갑술' 버튼 하나로 둔갑·해제를 모두 한다.
+ # 그래서 아래 공통 자리에 '둔갑' 버튼을 따로 띄우지 않는다(중복 표시 금지).
+ var has_transform:=_has_transform_skill(me)
+ if me.form!="" and not has_transform:return {"kind":"disguise","label":"둔갑 해제","icon":"jar","enabled":true,"hint":"둔갑 중 · 다시 누르면 사물에서 풀려납니다"}
+ var target:=rescue_target()
+ if target!="":return {"kind":"rescue","label":"구출","icon":"rescue","enabled":true,"hint":"구조 버튼을 2.5초간 유지하면 동료가 풀려납니다"}
+ if L.door_near(me.position,70)!="":return {"kind":"door","label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 바로 들어가거나 나갑니다"}
+ if has_transform:return {}
+ var spot: Dictionary=_form_target_near(me)
+ if not spot.is_empty():
+  var ready: bool=float(me.cd.get("disguise",0))<=rules.elapsed
+  var name_value:=String(L.form(String(spot.kind)).get("name","사물"))
+  return {"kind":"disguise","label":"둔갑","icon":"jar","enabled":ready,"hint":("%s(으)로 둔갑해 숨습니다"%name_value) if ready else "둔갑 준비 중입니다","near":spot}
+ return {}
+## 이 캐릭터가 둔갑술(transform)을 자기 스킬 버튼으로 갖고 있는지.
+func _has_transform_skill(me: Dictionary) -> bool:
+ for ability in (C.find(String(me.get("character",""))).get("abilities",[]) as Array):
+  if String(ability.get("skill",""))=="transform":return true
+ return false
+## 둔갑할 수 있는 사물·동물이 사거리 안에 있는지.
+func _form_target_near(me: Dictionary) -> Dictionary:
+ var near_object: Dictionary=L.object_near(me.position,84)
+ if near_object.is_empty():near_object=rules.animal_near(me.position,84)
+ return near_object
+## 요괴의 '확인' 대상: 둔갑 도사가 숨었을 만한 사물, 깔린 기관인형·가짜 구조물.
+func _suspect_near(me: Dictionary) -> Dictionary:
+ for e in rules.effects:
+  if e.kind in ["decoy","fake_rescue"] and me.position.distance_to(e.position)<rules.CONFIRM_REACH+8:return {"kind":"decoy","p":e.position}
+ var spot: Dictionary=L.object_near(me.position,rules.CONFIRM_REACH)
+ if not spot.is_empty():return {"kind":String(spot.kind),"p":spot.p}
+ return {}
 func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,callback: Callable=Callable(),type: Script=preload("res://scripts/survival/skill_button.gd")) -> WooMobileButton:
  var b: WooMobileButton=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type)
  b.text=""
@@ -1161,7 +1229,7 @@ func update_avatars() -> void:
   seen.append(id)
   var target: Vector2=info.position+Vector2(0,-L.elevation(info.position))
   if not avatars.has(id):
-   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.costume_scale=ACTOR_SCALE;actor.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(actor);actor.ingame_art=true;actor.art_id=String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
+   var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.costume_scale=ACTOR_SCALE;actor.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(actor);actor.ingame_art=true;actor.art_id=C.fallback_art(String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
    if info.id=="human":actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
    actor.position=target;actor.set_meta("target",target)
    avatars[id]=actor
@@ -1202,6 +1270,11 @@ func update_avatars() -> void:
   actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=not disguised;actor.get_node("Identity").color_id=info.color
   actor.get_node("Identity").visible=not disguised
   actor.modulate=Color.WHITE if disguised else (Color("e2b2ff") if info.captured else (Color("c9ecff") if info.immune else Color.WHITE))
+  # 화중은신: 다른 시점에는 아예 그려지지 않고, 본인 화면에서만 반투명 먹그림자로 보인다.
+  if float(me.get("buff",{}).get("painting",0.0))>rules.elapsed and info.id=="human":
+   actor.modulate=Color(.78,.72,.95,.42)
+   actor.get_node("Name").visible=false
+   actor.get_node("Identity").visible=false
  for id in avatars.keys():
   if not seen.has(id):avatars[id].queue_free();avatars.erase(id)
  var live_effects: Array=[]
@@ -1213,7 +1286,7 @@ func update_avatars() -> void:
    var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic
    # 2.0.19: 분신도 본체와 같은 2.5D 인게임 원화로 그린다(예전 마스코트가 나오지 않게).
    clone.ingame_art=true
-   clone.art_id=String(effect.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
+   clone.art_id=C.fallback_art(String(effect.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
    if clone.art_id=="":clone.art_id=String(effect.cosmetic.get("character","woochi"))
    clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clone.update_sprite();clones[key]=clone
   var clone: WooActor=clones[key];clone.position=effect.position;clone.position+=Vector2(0,-L.elevation(effect.position));clone.facing=effect.facing
@@ -1270,22 +1343,6 @@ func _process(delta: float) -> void:
  if rules.phase=="result" and not result_seen:result_seen=true;build("result");return
  world.aim=aim;world.aim_cancelled=aim_cancelled;world.aim_active=aiming()
  update_avatars();update_hud()
-func interaction_context() -> Dictionary:
- var me: Dictionary=rules.players.human
- if me.eliminated or me.captured:return {"label":"상호작용","icon":"talisman","enabled":false,"hint":""}
- if me.role=="yokai":
-  return {"label":"확인","icon":"capture","enabled":float(me.cd.get("seal",0))<=rules.elapsed,"hint":"사물로 둔갑한 도사를 쳐서 찾아냅니다 · 미둔갑 도사는 몸이 닿으면 봉인"}
- if me.form!="":return {"label":"둔갑 해제","icon":"jar","enabled":true,"hint":"둔갑 중 · 다시 누르면 사물에서 풀려납니다"}
- var target:=rescue_target()
- if target!="":return {"label":"구출","icon":"rescue","enabled":true,"hint":"구조 버튼을 2.5초간 유지하면 동료가 풀려납니다"}
- if L.door_near(me.position,70)!="":return {"label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 상호작용 버튼으로 문을 엽니다"}
- var near_object: Dictionary=L.object_near(me.position,84)
- if near_object.is_empty():near_object=rules.animal_near(me.position,84)
- if not near_object.is_empty():
-  var ready: bool=float(me.cd.get("disguise",0))<=rules.elapsed
-  var name_value:=String(L.form(String(near_object.kind)).get("name","사물"))
-  return {"label":"둔갑 가능","icon":"jar","enabled":ready,"hint":("사물·동물에 둔갑해 숨습니다 · %s"%name_value) if ready else "둔갑 준비 중입니다","near":near_object}
- return {"label":"상호작용","icon":"talisman","enabled":false,"hint":""}
 ## 남은 목숨을 하트로 보여 준다(도사 전용).
 ## 상단 중앙 알림 배너.
 func show_banner(message: String,color: Color=Color("ffe0a8")) -> void:
@@ -1323,23 +1380,35 @@ func update_hud() -> void:
    badge.maximum=9.0 if transformed and String(key)=="transform" else float(ability.get("cd",12.0))
    target.disabled=not live or (remaining>0 and not (transformed and String(key)=="transform"))
  var context: Dictionary=interaction_context()
- var caption: Label=action_button.get_node_or_null("Caption")
- if caption!=null:
-  set_text(caption,String(context.label))
-  var highlight: bool=bool(context.get("enabled",false)) and context.has("near")
-  caption.add_theme_color_override("font_color",Color("ffe6a8") if highlight else Color("f6e8c8"))
+ var active_kind: String=String(context.get("kind",""))
+ for key in action_buttons:
+  var button: WooMobileButton=action_buttons[key]
+  if not is_instance_valid(button):continue
+  var shown: bool=key==active_kind and live
+  button.visible=shown
+  if not shown:continue
+  var caption: Label=button.get_node_or_null("Caption")
+  if caption!=null:
+   set_text(caption,String(context.get("label","")))
+   caption.add_theme_color_override("font_color",Color("ffe6a8") if context.has("near") else Color("f6e8c8"))
+  var badge: WooSkillBadge=button.get_node_or_null("Badge")
+  if badge!=null:
+   var icon: String=String(context.get("icon","talisman"))
+   if badge.skill!=icon:badge.skill=icon;badge.queue_redraw()
+   if key=="confirm":
+    badge.remaining=maxf(0,float(me.cd.get("seal",0))-rules.elapsed);badge.maximum=rules.MISS_RECOVER
+   elif key=="rescue":
+    badge.remaining=maxf(0,rules.RESCUE_TIME-me.progress) if me.progress>0 else 0.0;badge.maximum=rules.RESCUE_TIME
+   else:
+    badge.remaining=0.0;badge.maximum=1.0
+  button.disabled=not live or not bool(context.get("enabled",true))
  if form_pulse!=null:
-  var show_pulse: bool=bool(context.get("enabled",false)) and context.has("near") and live
+  var show_pulse: bool=active_kind=="disguise" and String(context.get("label",""))=="둔갑" and bool(context.get("enabled",false)) and live
   form_pulse.visible=show_pulse
   if show_pulse:
    var beat: float=.5+.5*sin(Time.get_ticks_msec()/260.0)
    form_pulse.modulate.a=.35+.55*beat
    form_pulse.scale=Vector2.ONE*(1.0+.05*beat)
- if action_badge.skill!=String(context.icon):
-  action_badge.skill=String(context.icon);action_badge.queue_redraw()
- action_button.disabled=not live or not bool(context.enabled)
- action_badge.remaining=maxf(0,me.cd.get("seal",0)-rules.elapsed) if me.role=="yokai" else (maxf(0,rules.RESCUE_TIME-me.progress) if me.progress>0 else 0.0)
- action_badge.maximum=2.0 if me.role=="yokai" else rules.RESCUE_TIME
  var dao: int=rules.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist" and not p.eliminated).size()
  var left:=maxf(0,600-rules.elapsed);var seconds:=int(ceil(left))
  set_text(timer_label,"월하의 서원 · %02d:%02d"%[seconds/60,seconds%60])
@@ -1376,7 +1445,7 @@ func update_hud() -> void:
   var line:="%s 둔갑 · %.1f초 · 움직이며 숨기 · 다시 누르면 해제"%[form.get("name","사물"),form_left]
   set_text(form_label,line);form_label.visible=true
  else:form_label.visible=false
- var hint: String=String(context.hint)
+ var hint: String=String(context.get("hint",""))
  if me.captured:hint="봉인됨 · 남은 목숨 %d · 동료가 2.5초 구조하면 목숨을 지킵니다(10초 지나면 목숨 1개 차감)" % int(me.get("lives",3))
  elif me.eliminated:hint="탈락 · 남은 경기를 관전합니다"
  elif me.outside>0:hint="안전구역 밖입니다 · 원 안으로 이동하세요"
@@ -1396,10 +1465,11 @@ func update_hud() -> void:
    var clip: String=""
    match String(e.kind):
     "seal","miss":clip="seal"
-    "rescue","revive":clip="rescue"
+    "rescue","revive","fakerescue":clip="rescue"
     "door":clip="door"
     "transform","untransform":clip="transform"
     "lose_life":clip="seal"
+    "douse":clip="seal"
     "skill":clip="spell"
    var target_name: String=String(rules.players[e.target].name) if rules.players.has(String(e.get("target",""))) else ""
    match String(e.kind):
@@ -1411,7 +1481,10 @@ func update_hud() -> void:
    if clip!="" and rules.players.has(e.actor):
     if me.position.distance_to(rules.players[e.actor].position)<520:sound.play_clip(clip)
     var caster: Node=avatars.get(String(e.actor))
-    if caster!=null and String(e.kind) in ["skill","seal","rescue","transform"]:caster.action_left=.34
+    if caster!=null and String(e.kind) in ["skill","seal","rescue","transform"]:
+     caster.action_left=.34
+     # 도술마다 다른 발동 모션(시전 고리의 색·형태)을 액터에 전달한다.
+     if String(e.kind)=="skill":caster.action_skill=String(e.target)
     if String(e.actor)=="human":
      if String(e.kind)=="door":storage.bump("doors")
      elif String(e.kind)=="transform":storage.bump("disguises")

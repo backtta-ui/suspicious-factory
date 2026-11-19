@@ -47,17 +47,19 @@ const MAILS=[
  {"id":"update_zoom","title":"2.5D 시점·대형 한옥 업데이트","body":"기본 시점을 넓은 2.5D(1.32배)로 잡았습니다. 청월당·서고·별채 세 채를 출입할 수 있고, 실내에서는 바깥이 밤안개로 가려집니다.","reward":300},
  {"id":"market_open","title":"무료 마켓이 문을 열었습니다","body":"결제 없이 경기 보상으로만 도포·칭호·기운을 장착할 수 있습니다. 업적과 우편에서도 재화를 받을 수 있습니다.","reward":400},
  {"id":"lobby_bgm","title":"새 로비 음악","body":"로비에는 자체 합성한 국악풍 밤 음악이 흐릅니다. 모든 음원은 이 게임을 위해 직접 합성했고 외부 저작권 음원을 쓰지 않습니다.","reward":200}]
-## 캐릭터 상점: 무료 4인(팀별 2인)과 게임 재화로 해금하는 4인. 인앱결제·광고 없음.
+## 캐릭터 상점: 2.0.28 테스트·체험 단계라 10인 전원이 무료 해금 상태다. 인앱결제·광고 없음.
 const CHARACTERS=[
  {"id":"daoist:woochi","price":0,"tag":"무료"},
- {"id":"daoist:yeonhwa","price":0,"tag":"무료"},
- {"id":"daoist:muyeong","price":800,"tag":"해금"},
- {"id":"daoist:hongryeon","price":900,"tag":"해금"},
+ {"id":"daoist:honggildong","price":0,"tag":"무료"},
+ {"id":"daoist:jangyeongsil","price":0,"tag":"무료"},
+ {"id":"daoist:barigongju","price":0,"tag":"무료"},
+ {"id":"daoist:gangnim","price":0,"tag":"무료"},
  {"id":"yokai:gumiho","price":0,"tag":"무료"},
  {"id":"yokai:jangsanbeom","price":0,"tag":"무료"},
- {"id":"yokai:dokkaebi","price":1000,"tag":"해금"},
- {"id":"yokai:haechi","price":1200,"tag":"해금"}]
-const FREE_CHARACTERS=["daoist:woochi","daoist:yeonhwa","yokai:gumiho","yokai:jangsanbeom"]
+ {"id":"yokai:dokkaebi","price":0,"tag":"무료"},
+ {"id":"yokai:eodubsimi","price":0,"tag":"무료"},
+ {"id":"yokai:yagwangwi","price":0,"tag":"무료"}]
+const FREE_CHARACTERS=["daoist:woochi","daoist:honggildong","daoist:jangyeongsil","daoist:barigongju","daoist:gangnim","yokai:gumiho","yokai:jangsanbeom","yokai:dokkaebi","yokai:eodubsimi","yokai:yagwangwi"]
 static func character(id: String) -> Dictionary:
  for item in CHARACTERS:
   if item.id==id:return item

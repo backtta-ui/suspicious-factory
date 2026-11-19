@@ -50,6 +50,16 @@ func think(delta: float) -> void:
    return
   if wait<=0 and String(rules.C.ability(me.character,"main").get("skill",""))=="transform":
    if command("skill"):wait=5;command("move",{"vector":Vector2.ZERO});return
+  # 장산범의 가짜 구조 소리·동료의 구조 신호 쪽으로 도사 봇이 실제로 유인된다.
+  var lure: Vector2=Vector2.INF
+  for e in rules.effects:
+   if String(e.kind) not in ["fake_rescue","rescue_call"]:continue
+   if p.distance_to(e.position)>320:continue
+   if lure.is_finite() and p.distance_to(lure)<=p.distance_to(e.position):continue
+   lure=e.position
+  if lure.is_finite():
+   go(p,rules.L.safe(lure))
+   return
   var points: Array=[Vector2(620,1000),Vector2(1080,1360),Vector2(2260,760),Vector2(2820,1000),Vector2(3040,1880),Vector2(2400,2350),Vector2(1200,2380),Vector2(400,2300),Vector2(300,900),Vector2(1700,600),Vector2(2900,1400),Vector2(1700,1800)]
   var target: Vector2=rules.L.safe(points[(index+patrol)%points.size()])
   if target.distance_to(zone.center)>zone.radius-70:target=rules.L.safe(zone.center+Vector2.from_angle(index*TAU/8)*zone.radius*.55)

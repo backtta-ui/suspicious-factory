@@ -82,11 +82,49 @@ func run() -> void:
  check(codex.selected.get("team","")=="yokai" and codex.selected.get("name")=="구미호","filtering auto-selects the first yokai")
  await tap(named(game.ui,"CodexCard_yagwangwi").get_global_rect().get_center())
  check(codex.selected.get("name")=="야광귀","filtered card touch selects 야광귀")
+ # 2.0.28: 스킬 카드·쿨타임 뱃지·설명·스킨·안내 박스가 서로 겹치지 않는지 확인한다.
+ await frames(4)
+ var overlaps: Array=[]
+ var rows: Array=codex._rows()
+ for i in range(rows.size()):
+  var row: Control=rows[i]
+  var meta: Control=row.get_node_or_null("Meta")
+  var body: Control=row.get_node_or_null("Body")
+  check(meta!=null and body!=null,"skill row %d keeps its meta and description labels"%i)
+  if meta!=null and body!=null:
+   var title_label: Control=null
+   for child in row.get_children():
+    if child is Label and child.name!="Meta" and child.name!="Body" and child.text!="" and title_label==null:title_label=child
+   if title_label!=null:check(not title_label.get_global_rect().intersects(meta.get_global_rect()),"cooldown badge never overlaps the skill title (%d)"%i)
+   check(not meta.get_global_rect().intersects(body.get_global_rect()),"cooldown badge sits above the description (%d)"%i)
+   check(row.get_global_rect().encloses(body.get_global_rect()),"description stays inside its card (%d)"%i)
+   for j in range(i+1,rows.size()):
+    check(not row.get_global_rect().intersects(rows[j].get_global_rect()),"skill cards do not overlap (%d/%d)"%[i,j])
+ var tip_inside: bool=codex.detail.get_global_rect().encloses(codex.tip.get_global_rect())
+ check(tip_inside or not codex.tip.visible,"the skill detail box stays inside the panel")
+ for child in codex.skin_row.get_children():
+  var child_rect: Rect2=(child as Control).get_global_rect()
+  check(codex.detail.get_global_rect().encloses(child_rect),"robe skin buttons stay inside the panel")
+ var guide_rect: Rect2=codex.guide.get_global_rect()
+ for id in codex.cards:
+  check(not codex.cards[id].get_global_rect().intersects(guide_rect),"card %s is not covered by the role guide"%id)
+ for id in codex.cards:
+  var name_label: Label=codex.cards[id].get_meta("name")
+  if is_instance_valid(name_label):check(not name_label.get_global_rect().intersects(guide_rect),"name label of %s stays clear of the guide"%id)
  # 도감 안에서 도포 스킨을 바로 장착한다(구매는 마켓 전용).
  var skin:=named(game.ui,"CodexSkin_default")
  check(skin!=null and named(game.ui,"CodexSkin_moon")!=null,"guide lists robe skins for equipping")
  await tap(skin.get_global_rect().get_center())
  check(String(game.storage.equipped("skin"))=="default","tapping a robe equips it in the guide")
+ # 미보유 스킨은 중앙 원화 미리보기만 하고 장착하지 않는다.
+ var locked_skin:=named(game.ui,"CodexSkin_moon")
+ check(locked_skin!=null and not game.storage.owns("moon"),"an unowned robe is listed with a preview")
+ # 미보유 스킨은 안내 팝업을 띄우므로 터치 대신 같은 핸들러를 직접 호출해 검증한다.
+ codex._pick_skin(codex.skin_row.get_node("CodexSkin_moon").get_meta("skin"))
+ await frames(4)
+ check(String(game.storage.equipped("skin"))=="default" and codex.skin_view=="moon","choosing an unowned robe only previews it")
+ check(codex.stand.modulate!=Color.WHITE,"the preview really tints the standing figure")
+ check(codex.skin_status.text.contains("상점"),"an unowned robe points to the shop inline")
  for size in [Vector2i(960,540),Vector2i(1280,720),Vector2i(2340,1080)]:
   root.size=size
   await frames(8)

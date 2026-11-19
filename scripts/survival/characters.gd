@@ -112,6 +112,33 @@ static func art_file(id: String,kind: String) -> String:
   if ResourceLoader.exists(String(path)):resolved=String(path);break
  _art_cache[key]=resolved
  return resolved
+## 2.0.28 8방향 걷기 시트 준비: 시트의 rows 목록에 아래 8개 이름이 있으면 그 행을
+## 그대로 쓰고, 4행(front/left/right/back) 시트는 예전처럼 대각선을 옆모습 행으로
+## 대신한다. facing은 rules/actor와 같은 0=동 … 7=북동 시계방향 8방향이다.
+const DIRECTIONS8=["front","front_right","right","back_right","back","back_left","left","front_left"]
+const FACING_VIEW={0:"right",1:"front_right",2:"front",3:"front_left",4:"left",5:"back_left",6:"back",7:"back_right"}
+## 8방향 행이 없는 4행 시트에서 대각선이 빌려 쓸 행(가까운 옆모습).
+const VIEW_FALLBACK={"front_right":["right","front"],"back_right":["right","back"],"back_left":["left","back"],"front_left":["left","front"]}
+## rows(행 이름 목록)에서 방향에 맞는 행 번호와 실제로 쓴 뷰 이름을 돌려준다.
+## 8방향 시트는 좌우 반전이 필요 없고, 4행 폴백은 반전 없이 옆모습을 쓴다.
+static func sheet_row(rows: Array, facing: int) -> Dictionary:
+ var view: String=String(FACING_VIEW.get(posmod(facing,8),"front"))
+ for candidate in [view]+Array(VIEW_FALLBACK.get(view,[])):
+  var index: int=rows.find(String(candidate))
+  if index<0:index=rows.find(String(candidate).replace("_","-"))
+  if index>=0:return {"row":index,"view":String(rows[index])}
+ return {"row":0,"view":String(rows[0]) if not rows.is_empty() else "front"}
+## 시트가 8방향 행을 갖고 있는지(에셋 교체 여부 확인·테스트용).
+static func eight_direction(rows: Array) -> bool:
+ for name in ["front_right","back_right","back_left","front_left"]:
+  if rows.has(name):return true
+ return false
+## 시트 안 원화 키(px). 스프라이트 배율 = 목표 높이 / 이 값.
+static func sheet_art_height(sheet: Dictionary) -> float:
+ var explicit: float=float(sheet.get("height",0.0))
+ if explicit>0.0:return explicit
+ var cell: Array=sheet.get("cell",[300,260])
+ return maxf(1.0,float(cell[1]))
 ## 2.0.27 걷기 시트: 4행(front/left/right/back) x 4열 프레임. 셀 안 캐릭터 키와
 ## 발끝 앵커가 고정되어 있어 프레임을 바꿔도 위치가 흔들리지 않는다.
 const WALK_MANIFEST="res://assets/woo/ingame/walk_sheets.json"

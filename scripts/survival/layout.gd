@@ -125,8 +125,8 @@ const FORM_VISUALS={
  "jar":{"height":46.0,"shadow":16.0},
  "crate":{"height":46.0,"shadow":16.0},
  "lantern":{"height":46.0,"shadow":16.0},
- "cat":{"height":40.0,"shadow":10.0},
- "dog":{"height":46.0,"shadow":12.0},
+ "cat":{"height":22.0,"shadow":5.0},
+ "dog":{"height":26.0,"shadow":6.0},
  "stele":{"height":52.0,"shadow":16.0}}
 static func form_visual(kind: String) -> Dictionary:return FORM_VISUALS.get(kind,FORM_VISUALS.jar)
 ## 기력 회복 구슬(영혼불): 스쳐 지나가면 달리기 기력이 가득 차고 잠시 뒤 다시 생긴다.

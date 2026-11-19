@@ -226,7 +226,7 @@ func run() -> void:
  game.rules.players.human.form=""
  await frames(6)
  var context: Dictionary=game.interaction_context()
- check(String(context.get("label",""))=="둔갑 가능","disguise context reads 둔갑 가능 next to a prop")
+ check(String(context.get("kind",""))=="disguise" and String(context.get("label",""))=="둔갑","disguise context reads 둔갑 next to a prop")
  check(game.form_pulse!=null and game.form_pulse.visible,"action button glows while a disguise target is in reach")
  check(game.world.form_target().is_empty()==false,"world knows the disguise target for the gold ring")
  game.rules.players.human.position=L.SPAWN

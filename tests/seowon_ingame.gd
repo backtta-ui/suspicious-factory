@@ -103,7 +103,7 @@ func run() -> void:
  me.position=front+Vector2(0,16);me.facing=6
  game.update_avatars();game.update_hud();await frames(3)
  check(game.camera.position.distance_to(me.position+Vector2(0,-L.CAMERA_LIFT))<1.5,"camera follows the player with the 36px lift")
- check(game.action_button.get_node("Caption").text=="문 열기","door context label at the enlarged hanok")
+ check(game.door_button.visible and game.door_button.get_node("Caption").text=="문 열기","dedicated door button appears at the enlarged hanok")
  check(game.ui.find_children("*","Button",true,false).size()>=6,"HUD buttons present")
  check(game.world.buildings.size()==6,"world draws all six hanok")
  for building in game.world.buildings:
@@ -139,20 +139,21 @@ func run() -> void:
  var actor:=Actor.new();actor.cosmetic=Looks.base_appearance("woochi");root.add_child(actor);actor.set_physics_process(false)
  actor.ingame_art=true;actor.art_id="woochi";actor.update_sprite()
  # 2.0.27: 4x4 걷기 시트의 행(front/left/right/back)으로 방향을 그린다(좌우반전 없음).
- var mapping:=[[2,"front"],[1,"right"],[3,"left"],[6,"back"],[5,"left"],[7,"right"],[0,"right"],[4,"left"]]
+ # 2.0.28 8방향 시트: 대각선은 전용 행(front_right/back_left …)을 그대로 쓴다.
+ var mapping:=[[2,"front"],[1,"front_right"],[3,"front_left"],[6,"back"],[5,"back_left"],[7,"back_right"],[0,"right"],[4,"left"]]
  var mapped:=true;var mirrored:=false
  for entry in mapping:
   actor.facing=int(entry[0]);actor.ingame_sprite._process(.016)
   mapped=mapped and actor.ingame_sprite.current_key.ends_with(":"+String(entry[1]))
   mirrored=mirrored or actor.ingame_sprite.sprite.flip_h
- check(mapped,"south uses front, north back, east/west and diagonals use the side rows")
+ check(mapped,"south uses front, north back and every diagonal has its own row")
  check(not mirrored,"walk sheet rows replace mirroring")
  # 뒤돌아(북) 점프: 뒷모습 유지
  actor.facing=6;actor.jump_height=22;actor.jump_velocity=120;actor.update_sprite();actor.ingame_sprite._process(.016)
  check(actor.ingame_sprite.current_key.ends_with(":back") and not actor.ingame_sprite.sprite.flip_h,"back view kept while jumping north")
  # 북서 대각선 점프: 옆모습 유지
  actor.facing=5;actor.jump_height=30;actor.update_sprite();actor.ingame_sprite._process(.016)
- check(actor.ingame_sprite.current_key.ends_with(":left") and not actor.ingame_sprite.sprite.flip_h,"north-west diagonal jump keeps the left row")
+ check(actor.ingame_sprite.current_key.ends_with(":back_left") and not actor.ingame_sprite.sprite.flip_h,"north-west diagonal jump keeps its own diagonal row")
  check(actor.ingame_sprite.sprite.position.y<-20,"jump height lifts the sprite")
  check(actor.ingame_sprite.sprite.scale.x>0,"squash and stretch keep a positive scale")
  actor.jump_height=0;actor.jump_velocity=0;actor.update_sprite();actor.ingame_sprite._process(.016)

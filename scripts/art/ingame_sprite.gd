@@ -8,6 +8,7 @@ extends Node2D
 ## (1) 2박자 수직 바운스, (2) 닿는 순간의 스쿼시-스트레치, (3) 진행 방향 기울기,
 ## (4) 발밑 흙먼지, (5) 달릴 때의 바람 자국, (6) 방향 전환 탄성을 함께 그린다.
 const MANIFEST_PATH="res://assets/woo/ingame/frames.json"
+const FX=preload("res://scripts/survival/fx.gd")
 const C=preload("res://scripts/survival/characters.gd")
 ## 2.0.27 4x4 걷기 시트: 방향(행) x 프레임(열). 셀 안 발끝 앵커(160,350)에 맞춰
 ## 그리므로 프레임이 바뀌어도 캐릭터가 흔들리지 않는다. 4프레임을 10~12fps로 재생한다.
@@ -68,18 +69,10 @@ func sheet_for(id: String) -> Dictionary:
 func sheet_rows(sheet: Dictionary) -> Array:
  var rows: Array=sheet.get("rows",["front","left","right","back"])
  return rows
-## 8방향 → 시트 행. 대각선은 옆모습을 써서 진행 방향이 읽히게 한다.
+## 8방향 → 시트 행. 8방향 시트가 있으면 대각선 행을 그대로 쓰고, 4행 시트면
+## characters.sheet_row가 옆모습 행으로 대신한다(2.0.28).
 func sheet_view(facing: int) -> String:
- match posmod(facing,8):
-  0:return "right"
-  1:return "right"
-  2:return "front"
-  3:return "left"
-  4:return "left"
-  5:return "left"
-  6:return "back"
-  7:return "right"
- return "front"
+ return String(C.sheet_row(sheet_rows(sheet_data),facing).view) if not sheet_data.is_empty() else String(C.FACING_VIEW.get(posmod(facing,8),"front"))
 func _ready() -> void:
  sprite=Sprite2D.new();sprite.name="IngameArt";sprite.centered=true;sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  add_child(sprite)
@@ -157,9 +150,9 @@ func set_pose(facing: int,id: String,pose: String="idle") -> void:
 
 func set_sheet_pose(facing: int,sheet: Dictionary,pose: String) -> void:
  var rows: Array=sheet_rows(sheet)
- var sheet_view_name: String=sheet_view(facing)
- var row: int=rows.find(sheet_view_name)
- if row<0:row=0
+ var mapped: Dictionary=C.sheet_row(rows,facing)
+ var sheet_view_name: String=String(mapped.view)
+ var row: int=int(mapped.row)
  var cols: int=int(sheet.get("cols",4))
  var column: int=0
  if pose!="idle" and cols>1:
@@ -179,7 +172,7 @@ func set_sheet_pose(facing: int,sheet: Dictionary,pose: String) -> void:
   sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(row)*extent.y),extent)
   sprite.centered=false
   sprite.offset=Vector2.ZERO
-  var scale_value: float=float(sheet.get("target_height",56.0))/maxf(1.0,float(sheet.get("height",300.0)))
+  var scale_value: float=float(sheet.get("target_height",56.0))/maxf(1.0,C.sheet_art_height(sheet))
   base_scale=scale_value
   sprite.scale=Vector2(scale_value,scale_value)
   var foot: Array=sheet.get("foot",[160.0,350.0])
@@ -341,6 +334,14 @@ func _draw() -> void:
  draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
  if cast>0.0:
   var t:=1.0-cast/.3
+  # 도술마다 다른 색·형태의 시전 고리. 30개 서명 연출(fx.SIG)의 색을 그대로 쓴다.
+  var spec: Dictionary=FX.SIG.get(String(actor.action_skill),{})
+  var tint:=Color(String(spec.get("c","cfe0ff")))
   for i in range(3):
    var radius:=10.0+t*26.0+i*4.0
-   draw_arc(Vector2(0,-1),radius,0,TAU,28,Color(.72,.86,1,.42*(1.0-t)*(1.0-i*.25)),2.0,true)
+   draw_arc(Vector2(0,-1),radius,0,TAU,28,Color(tint.r,tint.g,tint.b,.42*(1.0-t)*(1.0-i*.25)),2.0,true)
+  for i in range(6):
+   var angle:=i*TAU/6+t*1.4
+   var inner:=Vector2.from_angle(angle)*(8.0+t*10.0)
+   var outer:=Vector2.from_angle(angle)*(14.0+t*22.0)
+   draw_line(inner+Vector2(0,-6),outer+Vector2(0,-6),Color(tint.r,tint.g,tint.b,.36*(1.0-t)),1.6,true)

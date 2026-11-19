@@ -46,11 +46,19 @@ var map_dark_until:=0.0
 var reveal_until:=0.0
 var trail_all_until:=0.0
 var lantern_until: Dictionary={}
+## 2.0.28 도깨비장난으로 옮겨 눕힌 사물(사물 인덱스 → 되돌아오는 시각).
+var prop_flips: Dictionary={}
 func burst(at: Vector2,kind: String,duration: float,extra: Dictionary={}) -> void:
  serial+=1
  var entry:={"id":serial,"kind":kind,"position":at,"born":elapsed,"until":elapsed+duration}
  entry.merge(extra,true)
  effects.append(entry)
+## 도술 하나가 발동됐을 때 그 도술 고유의 서명 연출을 남긴다. fx.gd가 `skill` 키로
+## 그림·여우 가면·부적·도깨비방망이·달·발자국 같은 전용 모션을 그린다.
+func signature(p: Dictionary,skill_id: String,aim: Vector2=Vector2.ZERO) -> void:
+ var extra:={"skill":skill_id,"facing":p.facing,"cosmetic":C.look(p.character)}
+ if aim!=Vector2.ZERO:extra["aim"]=aim
+ burst(p.position,"fx_sig",0.85,extra)
 func _init(seed_value: int=0) -> void:
  if seed_value==0:rng.randomize()
  else:rng.seed=seed_value
@@ -91,7 +99,7 @@ func start() -> bool:
  apply_preference()
  orbs=[]
  for spot in L.ORBS:orbs.append({"p":spot,"ready":0.0})
- traps=[];marks=[];pings=[];dark_until=0.0;map_dark_until=0.0;reveal_until=0.0;trail_all_until=0.0;lantern_until.clear()
+ traps=[];marks=[];pings=[];dark_until=0.0;map_dark_until=0.0;reveal_until=0.0;trail_all_until=0.0;lantern_until.clear();prop_flips.clear()
  phase="selection";selection_left=25;selection_elapsed=0;ready_left=0.0;return true
 ## 희망 진영이 있으면 휴먼과 반대편 한 명의 역할·자리를 맞바꾼다(구성 비율 유지).
 func apply_preference() -> void:
@@ -185,6 +193,7 @@ func seal(p: Dictionary) -> bool:
  var q: Dictionary={};var best:=CONFIRM_REACH;var forward:=Vector2.from_angle(p.facing*PI/4)
  for candidate in players.values():
   if candidate.role!="daoist" or candidate.captured or candidate.eliminated or candidate.immune>elapsed:continue
+  if float(candidate.buff.get("stealth",0.0))>elapsed:continue
   if candidate.form=="":continue
   var delta: Vector2=candidate.position-p.position;var distance:=delta.length()
   if distance>best:continue
@@ -197,6 +206,8 @@ func seal(p: Dictionary) -> bool:
   event("miss",p.id);return true
  serial+=1;effects.append({"id":serial,"kind":"seal","position":q.position,"born":elapsed,"until":elapsed+.5,"cosmetic":C.look(p.character),"facing":p.facing})
  seal_hit(p,q);return true
+## 그림 속·무월야로 완전히 사라진 상태인지(다른 시점·AI·시야 판정 공통).
+func hidden(p: Dictionary) -> bool:return float((p.get("buff",{}) as Dictionary).get("stealth",0.0))>elapsed
 ## 몸이 닿은 미둔갑 도사를 버튼 입력 없이 즉시 봉인한다.
 func contact_seal() -> void:
  for p in players.values():
@@ -205,6 +216,8 @@ func contact_seal() -> void:
   var q: Dictionary={};var best:=CONTACT_RADIUS
   for candidate in players.values():
    if candidate.role!="daoist" or candidate.captured or candidate.eliminated or candidate.immune>elapsed:continue
+   # 그림 속·무월야로 숨은 도사는 몸이 스쳐도 잡히지 않는다.
+   if float(candidate.buff.get("stealth",0.0))>elapsed:continue
    if candidate.form!="":continue
    var distance: float=p.position.distance_to(candidate.position)
    if distance>best or not L.line(p.position,candidate.position):continue
@@ -216,7 +229,8 @@ func contact_seal() -> void:
 func seal_hit(p: Dictionary,q: Dictionary) -> bool:
  p.cd.seal=elapsed+SEAL_RECOVER;p.stagger=elapsed+.35
  if q.buff.get("shield",0)>elapsed or q.buff.get("lifelamp",0)>elapsed:
-  q.buff.erase("shield");q.immune=elapsed+SHIELD_IMMUNE;q.intent=Vector2.ZERO
+  # 생명등불도 '봉인 한 번'만 막는다. 막은 뒤에는 두 보호 효과를 함께 지운다.
+  q.buff.erase("shield");q.buff.erase("lifelamp");q.immune=elapsed+SHIELD_IMMUNE;q.intent=Vector2.ZERO
   var push: Vector2=q.position-p.position
   if push.length()<.01:push=Vector2.from_angle(p.facing*PI/4)
   q.position=L.move(q.position,q.position+push.normalized()*SHIELD_KNOCK);q.ground=q.position
@@ -236,15 +250,18 @@ func skill(p: Dictionary,aim: Vector2,slot: String="main") -> bool:
  if spec.is_empty():return false
  var id: String=String(spec.get("skill",""))
  if id=="":return false
+ # 둔갑술(transform)은 쿨타임 중에도 '풀기'는 언제든 된다(한 버튼으로 둔갑·해제).
+ var untoggle: bool=id=="transform" and p.form!=""
  if slot=="ult":
   if float(p.get("ult",0.0))<ULT_MAX or p.cd.get(id,0)>elapsed:return false
- else:
+ elif not untoggle:
   if p.cd.get(id,0)>elapsed:return false
  if not aim.is_finite():return false
  if aim.length()<.01:aim=Vector2.from_angle(p.facing*PI/4)
  aim=aim.normalized();p.facing=posmod(roundi(aim.angle()/(PI/4)),8)
  if p.stun>elapsed:return false
  if not _effect(p,id,aim):return false
+ signature(p,id,aim)
  p.cd[id]=elapsed+float(spec.get("cd",12.0))
  if slot=="ult":p.ult=0.0
  event("skill",p.id,id);event("skill_slot",p.id,slot)
@@ -265,9 +282,12 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    serial+=1;effects.append({"id":serial,"kind":"clone","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"character":p.character,"born":elapsed,"until":elapsed+8})
    burst(p.position,"fx_shadow",.55,{"facing":p.facing});return true
   "painting":
+   # 화중은신: 족자를 펼쳐 그림 속 차원으로 들어간다. 무적·벽 통과에 더해
+   # 다른 시점에서는 이름표·그림자·기운·발자국까지 전부 사라진다(완전 은신).
    p.buff.painting=elapsed+4.0;p.immune=maxf(p.immune,elapsed+4.0)
-   p.buff.stealth=elapsed+4.0
-   burst(p.position,"fx_ink",1.0,{"big":true});burst(p.position,"fx_talisman",.8,{"facing":p.facing});return true
+   p.buff.stealth=elapsed+4.0;p.trail=[]
+   burst(p.position,"fx_ink",1.0,{"big":true});burst(p.position,"fx_scroll",1.1,{"facing":p.facing})
+   event("painting",p.id);return true
   "wallhop":
    if not _leap(p,aim,190.0):return false
    burst(p.position,"fx_goldwave",.6);return true
@@ -364,6 +384,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    var decoy_at:=L.safe(p.position+aim*180.0)
    serial+=1;effects.append({"id":serial,"kind":"fake_rescue","owner":p.id,"position":decoy_at,"born":elapsed,"until":elapsed+6.0})
    burst(decoy_at,"fx_sound",1.4)
+   event("fakerescue",p.id)
    var near:=_nearest_role(p,"daoist")
    if not near.is_empty():
     near.buff.revealed=elapsed+3.0
@@ -371,6 +392,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    return true
   "soundhunt":
    p.buff.sense=elapsed+4.0
+   event("sense",p.id)
    burst(p.position,"fx_ghost",.9);return true
   "mountaingrowl":
    for q in players.values():
@@ -390,6 +412,9 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
     if q.position.distance_to(p.position)>280:continue
     q.form="";q.buff.erase("transform");q.stun=elapsed+.5;flipped+=1
     burst(q.position,"fx_goblinfire",.8);event("untransform",q.id)
+   # 반경 안의 실제 사물도 옮겨 눕혀, 둔갑했다면 같은 자리에 있지 않게 한다.
+   for i in range(L.OBJECTS.size()):
+    if p.position.distance_to((L.OBJECTS[i] as Dictionary).p)<=260.0:prop_flips[i]=elapsed+7.0
    burst(p.position,"fx_goblinfire",1.0)
    return true
   "faketreasure":
@@ -408,6 +433,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
   "douse":
    dark_until=elapsed+9.0;dark_center=p.position;dark_radius=330.0
    lantern_until["all"]=elapsed+9.0
+   event("douse",p.id)
    burst(p.position,"fx_darkness",1.2,{"big":true});return true
   "blackvision":
    var victim:=_nearest_role(p,"daoist")
@@ -449,6 +475,8 @@ func _nearest_role(p: Dictionary,role: String) -> Dictionary:
  var best: Dictionary={};var gap:=1e9
  for q in players.values():
   if q.role!=role or q.eliminated or q.id==p.id:continue
+  # 그림 속 차원(화중은신)·무월야로 완전히 사라진 상대는 위치를 짚을 수 없다.
+  if q.id!=p.id and float(q.buff.get("stealth",0.0))>elapsed:continue
   var d: float=p.position.distance_to(q.position)
   if d<gap:gap=d;best=q
  return best
@@ -587,7 +615,7 @@ func tick(delta: float) -> void:
    if p.jump<=0 and not L.can_stand(p.position):p.position=L.safe(p.position)
   if L.can_stand(p.position):p.ground=p.position
   var distance: float=p.position.distance_to(previous);p.stride+=distance
-  if distance>0 and (p.trail.is_empty() or p.position.distance_to(p.trail[-1].position)>=18):p.trail.append({"position":p.position,"time":elapsed,"facing":p.facing})
+  if distance>0 and float(p.buff.get("stealth",0.0))<=elapsed and (p.trail.is_empty() or p.position.distance_to(p.trail[-1].position)>=18):p.trail.append({"position":p.position,"time":elapsed,"facing":p.facing})
   while not p.trail.is_empty() and elapsed-p.trail[0].time>6:p.trail.pop_front()
  contact_seal()
  _tick_traps(delta)

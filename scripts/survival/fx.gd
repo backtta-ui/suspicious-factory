@@ -42,6 +42,8 @@ static func draw(node: Node2D,e: Dictionary,now: float) -> void:
   "fx_powder":powder(node,at,p)
   "fx_sound":sound(node,at,p)
   "fx_ink":ink(node,at,p)
+  "fx_scroll":scroll(node,at,p,facing)
+  "fx_sig":signature(node,at,p,String(e.get("skill","")),float(e.get("facing",0)))
   "seal":seal(node,at,p)
   "miss":miss(node,at,p)
   "clone":afterimage(node,at,p,facing)
@@ -365,3 +367,256 @@ static func haze(node: Node2D,at: Vector2,p: float) -> void:
   node.draw_circle(pos,18,Color(.72,.66,.86,alpha*.18))
   node.draw_circle(pos+Vector2(6,-6),12,Color(.8,.74,.92,alpha*.14))
 static func Art_shade(i: int) -> float:return float((i*37)%11)/11.0
+
+## ---------------------------------------------------------------- 2.0.28 서명 연출
+## 도술 30종이 각자 다른 모션으로 보이도록, 스킬 id → 도형·색을 고정한다.
+## 모두 원·선·다각형만 쓰므로 텍스처 없이 가볍게 그려진다.
+const SIG={
+ "clone":{"m":"mirror","c":"b48cf0"},"transform":{"m":"smoke","c":"c2a8ff"},"painting":{"m":"scroll","c":"f0d79b"},
+ "wallhop":{"m":"arrow","c":"a9c8ff"},"windstep":{"m":"gust","c":"bfe0ff"},"eightleap":{"m":"steps","c":"b48cf0"},
+ "puppet":{"m":"gear","c":"e6dcc4"},"trap":{"m":"plate","c":"f0c46a"},"astrolabe":{"m":"star","c":"ffe6a8"},
+ "lifelamp":{"m":"lantern","c":"ffd9a0"},"deathflower":{"m":"petal","c":"d9c0ff"},"returnpath":{"m":"thread","c":"a8f0d0"},
+ "ghostgate":{"m":"gate","c":"c9b6ff"},"soulmark":{"m":"needle","c":"ffd98a"},"underworldgate":{"m":"abyss","c":"8f6bd6"},
+ "mimic":{"m":"mask","c":"ff9ee0"},"foxscent":{"m":"scent","c":"7fe4d6"},"foxdream":{"m":"eye","c":"c39bff"},
+ "voicemimic":{"m":"wave","c":"ffd08a"},"soundhunt":{"m":"print","c":"8fd8ff"},"mountaingrowl":{"m":"shock","c":"ff9a5a"},
+ "mischief":{"m":"club","c":"8ff0c8"},"faketreasure":{"m":"chest","c":"ffd166"},"goblinfest":{"m":"burst","c":"8ff0c8"},
+ "douse":{"m":"blow","c":"7a6a9a"},"blackvision":{"m":"shuteye","c":"9a8fd0"},"moonlessnight":{"m":"moon","c":"d8f0ff"},
+ "shoeprints":{"m":"print","c":"d8f0ff"},"glowpowder":{"m":"powder","c":"a8ffe8"},"footprintmap":{"m":"map","c":"ffe0a8"}}
+static func signature(node: Node2D,at: Vector2,p: float,skill_id: String,facing: float) -> void:
+ var spec: Dictionary=SIG.get(skill_id,{})
+ var tint:=Color(String(spec.get("c","f0c46a")))
+ var alpha:=1-p
+ var center:=at-Vector2(0,18)
+ match String(spec.get("m","")):
+  "scroll":
+   # 화중은신: 위에서 아래로 펼쳐지는 족자, 그 위에 먹 획과 그림자 잔상.
+   var unfold:=clampf(p*2.2,0,1)
+   var height: float=96.0*unfold
+   var width: float=34.0+10.0*unfold
+   node.draw_rect(Rect2(center-Vector2(width*.5,height*.62),Vector2(width,height)),Color(.93,.87,.74,alpha*.92))
+   node.draw_rect(Rect2(center-Vector2(width*.5,height*.62),Vector2(width,height)),Color(.42,.30,.18,alpha*.85),false,1.6)
+   for i in range(4):
+    var y: float=-height*.55+float(i)*height*.28
+    node.draw_line(center+Vector2(-width*.32,y),center+Vector2(width*.32-5,y),Color(.10,.08,.16,alpha*.55),2.2,true)
+   node.draw_line(center+Vector2(width*.5+4,-height*.62),center+Vector2(width*.5+4,height*.38),Color(.5,.36,.20,alpha*.9),2.0,true)
+   node.draw_set_transform(center,0,Vector2(1,.45))
+   node.draw_arc(Vector2.ZERO,20+p*34,0,TAU,30,Color(.72,.55,.28,alpha*.30),2.0,true)
+   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+   for i in range(5):
+    var pos:=center+Vector2(sin(i*2.1+p*4)*26,-height*.4+i*9)
+    node.draw_circle(pos,2.6*(1-p*.5),Color(.16,.12,.22,alpha*.35))
+  "mirror":
+   # 분신술: 좌우로 갈라지는 두 실루엣과 먹물 방울.
+   for side in [-1.0,1.0]:
+    var offset:=Vector2(side*(10+p*26),0)
+    node.draw_set_transform(center+offset,0,Vector2(1,.72))
+    node.draw_circle(Vector2.ZERO,10-p*3,Color(tint.r,tint.g,tint.b,alpha*.32))
+    node.draw_arc(Vector2.ZERO,10-p*3,0,TAU,20,Color(tint.r,tint.g,tint.b,alpha*.55),1.6,true)
+    node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+   for i in range(8):
+    var a:=i*TAU/8+p*2.0
+    node.draw_circle(center+Vector2.from_angle(a)*(16+p*30),2.0,Color(.78,.66,1,alpha*.6))
+  "smoke":
+   # 둔갑술: 몸을 감싸는 연기 덩어리.
+   for i in range(7):
+    var a:=i*TAU/7+p*1.7
+    var pos:=center+Vector2.from_angle(a)*(10+p*26)+Vector2(0,-p*16)
+    node.draw_circle(pos,9+p*6,Color(tint.r,tint.g,tint.b,alpha*.18))
+   node.draw_arc(center,14+p*30,0,TAU,26,Color(tint.r,tint.g,tint.b,alpha*.34),2.0,true)
+  "arrow":
+   # 담장넘기: 조준 방향으로 뻗는 세 개의 화살촉과 도약 궤적.
+   var dir:=Vector2.from_angle(facing*PI/4)
+   for i in range(3):
+    var start:=center+dir*(12+p*44+i*10)
+    node.draw_line(start,start+dir*16,Color(1,.86,.55,alpha*.7),2.4,true)
+    node.draw_line(start+dir*16,start+dir*16+Vector2(-dir.y,dir.x)*6,Color(1,.86,.55,alpha*.7),2.0,true)
+    node.draw_line(start+dir*16,start+dir*16-Vector2(-dir.y,dir.x)*6,Color(1,.86,.55,alpha*.7),2.0,true)
+   node.draw_arc(center,10+p*30,dir.angle()-1.0,dir.angle()+1.0,16,Color(tint.r,tint.g,tint.b,alpha*.35),2.0,true)
+  "gust":
+   # 바람발: 발밑에서 일어나는 회오리.
+   for i in range(5):
+    var radius:=10+p*26+i*4
+    node.draw_arc(at-Vector2(0,8),radius,-PI*.9+p*3.0,-PI*.1+p*3.0,18,Color(tint.r,tint.g,tint.b,alpha*.38),2.0,true)
+  "steps":
+   # 팔방도약: 남는 세 개의 잔상 발자국.
+   for i in range(3):
+    var pos:=center+Vector2((i-1)*18,-i*10-p*12)
+    node.draw_set_transform(pos,0,Vector2(1,.45))
+    node.draw_circle(Vector2.ZERO,7-i,Color(tint.r,tint.g,tint.b,alpha*.5))
+    node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+   for i in range(6):
+    node.draw_circle(center+Vector2.from_angle(i*TAU/6)*(20+p*36),1.8,Color(.95,.9,1,alpha*.5))
+  "gear":
+   gear(node,at,p)
+  "plate":
+   trap(node,at,p)
+  "star":
+   # 천문기계: 별과 눈금 고리.
+   for i in range(8):
+    var a:=i*TAU/8+p*2.0
+    var pos:=center+Vector2.from_angle(a)*(22+p*44)
+    node.draw_circle(pos,2.2,Color(1,.95,.75,alpha*.85))
+    node.draw_line(pos-Vector2(4,0),pos+Vector2(4,0),Color(1,.92,.7,alpha*.35),1.2)
+   node.draw_arc(center,18+p*40,0,TAU,36,Color(tint.r,tint.g,tint.b,alpha*.3),1.6,true)
+  "lantern":
+   # 생명등불: 떠오르는 등불과 따뜻한 고리.
+   var rise:=p*34
+   node.draw_circle(center-Vector2(0,rise),8,Color(1,.86,.55,alpha*.30))
+   node.draw_rect(Rect2(center-Vector2(7,rise+12),Vector2(14,18)),Color(1,.88,.62,alpha*.85))
+   node.draw_rect(Rect2(center-Vector2(7,rise+12),Vector2(14,18)),Color(.7,.45,.18,alpha*.8),false,1.2)
+   node.draw_line(center-Vector2(0,rise+30),center-Vector2(0,rise+12),Color(.9,.75,.4,alpha*.7),1.6)
+   node.draw_arc(at-Vector2(0,10),16+p*30,0,TAU,26,Color(1,.85,.55,alpha*.28),2.0,true)
+  "petal":
+   # 저승꽃: 보랏빛 꽃잎이 감도는 보호막.
+   for i in range(8):
+    var a:=i*TAU/8+p*2.4
+    var pos:=center+Vector2.from_angle(a)*(14+p*30)
+    node.draw_set_transform(pos,a,Vector2(1,.6))
+    node.draw_colored_polygon(PackedVector2Array([Vector2(-5,0),Vector2(0,-8),Vector2(5,0),Vector2(0,5)]),Color(tint.r,tint.g,tint.b,alpha*.6))
+    node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+   node.draw_arc(center,20+sin(p*PI)*16,0,TAU,30,Color(tint.r,tint.g,tint.b,alpha*.4),2.2,true)
+  "thread":
+   # 귀환의 길: 두 지점을 잇는 금빛 실.
+   var dir2:=Vector2.from_angle(facing*PI/4)
+   var far:=center+dir2*(60+p*70)
+   node.draw_line(center,far,Color(tint.r,tint.g,tint.b,alpha*.6),2.2,true)
+   for i in range(5):
+    var t:=float(i)/5.0+p*.2
+    node.draw_circle(center.lerp(far,t),2.0,Color(1,1,1,alpha*.5))
+  "gate":
+   # 귀문/저승문: 세로로 열린 문과 문턱의 빛.
+   var h2:=46.0+p*18.0
+   var w2:=20.0+p*10.0
+   node.draw_rect(Rect2(center-Vector2(w2*.5,h2),Vector2(w2,h2)),Color(.06,.04,.13,alpha*.55))
+   node.draw_rect(Rect2(center-Vector2(w2*.5,h2),Vector2(w2,h2)),Color(tint.r,tint.g,tint.b,alpha*.75),false,2.0)
+   node.draw_line(center-Vector2(w2*.5,0),center+Vector2(w2*.5,0),Color(tint.r,tint.g,tint.b,alpha*.6),2.0,true)
+  "abyss":
+   # 저승문 귀환: 검은 소용돌이가 빨려 들어간다.
+   for i in range(4):
+    node.draw_arc(center,10+p*40+i*6,p*5.0+i,p*5.0+i+TAU*.6,26,Color(tint.r,tint.g,tint.b,alpha*.36),2.0,true)
+   node.draw_circle(center,10.0*(1-p*.6),Color(.03,.02,.07,alpha*.6))
+  "mask":
+   # 인간둔갑: 떠오르는 여우 가면과 눈매.
+   var rise2:=-p*26
+   node.draw_set_transform(center+Vector2(0,rise2),0,Vector2(1,.86))
+   node.draw_circle(Vector2.ZERO,13,Color(tint.r,tint.g,tint.b,alpha*.30))
+   node.draw_arc(Vector2.ZERO,13,0,TAU,24,Color(tint.r,tint.g,tint.b,alpha*.85),1.8,true)
+   node.draw_line(Vector2(-8,-3),Vector2(-3,-5),Color(.10,.06,.12,alpha*.9),2.0,true)
+   node.draw_line(Vector2(3,-5),Vector2(8,-3),Color(.10,.06,.12,alpha*.9),2.0,true)
+   node.draw_colored_polygon(PackedVector2Array([Vector2(-14,-8),Vector2(-8,-17),Vector2(-5,-7)]),Color(tint.r,tint.g,tint.b,alpha*.8))
+   node.draw_colored_polygon(PackedVector2Array([Vector2(14,-8),Vector2(8,-17),Vector2(5,-7)]),Color(tint.r,tint.g,tint.b,alpha*.8))
+   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  "scent":
+   # 여우향: 달콤한 향의 동심원과 분말.
+   for i in range(3):
+    node.draw_arc(at-Vector2(0,12),20+p*70+i*10,0,TAU,30,Color(tint.r,tint.g,tint.b,alpha*(.30-i*.08)),2.0,true)
+   for i in range(10):
+    node.draw_circle(at+Vector2(sin(i*1.7+p*3)*30,-14-p*30-i*2),1.8,Color(tint.r,tint.g,tint.b,alpha*.7))
+  "eye":
+   # 구미환몽: 크게 뜨는 환영의 눈.
+   var open:=minf(1.0,p*3.0)
+   var rx:=30.0
+   var ry:=13.0*open
+   node.draw_set_transform(center,0,Vector2(1,.62))
+   for i in range(24):
+    var a0:=PI+i*PI/24
+    var a1:=PI+(i+1)*PI/24
+    node.draw_line(Vector2.from_angle(a0)*Vector2(rx,ry*2.2),Vector2.from_angle(a1)*Vector2(rx,ry*2.2),Color(tint.r,tint.g,tint.b,alpha*.8),1.6,true)
+   node.draw_circle(Vector2.ZERO,6.0,Color(.16,.08,.24,alpha*.85))
+   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  "wave":
+   # 목소리흉내: 부채꼴 음파.
+   for i in range(4):
+    var r:=16+p*62+i*12
+    node.draw_arc(center,r,-.9,.9,18,Color(tint.r,tint.g,tint.b,alpha*(.4-i*.08)),2.2,true)
+  "print":
+   # 신발흔적·발자국지도: 밝게 빛나는 두 발자국.
+   for side in [-1.0,1.0]:
+    var pos:=at+Vector2(side*9,0)
+    node.draw_set_transform(pos-Vector2(0,p*10),0,Vector2(1,.5))
+    node.draw_circle(Vector2.ZERO,5.0,Color(tint.r,tint.g,tint.b,alpha*.5))
+    node.draw_arc(Vector2.ZERO,5.0,0,TAU,14,Color(1,1,1,alpha*.55),1.2,true)
+    node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  "shock":
+   # 산군의 울음: 낮게 퍼지는 충격 고리와 파편.
+   for i in range(3):
+    node.draw_arc(at-Vector2(0,6),20+p*80+i*16,0,TAU,40,Color(tint.r,tint.g,tint.b,alpha*(.36-i*.1)),3.0-i*.6,true)
+   for i in range(8):
+    node.draw_line(at+Vector2.from_angle(i*TAU/8)*(18+p*56),at+Vector2.from_angle(i*TAU/8)*(28+p*72),Color(tint.r,tint.g,tint.b,alpha*.5),2.0,true)
+  "club":
+   # 도깨비방망이: 크게 휘두르는 방망이와 튀는 별.
+   var angle:=-.9+p*2.6
+   var handle:=center+Vector2.from_angle(angle)*(10+p*16)
+   var head:=handle+Vector2.from_angle(angle)*(18+p*10)
+   node.draw_line(center,handle,Color(.72,.55,.32,alpha*.9),3.0,true)
+   node.draw_circle(head,8.0,Color(.85,.68,.40,alpha*.9))
+   node.draw_circle(head,4.0,Color(1,.92,.7,alpha*.9))
+   for i in range(5):
+    node.draw_circle(head+Vector2.from_angle(i*TAU/5+p*3)*(14+p*20),1.8,Color(tint.r,tint.g,tint.b,alpha*.8))
+  "chest":
+   # 가짜보물: 반짝이는 보물 상자.
+   var box:=Rect2(center-Vector2(13,6),Vector2(26,16))
+   node.draw_rect(box,Color(.30,.22,.10,alpha*.94))
+   node.draw_rect(box,Color(1,.82,.42,alpha*.9),false,1.6)
+   node.draw_rect(Rect2(box.position,Vector2(box.size.x,6)),Color(.36,.26,.12,alpha*.95))
+   node.draw_rect(Rect2(center-Vector2(2,7),Vector2(4,10)),Color(1,.88,.5,alpha*.95))
+   for i in range(8):
+    var spark:=center+Vector2(sin(i*2.3+p*3)*20,-8-p*26-Art_shade(i)*14)
+    node.draw_circle(spark,1.8,Color(1,.96,.7,alpha*.85))
+  "burst":
+   goblinfire(node,at,p)
+  "blow":
+   # 등불끄기: 꺼지는 등불과 번지는 어둠.
+   node.draw_rect(Rect2(center-Vector2(6,10),Vector2(12,18)),Color(.30,.28,.36,alpha*.9))
+   node.draw_rect(Rect2(center-Vector2(6,10),Vector2(12,18)),Color(.55,.5,.65,alpha*.7),false,1.2)
+   for i in range(6):
+    var pos:=center+Vector2.from_angle(i*TAU/6+p*2)*(8+p*28)-Vector2(0,p*18)
+    node.draw_circle(pos,5+p*6,Color(.06,.05,.12,alpha*.22))
+  "shuteye":
+   # 검은시야: 감기는 눈과 어두운 커튼.
+   var close:=clampf(p*2.0,0,1)
+   node.draw_set_transform(center,0,Vector2(1,.55))
+   node.draw_arc(Vector2.ZERO,26,0,TAU,26,Color(.08,.06,.14,alpha*.75),3.0*close,true)
+   node.draw_arc(Vector2.ZERO,26,0.15,PI-0.15,20,Color(tint.r,tint.g,tint.b,alpha*.5),1.4,true)
+   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  "moon":
+   # 무월야: 먹구름에 잠식되는 달.
+   var R:=34.0
+   node.draw_circle(center,R,Color(tint.r,tint.g,tint.b,alpha*.30))
+   node.draw_arc(center,R,0,TAU,40,Color(tint.r,tint.g,tint.b,alpha*.7),2.0,true)
+   node.draw_circle(center+Vector2(p*26,-p*8),R*.98,Color(.03,.02,.08,alpha*.85))
+   for i in range(5):
+    node.draw_circle(center+Vector2.from_angle(i*TAU/5+p)*(R+10),10.0,Color(.05,.04,.10,alpha*.22))
+  "powder":
+   powder(node,at,p)
+  "map":
+   # 발자국지도: 격자 위에 그려지는 동선.
+   var rect:=Rect2(center-Vector2(34,26),Vector2(68,52))
+   node.draw_rect(rect,Color(.04,.03,.09,alpha*.5))
+   for i in range(1,4):
+    node.draw_line(Vector2(rect.position.x+rect.size.x*i/4.0,rect.position.y),Vector2(rect.position.x+rect.size.x*i/4.0,rect.end.y),Color(tint.r,tint.g,tint.b,alpha*.18),1.0)
+    node.draw_line(Vector2(rect.position.x,rect.position.y+rect.size.y*i/4.0),Vector2(rect.end.x,rect.position.y+rect.size.y*i/4.0),Color(tint.r,tint.g,tint.b,alpha*.18),1.0)
+   var path:=PackedVector2Array([rect.position+Vector2(8,42),rect.position+Vector2(24,20),rect.position+Vector2(42,34),rect.position+Vector2(60,10)])
+   for i in range(path.size()-1):
+    node.draw_line(path[i],path[i+1],Color(tint.r,tint.g,tint.b,alpha*.6*minf(1.0,p*3.0)),2.0,true)
+  _:
+   node.draw_arc(center,12+p*24,0,TAU,24,Color(tint.r,tint.g,tint.b,alpha*.4),2.0,true)
+## 화중은신 전용: 위아래 축이 말리는 족자와 먹물 번짐.
+static func scroll(node: Node2D,at: Vector2,p: float,facing: float) -> void:
+ var alpha:=1-p
+ var width:=22.0+18.0*clampf(p*2.4,0,1)
+ var height:=88.0*clampf(p*2.0,0,1)
+ var center:=at-Vector2(0,height*.45)
+ node.draw_rect(Rect2(center-Vector2(width*.5,height*.5),Vector2(width,height)),Color(.94,.89,.78,alpha*.9))
+ node.draw_rect(Rect2(center-Vector2(width*.5,height*.5),Vector2(width,height)),Color(.38,.27,.16,alpha*.9),false,1.8)
+ for i in range(3):
+  node.draw_line(center+Vector2(-width*.34,height*(.3-float(i)*.18)),center+Vector2(width*.34,height*(.28-float(i)*.18)),Color(.12,.1,.18,alpha*.5),2.0,true)
+ for i in range(2):
+  var edge:=center+Vector2(0,(height*.5+2)*(1 if i==0 else -1))
+  node.draw_line(edge-Vector2(width*.6,0),edge+Vector2(width*.6,0),Color(.55,.38,.2,alpha*.95),3.0,true)
+ node.draw_set_transform(at,0,Vector2(1,.4))
+ node.draw_arc(Vector2.ZERO,20+p*26,0,TAU,28,Color(.62,.46,.24,alpha*.3),2.0,true)
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ for i in range(6):
+  var pos:=at+Vector2(sin(i*2.2+p*3)*24,-10-p*30-i*3)
+  node.draw_circle(pos,2.4*(1-p*.4),Color(.1,.08,.14,alpha*.4))
