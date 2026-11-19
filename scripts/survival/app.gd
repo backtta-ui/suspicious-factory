@@ -23,9 +23,8 @@ const LOBBY_IMAGE=Vector2(1846,852)
 ## Controls already painted into the lobby key art, in image pixels (position/size).
 ## Native targets are laid over these rects, so they track the artwork at every aspect.
 const LOBBY_HOTSPOTS={
- "characters":Rect2(34,200,96,120),
- "codex":Rect2(34,328,96,119),
- "achievements":Rect2(34,454,96,119),
+ "codex":Rect2(34,202,96,119),
+ "achievements":Rect2(34,391,96,119),
  "shop":Rect2(34,580,96,120),
  "quick":Rect2(1144,244,692,212),
  "friends":Rect2(1148,458,674,136),
@@ -297,8 +296,7 @@ func lobby_layout() -> void:
 func lobby_screen() -> void:
  lobby_hotspots={}
  lobby_background()
- # 2.0.27: 캐릭터 단독 화면은 없앴다. 그림의 캐릭터·도감 자리는 모두 한 도감으로 들어간다.
- lobby_hotspot("characters","도감",func()->void:open_codex("daoist"))
+ # 2.0.29: 그림의 캐릭터 메달을 지우고 도감·업적·상점 세 칸만 같은 간격으로 남겼다.
  lobby_hotspot("quick","빠른 매치",open_quick)
  lobby_hotspot("friends","친구와 함께",func()->void:transition("friends"))
  lobby_hotspot("practice","연습 (봇)",start_practice_match)
