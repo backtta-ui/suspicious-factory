@@ -28,9 +28,20 @@ func run() -> void:
  root.size=Vector2i(1280,720)
  var game:=App.instantiate();root.add_child(game);await frames(8)
  game.build("lobby");await frames(3)
- for key in ["characters","codex","achievements","shop","quick","friends","practice","settings","mail","alerts","gear"]:
+ for key in ["codex","achievements","shop","quick","friends","practice","settings","mail","alerts","gear"]:
   check(game.lobby_hotspots.has(key) and is_instance_valid(game.lobby_hotspots[key]),"lobby hotspot "+key)
+ # 2.0.29: 왼쪽 레일은 도감·업적·상점 세 칸만 남고, 같은 간격으로 놓인다.
+ check(not game.lobby_hotspots.has("characters"),"lobby left rail no longer has the duplicate character button")
+ var rail: Array=[]
+ for key in ["codex","achievements","shop"]:
+  rail.append(game.lobby_hotspots[key].get_global_rect())
+ check(rail.size()==3 and absf((rail[1].position.y-rail[0].position.y)-(rail[2].position.y-rail[1].position.y))<=1.0,"three rail buttons share one vertical pitch")
+ check(rail[0].end.y<rail[1].position.y and rail[1].end.y<rail[2].position.y,"rail buttons never overlap")
  check(game.sound.context=="menu" and game.sound.music.stream==game.sound.lobby,"self-made lobby bgm in the lobby")
+ # 도감 자리는 캐릭터 메달이 하던 대로 통합 도감으로 들어간다.
+ game.lobby_hotspots["codex"].emit_signal("pressed");await wait_screen(game,"characters")
+ check(game.screen=="characters","도감 rail button opens the unified codex")
+ game.build("lobby");await frames(3)
  # 1) 모든 버튼이 임시 팝업이 아니라 실제 화면으로 연결된다
  for destination in ["market","achievements","mail","alerts","friends"]:
   game.build(destination);await frames(2)

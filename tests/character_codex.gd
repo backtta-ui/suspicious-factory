@@ -56,16 +56,21 @@ func run() -> void:
  root.size=Vector2i(1280,720)
  var game:=App.instantiate();root.add_child(game);await frames(10)
  game.build("lobby");await frames(6)
- await tap(game.lobby_hotspots["characters"].get_global_rect().get_center())
+ # 2.0.29: 레일에서 캐릭터 메달이 빠져 도감 자리 하나로 들어간다.
+ check(not game.lobby_hotspots.has("characters"),"the duplicate character button is gone from the lobby rail")
+ await tap(game.lobby_hotspots["codex"].get_global_rect().get_center())
  await create_timer(.5).timeout
- check(game.screen=="characters","lobby 캐릭터 자리 opens the unified guide")
+ check(game.screen=="characters","lobby 도감 자리 opens the unified guide")
  var codex:=codex_of(game)
  check(codex!=null,"guide node is built")
  if codex==null:
   print("CODEX CHECK: ",checks," / ",failures);quit(1);return
  await frames(6)
- check(codex.filter=="daoist" and codex.cards.size()==5,"캐릭터 자리 opens on the daoist tab")
+ check(codex.filter=="all" and codex.cards.size()==10,"도감 자리 opens on the 전체 tab")
  check(named(game.ui,"CodexTab_all")!=null and named(game.ui,"CodexTab_daoist")!=null and named(game.ui,"CodexTab_yokai")!=null,"three role tabs are real buttons")
+ await tap(named(game.ui,"CodexTab_daoist").get_global_rect().get_center())
+ await frames(4)
+ check(codex.cards.size()==5,"도사 tab shows the five daoists")
  await tap(named(game.ui,"CodexTab_all").get_global_rect().get_center())
  await frames(4)
  check(codex.cards.size()==10,"전체 tab shows all ten characters")

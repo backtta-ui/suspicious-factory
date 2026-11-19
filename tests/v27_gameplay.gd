@@ -148,13 +148,9 @@ func run() -> void:
  root.size=Vector2i(2340,1080)
  var game:=App.instantiate();root.add_child(game);await frames(10)
  game.build("lobby");await frames(6)
- check(named(game.ui,"characters")!=null and named(game.ui,"codex")!=null,"lobby keeps one 도감 entry point")
- game.lobby_hotspots["characters"].emit_signal("pressed");await create_timer(.6).timeout
- check(game.screen=="characters","캐릭터 자리 opens the unified 도감")
- await tap(codex_back_for(game))
- await create_timer(.6).timeout
+ check(named(game.ui,"codex")!=null and not game.lobby_hotspots.has("characters"),"lobby keeps one 도감 entry point")
  game.lobby_hotspots["codex"].emit_signal("pressed");await create_timer(.6).timeout
- check(game.screen=="characters","도감 자리 opens the same unified screen")
+ check(game.screen=="characters","도감 자리 opens the unified 도감")
  var codex: Node=find_codex(game)
  check(codex!=null and codex.cards.size()==10,"도감 shows all ten characters")
  check(named(game.ui,"CodexSkin_default")!=null and named(game.ui,"CodexSkin_moon")!=null,"도감 equips robes in place")
