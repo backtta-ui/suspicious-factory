@@ -103,7 +103,9 @@ def main() -> int:
     aligned = root / "final-aligned.apk"
     version = str(staging.get("version") or "2.0.27")
     final = root / f"jeon-woochi-{version}.apk"
-    for stale in [unsigned_zip, aligned, final, final.with_suffix(".apk.idsig")]:
+    signed_tmp = root / "final-signed.apk"
+    # 주의: final은 빌드가 만든 원본 APK와 같은 경로일 수 있다. 원본을 지우지 않는다.
+    for stale in [unsigned_zip, aligned, signed_tmp, signed_tmp.with_suffix(".apk.idsig")]:
         stale.unlink(missing_ok=True)
 
     strip_signatures(source, unsigned_zip)
@@ -115,12 +117,15 @@ def main() -> int:
         "--ks", str(KEYSTORE), "--ks-type", store_type, "--ks-key-alias", KEY_ALIAS,
         "--ks-pass", f"pass:{STORE_PASS}", "--key-pass", f"pass:{KEY_PASS}",
         "--v1-signing-enabled", "true", "--v2-signing-enabled", "true", "--v3-signing-enabled", "true",
-        "--out", str(final), str(aligned),
+        "--out", str(signed_tmp), str(aligned),
     ], check=True)
     unsigned_zip.unlink(missing_ok=True)
     aligned.unlink(missing_ok=True)
     source.unlink(missing_ok=True)
     source.with_suffix(".apk.idsig").unlink(missing_ok=True)
+    if final.exists():
+        final.unlink()
+    signed_tmp.replace(final)
     print(f"signed APK: {final} ({final.stat().st_size} bytes)")
     verification = subprocess.run(
         [str(build_tools / "apksigner"), "verify", "--verbose", "--print-certs", str(final)],
