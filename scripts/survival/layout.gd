@@ -117,6 +117,7 @@ const FORMS={
  "crate":{"name":"나무 상자","radius":9.0,"moving":false,"size":Vector2(26,24)},
  "lantern":{"name":"등불","radius":7.0,"moving":false,"size":Vector2(22,34)},
  "cat":{"name":"고양이","radius":5.0,"moving":true,"size":Vector2(22,23)},
+ "dog":{"name":"강아지","radius":7.0,"moving":true,"size":Vector2(30,25)},
  "stele":{"name":"비석","radius":10.0,"moving":false,"size":Vector2(26,38)}}
 ## 둔갑 사물의 월드 크기(스프라이트 높이·발밑 그림자). world의 사물 그림과
 ## actor의 둔갑 그림이 이 한 값만 보므로, 둔갑하면 같은 사물과 100% 같은 크기가 된다.
@@ -124,7 +125,8 @@ const FORM_VISUALS={
  "jar":{"height":46.0,"shadow":16.0},
  "crate":{"height":46.0,"shadow":16.0},
  "lantern":{"height":46.0,"shadow":16.0},
- "cat":{"height":44.0,"shadow":11.0},
+ "cat":{"height":40.0,"shadow":10.0},
+ "dog":{"height":46.0,"shadow":12.0},
  "stele":{"height":52.0,"shadow":16.0}}
 static func form_visual(kind: String) -> Dictionary:return FORM_VISUALS.get(kind,FORM_VISUALS.jar)
 ## 기력 회복 구슬(영혼불): 스쳐 지나가면 달리기 기력이 가득 차고 잠시 뒤 다시 생긴다.

@@ -21,6 +21,12 @@ const MARGIN=14.0
 var game: Node
 var selection_id:=""
 var locked:=false
+## 2.0.27 빠른 매치: 배정된 진영만 고를 수 있게 잠근다.
+var role_locked:=false
+var locked_team:=""
+var ready_label: Label
+var ready_left:=0.0
+var ready_active:=false
 var tab:="daoist"
 var page:=0
 var built:=false
@@ -199,6 +205,7 @@ func build() -> void:
 	width=maxf(1280.0,view.x/s)
 	if selection_id=="":selection_id=String(game.storage.data.get(side(),""))
 	if tab!="all" and tab!=side():tab=side()
+	if not _tab_allowed(tab):tab=side() if _tab_allowed(side()) else "all"
 	page=clampi(page,0,page_count()-1)
 	_background()
 	_header()
@@ -322,12 +329,21 @@ func _side_tabs() -> void:
 	var index:=0
 	for key in ["daoist","yokai","all"]:
 		var chosen: bool=String(key)==tab
-		var target:=_button(String(labels[key]),func()->void:_set_tab(String(key)),"tab_lit" if chosen else "tab",String(glyphs[key]),Rect2(MARGIN,96.0+index*70.0,98,62),16.0)
+		var shut:=not _tab_allowed(String(key))
+		var caption: String=String(labels[key])+(" · 잠김" if shut else "")
+		var target:=_button(caption,func()->void:_set_tab(String(key)),"tab_lit" if chosen else "tab",String(glyphs[key]),Rect2(MARGIN,96.0+index*70.0,98,62),15.0 if shut else 16.0)
 		target.name="SelectionTab_"+String(key)
+		target.disabled=shut
+		target.modulate=Color(1,1,1,.55) if shut else Color.WHITE
 		tab_buttons[key]=target
 		index+=1
 
+## 배정된 진영이 있으면 그 진영 탭만 열린다(빠른 매치).
+func _tab_allowed(key: String) -> bool:
+	if not role_locked or locked_team=="":return true
+	return key==locked_team
 func _set_tab(key: String) -> void:
+	if not _tab_allowed(key):return
 	if key==tab:return
 	tab=key
 	page=0
@@ -408,7 +424,8 @@ func _make_card(item: Dictionary,r: Rect2,parent: Node) -> void:
 	_add(parent,card,r)
 	card.clip_contents=false
 	game.button_feel(card)
-	card.disabled=locked and id!=selection_id
+	card.disabled=(locked and id!=selection_id) or not mine_allowed(team)
+	if not mine_allowed(team):card.modulate=Color(.7,.7,.76,.75)
 	# 금빛 광 + 카드 텍스처
 	var glow:=UIK.Glow.new()
 	glow.color=Color(1,.84,.46)
@@ -458,7 +475,7 @@ func _make_card(item: Dictionary,r: Rect2,parent: Node) -> void:
 		G.draw_glyph(badge,"lotus" if daoist else "fox",Rect2(c-Vector2(rad*.58,rad*.58),Vector2(rad*1.16,rad*1.16)),P.BRASS_LIGHT if daoist else Color(.90,.78,1.0),1.5))
 	_add(card,badge,Rect2(9,9,26,26))
 	if not mine:
-		var tag:=_label(card,"상대 진영",12,Color(.90,.84,1.0),false)
+		var tag:=_label(card,"선택 불가" if role_locked else "상대 진영",12,Color(.90,.84,1.0),false)
 		tag.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		tag.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 		tag.add_theme_stylebox_override("normal",LC.panel_box(Color(.20,.12,.32,.95),8,P.alpha(Color(.80,.64,1.0),.7),1))
@@ -595,7 +612,7 @@ func _detail() -> void:
 	_add(detail_layer,line,Rect2(x0+24,area.position.y+162,320,1))
 	var head:=_label(detail_layer,"주요 능력",17,P.BRASS_LIGHT,true)
 	_add(detail_layer,head,Rect2(x0+24,area.position.y+172,220,24))
-	var hint:=_label(detail_layer,"3가지 도술",12,Color(.76,.76,.90),false)
+	var hint:=_label(detail_layer,"대표 · 보조 · 궁극기",12,Color(.76,.76,.90),false)
 	hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	_add(detail_layer,hint,Rect2(x0+190,area.position.y+176,154,20))
 	var abilities: Array=spec.get("abilities",[])
@@ -607,6 +624,7 @@ func _detail() -> void:
 		circle.accent=accent
 		circle.name="Skill_%d" % i
 		_add(detail_layer,circle,Rect2(cx-40.0,area.position.y+202,80,80))
+		var slot_name: String=String(ability.get("slot_name",""))
 		var caption:=_label(detail_layer,String(ability.get("name","")),13.5,P.HANJI,false)
 		caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		_add(detail_layer,caption,Rect2(cx-54.0,area.position.y+286,108,20))
@@ -678,9 +696,15 @@ func _footer() -> void:
 	confirm_button=_button("확정 완료 · 팀원 대기" if locked_now else "선택 확정",func()->void:game.confirm_selection(selection_id,self),"gold","check",Rect2(area.end.x-330,area.position.y+34,310,66),24.0,footer_layer)
 	confirm_button.name="SelectionConfirm"
 	confirm_button.disabled=locked_now or not owned(selection_id)
-	var note:=_label(footer_layer,"팀원 모두의 선택이 끝나면 경기가 시작됩니다",12,Color(.82,.82,.94),false)
-	note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	_add(footer_layer,note,Rect2(area.end.x-358,area.end.y-28.0,344,18))
+	ready_label=_label(footer_layer,"",13,Color("ffe6a8"),false)
+	ready_label.name="SelectionReady"
+	ready_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	_add(footer_layer,ready_label,Rect2(area.end.x-358,area.end.y-28.0,344,18))
+	ready_label.text="팀원 모두의 선택이 끝나면 3초 뒤 경기가 시작됩니다"
+	# 진영 잠금 안내
+	if role_locked and locked_team!="":
+		var lock_note:=_label(footer_layer,"빠른 매치 · 배정된 진영만 선택할 수 있습니다",12,Color(.86,.82,.94),false)
+		_add(footer_layer,lock_note,Rect2(area.position.x+24,area.end.y-28.0,420,18))
 
 func _slot(r: Rect2,entry: Dictionary,index: int) -> void:
 	var filled:=not entry.is_empty()
@@ -730,8 +754,15 @@ func _slot(r: Rect2,entry: Dictionary,index: int) -> void:
 		_add(box,seal,Rect2(r.size.x-22.0,r.size.y-22.0,19,19))
 
 # ------------------------------------------------------------------ 동작
+## 이 진영 카드를 지금 고를 수 있는지(빠른 매치 진영 잠금).
+func mine_allowed(team: String) -> bool:
+	if not role_locked or locked_team=="":return true
+	return team==locked_team
 func _pick(id: String) -> void:
 	if locked:return
+	if not mine_allowed(String(C.find(id).get("team",""))):
+		game.notice("빠른 매치에서는 배정된 진영(%s)만 선택할 수 있습니다." % ("도사" if locked_team=="daoist" else "요괴"))
+		return
 	if String(C.find(id).get("team",""))!=side():
 		selection_id=id
 		_paint_cards()
@@ -747,6 +778,16 @@ func _pick(id: String) -> void:
 		_detail()
 		_footer()
 
+## 확정 뒤 준비 카운트다운(2.0.27): 0이 되면 맵으로 넘어간다.
+func set_ready(left: float,active: bool) -> void:
+	if not is_instance_valid(ready_label):return
+	if active:
+		var seconds:=maxi(1,int(ceil(left)))
+		ready_label.text="곧 경기 시작 · %d" % seconds
+		ready_label.add_theme_color_override("font_color",Color("a8f0d0"))
+	elif locked or bool(me().get("confirmed",false)):
+		ready_label.text="확정 완료 · 팀원 대기 중"
+		ready_label.add_theme_color_override("font_color",Color("ffe6a8"))
 func set_timer(left: float) -> void:
 	if is_instance_valid(timer_label):
 		var seconds:=maxi(0,int(ceil(left)))

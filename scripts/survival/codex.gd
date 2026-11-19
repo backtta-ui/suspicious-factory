@@ -22,14 +22,16 @@ const DAOIST_COLOR=Color("f0d79b")
 const YOKAI_COLOR=Color("cfa9ff")
 const DESIGN_HEIGHT=720.0
 const MARGIN=28.0
-const CARD_SIZE=Vector2(96,124)
-const CARD_GAP=8.0
-const GRID_Y=136.0
+## 2.0.27 로스터가 10인(도사 5·요괴 5)으로 늘어 3열 4행이 화면 안에 들어오도록
+## 카드를 조금 줄였다.
+const CARD_SIZE=Vector2(84,96)
+const CARD_GAP=6.0
+const GRID_Y=132.0
 const PANEL_W=344.0
 const PANEL_Y=88.0
 const PANEL_H=560.0
-const GUIDE_Y=534.0
-const GUIDE_H=136.0
+const GUIDE_Y=540.0
+const GUIDE_H=132.0
 const STAND_H=340.0
 const FILTERS=[{"id":"all","label":"전체","icon":""},{"id":"daoist","label":"도사 (생존/지원)","icon":"talisman"},{"id":"yokai","label":"요괴 (추적/봉인)","icon":"mask"}]
 const WATERMARK_CODE="""shader_type canvas_item;
@@ -42,6 +44,7 @@ void fragment() {
 }
 """
 var game: Node
+var initial:="all"
 var filter:="all"
 var selected_id:=""
 var selected: Dictionary={}
@@ -82,6 +85,7 @@ var detail_sheet: NinePatchRect
 var wallet_pills: Array=[]
 var guide: Panel
 var active_ability:=-1
+var skin_row: Control
 var clock:=0.0
 var motion: Tween
 ## Every scaled control registers its 720px design rectangle here.
@@ -142,6 +146,7 @@ class Frame extends Control:
 
 func _ready() -> void:
  mouse_filter=Control.MOUSE_FILTER_STOP
+ filter=initial if initial in ["all","daoist","yokai"] else "all"
  _build()
  resized.connect(_layout)
  _layout()
@@ -352,11 +357,19 @@ func _build_detail() -> void:
  place(rule(detail,Color(GOLD.r,GOLD.g,GOLD.b,.26)),Rect2(24,160,300,1))
  place(label_text(detail,"✦  주요 능력",18,GOLD,true),Rect2(24,166,220,28))
  ability_root=Control.new();ability_root.mouse_filter=Control.MOUSE_FILTER_PASS;detail.add_child(ability_root)
- hint=label_text(detail,"능력을 누르면 쿨타임과 상세 설명이 표시됩니다.",14.5,MUTED);hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
- place(hint,Rect2(24,484,300,40))
+ skin_row=Control.new();skin_row.name="CodexSkinRow";skin_row.mouse_filter=Control.MOUSE_FILTER_PASS
+ detail.add_child(skin_row)
+ place(rule(detail,Color(GOLD.r,GOLD.g,GOLD.b,.26)),Rect2(24,414,300,1))
+ place(label_text(detail,"✦  도포 스킨",17,GOLD,true),Rect2(24,418,220,26))
+ var skin_hint:=label_text(detail,"눌러서 바로 장착",11.5,MUTED)
+ skin_hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
+ place(skin_hint,Rect2(210,422,114,18))
+ hint=label_text(detail,"스킬을 누르면 쿨타임과 상세 설명이 표시됩니다.",14,MUTED)
+ hint.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+ place(hint,Rect2(24,506,300,44))
  tip=Panel.new();tip.mouse_filter=Control.MOUSE_FILTER_IGNORE
  tip.add_theme_stylebox_override("panel",glass(Color(.09,.07,.20,.97),Color(GOLD.r,GOLD.g,GOLD.b,.6),10,Color(VIOLET.r,VIOLET.g,VIOLET.b,.45)))
- detail.add_child(tip);place(tip,Rect2(14,466,316,104))
+ detail.add_child(tip);place(tip,Rect2(14,470,316,104))
  tip_name=label_text(tip,"",17,GOLD,true);place(tip_name,Rect2(14,7,286,26))
  tip_meta=label_text(tip,"",14.5,MUTED);place(tip_meta,Rect2(14,32,286,20))
  tip_body=label_text(tip,"",15,TEXT);tip_body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(tip_body,Rect2(14,54,288,48))
@@ -377,22 +390,72 @@ func _fill_detail() -> void:
  tip.hide();hint.show()
  var abilities: Array=selected.get("abilities",[])
  for i in range(abilities.size()):_ability_row(i,abilities[i])
+ _fill_skins()
  _layout()
 
 func _ability_row(index: int,ability: Dictionary) -> void:
  var target:=button("",func()->void:_show_tip(index),ability_root)
  target.name="CodexAbility_%d"%index
- place(target,Rect2(12,196.0+index*94.0,320,90))
- var badge:=Painted.new();badge.icon=ability.get("icon","");target.add_child(badge);place(badge,Rect2(12,20,44,44))
- var title:=label_text(target,ability.get("name",""),17,TEXT);place(title,Rect2(64,4,206,24))
- var body:=label_text(target,ability.get("description",""),15,MUTED)
- body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(body,Rect2(64,30,238,56))
- place(label_text(target,"%d초"%int(ability.get("cd",0.0)),15,GOLD_DEEP),Rect2(262,4,52,24))
+ place(target,Rect2(12,192.0+index*74.0,320,68))
+ var badge:=Painted.new();badge.icon=ability.get("icon","");target.add_child(badge);place(badge,Rect2(10,14,42,42))
+ var slot_name: String=String(ability.get("slot_name",""))
+ var title_text: String=String(ability.get("name",""))
+ var title:=label_text(target,title_text,16.5,TEXT);place(title,Rect2(60,2,190,22))
+ var slot_tag:=label_text(target,slot_name,11,GOLD_DEEP if slot_name!="궁극기" else Color("c79bff"))
+ slot_tag.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
+ place(slot_tag,Rect2(238,4,70,18))
+ var body:=label_text(target,ability.get("description",""),13.5,MUTED)
+ body.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;place(body,Rect2(60,24,214,42))
+ place(label_text(target,"%d초"%int(ability.get("cd",0.0)),13.5,GOLD_DEEP),Rect2(272,4,44,22))
  target.set_meta("badge",badge);target.set_meta("title",title)
  target.mouse_entered.connect(func()->void:_hover_row(index,true))
  target.mouse_exited.connect(func()->void:_hover_row(index,false))
  _paint_row(target,false,false)
 
+## 도포 스킨 한 줄: 보유한 스킨은 눌러서 바로 장착, 미보유는 가격을 보여 주고
+## 구매는 마켓에서 하도록 안내한다(도감은 장착 전용).
+func _fill_skins() -> void:
+ if not is_instance_valid(skin_row):return
+ for child in skin_row.get_children():child.free()
+ var skins: Array=preload("res://scripts/survival/market.gd").SKINS
+ var equipped: String=String(game.storage.equipped("skin"))
+ if equipped=="":equipped="default"
+ var per: float=50.0
+ for i in range(skins.size()):
+  var item: Dictionary=skins[i]
+  var id: String=String(item.id)
+  var owned: bool=game.storage.owns(String(id))
+  var chosen: bool=id==equipped
+  var target:=button("",func()->void:_equip_skin(item),skin_row)
+  target.name="CodexSkin_"+id
+  place(target,Rect2(24.0+float(i%6)*per,446.0,per-6.0,44.0))
+  var swatch:=Panel.new();swatch.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  var style:=flat(Color(String(item.color)),Color(GOLD.r,GOLD.g,GOLD.b,.95 if chosen else .35),2 if chosen else 1,10)
+  if not owned:style.bg_color=Color(String(item.color)).darkened(.45)
+  swatch.add_theme_stylebox_override("panel",style)
+  target.add_child(swatch)
+  swatch.position=Vector2.ZERO;swatch.size=target.size
+  if not owned:
+   var lock:=label_text(target,"미보유",10,Color("ffe6c0"))
+   lock.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+   place(lock,Rect2(0,12,per-6.0,18))
+  if chosen:
+   var mark:=label_text(target,"✓",14,Color("2a1e08"))
+   mark.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+   place(mark,Rect2(0,8,per-6.0,20))
+  target.set_meta("skin",item)
+  target.tooltip_text=String(item.name)
+func _equip_skin(item: Dictionary) -> void:
+ var id: String=String(item.id)
+ if not game.storage.owns(id):
+  game.notice("「%s」은(는) 마켓에서 코인으로 해금한 뒤 장착할 수 있습니다." % String(item.name))
+  return
+ game.storage.equip("skin",id)
+ game.storage.save()
+ game.sound.play_clip("button")
+ # 누르는 중인 버튼을 즉시 지우면 신호 처리 중에 노드가 사라진다. 다음 프레임에 다시 그린다.
+ _fill_skins.call_deferred()
+ _layout.call_deferred()
 func _rows() -> Array:
  return ability_root.get_children().filter(func(node: Node)->bool:return node is WooMobileButton)
 

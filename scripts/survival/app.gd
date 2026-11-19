@@ -66,6 +66,14 @@ var run_button: WooMobileButton
 var jump_button: WooMobileButton
 var skill_button: WooMobileButton
 var skill_badge: WooSkillBadge
+## 2.0.27: 대표·보조·궁극기 세 버튼과 각 배지.
+var skill_buttons: Dictionary={}
+var skill_badges: Dictionary={}
+var ult_button: WooMobileButton
+## 도감 통합 화면이 처음 보여 줄 진영 탭(all/daoist/yokai).
+var codex_filter:="all"
+## 전체 지도 오버레이(닫기 버튼·바깥 클릭·Esc로 닫힌다).
+var map_overlay: Control
 var minimap: Control
 var survivor_label: Label
 var seal_label: Label
@@ -73,6 +81,8 @@ var form_label: Label
 var hint_label: Label
 var action_caption: Label
 var action_badge: WooSkillBadge
+## 둔갑 가능 표시: 상호작용 버튼 뒤 금빛 링.
+var form_pulse: Panel
 ## 상단 HUD(초상화·하트·기력·참가자 목록·알림 배너).
 var hud_view: Control
 var banner_left:=0.0
@@ -96,6 +106,7 @@ const AVATAR_SNAP=40.0
 var spectate:="human"
 var aim:=Vector2.ZERO
 var aim_cancelled:=false
+var aim_slot:="main"
 var render_clock:=0.0
 var last_count:=-1
 var selection_team:="daoist"
@@ -279,13 +290,14 @@ func lobby_layout() -> void:
 func lobby_screen() -> void:
  lobby_hotspots={}
  lobby_background()
- lobby_hotspot("characters","캐릭터 안내",func()->void:selection_team="daoist";selection_return="lobby";selection_id=storage.data.daoist;transition("characters"))
+ # 2.0.27: 캐릭터 단독 화면은 없앴다. 그림의 캐릭터·도감 자리는 모두 한 도감으로 들어간다.
+ lobby_hotspot("characters","도감",func()->void:open_codex("daoist"))
  lobby_hotspot("quick","빠른 매치",open_quick)
  lobby_hotspot("friends","친구와 함께",func()->void:transition("friends"))
  lobby_hotspot("practice","연습 (봇)",start_practice_match)
  lobby_hotspot("settings","설정",show_settings)
  lobby_hotspot("gear","설정",show_settings)
- lobby_hotspot("codex","도감",func()->void:selection_team="daoist";selection_return="lobby";transition("characters"))
+ lobby_hotspot("codex","도감",func()->void:open_codex("all"))
  lobby_hotspot("achievements","업적",func()->void:transition("achievements"))
  # 그림에는 상점으로 그려져 있고, 화면은 무료 마켓으로 연결된다.
  lobby_hotspot("shop","마켓",func()->void:transition("market"))
@@ -339,7 +351,8 @@ func create_room(name_value: String,count: int,fill_bots: bool,code: String="",y
 func setup_participants(seed_value: int=0) -> void:
  rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.preferred_role=preferred_role;rules.add("human","나",storage.data.daoist,storage.data.yokai)
  if room.fill:
-  for i in range(1,room.count):rules.add("bot-%d"%i,("요괴 %d" if i<3 else "도사 %d")%i,C.catalog("daoist")[i%4].id,C.catalog("yokai")[(i+1)%4].id)
+  var daoists: Array=C.catalog("daoist");var yokai: Array=C.catalog("yokai")
+  for i in range(1,room.count):rules.add("bot-%d"%i,("요괴 %d" if i<3 else "도사 %d")%i,String(daoists[i%daoists.size()].id),String(yokai[i%yokai.size()].id))
  result_seen=false;recorded=false;spectate="human";fixed_clock=0;bot_clock=0
 ## 카드·배너용 둥근 테두리 박스(내용 여백은 카드 크기에 맞춰 작게).
 func box_style(fill: Color,radius: int,border: Color,width: int=1) -> StyleBoxFlat:
@@ -585,10 +598,16 @@ func set_preferred_role(value: String) -> void:
  if screen=="room":build("room")
  elif screen=="quick" and is_instance_valid(quick):quick.refresh_sides()
 
+## 로비 → 통합 도감. 캐릭터 정보·스킬·도포 스킨 장착이 이 한 화면에 있다.
+func open_codex(team: String="all") -> void:
+ if changing:return
+ codex_filter=team if team in ["all","daoist","yokai"] else "all"
+ selection_return="lobby"
+ transition("characters")
 func characters_screen() -> void:
- # The painted roster guide; it is read-only, so nothing here writes the save.
  var codex:=preload("res://scripts/survival/codex.gd").new()
  codex.game=self
+ codex.initial=codex_filter
  full(codex,ui)
 func start_match() -> void:
  if changing or screen!="room":return
@@ -628,6 +647,9 @@ func selection_screen() -> void:
  view.game=self
  view.selection_id=selection_id
  view.locked=rules.players.human.confirmed
+ # 2.0.27: 빠른 매치처럼 진영이 확정된 판은 상대 진영 탭·카드를 잠근다.
+ view.role_locked=bool(room.get("quick",false)) or bool(room.get("practice",false))
+ view.locked_team=role
  selection_view=view
  full(view,ui)
 ## 선택 확정: 팀 대표 캐릭터로 저장하고 화면을 다시 그린다.
@@ -913,14 +935,28 @@ func hud() -> void:
  jump_button=action("점프","jump",Vector2(-316,-150),Vector2(96,96),func()->void:
   if rules.command("human","jump"):sound.play_clip("jump"))
  var spec: Dictionary=C.find(rules.players.human.character)
- skill_button=action(spec.skill.name,spec.skill.icon,Vector2(-316,-258),Vector2(96,96),Callable(),preload("res://scripts/survival/aim_button.gd"));skill_button.directional=spec.skill.aim
- skill_button.ability.connect(func(direction: Vector2)->void:
-  if rules.command("human","skill",{"aim":direction if direction!=Vector2.ZERO else Vector2.from_angle(rules.players.human.facing*PI/4)}):pass
-  aim=Vector2.ZERO)
- skill_button.aimed.connect(func(direction: Vector2,cancelled: bool)->void:aim=direction;aim_cancelled=cancelled)
- var skill_caption: Label=skill_button.get_node_or_null("Caption")
- if skill_caption!=null:skill_caption.position=Vector2(-6,-20)
- skill_button.tip_requested.connect(func()->void:skill_tip(spec.skill.name+" — "+spec.skill.description));skill_badge=skill_button.get_node("Badge")
+ # 2.0.27: 대표 스킬 · 보조 스킬 · 궁극기 세 버튼. 궁극기는 기운이 차야 눌린다.
+ skill_buttons={};skill_badges={}
+ var layout: Array=[{"slot":"main","at":Vector2(-316,-262),"extent":96.0},{"slot":"sub","at":Vector2(-200,-262),"extent":96.0},{"slot":"ult","at":Vector2(-456,-296),"extent":132.0}]
+ for entry in layout:
+  var slot: String=String(entry.slot)
+  var ability: Dictionary=C.ability(rules.players.human.character,slot)
+  if ability.is_empty():continue
+  var target:=action(String(ability.get("name","")),ability_hint(ability),entry.at,Vector2(entry.extent,entry.extent),Callable(),preload("res://scripts/survival/aim_button.gd"))
+  target.directional=bool(ability.get("aim",false))
+  target.name="Skill_"+slot
+  target.ability.connect(func(direction: Vector2)->void:cast_slot(slot,direction))
+  target.aimed.connect(func(direction: Vector2,cancelled: bool)->void:aim=direction;aim_cancelled=cancelled;aim_slot=slot)
+  var caption: Label=target.get_node_or_null("Caption")
+  if caption!=null:
+   caption.position=Vector2(-16,-22) if slot=="ult" else Vector2(-6,-20)
+   caption.text=("궁극기 · " if slot=="ult" else "")+String(ability.get("name",""))
+  target.tip_requested.connect(func()->void:skill_tip(String(ability.get("name",""))+" — "+String(ability.get("description",""))))
+  skill_buttons[slot]=target;skill_badges[slot]=target.get_node("Badge")
+  if slot=="main":
+   # 호환: 기존 코드·테스트가 참조하는 대표 스킬 버튼.
+   skill_button=target;skill_badge=skill_badges[slot]
+ ult_button=skill_buttons.get("ult")
  action_button=action("상호작용","talisman",Vector2(-200,-150),Vector2(96,96))
  if rules.players.human.role=="yokai":action_button.pressed.connect(func()->void:rules.command("human","seal"))
  else:
@@ -931,6 +967,12 @@ func hud() -> void:
   action_button.pressed.connect(func()->void:
    if rules.players.human.rescue=="" and rescue_target()=="":rules.command("human","interact"))
  action_badge=action_button.get_node("Badge")
+ # 둔갑 가능할 때 상호작용 버튼 뒤에서 금빛으로 숨 쉬는 링.
+ form_pulse=Panel.new();form_pulse.name="FormPulse";form_pulse.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ var pulse_style:=D.panel(Color(0,0,0,0),48);pulse_style.border_color=Color(1,.84,.42,.95);pulse_style.set_border_width_all(3)
+ pulse_style.content_margin_left=0;pulse_style.content_margin_right=0;pulse_style.content_margin_top=0;pulse_style.content_margin_bottom=0
+ form_pulse.add_theme_stylebox_override("panel",pulse_style)
+ form_pulse.visible=false
  count_label=text("3",108,Color("ffe6a8"));ui.add_child(count_label)
  count_label.add_theme_constant_override("outline_size",10);count_label.add_theme_color_override("font_outline_color",Color(.05,.03,.08,.92))
  count_label.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"));count_label.set_anchors_and_offsets_preset(Control.PRESET_CENTER);count_label.offset_left=-220;count_label.offset_right=220;count_label.offset_top=-80;count_label.offset_bottom=80;count_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
@@ -941,8 +983,22 @@ func hud() -> void:
  form_label.add_theme_stylebox_override("normal",form_pill)
  # 하단 중앙의 긴 힌트 바는 시야를 가려 없앴다. 상태·안내는 좌상단 상태 라벨과
  # 우측 상호작용 버튼 캡션에만 표시한다.
+ if form_pulse!=null:
+  ui.add_child(form_pulse)
+  form_pulse.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_RIGHT)
+  form_pulse.offset_left=-208;form_pulse.offset_top=-158;form_pulse.offset_right=-96;form_pulse.offset_bottom=-46
+  form_pulse.pivot_offset=Vector2(56,56)
  var spectator:=button("관전 대상",spectator_menu);spectator.name="Spectator";spectator.position=Vector2(20,108);spectator.custom_minimum_size=Vector2(160,56);ui.add_child(spectator)
  spectator.visible=false
+## 대표/보조/궁극기 버튼 → rules의 slot 실행. 조준 없이 누르면 바라보는 방향.
+func cast_slot(slot: String,direction: Vector2) -> void:
+ var me: Dictionary=rules.players.human
+ var path_aim: Vector2=direction if direction!=Vector2.ZERO else Vector2.from_angle(me.facing*PI/4)
+ if rules.command("human","skill",{"aim":path_aim,"slot":slot}):sound.play_clip("spell")
+ aim=Vector2.ZERO;aim_cancelled=false;aim_slot=slot
+## 스킬 버튼 배지에 쓰는 아이콘 이름(능력 설명 문구가 아니라 아이콘).
+func ability_hint(ability: Dictionary) -> String:
+ return String(ability.get("icon","talisman"))
 func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,callback: Callable=Callable(),type: Script=preload("res://scripts/survival/skill_button.gd")) -> WooMobileButton:
  var b: WooMobileButton=button(name_value,callback if callback.is_valid() else func()->void:pass,false,null,type)
  b.text=""
@@ -965,6 +1021,12 @@ func action(name_value: String,icon: String,offset: Vector2,extent: Vector2,call
  badge.position=Vector2((extent.x-side)/2,(extent.y-side)/2-1);badge.size=Vector2(side,side)
  b.add_child(badge)
  return b
+## 조준 중인 스킬 버튼이 있는지(대표·보조·궁극기).
+func aiming() -> bool:
+ for slot in skill_buttons:
+  var target: WooMobileButton=skill_buttons[slot]
+  if is_instance_valid(target) and target.held and target.directional and aim!=Vector2.ZERO:return true
+ return false
 func rescue_target() -> String:
  var p: Dictionary=rules.players.human;var found:="";var best:=58.0
  for q in rules.players.values():
@@ -1144,8 +1206,9 @@ func update_avatars() -> void:
   if not seen.has(id):avatars[id].queue_free();avatars.erase(id)
  var live_effects: Array=[]
  for effect in rules.effects:
-  if effect.kind!="clone":continue
+  if effect.kind not in ["clone","decoy"]:continue
   var key: String=str(effect.id);live_effects.append(key)
+  var decoy: bool=effect.kind=="decoy"
   if not clones.has(key):
    var clone:=Actor.new();clone.network_remote=true;clone.cosmetic=effect.cosmetic
    # 2.0.19: 분신도 본체와 같은 2.5D 인게임 원화로 그린다(예전 마스코트가 나오지 않게).
@@ -1153,7 +1216,10 @@ func update_avatars() -> void:
    clone.art_id=String(effect.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:")
    if clone.art_id=="":clone.art_id=String(effect.cosmetic.get("character","woochi"))
    clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clone.update_sprite();clones[key]=clone
-  var clone: WooActor=clones[key];clone.position=effect.position;clone.facing=effect.facing;clone.velocity=Vector2(36,0);clone.gait_phase+=.15;clone.gait_weight=1
+  var clone: WooActor=clones[key];clone.position=effect.position;clone.position+=Vector2(0,-L.elevation(effect.position));clone.facing=effect.facing
+  clone.velocity=Vector2(0,0) if decoy else Vector2(36,0)
+  clone.gait_weight=0.0 if decoy else 1.0
+  clone.gait_phase+=0.0 if decoy else .15
  for key in clones.keys():
   if not live_effects.has(key):clones[key].queue_free();clones.erase(key)
  if is_instance_valid(camera):
@@ -1183,6 +1249,7 @@ func _process(delta: float) -> void:
   if rules.phase=="loading":sequence+=1;changing=true;load_match(sequence);return
   if is_instance_valid(selection_view):
    selection_view.set_timer(rules.selection_left)
+   selection_view.set_ready(rules.ready_remaining(),rules.phase=="ready")
    var done:=0;var total:=0
    for entry in rules.selection_view("human"):
     if entry.id=="human":continue
@@ -1201,7 +1268,7 @@ func _process(delta: float) -> void:
     var spent:=bot_clock;bot_clock=0
     for bot in bots:bot.think(spent)
  if rules.phase=="result" and not result_seen:result_seen=true;build("result");return
- world.aim=aim;world.aim_cancelled=aim_cancelled;world.aim_active=skill_button.held and skill_button.directional and aim!=Vector2.ZERO
+ world.aim=aim;world.aim_cancelled=aim_cancelled;world.aim_active=aiming()
  update_avatars();update_hud()
 func interaction_context() -> Dictionary:
  var me: Dictionary=rules.players.human
@@ -1213,9 +1280,11 @@ func interaction_context() -> Dictionary:
  if target!="":return {"label":"구출","icon":"rescue","enabled":true,"hint":"구조 버튼을 2.5초간 유지하면 동료가 풀려납니다"}
  if L.door_near(me.position,70)!="":return {"label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 상호작용 버튼으로 문을 엽니다"}
  var near_object: Dictionary=L.object_near(me.position,84)
+ if near_object.is_empty():near_object=rules.animal_near(me.position,84)
  if not near_object.is_empty():
-  var ready: bool=float(me.cd.get("transform",0))<=rules.elapsed
-  return {"label":"둔갑","icon":"jar","enabled":ready,"hint":("사물에 둔갑해 숨습니다 · %s"%L.form(near_object.kind).get("name","사물")) if ready else "둔갑 준비 중입니다"}
+  var ready: bool=float(me.cd.get("disguise",0))<=rules.elapsed
+  var name_value:=String(L.form(String(near_object.kind)).get("name","사물"))
+  return {"label":"둔갑 가능","icon":"jar","enabled":ready,"hint":("사물·동물에 둔갑해 숨습니다 · %s"%name_value) if ready else "둔갑 준비 중입니다","near":near_object}
  return {"label":"상호작용","icon":"talisman","enabled":false,"hint":""}
 ## 남은 목숨을 하트로 보여 준다(도사 전용).
 ## 상단 중앙 알림 배너.
@@ -1233,15 +1302,39 @@ func update_hud() -> void:
  run_button.disabled=not live or me.exhausted
  jump_button.disabled=not live or me.jump>0
  var spec: Dictionary=C.find(me.character)
- var remaining: float=maxf(0,me.cd.get(spec.active,0)-rules.elapsed)
  var form_left: float=maxf(0,float(me.buff.get("transform",0))-rules.elapsed)
  var transformed: bool=me.form!=""
- skill_badge.remaining=form_left if transformed else remaining
- skill_badge.maximum=9.0 if transformed else spec.skill.cd
- skill_button.disabled=not live or (remaining>0 and not transformed)
+ for slot in skill_buttons:
+  var target: WooMobileButton=skill_buttons[slot]
+  var badge: WooSkillBadge=skill_badges.get(slot,null)
+  if not is_instance_valid(target) or badge==null:continue
+  var ability: Dictionary=C.ability(me.character,String(slot))
+  if ability.is_empty():continue
+  var key: String=String(ability.get("skill",""))
+  var remaining: float=maxf(0,float(me.cd.get(key,0))-rules.elapsed)
+  if String(slot)=="ult":
+   var miss: float=maxf(0,rules.ULT_MAX-float(me.get("ult",0.0)))
+   badge.fill_mode=true;badge.remaining=miss;badge.maximum=rules.ULT_MAX
+   badge.locked=miss>0.5
+   target.disabled=not live or miss>0.5
+  else:
+   badge.fill_mode=false
+   badge.remaining=form_left if transformed and String(key)=="transform" else remaining
+   badge.maximum=9.0 if transformed and String(key)=="transform" else float(ability.get("cd",12.0))
+   target.disabled=not live or (remaining>0 and not (transformed and String(key)=="transform"))
  var context: Dictionary=interaction_context()
  var caption: Label=action_button.get_node_or_null("Caption")
- if caption!=null:set_text(caption,String(context.label))
+ if caption!=null:
+  set_text(caption,String(context.label))
+  var highlight: bool=bool(context.get("enabled",false)) and context.has("near")
+  caption.add_theme_color_override("font_color",Color("ffe6a8") if highlight else Color("f6e8c8"))
+ if form_pulse!=null:
+  var show_pulse: bool=bool(context.get("enabled",false)) and context.has("near") and live
+  form_pulse.visible=show_pulse
+  if show_pulse:
+   var beat: float=.5+.5*sin(Time.get_ticks_msec()/260.0)
+   form_pulse.modulate.a=.35+.55*beat
+   form_pulse.scale=Vector2.ONE*(1.0+.05*beat)
  if action_badge.skill!=String(context.icon):
   action_badge.skill=String(context.icon);action_badge.queue_redraw()
  action_button.disabled=not live or not bool(context.enabled)
@@ -1276,7 +1369,7 @@ func update_hud() -> void:
  elif me.outside>0:status="서클 밖 · 안으로 이동"
  else:status="내 역할 · "+("도사" if me.role=="daoist" else "요괴")+" / "+spec.name+(" · 목숨 %s"%hearts(int(me.get("lives",rules.LIVES))) if me.role=="daoist" else "")
  set_text(status_label,status)
- if skill_button.held and skill_button.directional:set_text(status_label,"위로 멀리 끌면 취소" if not aim_cancelled else "취소 · 쿨타임 없음")
+ if aiming():set_text(status_label,"위로 멀리 끌면 취소" if not aim_cancelled else "취소 · 쿨타임 없음")
  set_text(stamina_label,"달리기 %d%%"%int(me.stamina)+(" · 회복 중" if me.exhausted else ""))
  if transformed:
   var form: Dictionary=L.form(me.form)
@@ -1532,14 +1625,64 @@ func record_match() -> void:
  var reward:=120+40*int(me.stats.get("seals",0)) if not me.is_empty() else 120
  storage.add_coins(reward)
  storage.save()
+## 2.0.27 전체 지도: 어떤 화면비(20:9 포함)에서도 지도·닫기 버튼이 화면 안에 있어야 한다.
+## 팝업의 세로 자동 배치 대신, 화면 크기에 맞춰 지도 한 변을 계산해 직접 배치한다.
 func show_map() -> void:
- var box:=popup("월하의 서원 · 전체 지도")
- var holder:=Control.new();holder.custom_minimum_size=Vector2(540,540);box.add_child(holder)
+ if modal!=null:close_popup()
+ var view:=get_viewport().get_visible_rect().size
+ var s:=clampf(view.y/720.0,.62,2.6)
+ var overlay:=Control.new();overlay.name="MapOverlay"
+ full(overlay,ui)
+ overlay.mouse_filter=Control.MOUSE_FILTER_STOP
+ modal=overlay;map_overlay=overlay
+ var shade:=ColorRect.new();shade.color=Color(.012,.015,.035,.9);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ overlay.add_child(shade)
+ # 바깥(어두운 곳)을 누르면 닫힌다.
+ shade.gui_input.connect(func(event: InputEvent)->void:
+  if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:close_map()
+  elif event is InputEventScreenTouch and event.pressed:close_map())
+ var header: float=54.0*s
+ var pad: float=18.0*s
+ var hint_h: float=20.0*s
+ var side: float=minf(view.y-header-hint_h-pad*2.6,view.x*.66)
+ side=minf(side,1020.0*s)
+ var frame_size:=Vector2(side+pad*2.0,side+header+hint_h+pad*2.0)
+ var panel:=Panel.new()
+ panel.mouse_filter=Control.MOUSE_FILTER_STOP
+ var style:=D.panel(Color(.035,.04,.085,.98),int(16*s))
+ style.border_color=Color(GOLD,.75);style.set_border_width_all(maxi(1,int(2*s)))
+ style.content_margin_left=0;style.content_margin_right=0;style.content_margin_top=0;style.content_margin_bottom=0
+ panel.add_theme_stylebox_override("panel",style)
+ overlay.add_child(panel)
+ panel.size=frame_size
+ panel.position=(view-frame_size)*.5
+ var title:=text("월하의 서원 · 전체 지도",int(26*s),Color("f7e4b6"))
+ title.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
+ title.position=Vector2(pad,8*s);title.size=Vector2(frame_size.x-pad*2.0-150*s,header-12*s)
+ title.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+ panel.add_child(title)
+ var holder:=Control.new()
+ holder.position=Vector2(pad,header);holder.size=Vector2(side,side)
+ holder.clip_contents=true
+ holder.mouse_filter=Control.MOUSE_FILTER_STOP
+ panel.add_child(holder)
  var full_map:=preload("res://scripts/survival/minimap.gd").new();full_map.rules=rules;full_map.observer=spectate
  holder.add_child(full_map);full_map.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
- full_map.map_requested.connect(close_popup)
- box.add_child(text("금색 점 · 나 / 붉은 점 · 요괴 / 흰 점 · 도사\n다리와 한옥 안쪽까지 지도에 표시됩니다.",14,Color("cfd7ea")))
- box.add_child(button("닫기",close_popup,true))
+ full_map.map_requested.connect(close_map)
+ # 우상단 큰 닫기 버튼(항상 화면 안).
+ var close_top:=button("닫기 ✕",close_map,true)
+ close_top.name="MapClose"
+ close_top.custom_minimum_size=Vector2.ZERO
+ panel.add_child(close_top)
+ close_top.position=Vector2(frame_size.x-132*s,8*s);close_top.size=Vector2(118*s,header-16*s)
+ close_top.add_theme_font_size_override("font_size",int(20*s))
+ var hint:=text("금색 점 · 나 / 붉은 점 · 요괴 / 흰 점 · 도사 · 누르면 바로 닫힙니다",int(14*s),Color("cfd7ea"))
+ hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ panel.add_child(hint)
+ hint.position=Vector2(pad,header+side+2*s);hint.size=Vector2(side,hint_h)
+func close_map() -> void:
+ map_overlay=null
+ close_popup()
 func back() -> void:
  if changing:return
  if modal!=null:

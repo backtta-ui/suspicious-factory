@@ -1,0 +1,258 @@
+{
+ "version": "2.0.27",
+ "note": "4행(front/left/right/back) x 4열 프레임. 셀 안 캐릭터 키와 발끝 앵커로 그린다.",
+ "characters": {
+  "woochi": {
+   "sheet": "res://assets/woo/ingame/woochi_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "gumiho": {
+   "sheet": "res://assets/woo/ingame/gumiho_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "jangsanbeom": {
+   "sheet": "res://assets/woo/ingame/jangsanbeom_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "dokkaebi": {
+   "sheet": "res://assets/woo/ingame/dokkaebi_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "gildong": {
+   "sheet": "res://assets/woo/ingame/gildong_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "yeongsil": {
+   "sheet": "res://assets/woo/ingame/yeongsil_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "bari": {
+   "sheet": "res://assets/woo/ingame/bari_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "gangrim": {
+   "sheet": "res://assets/woo/ingame/gangrim_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "eoduksini": {
+   "sheet": "res://assets/woo/ingame/eoduksini_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  },
+  "yagwanggwi": {
+   "sheet": "res://assets/woo/ingame/yagwanggwi_walk.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    350
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0
+  }
+ },
+ "animals": {
+  "cat": {
+   "sheet": "res://assets/woo/ingame/cat_walk.png",
+   "cell": [
+    300,
+    260
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    150,
+    232
+   ],
+   "target_height": 44,
+   "fps": 9.0
+  },
+  "dog": {
+   "sheet": "res://assets/woo/ingame/dog_walk.png",
+   "cell": [
+    300,
+    260
+   ],
+   "rows": [
+    "front",
+    "left",
+    "right",
+    "back"
+   ],
+   "cols": 4,
+   "foot": [
+    150,
+    232
+   ],
+   "target_height": 44,
+   "fps": 9.0
+  }
+ }
+}
