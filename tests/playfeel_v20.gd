@@ -236,7 +236,7 @@ func run() -> void:
  check(side_daoist.players.human.role=="daoist","preferred daoist side is honoured")
  check(side_daoist.players.values().filter(func(p: Dictionary)->bool:return p.role=="daoist").size()==6,"daoist count stays at six")
  var Market=preload("res://scripts/survival/market.gd")
- check(Market.shop_items("skin").size()==1 and String(Market.shop_items("skin")[0].id)=="default","skin shop keeps only the default robe")
+ check(Market.shop_items("skin").size()==6 and String(Market.shop_items("skin")[0].id)=="default","skin shop keeps six robes, default free")
  check(Market.skin("moon").get("id","")=="moon","legacy skin ids still resolve for saved data")
  var manifest: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://assets/woo/ingame/frames.json"))
  var walk_ok:=true

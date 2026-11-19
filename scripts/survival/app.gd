@@ -1473,11 +1473,11 @@ func start_practice_match() -> void:
  setup_participants()
  rules.players.human.ready=true
  if not begin_match():room={};transition("lobby");return
- # 봇과 내 캐릭터를 곧바로 확정하고 대기 없이 전장으로 들어간다.
- for i in range(120):
-  if rules.phase!="selection":break
+ # 봇과 내 캐릭터를 곧바로 확정하고, 3초 준비 카운트다운만 거쳐 전장으로 들어간다.
+ for i in range(200):
+  if rules.phase not in ["selection","ready"]:break
   rules.tick(.1)
-  if not rules.players.human.confirmed:rules.confirm_character("human")
+  if rules.phase=="selection" and not rules.players.human.confirmed:rules.confirm_character("human")
  if rules.phase=="loading":sequence+=1;changing=true;load_match(sequence)
 
 ## 친구와 함께: 방 코드를 만들어 공유하거나, 받은 코드로 같은 방에 들어간다.
