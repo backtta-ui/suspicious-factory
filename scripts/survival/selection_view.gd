@@ -677,6 +677,11 @@ const FOE_DEEP=Color("2c1216")
 func _text_width(text_value: String,extent: float) -> float:
 	return FONT.get_string_size(text_value,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(9,int(extent*s))).x/s
 
+## 라벨이 실제로 차지할 폭. 측정값과 라벨 자신의 최소 폭 중 큰 값을 쓴다.
+## (CI·기기에서 폰트 폴백이 달라 측정값이 작게 나와도 옆 라벨과 겹치지 않게)
+func _fit_width(node: Label,text_value: String,extent: float) -> float:
+	return maxf(_text_width(text_value,extent),node.get_minimum_size().x/maxf(s,.001))
+
 func _footer() -> void:
 	var area:=Rect2(MARGIN,570,width-MARGIN*2,132)
 	_reset_layer("footer")
@@ -729,29 +734,32 @@ func _footer() -> void:
 	var own_head:=_label(footer_layer,own_text,13.5,OWN_INK,true)
 	own_head.name="SelectionOwnLabel"
 	own_head.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-	_add(footer_layer,own_head,Rect2(own_head_x,head_y,_text_width(own_text,13.5)+8.0,20))
+	var own_head_w:=_fit_width(own_head,own_text,13.5)
+	_add(footer_layer,own_head,Rect2(own_head_x,head_y,own_head_w+8.0,20))
 	var count_text:="%d / %d" % [chosen,own.size()]
-	var count_x:=own_head_x+_text_width(own_text,13.5)+12.0
 	var count_label:=_label(footer_layer,count_text,15,P.BRASS_LIGHT,true)
 	count_label.name="SelectionCount"
 	count_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-	_add(footer_layer,count_label,Rect2(count_x,head_y-1.0,_text_width(count_text,15)+8.0,22))
+	var count_w:=_fit_width(count_label,count_text,15)
+	var count_x:=own_head_x+own_head_w+16.0
+	_add(footer_layer,count_label,Rect2(count_x,head_y-1.0,count_w+8.0,22))
 	var team_text:="팀원 확정 %d / %d" % [confirmed,maxi(0,own.size()-1)]
-	var team_x:=count_x+_text_width(count_text,15)+14.0
 	team_label=_label(footer_layer,team_text,12.5,Color(.84,.84,.94),false)
 	team_label.name="SelectionTeam"
 	team_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-	_add(footer_layer,team_label,Rect2(team_x,head_y+1.0,_text_width(team_text,12.5)+8.0,20))
+	var team_w:=_fit_width(team_label,team_text,12.5)
+	var team_x:=count_x+count_w+18.0
+	_add(footer_layer,team_label,Rect2(team_x,head_y+1.0,team_w+8.0,20))
 	# ── 상대 팀 머리글: 상대 팀 · 요괴 2 (캐릭터는 비공개)
 	var foe_text:="상대 팀 · "+("요괴" if own_role=="daoist" else "도사")+("  %d" % foe.size())
-	var foe_text_w:=_text_width(foe_text,13.5)
+	var foe_head:=_label(footer_layer,foe_text,13.5,FOE_INK,true)
+	var foe_text_w:=_fit_width(foe_head,foe_text,13.5)
 	var foe_head_x:=foe_left if foe_w>=foe_text_w+22.0 else foe_right-foe_text_w-22.0
 	var foe_mark:=Control.new()
 	foe_mark.name="SelectionFoeMark"
 	foe_mark.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	foe_mark.draw.connect(func()->void:G.draw_glyph(foe_mark,"fox" if own_role=="daoist" else "lotus",Rect2(Vector2.ZERO,foe_mark.size),FOE_TINT,1.6))
 	_add(footer_layer,foe_mark,Rect2(foe_head_x,head_y+2.0,16,16))
-	var foe_head:=_label(footer_layer,foe_text,13.5,FOE_INK,true)
 	foe_head.name="SelectionFoeLabel"
 	foe_head.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
 	_add(footer_layer,foe_head,Rect2(foe_head_x+22.0,head_y,foe_text_w+8.0,20))
@@ -806,12 +814,14 @@ func _footer() -> void:
 	var hint_text:="상대 진영 캐릭터는 경기 시작 때 공개됩니다"
 	if role_locked and locked_team!="":
 		hint_text="빠른 매치 · 배정된 진영만 선택 가능 · 상대 진영은 경기 시작 때 공개"
-	if own_left+_text_width(hint_text,12.0)>area.end.x-358.0-16.0:
+	var hint_w:=_text_width(hint_text,12.0)
+	if own_left+hint_w>area.end.x-358.0-16.0:
 		hint_text="빠른 매치 · 배정된 진영만 선택 · 상대 진영 비공개" if role_locked and locked_team!="" else "상대 진영 캐릭터는 경기 시작 때 공개"
 	var hint:=_label(footer_layer,hint_text,12,top,false)
 	hint.name="SelectionHint"
 	hint.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
-	_add(footer_layer,hint,Rect2(own_left,area.end.y-26.0,_text_width(hint_text,12.0)+8.0,18))
+	hint_w=_fit_width(hint,hint_text,12.0)
+	_add(footer_layer,hint,Rect2(own_left,area.end.y-26.0,hint_w+8.0,18))
 
 ## 하단 슬롯 하나. `tint`는 팀 색(우리 팀 청월·상대 팀 자줏빛), `concealed`는 상대 진영 비공개 칸.
 func _slot(r: Rect2,entry: Dictionary,group: String,index: int,tint: Color,concealed: bool) -> void:
