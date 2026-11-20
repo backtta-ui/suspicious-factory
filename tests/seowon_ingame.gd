@@ -58,10 +58,12 @@ func run() -> void:
  check(L.can_stand(bridge_mid) and not L.can_stand(L.POND.get_center(),9,true),"bridge crossable, pond not")
  check(L.move(L.BRIDGE_A,L.BRIDGE_B).distance_to(L.BRIDGE_B)<2,"walk the bridge end to end")
  check(L.WALLS.size()>=8 and L.BAMBOO.size()>=5,"tiled walls and bamboo groves divide the map")
+ ## 2.0.35 리뉴얼: 둔갑 사물 5종(항아리·대나무 화분·책 궤짝·화로·병풍) + 고양이.
  var five: Array=[]
  for object in L.OBJECTS:
+  if String(object.kind) in ["cat","dog"]:continue
   if not five.has(object.kind):five.append(object.kind)
- check(five.size()==5 and L.OBJECTS.size()>=15,"five disguisable prop kinds in dense clusters")
+ check(five.size()==5 and five.has("bamboo_pot") and five.has("folding_screen") and L.OBJECTS.size()>=15,"five disguisable prop kinds (renewed) in dense clusters")
  # 2) 규칙: 문 ID가 건물별로 열리고 둔갑·봉인이 그대로 동작
  var r:=live_room()
  var human: Dictionary=r.players.human

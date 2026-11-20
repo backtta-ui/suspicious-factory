@@ -1425,15 +1425,17 @@ func show_settings() -> void:
  var map_row:=settings_row(box,"맵 (테스트)","빠른 매치에서 고를 맵")
  var map_pick:=OptionButton.new()
  map_pick.add_item("무작위")
- map_pick.add_item("월하의 서원")
- map_pick.add_item("서울 강남역")
+ var map_keys: Array=["random"]
+ for map_id in Maps.ids():
+  map_pick.add_item(Maps.name_of(String(map_id)))
+  map_keys.append(String(map_id))
  var debug_map: String=String(storage.data.get("debug_map","random"))
- map_pick.selected=0 if debug_map=="random" else (1 if debug_map=="seowon" else 2)
+ map_pick.selected=maxi(0,map_keys.find(debug_map))
  map_pick.custom_minimum_size=Vector2(220,46)
  map_pick.add_theme_font_override("font",LC.FONT);map_pick.add_theme_font_size_override("font_size",17)
  map_row.add_child(map_pick)
  map_pick.item_selected.connect(func(index: int)->void:
-  var value: String="random" if index==0 else ("seowon" if index==1 else "gangnam")
+  var value: String=String(map_keys[clampi(index,0,map_keys.size()-1)])
   storage.data.debug_map=value;Maps.set_preferred(value))
  var screen_row:=settings_row(box,"화면·진동","")
  var vibrate:=CheckBox.new();vibrate.text="진동 켜기";vibrate.button_pressed=storage.data.vibration;style_check(vibrate);screen_row.add_child(vibrate)
@@ -1557,6 +1559,7 @@ func update_avatars() -> void:
    var shape: Dictionary=L.form_visual(String(info.form))
    actor.form_height=float(shape.get("height",46.0));actor.form_shadow=float(shape.get("shadow",16.0))
   actor.appearance_form=("seowon:" if Maps.current_id=="seowon" else "prop:")+String(info.form) if disguised else "human"
+  if disguised:actor.form_art_path=Maps.form_art_path(String(info.form))
   actor.running=rules.players.get(info.id,{}).get("running",false)
   var tint: Color=C.tint(String(info.get("character","")))
   # 둔갑한 도사는 이름·색기운·발밑 표시를 모두 떼어 진짜 사물과 같게 둔다.

@@ -1,5 +1,5 @@
 {
- "version": "2.0.28",
+ "version": "2.0.35",
  "note": "8행(정면·대각선 포함 8방향) x 4열 프레임. 셀 안 원화 키(height)와 발끝 앵커(foot)로 그린다. rows 순서: front, front_right, right, back_right, back, back_left, left, front_left. facing(0=동,1=남동,2=남,3=남서,4=서,5=북서,6=북,7=북동)이 rows의 이름을 그대로 찾는다.",
  "characters": {
   "woochi": {
@@ -383,6 +383,110 @@
    "target_height": 48,
    "fps": 11.0,
    "note": "2.0.34 강남역 공유 전동킥보드 8방향 주행 시트(4프레임)"
+  },
+  "seagull": {
+   "sheet": "res://assets/woo/haeundae/moving/seagull_walk.png",
+   "cell": [
+    192,
+    192
+   ],
+   "rows": [
+    "front",
+    "front_left",
+    "left",
+    "back_left",
+    "back",
+    "back_right",
+    "right",
+    "front_right"
+   ],
+   "cols": 4,
+   "foot": [
+    96,
+    176
+   ],
+   "height": 140,
+   "target_height": 24,
+   "fps": 10.0,
+   "note": "2.0.35 해운대 갈매기 8방향 걷기 시트(4프레임)"
+  },
+  "crab": {
+   "sheet": "res://assets/woo/haeundae/moving/crab_walk.png",
+   "cell": [
+    192,
+    192
+   ],
+   "rows": [
+    "front",
+    "front_left",
+    "left",
+    "back_left",
+    "back",
+    "back_right",
+    "right",
+    "front_right"
+   ],
+   "cols": 4,
+   "foot": [
+    96,
+    176
+   ],
+   "height": 118,
+   "target_height": 18,
+   "fps": 10.0,
+   "note": "2.0.35 해운대 꽃게 8방향 걷기 시트(4프레임)"
+  },
+  "mascot": {
+   "sheet": "res://assets/woo/dongseongno/moving/mascot_walk.png",
+   "cell": [
+    192,
+    192
+   ],
+   "rows": [
+    "front",
+    "front_left",
+    "left",
+    "back_left",
+    "back",
+    "back_right",
+    "right",
+    "front_right"
+   ],
+   "cols": 4,
+   "foot": [
+    96,
+    176
+   ],
+   "height": 168,
+   "target_height": 46,
+   "fps": 10.0,
+   "note": "2.0.35 동성로 인형탈 8방향 걷기 시트(4프레임)"
+  },
+  "delivery_cart": {
+   "sheet": "res://assets/woo/dongseongno/moving/delivery_cart_walk.png",
+   "cell": [
+    192,
+    192
+   ],
+   "rows": [
+    "front",
+    "front_left",
+    "left",
+    "back_left",
+    "back",
+    "back_right",
+    "right",
+    "front_right"
+   ],
+   "cols": 4,
+   "foot": [
+    96,
+    176
+   ],
+   "height": 155,
+   "target_height": 42,
+   "fps": 10.0,
+   "note": "2.0.35 동성로 배달카트 8방향 주행 시트(4프레임)"
   }
  }
 }

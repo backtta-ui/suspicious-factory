@@ -83,51 +83,59 @@ const BAMBOO=[Rect2(1000,250,90,240),Rect2(1160,180,90,200),Rect2(2420,180,90,20
 ## 문 앞·길가·골목마다 고르게 두어 어디서든 숨을 수 있게 한다.
 const OBJECTS=[
  # 청월당 문 앞
- {"kind":"jar","p":Vector2(490,1030)},{"kind":"crate","p":Vector2(530,1046)},
- {"kind":"lantern","p":Vector2(760,1026)},{"kind":"jar","p":Vector2(805,1040)},
+ {"kind":"jar","p":Vector2(490,1030)},{"kind":"book_chest","p":Vector2(530,1046)},
+ {"kind":"brazier","p":Vector2(760,1026)},{"kind":"bamboo_pot","p":Vector2(805,1040)},
  # 서고 문 앞
- {"kind":"jar","p":Vector2(2130,750)},{"kind":"crate","p":Vector2(2170,766)},
- {"kind":"lantern","p":Vector2(2400,746)},{"kind":"jar","p":Vector2(2445,760)},
+ {"kind":"jar","p":Vector2(2130,750)},{"kind":"book_chest","p":Vector2(2170,766)},
+ {"kind":"brazier","p":Vector2(2400,746)},{"kind":"bamboo_pot","p":Vector2(2445,760)},
  # 별채 문 앞
- {"kind":"jar","p":Vector2(550,1690)},{"kind":"crate","p":Vector2(590,1706)},
- {"kind":"lantern","p":Vector2(820,1686)},{"kind":"jar","p":Vector2(865,1700)},
+ {"kind":"jar","p":Vector2(550,1690)},{"kind":"book_chest","p":Vector2(590,1706)},
+ {"kind":"brazier","p":Vector2(820,1686)},{"kind":"bamboo_pot","p":Vector2(865,1700)},
  # 행랑채 문 앞
- {"kind":"jar","p":Vector2(2850,2210)},{"kind":"crate","p":Vector2(2890,2226)},
- {"kind":"lantern","p":Vector2(3120,2206)},{"kind":"jar","p":Vector2(3165,2220)},
+ {"kind":"jar","p":Vector2(2850,2210)},{"kind":"book_chest","p":Vector2(2890,2226)},
+ {"kind":"brazier","p":Vector2(3120,2206)},{"kind":"bamboo_pot","p":Vector2(3165,2220)},
  # 약방 문 앞
- {"kind":"jar","p":Vector2(1250,2250)},{"kind":"crate","p":Vector2(1290,2266)},
- {"kind":"lantern","p":Vector2(1520,2246)},{"kind":"jar","p":Vector2(1565,2260)},
+ {"kind":"jar","p":Vector2(1250,2250)},{"kind":"book_chest","p":Vector2(1290,2266)},
+ {"kind":"brazier","p":Vector2(1520,2246)},{"kind":"bamboo_pot","p":Vector2(1565,2260)},
  # 서당 문 앞
- {"kind":"jar","p":Vector2(2750,950)},{"kind":"crate","p":Vector2(2790,966)},
- {"kind":"lantern","p":Vector2(3020,946)},{"kind":"jar","p":Vector2(3065,960)},
+ {"kind":"jar","p":Vector2(2750,950)},{"kind":"book_chest","p":Vector2(2790,966)},
+ {"kind":"brazier","p":Vector2(3020,946)},{"kind":"bamboo_pot","p":Vector2(3065,960)},
  # 순환 골목 길가
- {"kind":"jar","p":Vector2(940,831)},{"kind":"crate","p":Vector2(1298,1005)},
- {"kind":"lantern","p":Vector2(1545,689)},{"kind":"cat","p":Vector2(2401,1071)},
- {"kind":"lantern","p":Vector2(3039,1297)},{"kind":"stele","p":Vector2(3039,1603)},
- {"kind":"cat","p":Vector2(3275,1925)},{"kind":"jar","p":Vector2(2984,2075)},
- {"kind":"crate","p":Vector2(2795,2430)},{"kind":"lantern","p":Vector2(2464,2205)},
- {"kind":"stele","p":Vector2(2167,2215)},{"kind":"cat","p":Vector2(1870,2218)},
- {"kind":"lantern","p":Vector2(909,2351)},{"kind":"stele","p":Vector2(1015,1943)},
- {"kind":"cat","p":Vector2(1007,1646)},{"kind":"jar","p":Vector2(998,1304)},
- {"kind":"lantern","p":Vector2(1792,430)},{"kind":"lantern","p":Vector2(1518,1927)},
+ {"kind":"jar","p":Vector2(940,831)},{"kind":"book_chest","p":Vector2(1298,1005)},
+ {"kind":"brazier","p":Vector2(1545,689)},{"kind":"cat","p":Vector2(2401,1071)},
+ {"kind":"brazier","p":Vector2(3039,1297)},{"kind":"folding_screen","p":Vector2(3039,1603)},
+ {"kind":"cat","p":Vector2(3275,1925)},{"kind":"bamboo_pot","p":Vector2(2984,2075)},
+ {"kind":"book_chest","p":Vector2(2795,2430)},{"kind":"brazier","p":Vector2(2464,2205)},
+ {"kind":"folding_screen","p":Vector2(2167,2215)},{"kind":"cat","p":Vector2(1870,2218)},
+ {"kind":"brazier","p":Vector2(909,2351)},{"kind":"folding_screen","p":Vector2(1015,1943)},
+ {"kind":"cat","p":Vector2(1007,1646)},{"kind":"bamboo_pot","p":Vector2(998,1304)},
+ {"kind":"brazier","p":Vector2(1792,430)},{"kind":"brazier","p":Vector2(1518,1927)},
  {"kind":"cat","p":Vector2(2360,1209)},
  # 북쪽 화단(테스트가 찾는 자리)
  {"kind":"jar","p":Vector2(1430,556)}]
 const FORMS={
- "jar":{"name":"항아리","radius":7.0,"moving":false,"size":Vector2(20,26)},
- "crate":{"name":"나무 상자","radius":9.0,"moving":false,"size":Vector2(26,24)},
- "lantern":{"name":"등불","radius":7.0,"moving":false,"size":Vector2(22,34)},
+ "jar":{"name":"장독 항아리","radius":7.0,"moving":true,"size":Vector2(24,30)},
+ "bamboo_pot":{"name":"대나무 화분","radius":8.0,"moving":true,"size":Vector2(26,32)},
+ "book_chest":{"name":"책 궤짝","radius":8.0,"moving":true,"size":Vector2(28,24)},
+ "brazier":{"name":"화로","radius":7.0,"moving":true,"size":Vector2(24,28)},
+ "folding_screen":{"name":"병풍","radius":9.0,"moving":true,"size":Vector2(34,40)},
  "cat":{"name":"고양이","radius":5.0,"moving":true,"size":Vector2(22,23)},
  "dog":{"name":"강아지","radius":7.0,"moving":true,"size":Vector2(30,25)},
+ "lantern":{"name":"등불","radius":7.0,"moving":false,"size":Vector2(22,34)},
+ "crate":{"name":"나무 상자","radius":9.0,"moving":false,"size":Vector2(26,24)},
  "stele":{"name":"비석","radius":10.0,"moving":false,"size":Vector2(26,38)}}
 ## 둔갑 사물의 월드 크기(스프라이트 높이·발밑 그림자). world의 사물 그림과
 ## actor의 둔갑 그림이 이 한 값만 보므로, 둔갑하면 같은 사물과 100% 같은 크기가 된다.
 const FORM_VISUALS={
- "jar":{"height":46.0,"shadow":16.0},
- "crate":{"height":46.0,"shadow":16.0},
- "lantern":{"height":46.0,"shadow":16.0},
+ "jar":{"height":52.0,"shadow":17.0},
+ "bamboo_pot":{"height":54.0,"shadow":16.0},
+ "book_chest":{"height":44.0,"shadow":15.0},
+ "brazier":{"height":48.0,"shadow":15.0},
+ "folding_screen":{"height":64.0,"shadow":18.0},
  "cat":{"height":22.0,"shadow":5.0},
  "dog":{"height":26.0,"shadow":6.0},
+ "lantern":{"height":46.0,"shadow":16.0},
+ "crate":{"height":46.0,"shadow":16.0},
  "stele":{"height":52.0,"shadow":16.0}}
 static func form_visual(kind: String) -> Dictionary:return FORM_VISUALS.get(kind,FORM_VISUALS.jar)
 ## 기력 회복 구슬(영혼불): 스쳐 지나가면 달리기 기력이 가득 차고 잠시 뒤 다시 생긴다.

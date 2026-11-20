@@ -23,7 +23,14 @@ const GROUND_MASK=preload("res://assets/woo/seowon/seowon_ground_mask.png")
 const DETAIL_GRASS=preload("res://assets/woo/seowon/seowon_detail_grass.png")
 const DETAIL_STONE=preload("res://assets/woo/seowon/seowon_detail_stone.png")
 const DETAIL_YARD=preload("res://assets/woo/seowon/seowon_detail_yard.png")
-const PROPS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
+## 2.0.35 서원 리뉴얼 11종: 항아리·대나무 화분·화로·책 궤짝·병풍 + 고양이·강아지 8방향 유지.
+const PROPS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"bamboo_pot":preload("res://assets/woo/seowon/prop_bamboo_pot.png"),"book_chest":preload("res://assets/woo/seowon/prop_book_chest.png"),"brazier":preload("res://assets/woo/seowon/prop_brazier.png"),"folding_screen":preload("res://assets/woo/seowon/prop_folding_screen.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png")}
+const LANTERN_ON=preload("res://assets/woo/seowon/gimmicks/gimmick_lantern_on.png")
+const LANTERN_OFF=preload("res://assets/woo/seowon/gimmicks/gimmick_lantern_off.png")
+const PAVILION_PILLAR=preload("res://assets/woo/seowon/gimmicks/gimmick_pavilion_pillar.png")
+const STONE_RAIL=preload("res://assets/woo/seowon/gimmicks/gimmick_stone_bridge.png")
+const ENV_CHERRY=preload("res://assets/woo/seowon/env/env_cherry_tree.png")
+const ENV_BAMBOO=preload("res://assets/woo/seowon/env/env_bamboo_clump.png")
 ## 2.0.27 맵을 실제로 걷는 고양이·강아지: 4행(front/left/right/back) x 4열 걷기 시트.
 ## 둔갑하면 이 시트와 같은 박자를 그대로 복사한다.
 const C=preload("res://scripts/survival/characters.gd")
@@ -147,6 +154,18 @@ func build_bridge() -> void:
  deck.scale=Vector2(length/BRIDGE_TEX.get_width(),.52)
  deck.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  add_child(deck)
+ # 2.0.35 리뉴얼: 목교 양옆에 석조 난간을 세워 조선 서원다운 무게를 준다.
+ var axis_n: Vector2=(L.BRIDGE_B-L.BRIDGE_A).normalized()
+ var side_n:=Vector2(-axis_n.y,axis_n.x)
+ for side in [-1.0,1.0]:
+  for k in range(2):
+   var t: float=(float(k)+.5)*.5
+   var at: Vector2=L.BRIDGE_A.lerp(L.BRIDGE_B,t)+side_n*side*(L.BRIDGE_HALF+3.0)
+   var rail:=Sprite2D.new();rail.texture=STONE_RAIL;rail.centered=true;rail.z_index=-78
+   rail.position=at;rail.rotation=angle
+   rail.scale=Vector2((length*.5)/STONE_RAIL.get_width()*1.02,.40)
+   rail.modulate=Color(.86,.88,.95,.95);rail.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+   add_child(rail)
  for end in [L.BRIDGE_A,L.BRIDGE_B]:
   var stone:=Node2D.new();stone.position=end;stone.z_index=-79
   stone.draw.connect(func()->void:
@@ -199,8 +218,8 @@ func build_garden() -> void:
  # 벚꽃나무: 줄기 밑에 부드러운 그림자와 떨어진 꽃잎.
  for p in Art.TREES:
   shadow(p+Vector2(0,6),Vector2(200,78),.9)
-  var sprite:=Sprite2D.new();sprite.texture=Art.ATLAS;sprite.region_enabled=true;sprite.region_rect=Art.CHERRY_CELL
-  var s:=255.0/512.0;sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-127.5,-470*s)
+  var sprite:=Sprite2D.new();sprite.texture=ENV_CHERRY
+  var s:=255.0/ENV_CHERRY.get_height();sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-ENV_CHERRY.get_width()*s*.5,-255.0+ENV_CHERRY.get_height()*s*.02)
   sprite.modulate=Color(.94,.90,.96)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
   var holder:=Node2D.new();holder.position=p;holder.add_child(sprite);culled.append({"node":holder,"rect":Rect2(p-Vector2(190,360),Vector2(380,400))})
@@ -213,10 +232,10 @@ func build_garden() -> void:
   for i in range(count):
    var base:=Vector2(rect.position.x+rect.size.x*.5,rect.position.y+40+i*(rect.size.y-60)/maxf(1,count))
    shadow(base+Vector2(0,2),Vector2((rect.size.x+40)*.85,44),.7)
-   var sprite:=Sprite2D.new();sprite.texture=BAMBOO
-   var s: float=(rect.size.x+40.0)/BAMBOO.get_width()
+   var sprite:=Sprite2D.new();sprite.texture=ENV_BAMBOO
+   var s: float=(rect.size.x+40.0)/ENV_BAMBOO.get_width()
    sprite.scale=Vector2(s,s);sprite.centered=false
-   sprite.position=Vector2(-(rect.size.x+40)*.5,-BAMBOO.get_height()*s*.98)
+   sprite.position=Vector2(-(rect.size.x+40)*.5,-ENV_BAMBOO.get_height()*s*.98)
    sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
    var holder:=Node2D.new();holder.position=base
    holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(base-Vector2(130,320),Vector2(260,350))})
@@ -224,17 +243,33 @@ func build_garden() -> void:
  # 석등(장식): 부드러운 발밑 그림자 + 따뜻한 빛무리
  for p in Art.LANTERNS:
   shadow(p+Vector2(0,2),Vector2(72,30),.85)
-  var sprite:=Sprite2D.new();sprite.texture=PROPS.lantern;var s:=78.0/PROPS.lantern.get_height()
-  sprite.scale=Vector2(s,s);sprite.centered=false;sprite.position=Vector2(-PROPS.lantern.get_width()*s*.5,-78)
-  sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
-  var holder:=Node2D.new();holder.position=p;holder.add_child(sprite)
+  var on_sprite:=Sprite2D.new();on_sprite.texture=LANTERN_ON;var s:=78.0/LANTERN_ON.get_height()
+  on_sprite.scale=Vector2(s,s);on_sprite.centered=false;on_sprite.position=Vector2(-LANTERN_ON.get_width()*s*.5,-78)
+  on_sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+  var off_sprite:=Sprite2D.new();off_sprite.texture=LANTERN_OFF
+  var s_off:=78.0/LANTERN_OFF.get_height()
+  off_sprite.scale=Vector2(s_off,s_off);off_sprite.centered=false;off_sprite.position=Vector2(-LANTERN_OFF.get_width()*s_off*.5,-78)
+  off_sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR;off_sprite.visible=false
+  var holder:=Node2D.new();holder.position=p;holder.add_child(on_sprite);holder.add_child(off_sprite)
   var glow_node:=Node2D.new();glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-46),96,Color(1,.68,.32,.26)));holder.add_child(glow_node)
   add_child(holder);culled.append({"node":holder,"rect":Rect2(p-Vector2(70,100),Vector2(140,120))})
   # 2.0.30: 등불끄기에서 '이 석등만' 꺼지도록 위치·불빛·연기를 함께 보관한다.
   var smoke:=Node2D.new();smoke.name="LanternSmoke";smoke.position=p;smoke.z_index=6
   smoke.draw.connect(func()->void:draw_lantern_smoke(smoke,p))
   add_child(smoke)
-  lantern_holders.append({"node":holder,"glow":glow_node,"at":p,"smoke":smoke,"level":1.0})
+  lantern_holders.append({"node":holder,"glow":glow_node,"at":p,"smoke":smoke,"level":1.0,"on":on_sprite,"off":off_sprite})
+ # 2.0.35 리뉴얼: 팔각 마당 네 모서리의 정자 기둥(등불 포함). 충돌 없는 장식이다.
+ for corner in [Vector2(L.STONE.position.x-18,L.STONE.position.y-14),Vector2(L.STONE.end.x+18,L.STONE.position.y-14),
+  Vector2(L.STONE.position.x-18,L.STONE.end.y+14),Vector2(L.STONE.end.x+18,L.STONE.end.y+14)]:
+  shadow(corner+Vector2(0,4),Vector2(74,30),.8)
+  var pillar:=Sprite2D.new();pillar.texture=PAVILION_PILLAR
+  var ps:=148.0/PAVILION_PILLAR.get_height()
+  pillar.scale=Vector2(ps,ps);pillar.centered=false
+  pillar.position=Vector2(-PAVILION_PILLAR.get_width()*ps*.5,-148.0)
+  pillar.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+  var pillar_holder:=Node2D.new();pillar_holder.position=corner;pillar_holder.add_child(pillar)
+  var pglow:=Node2D.new();pglow.draw.connect(func()->void:Art.glow(pglow,Vector2(0,-74),70,Color(1,.74,.42,.22)));pillar_holder.add_child(pglow)
+  add_child(pillar_holder);culled.append({"node":pillar_holder,"rect":Rect2(corner-Vector2(60,170),Vector2(120,190))})
  # 둔갑 사물(군집): 같은 부드러운 그림자를 공유한다.
  for object_index in range(L.OBJECTS.size()):
   var data: Dictionary=L.OBJECTS[object_index]
@@ -447,6 +482,10 @@ func update_props() -> void:
   if is_instance_valid(glow):
    glow.visible=level>.02
    glow.modulate.a=clampf(level,0.0,1.0)
+  var on_node: Sprite2D=entry.get("on")
+  var off_node: Sprite2D=entry.get("off")
+  if is_instance_valid(on_node):on_node.visible=level>.5
+  if is_instance_valid(off_node):off_node.visible=level<=.5
   var smoke: Node2D=entry.smoke
   if is_instance_valid(smoke):
    smoke.visible=level<.98
