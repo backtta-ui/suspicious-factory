@@ -52,6 +52,16 @@ static func draw_base(node: Node2D) -> void:
     2:node.draw_rect(Rect2(rect.position,Vector2(band_w,rect.size.y)),shade)
     3:node.draw_rect(Rect2(Vector2(rect.end.x-band_w,rect.position.y),Vector2(band_w,rect.size.y)),shade)
   tile_lines(node,rect,110.0,Color(.24,.30,.40,.40))
+  ## 2.0.34 피드백: 구역마다 은은한 조명 뎁스를 더해 바닥이 밋밋하지 않게 한다.
+  ## 가운데는 밝고 가장자리는 어두워지며, 바닥 타일 색조가 구역 색을 머금는다.
+  var center: Vector2=rect.get_center()
+  var glow_radius: float=maxf(rect.size.x,rect.size.y)*.60
+  for k in range(4):
+   var t: float=float(k)/4.0
+   node.draw_circle(center,glow_radius*(1.0-t),Color(zone_accent.r,zone_accent.g,zone_accent.b,.040*(1.0-t)),true,-1.0,true)
+  for k2 in range(3):
+   var inset: float=26.0+float(k2)*26.0
+   node.draw_rect(rect.grow(-inset),Color(.02,.04,.08,.055),false,inset)
   var accent: Color=zone.accent
   # 존 경계의 옅은 네온 인레이
   node.draw_rect(rect.grow(-3),Color(zone_accent.r,zone_accent.g,zone_accent.b,.24),false,3.0)

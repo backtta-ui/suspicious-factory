@@ -71,7 +71,10 @@ const MUSIC=preload("res://assets/audio/lobby_night.wav")
 ## 2.0.34 맵별 BGM: 서원=국악기 기반 달밤(기존 seowon_ingame), 강남역=도심 심야 신스.
 const MAP_BGM={
  "seowon":INGAME,
- "gangnam":preload("res://assets/audio/bgm_gangnam.wav")}
+ "gangnam":preload("res://assets/audio/bgm_gangnam.wav"),
+ ## 2.0.35: 해운대=밝고 시원한 밤바다, 동성로=리드미컬한 네온 신스.
+ "haeundae":preload("res://assets/audio/bgm_haeundae.wav"),
+ "dongseongno":preload("res://assets/audio/bgm_dongseongno.wav")}
 const STEPS=[preload("res://assets/audio/step.wav"),preload("res://assets/audio/step2.wav"),preload("res://assets/audio/step3.wav")]
 const SURFACES={"stone":STEPS[0],"grass":preload("res://assets/audio/grass.wav"),"dirt":preload("res://assets/audio/dirt.wav"),"wood":preload("res://assets/audio/wood.wav"),"water":preload("res://assets/audio/water.wav")}
 var terrain_stream: AudioStream

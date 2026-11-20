@@ -26,6 +26,9 @@ var jump_phase:="ground"
 var network_remote:=false
 var identity_concealed:=false
 var appearance_form:="human"
+## 2.0.35: 맵별 둔갑 사물 원화 경로(app.gd가 Maps.form_art_path로 넣는다).
+var form_art_path:=""
+static var _form_art_cache: Dictionary={}
 ## 둔갑 사물의 월드 크기와 발밑 그림자 반지름. 부르는 쪽(app.gd)이 layout.gd의
 ## FORM_VISUALS 값을 넣어, 맵에 놓인 같은 사물과 픽셀 크기·위치가 같아진다.
 var form_height:=46.0
@@ -55,7 +58,7 @@ const GANGNAM_FORMS={
  "hydrant":preload("res://assets/woo/gangnam/props/prop_hydrant.png"),
  "delivery_robot":preload("res://assets/woo/gangnam/props/prop_delivery_robot.png"),
  "kickboard":preload("res://assets/woo/gangnam/props/prop_kickboard.png")}
-const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png"),"dog":preload("res://assets/woo/seowon/prop_crate.png")}
+const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"bamboo_pot":preload("res://assets/woo/seowon/prop_bamboo_pot.png"),"book_chest":preload("res://assets/woo/seowon/prop_book_chest.png"),"brazier":preload("res://assets/woo/seowon/prop_brazier.png"),"folding_screen":preload("res://assets/woo/seowon/prop_folding_screen.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png"),"dog":preload("res://assets/woo/seowon/prop_crate.png")}
 ## 2.0.27: 맵을 실제로 걷는 고양이·강아지의 2프레임 걷기 원화. 둔갑하면 그 동물과
 ## 같은 원화·같은 걷기 박자로 움직인다.
 const C=preload("res://scripts/survival/characters.gd")
@@ -285,6 +288,12 @@ func update_sprite() -> void:
 				sprite.modulate=Color("e5d8ff") if transforming>0 else Color.WHITE
 				return
 		var form_texture: Texture2D=GANGNAM_FORMS.get(form_kind,SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar))
+		if form_art_path!="":
+			if _form_art_cache.has(form_art_path):
+				form_texture=_form_art_cache[form_art_path]
+			elif ResourceLoader.exists(form_art_path):
+				form_texture=load(form_art_path)
+				_form_art_cache[form_art_path]=form_texture
 		# 맵 사물과 같은 월드 높이. 액터 배율만큼 나눠 로컬 크기를 맞춘다.
 		var local_height: float=form_height/maxf(costume_scale,.01)
 		sprite.texture=form_texture;sprite.region_enabled=false;sprite.centered=true

@@ -20,7 +20,8 @@ func frames(n: int=4) -> void:
  for i in range(n):await process_frame
 func run() -> void:
  # ---------------------------------------------------------------- 1) 맵 풀/보존
- check(Maps.ids().size()==2 and Maps.ids().has("seowon") and Maps.ids().has("gangnam"),"맵 풀에 서원과 강남역이 함께 있다")
+ ## 2.0.35에서 4맵으로 늘었지만 서원·강남역은 그대로 남아 있어야 한다.
+ check(Maps.ids().size()>=2 and Maps.ids().has("seowon") and Maps.ids().has("gangnam"),"맵 풀에 서원과 강남역이 함께 있다")
  check(SeowonL.buildings().size()==6 and SeowonL.OBJECTS.size()>=40,"기존 월하의 서원 맵이 그대로 보존됐다(건물 6·사물 40+)")
  check(SeowonL.map_id()=="seowon" and GangnamL.map_id()=="gangnam","맵마다 고유 id")
  var seen:= {}

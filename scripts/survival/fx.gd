@@ -63,10 +63,12 @@ static func png_burst(node: Node2D,at: Vector2,p: float,e: Dictionary) -> void:
  if texture==null:return
  var ease_out: float=1.0-pow(1.0-p,2.2)
  var grow: float=lerpf(.62,1.16,ease_out)
- var alpha: float=clampf(1.25-p*1.45,0.0,1.0)
+ ## 2.0.34 피드백: 이펙트가 캐릭터를 가리지 않도록 effect별 크기·투명도 상한을 둔다.
+ var max_side: float=float(e.get("size",150.0))
+ var alpha: float=clampf(1.25-p*1.45,0.0,1.0)*float(e.get("alpha",1.0))
  var lift: float=p*30.0
  var size: Vector2=texture.get_size()
- var scale_value: float=150.0/maxf(1.0,maxf(size.x,size.y))
+ var scale_value: float=max_side/maxf(1.0,maxf(size.x,size.y))
  node.draw_set_transform(at+Vector2(0,-26-lift),0.0,Vector2(grow*scale_value,grow*scale_value))
  node.draw_texture(texture,-size*.5,Color(1,1,1,alpha))
  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)

@@ -94,7 +94,10 @@ func signature(p: Dictionary,skill_id: String,aim: Vector2=Vector2.ZERO) -> void
   burst(p.position,"fx_sig",0.85,extra)
  # 2.0.34: 10인 기본 스킨 전용 이펙트 PNG(부침개 전우치는 김치전·부침개 이펙트).
  if skin_fx!="":
-  burst(p.position,"fx_png",1.35,{"file":skin_fx,"texture":load(skin_fx),"facing":p.facing})
+  ## 2.0.34 피드백: 김치전·부침개 이펙트가 캐릭터를 너무 크게 가리지 않도록
+  ## 크기·투명도를 낮춰 발밑에서 펼쳐지게 한다.
+  var fx_size: float=96.0 if skin_fx.contains("kimchijeon") else 124.0
+  burst(p.position,"fx_png",1.2,{"file":skin_fx,"texture":load(skin_fx),"facing":p.facing,"size":fx_size,"alpha":.80})
 func _init(seed_value: int=0) -> void:
  if seed_value==0:rng.randomize()
  else:rng.seed=seed_value
@@ -825,6 +828,8 @@ func tick(delta: float) -> void:
   speed*=outside_speed_factor(p)
   ## 에스컬레이터: 작동 방향으로 타면 가속, 반대로 걸으면 느려지고 살짝 밀린다.
   var escalator: Dictionary=gimmicks.on_escalator(p.position) if gimmicks!=null else {}
+  ## 2.0.35: 파도 경보(해운대) 같은 맵 기믹 감속.
+  if gimmicks!=null:speed*=gimmicks.speed_factor(p)
   if not escalator.is_empty():
    var flow:=Vector2(0,-1.0 if gimmicks.escalator_dir>0 else 1.0)
    var along: float=p.intent.dot(flow)
@@ -847,7 +852,8 @@ func tick(delta: float) -> void:
     if not gimmicks.blocked(moved):p.position=moved
   if L.can_stand(p.position):p.ground=p.position
   var distance: float=p.position.distance_to(previous);p.stride+=distance
-  if distance>0 and float(p.buff.get("stealth",0.0))<=elapsed and (p.trail.is_empty() or p.position.distance_to(p.trail[-1].position)>=18):p.trail.append({"position":p.position,"time":elapsed,"facing":p.facing})
+  var muted_footsteps: bool=gimmicks!=null and gimmicks.trail_blocked(p.position)
+  if distance>0 and not muted_footsteps and float(p.buff.get("stealth",0.0))<=elapsed and (p.trail.is_empty() or p.position.distance_to(p.trail[-1].position)>=18):p.trail.append({"position":p.position,"time":elapsed,"facing":p.facing})
   while not p.trail.is_empty() and elapsed-p.trail[0].time>6:p.trail.pop_front()
  _outside_penalties(delta)
  if gimmicks!=null:gimmicks.tick(delta)
@@ -915,6 +921,8 @@ func visible(id: String) -> Array:
  ## 2.0.34: 요괴가 안전구역 밖에 3초 이상 있으면 탐지 반경이 줄어든다.
  if viewer.role=="yokai" and float(viewer.get("outside",0.0))>=OUTSIDE_WEAK_DETECT:reach=minf(reach,220.0)
  if viewer.role=="yokai" and float(viewer.get("outside",0.0))>0.0:reach=minf(reach,280.0)
+ ## 2.0.35: 물안개 낀 구역 안에서는 앞이 흐려 탐지 거리가 줄어든다(해운대 샤워기).
+ if gimmicks!=null and gimmicks.zone_mist(String(L.zone_at(viewer.position).get("id",""))):reach=minf(reach,190.0)
  # 귀문보기: 한옥 한 채 너머까지 투시하는 사거리(벽은 그대로 통과).
  if see_through:reach=760.0
  # 천문기계는 "서원 전역을 꿰뚫어" 본다: 사거리뿐 아니라 벽·한옥도 통과한다.
@@ -931,7 +939,7 @@ func visible(id: String) -> Array:
   # 암전 구역(조명 끔)의 대상은 멀리서 식별되지 않는다(도사 은신에 유리).
   if p.id!=id and gimmicks!=null and distance>240.0:
    var target_zone: String=String(L.zone_at(p.position).get("id",""))
-   if gimmicks.zone_dark(target_zone):continue
+   if gimmicks.zone_obscured(target_zone):continue
   var blocked:=false
   for e in effects:
    if e.kind=="smoke" and distance>85 and Geometry2D.get_closest_point_to_segment(e.position,viewer.position,p.position).distance_to(e.position)<115:blocked=true
@@ -1015,6 +1023,10 @@ func vision_for(id: String) -> Dictionary:
   if gimmicks.zone_dark(zone_id):
    out.dark=maxf(float(out.dark),.46);out.fog=maxf(float(out.fog),.28)
    if String(out.source)=="":out.source="lights"
+  ## 2.0.35: 물안개는 화면을 뿌옇게 만들고 시야를 줄인다.
+  if gimmicks.zone_mist(zone_id) or (gimmicks.smoke_until>elapsed and (me.position as Vector2).distance_to(gimmicks.smoke_pos)<=gimmicks.smoke_radius):
+   out.fog=maxf(float(out.fog),.62);out.narrow=maxf(float(out.narrow),.30)
+   if String(out.source)=="":out.source="mist"
  ## 안전구역 밖 경고: 화면 테두리가 맵 색으로 맥동한다(서원=보랏빛/강남=붉은 비상).
  var outside: float=float(me.get("outside",0.0))
  if outside>0.0:

@@ -83,9 +83,9 @@ func _draw() -> void:
  for i in range(8):
   var a:=i*TAU/8
   draw_circle(center+Vector2.from_angle(a)*(radius+2),1.6,Color(GOLD,.5))
-## 맵 구조: 서원(담장·한옥·연못·대나무·길) / 강남역(구역·벽·스크린도어·선로).
+## 맵 구조: 서원(담장·한옥·연못·대나무·길) / 그 밖의 맵(구역·벽·물길·길).
 func draw_structure(to_map: Callable,scale_factor: float) -> void:
- if String(L.map_id())=="gangnam":
+ if String(L.map_id())!="seowon":
   for zone in L.ZONES:
    var rect: Rect2=zone.rect
    var accent: Color=zone.accent
@@ -94,17 +94,33 @@ func draw_structure(to_map: Callable,scale_factor: float) -> void:
   for wall in L.HARD:
    var r: Rect2=wall
    draw_rect(Rect2(to_map.call(r.position),r.size*scale_factor),Color(.22,.28,.40,.95))
-  var track: Rect2=L.TRACK
-  draw_rect(Rect2(to_map.call(track.position),track.size*scale_factor),Color(.06,.07,.10,.95))
+  if L.map_id()=="gangnam":
+   var track: Rect2=L.TRACK
+   draw_rect(Rect2(to_map.call(track.position),track.size*scale_factor),Color(.06,.07,.10,.95))
+  var water: Array=L.get_script_constant_map().get("WATER",[])
+  for rect_w in water:
+   var rw: Rect2=rect_w
+   draw_rect(Rect2(to_map.call(rw.position),rw.size*scale_factor),Color(.10,.30,.48,.75))
   for path in L.PATHS:
    var points: Array=path.p
    for i in range(points.size()-1):
     draw_line(to_map.call(points[i]),to_map.call(points[i+1]),Color(.62,.74,.88,.20),maxf(1.0,float(path.w)*scale_factor*.5))
-  # 개찰구(기믹) 위치 표시
+  # 기믹 위치 표시(잠김·발동 중이면 붉게, 평소엔 청록)
   for item in L.GIMMICKS:
-   if String(item.kind)!="turnstile":continue
-   var locked: bool=rules.gimmicks!=null and rules.gimmicks.turnstile_until>rules.elapsed
-   draw_circle(to_map.call(item.pos),maxf(2.0,dot_radius()*.7),Color(1,.35,.35,.95) if locked else Color(.45,1,.9,.9))
+   var kind: String=String(item.kind)
+   var active:=false
+   var locked:=false
+   if rules.gimmicks!=null:
+    active=bool(rules.gimmicks.state.get(String(item.id),false)) and kind in ["wave","tide","mist","flash","speaker","smoke"]
+    if kind=="wave":active=rules.gimmicks.wave_active()
+    elif kind=="tide":active=rules.gimmicks.tide_active()
+    elif kind=="mist":active=rules.gimmicks.mist_active()
+    elif kind=="flash":active=rules.gimmicks.flash_active()
+    elif kind=="speaker":active=rules.gimmicks.speaker_active()
+    elif kind=="smoke":active=rules.gimmicks.fog_active()
+    elif kind=="turnstile":locked=rules.gimmicks.turnstile_until>rules.elapsed
+   var color: Color=Color(1,.35,.35,.95) if (active or locked) else Color(.45,1,.9,.85)
+   draw_circle(to_map.call(item.pos),maxf(2.0,dot_radius()*.7),color)
   return
  for rect in L.HARD:
   var a: Vector2=to_map.call(rect.position);var b: Vector2=to_map.call(rect.end)
