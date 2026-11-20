@@ -1,6 +1,6 @@
 extends RefCounted
 ## 무료 꾸미기 마켓·업적·우편·알림 카탈로그.
-## 결제(인앱결제·광고)는 없다. 재화는 경기·업적·우편 보상으로만 얻고,
+## 재화는 경기·업적·우편 보상으로만 얻고,
 ## 모든 아이템은 게임 안에서 실제로 장착되어 화면에 반영된다.
 ## 2.0.19: 스킨 상점은 기본 도포 한 종만 노출한다.
 ## 캐릭터 외형을 나중에 바꿀 수 있으므로 예전 색상 스킨은 판매 목록에서 뺐다.
@@ -9,6 +9,15 @@ extends RefCounted
 ## 구매는 마켓(코인)에서만, 장착은 도감·마켓 어디서든 할 수 있다.
 const SKINS=[
  {"id":"default","name":"기본 도포","price":0,"color":"ffffff","desc":"캐릭터 원화 본연의 색입니다."},
+ ## 2.0.34: 전우치 전용 스킨(부침개 전우치). 전용 8방향·김치전 은신·부침개 이펙트가 붙는다.
+ {"id":"woochi_pancake","name":"부침개 전우치","price":0,"color":"ffd79a","character":"daoist:woochi",
+  "desc":"김치전을 둘러쓴 부침개 전우치 · 전우치 전용 스킨",
+  "portrait":"res://assets/woo/skins/woochi_pancake/portrait.png",
+  "full":"res://assets/woo/skins/woochi_pancake/full.png",
+  "sheet":"res://assets/woo/skins/woochi_pancake/walk_8dir.png",
+  "fx_stealth":"res://assets/woo/skins/woochi_pancake/fx_kimchijeon_cloak.png",
+  "fx_cast":"res://assets/woo/skins/woochi_pancake/fx_pancake_flip.png",
+  "skin_of":"woochi"},
  {"id":"moon","name":"달빛 도포","price":450,"color":"cfe0ff","desc":"달빛을 머금은 옅은 청백색으로 물듭니다."},
  {"id":"lotus","name":"연꽃 도포","price":600,"color":"ffc9d8","desc":"연꽃빛 분홍이 감도는 도포."},
  {"id":"ink","name":"먹빛 도포","price":750,"color":"9aa0c8","desc":"밤 먹물처럼 깊게 가라앉은 색."},
@@ -49,7 +58,7 @@ const MAILS=[
  {"id":"update_zoom","title":"2.5D 시점·대형 한옥 업데이트","body":"기본 시점을 넓은 2.5D(1.32배)로 잡았습니다. 청월당·서고·별채 세 채를 출입할 수 있고, 실내에서는 바깥이 밤안개로 가려집니다.","reward":300,"gems":0},
  {"id":"market_open","title":"무료 마켓이 문을 열었습니다","body":"결제 없이 경기 보상으로만 도포·칭호·기운을 장착할 수 있습니다. 업적과 우편에서도 재화를 받을 수 있습니다.","reward":400,"gems":1},
  {"id":"lobby_bgm","title":"새 로비 음악","body":"로비에는 자체 합성한 국악풍 밤 음악이 흐릅니다. 모든 음원은 이 게임을 위해 직접 합성했고 외부 저작권 음원을 쓰지 않습니다.","reward":200,"gems":0}]
-## 캐릭터 상점: 2.0.28 테스트·체험 단계라 10인 전원이 무료 해금 상태다. 인앱결제·광고 없음.
+## 캐릭터 상점: 2.0.28 테스트·체험 단계라 10인 전원이 무료 해금 상태다.
 const CHARACTERS=[
  {"id":"daoist:woochi","price":0,"tag":"무료"},
  {"id":"daoist:honggildong","price":0,"tag":"무료"},
@@ -79,7 +88,7 @@ static func shop_items(tab: String) -> Array:
 const ALERTS=[
  {"id":"zoom","title":"카메라 1.32배·대형 한옥 3채","body":"캐릭터를 조금 줄이고 시야를 넓혔습니다. 청월당·서고·별채의 앞문과 뒷문을 모두 열 수 있고, 실내에서는 지붕이 열리고 바깥이 어두워집니다."},
  {"id":"character","title":"8인 2.5D 캐릭터 원화","body":"전우치·연화·무영·홍련·구미호·장산범·도깨비·해치의 인게임 스프라이트를 새로 그렸습니다. 8방향 이동과 점프, 시전 모션까지 연결됩니다."},
- {"id":"market","title":"마켓은 무료입니다","body":"결제·광고 없이 코인과 보석으로만 꾸미기를 해금합니다. 보상은 경기·업적·우편에서 나옵니다."},
+ {"id":"market","title":"마켓이 문을 열었습니다","body":"코인과 보석으로 꾸미기를 해금합니다. 보상은 경기·업적·우편에서 나옵니다."},
  {"id":"quick","title":"빠른 매치·친구 방 코드","body":"로비에서 빠른 매치와 친구와 함께(방 코드 공유)를 바로 시작할 수 있습니다. 8인 구성은 도사6:요괴2로 고정되었습니다."}]
 static func skin(id: String) -> Dictionary:
  for item in SKINS+LEGACY_SKINS:

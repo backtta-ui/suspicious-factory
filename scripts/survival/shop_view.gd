@@ -47,7 +47,7 @@ func build() -> void:
 	if backdrop!=null and backdrop.has_method("use_texture"):
 		backdrop.call("use_texture",ShopGarden)
 	header("캐릭터 · 스킨 상점","달빛 아래, 도사와 요괴의 차림을 고르세요 · 해금은 게임 재화로만")
-	note("보유한 캐릭터와 스킨은 경기·업적·우편 보상으로 모은 코인으로 해금합니다 · 인앱결제·광고 없음")
+	note("보유한 캐릭터와 스킨은 경기·업적·우편 보상으로 모은 코인으로 해금합니다")
 	_build_back()
 	_build_crest()
 	_build_wallet()
@@ -621,7 +621,7 @@ func _rebuild_preview() -> void:
 		place(gem_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+556,PANEL_SIZE.x-16,18))
 	else:
 		place(cta,Rect2(PANEL_POS.x+14,PANEL_POS.y+476,PANEL_SIZE.x-28,54))
-		var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",15,Color(0.78,0.80,0.90,0.86))
+		var pay_note:=label(preview_body,"게임 재화 전용",15,Color(0.78,0.80,0.90,0.86))
 		pay_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+536,PANEL_SIZE.x-16,22))
 	# 제목부터 버튼까지 다 놓은 뒤, 판과 같은 기준 x로 맞춘다(캐릭터를 누를 때마다 다시 그린다).

@@ -337,3 +337,34 @@ static func surface(p: Vector2) -> String:
 static func HANOK() -> Rect2:return (BUILDINGS[0].rect as Rect2)
 static func INTERIOR() -> Rect2:return (BUILDINGS[0].interior as Rect2)
 static func FRONT_DOOR() -> Vector2:return (BUILDINGS[0].doors as Dictionary).front
+
+## ---------------------------------------------------------------- 2.0.34 맵 API
+## 서원은 2.0.33 그대로 보존한다. 아래는 맵 공용 인터페이스(강남역 레이아웃과 동일).
+const MAP_ID="seowon"
+const NAME="월하의 서원"
+## 안전구역: 시작 원은 맵 네 모서리를 딱 포함하는 최소 반경(맵 중심에서 모서리까지).
+const CIRCLE_CENTER_START=Vector2(1700,1300)
+const CIRCLE_CENTER_FINAL=Vector2(1700,1300)
+const CIRCLE_RADII=[2140.0,1750.0,1150.0,620.0]
+const CIRCLE_DUE=[180.0,360.0,480.0,600.0]
+static func map_id() -> String:return MAP_ID
+static func map_name() -> String:return NAME
+static func has_interiors() -> bool:return true
+static func zones() -> Array:return []
+static func zone(_id: String) -> Dictionary:return {}
+static func zone_at(_p: Vector2) -> Dictionary:return {}
+static func zone_name_at(_p: Vector2) -> String:return NAME
+static func zone_rect(_id: String) -> Rect2:return Rect2()
+static func gimmicks() -> Array:return []
+static func circle_radii() -> Array:return CIRCLE_RADII
+static func circle_due() -> Array:return CIRCLE_DUE
+static func circle_center_start() -> Vector2:return CIRCLE_CENTER_START
+static func circle_final_center() -> Vector2:return CIRCLE_CENTER_FINAL if can_stand(CIRCLE_CENTER_FINAL,12) else safe(CIRCLE_CENTER_FINAL)
+static func corner_radius() -> float:return Vector2(SIZE.x*.5,SIZE.y*.5).length()
+## 서원을 걷는 고양이·강아지 순찰로(2.0.33과 동일한 4개 경로).
+static func walker_routes() -> Array:
+ return [
+  {"kind":"cat","speed":31.0,"path":[Vector2(690,1060),Vector2(980,900),Vector2(1300,880),Vector2(1620,860),Vector2(1900,900),Vector2(2200,960),Vector2(2400,1100),Vector2(2100,1240),Vector2(1700,1240),Vector2(1300,1200),Vector2(1000,1140)]},
+  {"kind":"dog","speed":42.0,"path":[Vector2(1560,1800),Vector2(1900,1960),Vector2(2200,2100),Vector2(2520,2200),Vector2(2820,2020),Vector2(2600,1800),Vector2(2200,1740),Vector2(1860,1660)]},
+  {"kind":"cat","speed":31.0,"path":[Vector2(2750,980),Vector2(2960,1120),Vector2(3080,1360),Vector2(2920,1600),Vector2(2660,1500),Vector2(2580,1240)]},
+  {"kind":"dog","speed":42.0,"path":[Vector2(600,1900),Vector2(880,2050),Vector2(1150,2250),Vector2(900,2380),Vector2(640,2200)]}]

@@ -1,0 +1,345 @@
+{
+  "version": 34,
+  "map": "gangnam",
+  "style": "among-us-like 2.5D top-down, pixel-art chunk",
+  "palette": "#1A1629 / #2E2646 딥네이비·바이올렛 바탕, 네온 마젠타 #FF5AC8·#FF2FA0, 시안 #5CE1FF, 웜 크림 #E7D6B8·#C9A88C",
+  "anchors": {
+    "prop_gimmick": "512x512, 물체 바닥 중앙 정렬(하단 6% 여백) - 좌표는 (256, 486) 부근을 접지점으로 사용",
+    "moving_sheet": "셀 256x256, 발끝 앵커 (128, 232), 8행(방향) x 4열(프레임)"
+  },
+  "sheet_layout": {
+    "rows": [
+      "front",
+      "front_right",
+      "right",
+      "back_right",
+      "back",
+      "back_left",
+      "left",
+      "front_left"
+    ],
+    "cols": "frame 0-3 (주행 4프레임, 8~10fps 권장)",
+    "cell": [
+      256,
+      256
+    ],
+    "foot": [
+      128,
+      232
+    ]
+  },
+  "notes": [
+    "gimmick_light_switch는 벽면 부착형(바닥에 세우지 말 것)",
+    "gimmick_turnstile_open/closed는 같은 자리의 두 상태 - 교체 방식으로 사용",
+    "gimmick_escalator / gimmick_screen_door / gimmick_shutter는 바닥면 점유형",
+    "moving/*_sheet.png의 좌측 3방향(left, front_left, back_left)은 우측 원화 미러",
+    "prop_kickboard.png / prop_delivery_robot.png는 배치용 대표 정지 이미지(시트 프레임과 별개)"
+  ],
+  "props": [
+    {
+      "file": "props/prop_iced_coffee.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.311,
+        "green_leak": 168
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "props/prop_vending_machine.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.45,
+        "green_leak": 909
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "props/prop_kiosk.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.319,
+        "green_leak": 180
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "props/prop_banner.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.285,
+        "green_leak": 265
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "props/prop_luggage.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.446,
+        "green_leak": 385
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "props/prop_hydrant.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.368,
+        "green_leak": 212
+      },
+      "anchor": "bottom_center"
+    }
+  ],
+  "gimmicks": [
+    {
+      "file": "gimmicks/gimmick_turnstile_open.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.477,
+        "green_leak": 657
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "gimmicks/gimmick_turnstile_closed.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.485,
+        "green_leak": 225
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "gimmicks/gimmick_escalator.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.386,
+        "green_leak": 289
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "gimmicks/gimmick_cctv_console.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.502,
+        "green_leak": 195
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "gimmicks/gimmick_light_switch.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.566,
+        "green_leak": 508
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "gimmicks/gimmick_shutter.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.445,
+        "green_leak": 336
+      },
+      "anchor": "bottom_center"
+    },
+    {
+      "file": "gimmicks/gimmick_screen_door.png",
+      "size": [
+        512,
+        512
+      ],
+      "alpha": {
+        "corners": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "ring_max": 0,
+        "opaque": 0.406,
+        "green_leak": 201
+      },
+      "anchor": "bottom_center"
+    }
+  ],
+  "moving": [
+    {
+      "sheet": "moving_delivery_robot_sheet.png",
+      "dirs": [
+        "front",
+        "front_right",
+        "right",
+        "back_right",
+        "back",
+        "back_left",
+        "left",
+        "front_left"
+      ],
+      "frames": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "foot": [
+        128,
+        232
+      ],
+      "note": "배달 로봇 주행: 바운스 + 스쿼시 스트레치 + 미세 롤",
+      "norm": "area",
+      "target_area": 15600,
+      "cap_px": 238,
+      "still": "moving/prop_delivery_robot.png"
+    },
+    {
+      "sheet": "moving_kickboard_sheet.png",
+      "dirs": [
+        "front",
+        "front_right",
+        "right",
+        "back_right",
+        "back",
+        "back_left",
+        "left",
+        "front_left"
+      ],
+      "frames": 4,
+      "cell": [
+        256,
+        256
+      ],
+      "foot": [
+        128,
+        232
+      ],
+      "note": "킥보드 주행: 좌우 리닝 + 미세 바운스",
+      "norm": "area",
+      "target_area": 11000,
+      "cap_px": 238,
+      "still": "moving/prop_kickboard.png"
+    }
+  ]
+}

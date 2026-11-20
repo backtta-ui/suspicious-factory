@@ -19,6 +19,7 @@ var side_buttons: Dictionary={}
 var ring_visual: Control
 var inner_disc: Control
 var role_row: Control
+var ring_clock:=0.0
 
 func build() -> void:
 	header("빠른 매치","원하는 진영을 선택하고 빠르게 매칭하세요","swords")
@@ -47,9 +48,11 @@ func build() -> void:
 	inner_disc.name="QuickInner"
 	inner_disc.draw.connect(_draw_inner)
 	status_label=label(self,"수련생 찾는 중…",21,V.GOLD_BRIGHT,true)
+	brush_shadow(status_label,4)
 	status_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	status_label.name="QuickStatus"
 	timer_label=label(self,"00:24",34,V.IVORY,true)
+	brush_shadow(timer_label,6)
 	timer_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	inner_label=label(self,"도사 6 : 요괴 2",13.5,Color(.84,.80,.96))
 	inner_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
@@ -91,7 +94,19 @@ func _process(delta: float) -> void:
 		var left:=maxi(0,int(ceil(24.0-game.matching)))
 		if match_slots>=SLOTS:left=0
 		timer_label.text="00:%02d"%left
+	ring_clock+=delta
 	if is_instance_valid(inner_disc):inner_disc.queue_redraw()
+	if is_instance_valid(ring_visual):ring_visual.queue_redraw()
+
+## 상업 게임 서체 느낌: 큰 글씨에 은은한 그림자·외곽선을 준다.
+func brush_shadow(node: Label,outline: int=4) -> void:
+	if not is_instance_valid(node):return
+	node.add_theme_color_override("font_shadow_color",Color(0,.0,.02,.55))
+	node.add_theme_constant_override("shadow_offset_x",0)
+	node.add_theme_constant_override("shadow_offset_y",3)
+	node.add_theme_constant_override("shadow_outline_size",outline)
+	node.add_theme_color_override("font_outline_color",Color(.03,.02,.06,.85))
+	node.add_theme_constant_override("outline_size",outline)
 
 ## 중심 좌표(디자인 좌표).
 func center() -> Vector2:
@@ -133,6 +148,35 @@ func _draw_inner() -> void:
 		var a:=i*TAU/16.0
 		var p:=c+Vector2.from_angle(a)*(r-14.0)
 		inner_disc.draw_circle(p,1.4,Color(.96,.88,.68,.35))
+	# 2.0.34: 회전하는 금빛 마법진(나침반) — 정지 로딩 동그라미 대체.
+	var spin:=ring_clock
+	var orbit:=r*.66
+	for i in range(3):
+		var rad:=orbit-float(i)*12.0
+		var speed:=0.9+float(i)*0.55
+		var dir_sign:=1.0 if i%2==0 else -1.0
+		for k in range(8):
+			var a0:=spin*speed*dir_sign+float(k)*TAU/8.0
+			inner_disc.draw_arc(c,rad,a0,a0+TAU/8.0*.62,10,Color(1,.86,.52,.16+.10*float(i)),1.8,true)
+		for k in range(4):
+			var a1:=-spin*speed*.7+float(k)*TAU/4.0
+			var tip:=c+Vector2.from_angle(a1)*(rad+6.0)
+			inner_disc.draw_colored_polygon(PackedVector2Array([tip+Vector2.from_angle(a1)*7.0,tip+Vector2.from_angle(a1+PI*.5)*3.4,tip+Vector2.from_angle(a1-PI*.5)*3.4]),Color(1,.92,.66,.42))
+	# 나침반 바늘(가장 안쪽)
+	var needle:=spin*1.6
+	var tip_a:=c+Vector2.from_angle(-needle)*r*.30
+	var tip_b:=c+Vector2.from_angle(-needle+PI)*r*.30
+	inner_disc.draw_line(c,tip_a,Color(1,.92,.70,.55),2.2,true)
+	inner_disc.draw_line(c,tip_b,Color(.55,.72,1,.40),2.0,true)
+	inner_disc.draw_circle(c,3.2,Color(1,.96,.84,.85))
+	# 수렴하는 빛 입자(슬롯이 모일수록 조금씩 밝아진다)
+	var gather:=clampf(float(match_slots)/float(SLOTS),0.0,1.0)
+	for i in range(14):
+		var phase:=fmod(ring_clock*1.3+float(i)/14.0,1.0)
+		var a2:=float(i)*TAU/14.0+ring_clock*.25
+		var rr:=lerpf(r*.95,r*.30,phase)
+		var dot:=c+Vector2.from_angle(a2)*rr
+		inner_disc.draw_circle(dot,1.8*(1.0-phase*.5),Color(1,.90,.62,(1.0-phase)*(.18+.34*gather)))
 
 func set_slots(count: int) -> void:
 	match_slots=clampi(count,0,SLOTS)
@@ -145,9 +189,17 @@ func set_slots(count: int) -> void:
 		slot.set_data(filled,role,portrait)
 		if filled and not slot.get_meta("popped",false):
 			slot.set_meta("popped",true)
+			# 2.0.34: 인원이 찰 때마다 음이 올라가는 영롱한 차임, 8/8에서 웅장한 북·징.
+			if is_instance_valid(game) and game.sound!=null:
+				if match_slots>=SLOTS:game.sound.play_clip("match_found")
+				else:game.sound.play_match_join(match_slots)
 			slot.modulate.a=0.0
+			slot.scale=Vector2(.72,.72)
+			slot.pivot_offset=slot.size*.5
 			var tween:=create_tween()
+			tween.set_parallel(true)
 			tween.tween_property(slot,"modulate:a",1.0,.22)
+			tween.tween_property(slot,"scale",Vector2.ONE,.32).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if is_instance_valid(status_label):
 		status_label.text=("수련생 찾는 중… %d / 8" % match_slots) if match_slots<SLOTS else "모두 찾았습니다 · 8 / 8"
 		status_label.add_theme_color_override("font_color",V.GOLD_BRIGHT if match_slots>=SLOTS else V.IVORY)
@@ -213,15 +265,18 @@ class Slot extends Control:
 	func _ready() -> void:
 		mouse_filter=Control.MOUSE_FILTER_IGNORE
 		set_process(true)
+	var pulse:=0.0
 	func _process(delta: float) -> void:
 		clock+=delta
-		if not filled:queue_redraw()
+		if pulse>0.0:pulse=maxf(0.0,pulse-delta*1.6)
+		if not filled or pulse>0.0:queue_redraw()
 	func set_data(is_filled: bool,role_value: String,path: String) -> void:
 		filled=is_filled
 		role=role_value
 		portrait=path
 		texture=null
 		if filled and path!="" and ResourceLoader.exists(path):texture=load(path)
+		if is_filled:pulse=1.0
 		queue_redraw()
 	func _draw() -> void:
 		var c:=size*.5
@@ -232,19 +287,40 @@ class Slot extends Control:
 			draw_circle(c,r+grow,Color(accent.r,accent.g,accent.b,.055-float(i)*.007))
 		draw_circle(c,r+1.5,Color(.06,.05,.10,.95))
 		if filled and texture!=null:
-			draw_texture_rect(texture,Rect2(c-Vector2(r,r),Vector2(r*2.0,r*2.0)),false,Color(.95,.94,1.0))
+			# 2.0.34 원형 마스킹: 초상 사각형의 네 모서리가 금테 밖으로 삐져나오지 않도록
+			# 원에 내접하는 정사각(side=r*√2) 안에만 그린다.
+			var side:=r*1.414
+			draw_texture_rect(texture,Rect2(c-Vector2(side*.5,side*.5),Vector2(side,side)),false,Color(.97,.96,1.0))
+			# 둥근 테두리를 한 번 더 덮어 원형 느낌을 확실히 준다.
+			draw_arc(c,r-1.2,0,TAU,64,Color(.06,.05,.10,.95),3.0,true)
 		else:
 			T.gradient_rounded(self,Rect2(c-Vector2(r,r),Vector2(r*2.0,r*2.0)),Color(.17,.15,.24,1.0),Color(.07,.06,.12,1.0),r)
 			T.gradient_rounded(self,Rect2(c-Vector2(r*.82,r*.82),Vector2(r*1.64,r*1.64)),Color(.26,.24,.34,.55),Color(.12,.10,.18,.2),r*.82)
 			draw_circle(c+Vector2(0,-r*.18),r*.20,Color(.10,.09,.14,.95))
 			draw_circle(c+Vector2(0,r*.30),r*.34,Color(.10,.09,.14,.95))
+			# 2.0.34: 밋밋한 물음표 대신 숨 쉬는 신비 문양(회전하는 팔각 인장 + 옅은 ?)
+			var breathe: float=.5+.5*sin(clock*1.7)
+			for k in range(8):
+				var a:=float(k)*TAU/8.0+clock*.22
+				var p0:=c+Vector2.from_angle(a)*r*.42
+				var p1:=c+Vector2.from_angle(a+TAU/16.0)*r*.62
+				var p2:=c+Vector2.from_angle(a)*r*.70
+				draw_line(p0,p1,Color(.72,.62,1.0,.16+.12*breathe),1.2,true)
+				draw_line(p1,p2,Color(1,.86,.52,.12+.10*breathe),1.0,true)
+			draw_arc(c,r*.52,clock*.5,clock*.5+TAU*.7,28,Color(1,.88,.58,.18+.16*breathe),1.4,true)
+			draw_circle(c,r*.10+breathe*1.4,Color(1,.94,.72,.16+.20*breathe))
 			var font: Font=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
-			var extent:=int(r*.86)
-			draw_string(font,Vector2(c.x-font.get_string_size("?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent).x*.5,c.y+(font.get_ascent(extent)-font.get_descent(extent))*.5),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent,Color(.86,.82,.94,.85))
+			var extent:=int(r*.58)
+			draw_string(font,Vector2(c.x-font.get_string_size("?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent).x*.5,c.y+(font.get_ascent(extent)-font.get_descent(extent))*.5),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent,Color(.90,.86,1,.34+.20*breathe))
 		draw_arc(c,r,0,TAU,56,Color(0,0,0,.55),2.4,true)
 		draw_arc(c,r-0.6,0,TAU,56,accent,2.4,true)
 		draw_arc(c,r-4.2,0,TAU,56,Color(accent.r,accent.g,accent.b,.30),1.1,true)
 		draw_arc(c,r-1.5,PI*1.05,PI*1.65,24,Color(1,.97,.88,.55),1.6,true)
+		# 합류 펄스: 새 슬롯이 들어온 뒤 잠깐 톡! 하고 퍼지는 금빛 링.
+		if filled and pulse>0.01:
+			for k in range(2):
+				var reach:=r*(1.0+(1.0-pulse)*.55+float(k)*.16)
+				draw_arc(c,reach,0,TAU,56,Color(1,.93,.72,.55*pulse*(1.0-float(k)*.4)),2.6,true)
 		# 8방향 작은 못
 		for i in range(8):
 			var a:=i*TAU/8.0

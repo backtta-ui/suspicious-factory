@@ -502,11 +502,7 @@ func draw_effects() -> void:
   effects.draw_line(origin,origin+aim*120,Color("e77b95") if aim_cancelled else Color("9fcaff"),3,true)
   effects.draw_arc(origin+aim*120,14,0,TAU,24,Color("e77b95") if aim_cancelled else Color("9fcaff"),2,true)
  if rules!=null:
-  var circle: Dictionary=rules.circle()
-  for i in range(96):
-   if i%2==0:effects.draw_arc(circle.center,circle.radius,i*TAU/96,(i+1)*TAU/96,4,Color(.9,.78,.5,.2),2,true)
-  for i in range(72):
-   if i%2==0:effects.draw_arc(circle.next_center,circle.next_radius,i*TAU/72,(i+1)*TAU/72,4,Color(.6,.72,1,.1),1,true)
+  draw_safe_zone(effects)
   var human: Dictionary=rules.players.get("human",{})
   if not human.is_empty() and rules.hidden(human) and float(human.buff.get("painting",0.0))>rules.elapsed:
    # 화중은신: 본인 화면에서만 족자와 먹물 잔상이 감돈다(남에게는 그려지지 않는다).
@@ -769,3 +765,39 @@ func tag(node: Node2D,at: Vector2,text: String,color: Color) -> void:
  node.draw_rect(rect,Color(.85,.7,.42,.55),false,1)
  node.draw_string(FONT,rect.position+Vector2(0,16),text,HORIZONTAL_ALIGNMENT_CENTER,width,12,color)
 func door_at(p: Vector2) -> String:return L.door_near(p,64)
+
+## 2.0.34 안전구역(월식결계): 금빛·보랏빛 발광 링 + 흐르는 부적, 원 밖 보랏빛 안개.
+## 시작 원은 맵 네 모서리를 포함하는 최소 반경이라 첫 단계부터 경계가 화면에 보인다.
+func draw_safe_zone(node: Node2D) -> void:
+ var zone: Dictionary=rules.circle()
+ var center: Vector2=zone.center
+ var radius: float=float(zone.radius)
+ var pulse: float=.5+.5*sin(clock*2.4)
+ # 원 밖: 보랏빛 밤안개(링 밴드로만 칠해 원 안은 밝게 둔다)
+ for i in range(14):
+  node.draw_arc(center,radius+float(i)*64.0+32.0,0,TAU,112,Color(.14,.05,.26,.032),64.0,false)
+ # 흐르는 부적: 링 위를 따라 도는 금빛 조각
+ for i in range(30):
+  var a: float=float(i)*TAU/30.0+clock*.35
+  var at:=center+Vector2.from_angle(a)*radius
+  node.draw_set_transform(at,a,Vector2(1,.62))
+  node.draw_rect(Rect2(-4,-7,8,14),Color(1,.86,.52,.42+.30*pulse))
+  node.draw_rect(Rect2(-4,-7,8,14),Color(.55,.30,.10,.45),false,1.0)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 발광 이중 링: 금빛 바깥 + 보랏빛 안쪽
+ node.draw_arc(center,radius,0,TAU,128,Color(1,.82,.45,.85),6.0,true)
+ node.draw_arc(center,radius-8.0,0,TAU,128,Color(.62,.42,1,.50+.28*pulse),3.0,true)
+ node.draw_arc(center,radius+8.0,0,TAU,128,Color(1,.92,.66,.28+.16*pulse),2.0,true)
+ # 팔각 문양 회전 링(원 안쪽에 옅게)
+ for i in range(8):
+  var a0: float=float(i)*TAU/8.0+clock*.12
+  var p0: Vector2=center+Vector2.from_angle(a0)*radius*.985
+  var p1: Vector2=center+Vector2.from_angle(a0+TAU/8.0)*radius*.985
+  node.draw_line(p0,p1,Color(.85,.70,1,.16),1.4,true)
+ # 다음 단계 원은 점선으로 미리 보여 준다.
+ var next_radius: float=float(zone.get("next_radius",radius))
+ var next_center: Vector2=zone.get("next_center",center)
+ for i in range(72):
+  if i%3!=0:continue
+  var a1: float=float(i)*TAU/72.0
+  node.draw_arc(next_center,next_radius,a1,a1+TAU/72.0*.55,5,Color(.68,.56,1,.22),2.0,true)

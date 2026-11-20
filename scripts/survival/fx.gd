@@ -44,11 +44,36 @@ static func draw(node: Node2D,e: Dictionary,now: float) -> void:
   "fx_ink":ink(node,at,p)
   "fx_scroll":scroll(node,at,p,facing)
   "fx_sig":signature(node,at,p,String(e.get("skill","")),float(e.get("facing",0)))
+  "fx_png":png_burst(node,at,p,e)
   "seal":seal(node,at,p)
   "miss":miss(node,at,p)
   "clone":afterimage(node,at,p,facing)
   "afterimage":afterimage(node,at,p,facing)
   "smoke":haze(node,at,p)
+## 2.0.34: 캐릭터·스킨 전용 손그림 이펙트 PNG. 도술 모션과 같은 박자로
+## 커졌다가 위로 떠오르며 옅어진다(모션과 한 몸처럼 보이게).
+static func png_burst(node: Node2D,at: Vector2,p: float,e: Dictionary) -> void:
+ ## 텍스처는 rules.signature가 _draw 밖에서 미리 load해 effect에 담아 둔다.
+ ## (_draw 안에서 처음 load하면 플레이스홀더(흰 사각형)가 나오는 경우가 있었다.)
+ var texture: Texture2D=e.get("texture")
+ if texture==null:
+  var file: String=String(e.get("file",""))
+  if file=="" or not ResourceLoader.exists(file):return
+  texture=load(file)
+ if texture==null:return
+ var ease_out: float=1.0-pow(1.0-p,2.2)
+ var grow: float=lerpf(.62,1.16,ease_out)
+ var alpha: float=clampf(1.25-p*1.45,0.0,1.0)
+ var lift: float=p*30.0
+ var size: Vector2=texture.get_size()
+ var scale_value: float=150.0/maxf(1.0,maxf(size.x,size.y))
+ node.draw_set_transform(at+Vector2(0,-26-lift),0.0,Vector2(grow*scale_value,grow*scale_value))
+ node.draw_texture(texture,-size*.5,Color(1,1,1,alpha))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ ## 바닥에는 같은 색의 옅은 충격 고리가 함께 퍼진다.
+ node.draw_set_transform(at,0,Vector2(1,.45))
+ node.draw_arc(Vector2.ZERO,10+p*44,0,TAU,30,Color(1,.88,.6,.22*(1.0-p)),2.2,true)
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 static func talisman(node: Node2D,at: Vector2,p: float,facing: float) -> void:
  var alpha:=1-p
  for i in range(6):

@@ -371,6 +371,7 @@ func run() -> void:
  check(C.eight_direction(eight) and not C.eight_direction(four),"eight-direction sheets are detected")
  var walker_rows: Array=(C.walk_sheet("woochi").get("rows",[]) as Array)
  check(C.eight_direction(walker_rows) or walker_rows.size()==4,"current walk sheet loads with the shared row resolver")
+ game.storage.data.debug_map="seowon"
  game.cleanup_match();game.queue_free();await frames(2)
  print("V28 SKILLS: ",checks," checks / ",failures," failures")
  quit(1 if failures else 0)
