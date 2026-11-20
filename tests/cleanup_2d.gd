@@ -22,6 +22,8 @@ func run() -> void:
  check(ProjectSettings.get_setting("application/run/main_scene")=="res://scenes/survival.tscn","2D active scene; 3D cancelled")
  var old:=FileAccess.open("user://legacy-original.json",FileAccess.WRITE);old.store_string('{"level":17,"items":["keep"]}');old.close()
  root.size=Vector2i(1280,720);var game:=App.instantiate();root.add_child(game);await frames(8)
+ # 2.0.32: 최초 실행은 닉네임 설정이 먼저다. 이 테스트는 이미 닉네임이 있는 상태를 검사한다.
+ game.storage.set_nickname("점검도사");game.storage.save();game.build("title");await frames(3)
  check(game.screen=="title" and game.world==null,"title without old plaza")
  check(FileAccess.get_file_as_string("user://legacy-original.json")==FileAccess.get_file_as_string("user://legacy-backup-v13/legacy-original.json"),"old saves byte-preserved in backup")
  var settings_button:=named_button(game.ui,"설정");await tap_at(settings_button.get_global_rect().get_center())

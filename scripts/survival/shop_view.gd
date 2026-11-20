@@ -28,10 +28,14 @@ const ART_HEIGHT:=240.0
 const NAME_TOP:=292.0
 var tab:="character"
 var page:=0
+## 지갑 알약: 실제 storage 값이 바뀌면(구매·보상 수령) refresh()가 다시 그린다.
+var wallet_parts: Array=[]
 var selected_id:=""
 var cards: Array=[]
 var slots: Array=[]
 var preview_body: Control
+## 미리보기 판(가로가 넓은 20:9 화면에서 오른쪽 끝에 붙인다).
+var preview_frame: Control
 var action_button: WooMobileButton
 var page_label: Label
 var page_buttons: Array=[]
@@ -83,6 +87,7 @@ func build() -> void:
 	frame.edge=Color(0.85,0.72,0.47,0.72)
 	frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(frame)
+	preview_frame=frame
 	place(frame,Rect2(PANEL_POS,PANEL_SIZE))
 	refresh()
 
@@ -118,6 +123,9 @@ func _build_crest() -> void:
 ## 보유 재화: 아이콘이 든 다크네이비 금테 알약 세 개를 오른쪽에 붙인다.
 func _build_wallet() -> void:
 	if is_instance_valid(wallet_row):wallet_row.visible=false
+	for node in wallet_parts:
+		if is_instance_valid(node):node.queue_free()
+	wallet_parts.clear()
 	var title_name:=String(Market.title(game.storage.equipped("title")).name)
 	var title_text:=title_name if title_name.begins_with("칭호") else "칭호 · "+title_name
 	var specs:Array=[
@@ -142,6 +150,7 @@ func _build_wallet() -> void:
 		pill.name="ShopWallet_"+String(spec[0])
 		add_child(pill)
 		place(pill,Rect2(x,11,float(widths[i]),34))
+		wallet_parts.append(pill)
 		x+=float(widths[i])+8.0
 
 func set_tab(id: String) -> void:
@@ -198,11 +207,14 @@ func view_item(raw: Dictionary) -> Dictionary:
 
 func refresh() -> void:
 	if not is_inside_tree():return
+	# 구매·보상 수령 뒤에도 상점 지갑이 실제 잔액을 보여 주도록 매번 다시 그린다.
+	_build_wallet()
 	if selected_id=="":selected_id=_default_id()
 	_rebuild_cards()
 	_rebuild_preview()
 	_paint_tabs()
 	_paint_pager()
+	_place_wallet_right()
 
 # ---------------------------------------------------------------- 카드 그리드
 func _rebuild_cards() -> void:
@@ -580,14 +592,25 @@ func _rebuild_preview() -> void:
 	cta.name="ShopAction"
 	preview_body.add_child(cta)
 	game.button_feel(cta)
-	place(cta,Rect2(PANEL_POS.x+14,PANEL_POS.y+476,PANEL_SIZE.x-28,54))
 	cta.disabled=_cta_disabled(item)
 	cta.pressed.connect(func()->void:
 		if not _cta_disabled(item):_act(item))
 	action_button=cta
-	var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",15,Color(0.78,0.80,0.90,0.86))
-	pay_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+536,PANEL_SIZE.x-16,22))
+	# 2.0.32 보석으로도 해금할 수 있는 항목은 CTA 아래에 보석 가격 버튼을 하나 더 둔다.
+	var gem_price:=Market.gem_price(_raw(selected_id)) if not _owned(item) and not _equipped(item) else 0
+	if gem_price>0:
+		place(cta,Rect2(PANEL_POS.x+14,PANEL_POS.y+468,PANEL_SIZE.x-28,48))
+		var gem_cta: WooMobileButton=button("보석 %s로 해금"%number(gem_price),func()->void:_act_gem(item),preview_body,false,16)
+		gem_cta.name="ShopGemAction"
+		place(gem_cta,Rect2(PANEL_POS.x+88,PANEL_POS.y+520,PANEL_SIZE.x-176,34))
+		var gem_note:=label(preview_body,"보석은 경기 승리·우편 보상으로만 얻습니다",12.5,Color(0.82,0.74,0.98,0.9))
+		gem_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		place(gem_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+556,PANEL_SIZE.x-16,18))
+	else:
+		place(cta,Rect2(PANEL_POS.x+14,PANEL_POS.y+476,PANEL_SIZE.x-28,54))
+		var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",15,Color(0.78,0.80,0.90,0.86))
+		pay_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+		place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+536,PANEL_SIZE.x-16,22))
 
 func _raw(id: String) -> Dictionary:
 	for item in _items():
@@ -621,6 +644,8 @@ func _state_text(item: Dictionary) -> String:
 		return "미보유 · %s 코인으로 해금할 수 있습니다"%number(int(item.price))
 	if _equipped(item):return "장착 중 · 경기·로비에 바로 적용됩니다"
 	if _owned(item):return "보유 중 · 장착하면 바로 적용됩니다"
+	var gems:=Market.gem_price(_raw(selected_id))
+	if gems>0:return "해금 %s 코인 또는 보석 %s" % [number(int(item.price)),number(gems)]
 	return "해금 %s 코인" % number(int(item.price))
 
 func _action_text(item: Dictionary) -> String:
@@ -643,6 +668,29 @@ func _act(item: Dictionary) -> void:
 		"title":game.market_buy(_shop_dict(String(item.id)),"title")
 		"effect":game.market_buy(_shop_dict(String(item.id)),"effect")
 
+## 보석 가격으로 해금(코인 대신 storage.data.gems에서 차감).
+## 지갑 알약을 오른쪽 끝에 맞춘다(넓은 화면에서 가운데에 떠 있지 않게).
+func _place_wallet_right() -> void:
+	if wallet_parts.is_empty():return
+	var total:=0.0
+	var widths: Array=[]
+	for pill in wallet_parts:
+		if not is_instance_valid(pill):continue
+		var width:=O.Pill.measure(String(pill.get("kind")),String(pill.get("text_value")),15)
+		widths.append(width);total+=width+8.0
+	var x:=right_edge()-total+8.0
+	for i in range(wallet_parts.size()):
+		var pill: Control=wallet_parts[i]
+		if not is_instance_valid(pill):continue
+		reshape(pill,Rect2(x,11,float(widths[i]),34))
+		x+=float(widths[i])+8.0
+
+func _act_gem(item: Dictionary) -> void:
+	match String(item.kind):
+		"skin":game.market_buy(_shop_dict(String(item.id)),"skin","gem")
+		"title":game.market_buy(_shop_dict(String(item.id)),"title","gem")
+		"effect":game.market_buy(_shop_dict(String(item.id)),"effect","gem")
+
 func _shop_dict(id: String) -> Dictionary:
 	for item in _items():
 		if String(item.id)==id:return item.get("title",item)
@@ -654,6 +702,11 @@ func select_item(id: String) -> void:
 	_rebuild_preview()
 
 func arrange() -> void:
+	# 2.0.32: 가로가 넓으면(20:9) 미리보기 판·지갑을 화면 오른쪽 끝에 붙인다.
+	var dx:=right_edge()-(PANEL_POS.x+PANEL_SIZE.x)
+	if is_instance_valid(preview_frame):reshape(preview_frame,Rect2(Vector2(PANEL_POS.x+dx,PANEL_POS.y),PANEL_SIZE))
+	if is_instance_valid(preview_body):preview_body.position=origin+Vector2(dx,0)*s
+	_place_wallet_right()
 	# 제목은 시안처럼 연꽃 문장 오른쪽에서 시작한다.
 	if is_instance_valid(title_label):
 		title_label.position=origin+Vector2(198,2)*s

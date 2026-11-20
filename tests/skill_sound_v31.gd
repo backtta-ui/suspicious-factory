@@ -55,6 +55,8 @@ func run() -> void:
  root.size=Vector2i(1280,720)
  var game:=App.instantiate();root.add_child(game)
  await frames(8)
+ # 진영이 무작위라 요괴가 걸리면 인간둔갑(mimic)은 대상이 없어 시전이 거부된다. 도사로 고정한다.
+ game.preferred_role="daoist"
  game.create_room("효과음",6,true)
  await create_timer(.4).timeout
  game.rules.players.human.ready=true

@@ -277,6 +277,28 @@ func _paint_sheet() -> void:
 		coin_caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		coin_caption.set_meta("content",true)
 		place(coin_caption,Rect2(area.position.x+40,lower+134,118,18))
+		# 2.0.32: 함께 동봉된 보석도 실제 지갑에 들어가므로 무루에 함께 보여 준다.
+		var gem_amount:=Market.mail_gems(entry)
+		if gem_amount>0:
+			var gem_tile:=V.patch(paper,V.TEX_TILE,Rect2(Vector2.ZERO,Vector2(110,110)),30)
+			gem_tile.set_meta("content",true)
+			place(gem_tile,Rect2(area.position.x+170,lower+42,110,110))
+			var gem:=TextureRect.new()
+			gem.texture=V.TEX_ICON_GEM
+			gem.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+			gem.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			gem.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			paper.add_child(gem)
+			gem.set_meta("content",true)
+			place(gem,Rect2(area.position.x+196,lower+48,58,58))
+			var gem_text:=label(paper,"×%s"%number(gem_amount),16,Color("d9b8ff"),true)
+			gem_text.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+			gem_text.set_meta("content",true)
+			place(gem_text,Rect2(area.position.x+166,lower+108,118,24))
+			var gem_caption:=label(paper,"보석",12.5,Color(.80,.66,.92))
+			gem_caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+			gem_caption.set_meta("content",true)
+			place(gem_caption,Rect2(area.position.x+166,lower+134,118,18))
 		var claim:=V.PlateButton.new()
 		claim.kind="gold"
 		claim.text="보상 수령 완료" if claimed else "보상 수령"
