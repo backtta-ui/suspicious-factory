@@ -430,11 +430,13 @@ func submit_nickname() -> void:
  nickname_edit=false
  transition("lobby")
 func open_nickname_edit() -> void:
- if changing or modal!=null:return
+ if changing:return
+ # 설정 팝업에서 부르면 그 팝업을 닫고 수정 화면으로 간다(경기 중에는 열지 않는다).
+ if modal!=null:close_popup()
+ if screen not in ["lobby","rooms","title"]:return
  nickname_edit=true
  if screen=="lobby":transition("nickname")
- else:
-  close_popup();build("nickname")
+ else:build("nickname")
 func lobby_background() -> void:
  var night:=ColorRect.new();night.color=Color(.19,.14,.28);night.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(night,ui)
  var art:=TextureRect.new();art.texture=load(LOBBY_ART);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(art,ui)

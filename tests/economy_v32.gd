@@ -62,6 +62,12 @@ func run() -> void:
  game.nickname_input.text="밤새는도사"
  game.submit_nickname();await wait_screen("lobby")
  check(String(game.storage.nickname())=="밤새는도사" and String(game.lobby_hud.name_label.text)=="밤새는도사","바꾼 닉네임이 로비 상단에 바로 반영된다")
+ # 설정 팝업에서도 닉네임 수정 화면으로 갈 수 있다.
+ game.show_settings();await frames(2)
+ game.open_nickname_edit();await wait_screen("nickname")
+ check(game.screen=="nickname","설정 팝업에서도 닉네임 수정 화면이 열린다")
+ game.nickname_input.text="밤새는도사"
+ game.submit_nickname();await wait_screen("lobby")
  # ── ① 신규 저장: 실제 재화는 0에서 시작하고 레벨·경험치는 없다.
  check(int(game.storage.data.coins)==0 and int(game.storage.data.gems)==0,"새 저장은 코인 0 · 보석 0에서 시작한다")
  check(not game.storage.data.has("level") and not game.storage.data.has("xp"),"이 게임에는 레벨·경험치 저장값이 없다")
