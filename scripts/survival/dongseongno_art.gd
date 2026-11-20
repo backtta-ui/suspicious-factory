@@ -88,53 +88,69 @@ static func zone_label(node: Node2D,rect: Rect2,text: String,accent: Color) -> v
  node.draw_rect(Rect2(at-Vector2(14,32),Vector2(6,50)),accent)
  node.draw_string(TITLE_FONT,at-Vector2(2,30),text,HORIZONTAL_ALIGNMENT_LEFT,-1,32,Color(0,0,0,.5))
  node.draw_string(TITLE_FONT,at-Vector2(4,34),text,HORIZONTAL_ALIGNMENT_LEFT,-1,30,Color(1,1,1,.95))
-## 건물: 붉은 벽돌·남색 상가 + 네온 간판 + 옥상 설비 + 1층 쇼윈도.
+## 건물: 위에서 본 지붕면 + 남쪽 외벽(쇼윈도·차양·네온 간판).
 static func draw_walls(node: Node2D) -> void:
  var sign_words=["노래","포차","분식","네컷","오락","치킨","커피","화장","문구","의류","떡볶이","아케이드"]
+ var neon_colors=[NEON_PINK,NEON_CYAN,NEON_PURPLE,WARM]
  for index in range(L.BUILDINGS_RECTS.size()):
   var rect: Rect2=L.BUILDINGS_RECTS[index]
-  node.draw_rect(Rect2(rect.position+Vector2(9,13),rect.size),Color(0,0,0,.5))
- var neon_colors=[NEON_PINK,NEON_CYAN,NEON_PURPLE,WARM]
+  node.draw_rect(Rect2(rect.position+Vector2(10,15),rect.size),Color(0,0,0,.52))
  for index2 in range(L.BUILDINGS_RECTS.size()):
   var rect2: Rect2=L.BUILDINGS_RECTS[index2]
-  var use_brick: bool=index2%3!=1
-  if use_brick:fill_texture(node,"brick",rect2,Color(1,.98,1,.95))
-  else:node.draw_rect(rect2,Color("3a3350"))
-  node.draw_rect(Rect2(rect2.position,Vector2(rect2.size.x,13)),WALL_TOP)
-  node.draw_rect(Rect2(rect2.position+Vector2(0,13),Vector2(rect2.size.x,5)),Color(.03,.02,.05,.9))
-  node.draw_rect(rect2,Color(.04,.03,.07,.8),false,2.5)
-  # 1층 쇼윈도(따뜻한 불빛) + 출입문
-  var wy: float=rect2.end.y-44.0
-  node.draw_rect(Rect2(Vector2(rect2.position.x+10,wy),Vector2(rect2.size.x-20,30)),Color(.04,.05,.09,.94))
-  var wx: float=rect2.position.x+16.0
+  var face_h: float=38.0
+  var roof:=Rect2(rect2.position,Vector2(rect2.size.x,rect2.size.y-face_h))
+  node.draw_rect(rect2.grow(4),Color(.03,.02,.05,.92))
+  # 지붕: 붉은 벽돌 옥상 또는 어두운 슬레이트
+  if index2%3==0:
+   fill_texture(node,"brick",roof,Color(.62,.58,.64,.95))
+  else:
+   node.draw_rect(roof,Color("2f2a3e"))
+   var ry: float=roof.position.y
+   while ry<roof.end.y:
+    node.draw_line(Vector2(roof.position.x,ry),Vector2(roof.end.x,ry),Color(.08,.07,.12,.35),1.2)
+    ry+=12.0
+  node.draw_rect(Rect2(roof.position,Vector2(roof.size.x,4)),Color(1,1,1,.08))
+  # 옥상 설비·물탱크·환풍구
+  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.62,rect2.size.y*.30),Vector2(30,22)),Color(.09,.08,.13,.95))
+  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.62,rect2.size.y*.30),Vector2(30,4)),Color(.30,.28,.38,.95))
+  node.draw_circle(rect2.position+Vector2(rect2.size.x*.30,rect2.size.y*.40),10,Color(.07,.06,.10,.95))
+  node.draw_circle(rect2.position+Vector2(rect2.size.x*.30,rect2.size.y*.40),5,Color(.24,.22,.30,.95))
+  if rect2.size.x>250.0:
+   node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.82,rect2.size.y*.22),Vector2(18,18)),Color(.10,.09,.14,.95))
+  # 남쪽 외벽(벽돌) + 쇼윈도
+  var face:=Rect2(Vector2(rect2.position.x,rect2.end.y-face_h),Vector2(rect2.size.x,face_h))
+  if index2%3!=1:fill_texture(node,"brick",face,Color(.72,.68,.74,.98))
+  else:node.draw_rect(face,Color("332c48"))
+  node.draw_rect(Rect2(face.position,Vector2(face.size.x,4)),Color(.03,.02,.05,.92))
+  var wx: float=face.position.x+14.0
   var wi: int=0
-  while wx<rect2.end.x-34.0:
+  while wx<face.end.x-30.0:
    var lit: Color=WARM if wi%3!=2 else NEON_CYAN
-   node.draw_rect(Rect2(Vector2(wx,wy+3),Vector2(24,24)),Color(lit.r,lit.g,lit.b,.80))
-   node.draw_rect(Rect2(Vector2(wx,wy+3),Vector2(24,24)),Color(1,1,1,.18),false,1.0)
-   if wi%3==1:
-    node.draw_rect(Rect2(Vector2(wx+6,wy+15),Vector2(12,12)),Color(.03,.03,.05,.9))
-   wx+=36.0
+   node.draw_rect(Rect2(Vector2(wx-2,face.position.y+10),Vector2(26,20)),Color(.03,.03,.05,.96))
+   node.draw_rect(Rect2(Vector2(wx,face.position.y+12),Vector2(22,16)),Color(lit.r,lit.g,lit.b,.82))
+   node.draw_rect(Rect2(Vector2(wx,face.position.y+12),Vector2(22,3)),Color(1,1,1,.20))
+   wx+=40.0
    wi+=1
-  # 네온 간판(건물 위쪽 띠 + 세로 간판)
+  # 출입문
+  var door_c:=Vector2(rect2.get_center().x,face.position.y+8)
+  node.draw_rect(Rect2(door_c-Vector2(15,6),Vector2(30,face_h-8)),Color(.04,.03,.06,.97))
+  node.draw_rect(Rect2(door_c-Vector2(13,-2),Vector2(26,face_h-14)),Color(.22,.18,.28,.95))
+  # 네온 간판(지붕 위 + 세로 간판)
   var neon_c: Color=neon_colors[index2%neon_colors.size()]
   var word: String=sign_words[index2%sign_words.size()]
-  var board_w: float=minf(rect2.size.x-30.0,132.0)
-  var board:=Rect2(Vector2(rect2.position.x+16,rect2.end.y-86),Vector2(board_w,22))
-  node.draw_rect(board,Color(0,0,0,.62))
-  node.draw_rect(board,Color(neon_c.r,neon_c.g,neon_c.b,.9),false,2.0)
-  node.draw_string(FONT,board.position+Vector2(6,17),word,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color(1,.96,1,.95))
+  var board_w: float=minf(rect2.size.x-30.0,128.0)
+  var board:=Rect2(Vector2(rect2.position.x+16,rect2.position.y+10),Vector2(board_w,22))
+  node.draw_rect(board.grow(2),Color(0,0,0,.6))
+  node.draw_rect(board,Color(.04,.03,.07,.94))
+  node.draw_rect(board,Color(neon_c.r,neon_c.g,neon_c.b,.95),false,2.0)
+  node.draw_string(FONT,board.position+Vector2(6,17),word,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color(1,.96,1,.96))
   if rect2.size.x>250.0:
-   var vsign:=Rect2(Vector2(rect2.end.x-26,rect2.position.y+34),Vector2(18,72))
+   var vsign:=Rect2(Vector2(rect2.end.x-24,rect2.position.y+34),Vector2(16,66))
    node.draw_rect(vsign,Color(0,0,0,.6))
-   node.draw_rect(vsign,Color(neon_c.r,neon_c.g,neon_c.b,.75),false,1.6)
+   node.draw_rect(vsign,Color(neon_c.r,neon_c.g,neon_c.b,.8),false,1.6)
    for k in range(3):
-    node.draw_rect(Rect2(vsign.position+Vector2(4,8+float(k)*20),Vector2(10,10)),Color(neon_c.r,neon_c.g,neon_c.b,.75))
-  # 옥상 설비
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.66,rect2.size.y*.30),Vector2(32,22)),Color(.09,.08,.13,.95))
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.66,rect2.size.y*.30),Vector2(32,4)),Color(.26,.24,.32,.95))
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.30,rect2.size.y*.24),Vector2(22,22)),Color(.08,.07,.11,.9))
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.30,rect2.size.y*.24),Vector2(22,3)),Color(.22,.20,.28,.9))
+    node.draw_rect(Rect2(vsign.position+Vector2(4,8+float(k)*18),Vector2(8,8)),Color(neon_c.r,neon_c.g,neon_c.b,.8))
+  node.draw_rect(rect2,Color(neon_c.r,neon_c.g,neon_c.b,.18),false,1.6)
  # 골목 위 전선
  for wire in [[Vector2(190,760),Vector2(1090,760)],[Vector2(900,1450),Vector2(1700,1450)],[Vector2(1400,2050),Vector2(2100,2050)],[Vector2(2160,760),Vector2(3100,760)]]:
   node.draw_line(wire[0],wire[1],Color(.05,.05,.08,.6),2.0)
