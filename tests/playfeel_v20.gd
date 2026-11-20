@@ -94,7 +94,8 @@ func run() -> void:
  check(readable,"every shop card label is at least 13pt")
  # 2.0.21: 미리보기 본문이 패널 밖(20:9 왼쪽)으로 새지 않고, 카드 글씨가 얼굴을 가리지 않는다.
  var shop: Node=game.shop
- var panel_rect:=Rect2(shop.origin+Shop.PANEL_POS,Shop.PANEL_SIZE)
+ # 2.0.33: 20:9에서 판은 오른쪽 끝으로 옮겨지므로, 실제 금테 판의 화면 사각형을 기준으로 본다.
+ var panel_rect:=Rect2((shop.preview_frame as Control).get_global_rect())
  var leaked:=0
  for child in shop.preview_body.get_children():
   if child is Control and (child as Control).is_visible_in_tree():

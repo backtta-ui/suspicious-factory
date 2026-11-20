@@ -96,6 +96,29 @@ const SEAL_DEADLINE=10.0
 const RESCUE_TIME=2.5
 const LIVES=3
 const REVIVE_IMMUNE=2.5
+## 2.0.33 봇 닉네임: 인게임 이름표·대기실·참가자 목록이 '요괴 1' 같은 임시 이름 대신
+## 이용자 닉네임과 같은 자리에 자연스러운 이름을 쓴다(중복 없이 배정).
+const BOT_NICKNAMES=["서원지킴이","밤도깨비","달빛여우","한옥탐정","부적장인","새벽바람","월하검객","청사초롱","별빛도사","구름나그네","먹빛도령","은하수비","호롱불지기","산그림자","해질녘손님","새벽종소리"]
+static func bot_nicknames(count: int,seed_value: int=0) -> Array:
+ var pool: Array=BOT_NICKNAMES.duplicate()
+ var rng:=RandomNumberGenerator.new()
+ if seed_value==0:rng.randomize()
+ else:rng.seed=seed_value
+ for i in range(pool.size()-1,0,-1):
+  var j:=rng.randi_range(0,i)
+  var swap: String=pool[i];pool[i]=pool[j];pool[j]=swap
+ var out: Array=[]
+ for i in range(maxi(0,count)):
+  out.append(String(pool[i%pool.size()]) if i<pool.size() else "%s %d" % [pool[i%pool.size()],i/pool.size()+1])
+ return out
+## 2.0.33 겉으로 보이는 정체성(이름표): 시전자 또는 인간둔갑한 상대의 닉네임·캐릭터·목숨.
+func apparent_identity(p: Dictionary) -> Dictionary:
+ var mimicking: bool=float(p.buff.get("mimic",0.0))>elapsed and players.has(String(p.copy))
+ var source: Dictionary=players[String(p.copy)] if mimicking else p
+ var spec: Dictionary=C.find(String(source.get("character","")))
+ return {"name":String(source.get("name","")),"character":String(source.get("character","")),
+  "character_name":String(spec.get("name","")),"lives":int(source.get("lives",LIVES)),
+  "role":String(source.get("role","")),"color":int(source.get("color",0))}
 func start() -> bool:
  if phase!="room" or players.size() not in [6,8]:return false
  if not players.values().all(func(p: Dictionary)->bool:return p.ready):return false
@@ -327,7 +350,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    burst(p.position,"fx_poof",.6,{"facing":p.facing});event("transform",p.id,nearest.kind);return true
   "clone":
    burst(p.position,"fx_ink",.5)
-   serial+=1;effects.append({"id":serial,"kind":"clone","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"character":p.character,"born":elapsed,"until":elapsed+8})
+   serial+=1;effects.append({"id":serial,"kind":"clone","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"character":p.character,"identity":apparent_identity(p),"born":elapsed,"until":elapsed+8})
    burst(p.position,"fx_shadow",.55,{"facing":p.facing});return true
   "painting":
    # 화중은신: 족자를 펼쳐 그림 속 차원으로 들어간다. 무적·벽 통과에 더해
@@ -352,7 +375,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    p.immune=maxf(p.immune,elapsed+.6)
    burst(p.position,"fx_goldwave",.8);return landed
   "puppet":
-   serial+=1;effects.append({"id":serial,"kind":"decoy","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"character":p.character,"born":elapsed,"until":elapsed+9})
+   serial+=1;effects.append({"id":serial,"kind":"decoy","owner":p.id,"position":p.position,"facing":p.facing,"cosmetic":C.look(p.character),"character":p.character,"identity":apparent_identity(p),"born":elapsed,"until":elapsed+9})
    burst(p.position,"fx_gear",.9);return true
   "trap":
    traps.append({"kind":"pressure","owner":p.id,"pos":p.position,"until":elapsed+30.0,"radius":36.0,"armed":true})
@@ -429,7 +452,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
     if q.position.distance_to(p.position)>340:continue
     q.blind_until=elapsed+7.0
     var phantom: Vector2=q.position+Vector2.from_angle(rng.randf()*TAU)*90.0
-    serial+=1;effects.append({"id":serial,"kind":"decoy","owner":p.id,"position":L.safe(phantom),"facing":q.facing,"cosmetic":C.look(p.character),"character":p.character,"born":elapsed,"until":elapsed+4.0,"phantom":true})
+    serial+=1;effects.append({"id":serial,"kind":"decoy","owner":p.id,"position":L.safe(phantom),"facing":q.facing,"cosmetic":C.look(p.character),"character":p.character,"identity":apparent_identity(p),"born":elapsed,"until":elapsed+4.0,"phantom":true})
     burst(q.position,"fx_foxfire",1.2)
    burst(p.position,"fx_mist",1.4);return true
   "voicemimic":

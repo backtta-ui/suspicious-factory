@@ -551,7 +551,9 @@ func setup_participants(seed_value: int=0) -> void:
  rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.preferred_role=preferred_role;rules.add("human",display_name(),storage.data.daoist,storage.data.yokai)
  if room.fill:
   var daoists: Array=C.catalog("daoist");var yokai: Array=C.catalog("yokai")
-  for i in range(1,room.count):rules.add("bot-%d"%i,("요괴 %d" if i<3 else "도사 %d")%i,String(daoists[i%daoists.size()].id),String(yokai[i%yokai.size()].id))
+  # 2.0.33 봇 7명에게도 자연스러운 닉네임을 붙인다(중복 없음). 이름표는 '닉네임 [캐릭터명]' 형식.
+  var nicknames: Array=Rules.bot_nicknames(room.count-1,seed_value)
+  for i in range(1,room.count):rules.add("bot-%d"%i,String(nicknames[i-1]),String(daoists[i%daoists.size()].id),String(yokai[i%yokai.size()].id))
  result_seen=false;recorded=false;last_reward={};spectate="human";fixed_clock=0;bot_clock=0
 ## 카드·배너용 둥근 테두리 박스(내용 여백은 카드 크기에 맞춰 작게).
 func box_style(fill: Color,radius: int,border: Color,width: int=1) -> StyleBoxFlat:
@@ -1435,7 +1437,8 @@ func update_avatars() -> void:
    if info.id=="human":actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
    actor.position=target;actor.set_meta("target",target)
    avatars[id]=actor
-   var label:=text("",11);label.name="Name";label.position=Vector2(-58,-68);label.size=Vector2(116,18);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;actor.add_child(label)
+   # 2.0.33 이름표: '닉네임 [캐릭터명] · ♥♥♥' 길이를 담을 만큼 넓게 잡는다.
+   var label:=text("",11);label.name="Name";label.position=Vector2(-120,-68);label.size=Vector2(240,18);label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;name_plate(label);actor.add_child(label)
    var mark:=preload("res://scripts/seal/color_marker.gd").new();mark.actor=actor;mark.name="Identity";actor.add_child(mark)
    var aura:=preload("res://scripts/survival/actor_aura.gd").new();aura.name="Aura";actor.add_child(aura)
   var actor: WooActor=avatars[id]
@@ -1470,18 +1473,14 @@ func update_avatars() -> void:
   if aura!=null and (aura.form_shadow!=float(actor.form_shadow if disguised else 0.0) or aura.color!=aura_color or aura.yokai!=(info.role=="yokai" and not disguised) or aura.lit!=(lit_effect!="")):
    aura.form_shadow=actor.form_shadow if disguised else 0.0
    aura.color=aura_color;aura.yokai=info.role=="yokai" and not disguised;aura.lit=lit_effect!="" and not disguised;aura.queue_redraw()
-  var tag: String=info.name
-  if info.id=="human" and rules.players.has("human") and not bool(info.get("mimic",false)):
-   # 내 이름표도 '캐릭터 이름' 형식으로 통일한다(인간둔갑과 구별되지 않게).
-   tag=String(info.get("character_name",C.find(rules.players.human.character).name))
-  else:
-   # 2.0.30 이름표는 모두 '캐릭터 이름' 기준으로 통일한다. 인간둔갑한 요괴가
-   # 복제한 도사와 이름표까지 갖아야 들키지 않는다.
-   var shown: String=String(info.get("character_name",""))
-   if shown!="":tag=shown
-  if info.role=="daoist" and info.id!="":
-   var lives_left: int=int(info.get("lives",rules.players.get(info.id,{}).get("lives",rules.LIVES)))
-   tag+=" · "+hearts(lives_left)
+  # 2.0.33 이름표: '닉네임 [캐릭터명]' + 도사는 남은 목숨 하트. 인간둔갑한 요괴는
+  # 복제한 도사의 닉네임·캐릭터명·하트를 그대로 쓰므로 본인과 구별되지 않는다.
+  var tag_nick: String=String(info.get("player_name",info.get("name","")))
+  var tag_character: String=String(info.get("character_name",""))
+  if tag_character=="" and info.id=="human" and rules.players.has("human"):
+   tag_character=String(C.find(rules.players.human.character).get("name",""))
+  var lives_left: int=int(info.get("lives",rules.players.get(info.id,{}).get("lives",rules.LIVES)))
+  var tag:=person_tag(tag_nick,tag_character,String(info.get("role","")),lives_left)
   actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=not disguised;actor.get_node("Identity").color_id=info.color
   actor.get_node("Identity").visible=not disguised
   actor.modulate=Color.WHITE if disguised else (Color("e2b2ff") if info.captured else (Color("c9ecff") if info.immune else Color.WHITE))
@@ -1509,7 +1508,19 @@ func update_avatars() -> void:
    clone.art_id=C.fallback_art(String(effect.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
    if clone.art_id=="":clone.art_id=String(effect.cosmetic.get("character","woochi"))
    clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clone.update_sprite();clones[key]=clone
+   # 2.0.33 분신·환영도 본체와 똑같은 이름표를 단다(이름표가 없으면 가짜임이 바로 들킨다).
+   var clone_label:=text("",11);clone_label.name="Name";clone_label.position=Vector2(-120,-68);clone_label.size=Vector2(240,18);clone_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;name_plate(clone_label);clone.add_child(clone_label)
+   var clone_mark:=preload("res://scripts/seal/color_marker.gd").new();clone_mark.actor=clone;clone_mark.name="Identity";clone.add_child(clone_mark)
   var clone: WooActor=clones[key];clone.position=effect.position;clone.position+=Vector2(0,-L.elevation(effect.position));clone.facing=effect.facing
+  # 2.0.33 분신의 정체성: 시전자와 같은 닉네임·[캐릭터명]·남은 목숨 하트(롤 샤코 궁처럼 완전히 동일).
+  var identity: Dictionary=effect.get("identity",{})
+  var clone_name: Label=clone.get_node_or_null("Name")
+  if clone_name!=null:
+   var clone_tag:=person_tag(String(identity.get("name","")),String(identity.get("character_name","")),String(identity.get("role","")),int(identity.get("lives",-1)))
+   if clone_name.text!=clone_tag:clone_name.text=clone_tag
+   clone_name.visible=true
+  var clone_mark: Node=clone.get_node_or_null("Identity")
+  if clone_mark!=null:clone_mark.color_id=int(identity.get("color",0))
   clone.velocity=Vector2(0,0) if decoy else Vector2(36,0)
   clone.gait_weight=0.0 if decoy else 1.0
   clone.gait_phase+=0.0 if decoy else .15
@@ -1570,6 +1581,16 @@ func show_banner(message: String,color: Color=Color("ffe0a8")) -> void:
  banner_left=3.0
 func hearts(count: int) -> String:
  return "♥".repeat(maxi(0,count)) + "♡".repeat(maxi(0,rules.LIVES-maxi(0,count))) if rules!=null else ""
+## 2.0.33 이름표 한 줄: '닉네임 [캐릭터명]' + 도사는 남은 목숨 하트(요괴는 하트 없음).
+func person_tag(nick: String,character_name: String,role: String,lives: int=-1) -> String:
+ var tag:=nick if nick!="" else "나"
+ if character_name!="":tag=tag+" ["+character_name+"]"
+ if role=="daoist" and lives>=0 and rules!=null:tag+=" · "+hearts(lives)
+ return tag
+## 2.0.33 이름표 가독성: 밝은 바닥 위에서도 읽히도록 얇은 먹색 외곽선을 준다.
+func name_plate(label: Label) -> void:
+ label.add_theme_color_override("font_outline_color",Color(0.02,0.018,0.04,.88))
+ label.add_theme_constant_override("outline_size",3)
 func set_text(node: Label,value: String) -> void:
  if node.text!=value:node.text=value
 func update_hud() -> void:
