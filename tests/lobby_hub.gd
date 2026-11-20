@@ -87,7 +87,7 @@ func run() -> void:
  check(is_instance_valid(game.ui.find_child("ShopTab_character",true,false)),"shop has a character tab")
  check(is_instance_valid(game.ui.find_child("ShopTab_skin",true,false)) and is_instance_valid(game.ui.find_child("ShopTab_aura",true,false)),"shop has skin and title tabs")
  # 2.0.19: 스킨 상점은 기본 도포 1종만 노출한다. 예전 색상 스킨 id는 저장 데이터 호환용으로 남는다.
- check(Market.shop_items("skin").size()==6 and String(Market.shop_items("skin")[0].id)=="default","skin shop lists the default robe plus five coin robes")
+ check(Market.shop_items("skin").size()>=6 and String(Market.shop_items("skin")[0].id)=="default","skin shop lists the default robe, coin robes and the v34 pancake skin")
  var moon: Dictionary=Market.skin("moon")
  game.market_buy(moon,"skin");await frames(2)
  check(game.storage.owns("moon") and game.storage.equipped("skin")=="moon","skin unlock and equip")

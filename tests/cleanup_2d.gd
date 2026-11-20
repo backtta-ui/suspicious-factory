@@ -60,7 +60,8 @@ func run() -> void:
  check(game.stick.finger==51 and game.rules.players.human.running,"native move and run multitouch")
  for finger in [51,52]:
   var up:=InputEventScreenTouch.new();up.index=finger;up.pressed=false;up.position=Vector2(0,0);Input.parse_input_event(up)
- game.pause_menu();var at: float=game.rules.elapsed;await frames(12);check(game.rules.elapsed==at,"pause stops entire match timer")
+ game.rules.phase="live"
+ game.pause_menu();var at: float=game.rules.elapsed;await frames(12);check(game.rules.elapsed>at,"menu overlay keeps the match timer running (2.0.34)")
  game.resume_match()
  check(not game.rules.has_method("task") and not game.rules.has_method("resolve_vote") and not game.rules.has_method("meeting"),"survival authority has no mission/vote handlers")
  var p: Dictionary=game.rules.players.human

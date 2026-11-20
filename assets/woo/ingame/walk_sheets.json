@@ -251,6 +251,32 @@
    "height": 300,
    "target_height": 56,
    "fps": 11.0
+  },
+  "woochi_pancake": {
+   "sheet": "res://assets/woo/skins/woochi_pancake/walk_8dir.png",
+   "cell": [
+    320,
+    380
+   ],
+   "rows": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+   ],
+   "cols": 4,
+   "foot": [
+    160,
+    352
+   ],
+   "height": 300,
+   "target_height": 56,
+   "fps": 11.0,
+   "note": "2.0.34 부침개 전우치 전용 스킨 8방향 걷기 시트"
   }
  },
  "animals": {
@@ -303,6 +329,60 @@
    "height": 150,
    "target_height": 26.0,
    "fps": 9.0
+  }
+ },
+ "props": {
+  "delivery_robot": {
+   "sheet": "res://assets/woo/gangnam/moving/moving_delivery_robot_sheet.png",
+   "cell": [
+    256,
+    256
+   ],
+   "rows": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+   ],
+   "cols": 4,
+   "foot": [
+    128,
+    232
+   ],
+   "height": 164,
+   "target_height": 40,
+   "fps": 10.0,
+   "note": "2.0.34 강남역 배달 로봇 8방향 주행 시트(4프레임)"
+  },
+  "kickboard": {
+   "sheet": "res://assets/woo/gangnam/moving/moving_kickboard_sheet.png",
+   "cell": [
+    256,
+    256
+   ],
+   "rows": [
+    "front",
+    "front_right",
+    "right",
+    "back_right",
+    "back",
+    "back_left",
+    "left",
+    "front_left"
+   ],
+   "cols": 4,
+   "foot": [
+    128,
+    232
+   ],
+   "height": 226,
+   "target_height": 48,
+   "fps": 11.0,
+   "note": "2.0.34 강남역 공유 전동킥보드 8방향 주행 시트(4프레임)"
   }
  }
 }

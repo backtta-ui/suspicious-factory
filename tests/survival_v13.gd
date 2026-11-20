@@ -125,7 +125,8 @@ func run() -> void:
  for i in range(10):r.tick(.1)
  check(walker.form=="jar","disguise survives walking")
  var walked: float=walker.position.distance_to(before_walk)
- check(walked>100.0 and walked<130.0,"disguised walking is slower than the open walk")
+ # 2.0.34: 둔갑 사물은 고정형 구분 없이 자유롭게 이동한다(감속 없음) → 걸은 거리가 그대로다.
+ check(walked>125.0,"disguised walking keeps full movement (no fixed-prop penalty in 2.0.34)")
  check(r.command(walker.id,"interact") and walker.form=="","pressing again leaves the disguise")
  check(not r.command(dao.id,"seal"),"daoist cannot seal")
  dao.position=L.SPAWN;dao.intent=Vector2.ZERO;r.command(dao.id,"move",{"vector":Vector2(1,1)});var before: Vector2=dao.position;r.tick(.1)

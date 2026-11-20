@@ -156,6 +156,13 @@ static func walk_sheet(art_id: String) -> Dictionary:
  var data: Dictionary=characters.get(art_id,{})
  if data.is_empty() or not ResourceLoader.exists(String(data.get("sheet",""))):return {}
  return data
+## 2.0.34 강남역을 걷는 둔갑 사물(배달 로봇·전동킥보드) 8방향 시트.
+static func prop_sheet(kind: String) -> Dictionary:
+ _load_walk()
+ var props: Dictionary=_walk_manifest.get("props",{})
+ var data: Dictionary=props.get(kind,{})
+ if data.is_empty() or not ResourceLoader.exists(String(data.get("sheet",""))):return {}
+ return data
 static func animal_sheet(kind: String) -> Dictionary:
  _load_walk()
  var animals: Dictionary=_walk_manifest.get("animals",{})

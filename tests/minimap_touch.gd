@@ -69,10 +69,11 @@ func run() -> void:
   await tap(Vector2(8,root.size.y-8),64)
   check(game.map_overlay==null,"tapping the dim backdrop closes the map")
   # 지도는 열린 동안에도 시뮬레이션을 세우지 않는다(일시정지 팝업).
+  game.rules.phase="live";game.rules.elapsed=30.0
   await tap(center)
   var before: float=game.rules.elapsed
   await frames(10)
-  check(game.map_overlay!=null and is_equal_approx(before,game.rules.elapsed),"the open map pauses the match clock")
+  check(game.map_overlay!=null and game.rules.elapsed>before,"the open map keeps the live match clock running (2.0.34)")
   if game.map_overlay!=null:game.close_map()
  # 다른 화면비에서도 미니맵이 화면 안에 있다.
  for size in [Vector2i(2400,1080),Vector2i(960,540)]:

@@ -11,6 +11,10 @@ var narrow:=0.0
 var dark:=0.0
 var fog:=0.0
 var source:=""
+## 2.0.34 안전구역 밖 경고(맵 색: 서원=보랏빛 / 강남역=붉은 비상).
+var warning:=0.0
+var warning_color:=Color("7a4bff")
+var shown_warning:=0.0
 ## 부드럽게 따라가는 표시값(스킬이 끝날 때 화면이 툭 밝아지지 않게).
 var shown_narrow:=0.0
 var shown_dark:=0.0
@@ -24,15 +28,19 @@ func sync(delta: float) -> void:
  var target: Dictionary=rules.vision_for(observer) if rules!=null else {}
  narrow=float(target.get("narrow",0.0));dark=float(target.get("dark",0.0))
  fog=float(target.get("fog",0.0));source=String(target.get("source",""))
+ warning=float(target.get("warning",0.0))
+ var wc: String=String(target.get("warning_color","7a4bff"))
+ if wc!="":warning_color=Color(wc)
  shown_narrow=move_toward(shown_narrow,narrow,delta*2.4)
+ shown_warning=move_toward(shown_warning,warning,delta*2.0)
  shown_dark=move_toward(shown_dark,dark,delta*1.6)
  shown_fog=move_toward(shown_fog,fog,delta*1.4)
- var active: bool=shown_narrow>.01 or shown_dark>.01 or shown_fog>.01
+ var active: bool=shown_narrow>.01 or shown_dark>.01 or shown_fog>.01 or shown_warning>.02
  if visible!=active:visible=active
  visible=active
  queue_redraw()
 func _draw() -> void:
- if shown_narrow<=.01 and shown_dark<=.01 and shown_fog<=.01:return
+ if shown_narrow<=.01 and shown_dark<=.01 and shown_fog<=.01 and shown_warning<=.02:return
  var view:=size
  if view.x<4.0 or view.y<4.0:view=get_viewport_rect().size
  var center:=view*.5
@@ -41,6 +49,8 @@ func _draw() -> void:
  var aperture: float=lerpf(maxf(view.x,view.y)*.62,minf(view.x,view.y)*.26,clampf(shown_narrow,0.0,1.0))
  # 어둠·안개가 함께 세지면 창은 더 좁아진다.
  aperture*=1.0-clampf(shown_fog,0.0,1.0)*.18
+ ## 안전구역 밖 경고 비네팅: 화면 테두리에서 안으로 번지는 맵 색 경고.
+ if shown_warning>.02:draw_warning(maxf(0.0,shown_warning))
  var curtain: float=clampf(maxf(shown_narrow,shown_fog*.8),0.0,1.0)
  if curtain>0.01:draw_curtain(center,aperture,max_radius,curtain)
  if shown_dark>0.01:draw_night(center,max_radius,shown_dark)
@@ -101,3 +111,21 @@ func draw_drifting_mist(center: Vector2,aperture: float,outer: float,strength: f
   draw_circle(Vector2.ZERO,extent,Color(.10,.10,.18,.05*strength))
   draw_circle(Vector2.ZERO,extent*.62,Color(.16,.15,.26,.04*strength))
   draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+
+## 안전구역 밖 경고: 테두리에서 안으로 겹겹이 번지는 경고색 + 맥동하는 얇은 테.
+func draw_warning(strength: float) -> void:
+ var view:=size if size.x>4.0 else get_viewport_rect().size
+ var pulse: float=.55+.45*sin(clock*3.4)
+ var tint:=Color(warning_color.r,warning_color.g,warning_color.b,.14*strength*(.7+.3*pulse))
+ for i in range(10):
+  var inset: float=float(i)*view.y*.012
+  draw_rect(Rect2(Vector2(inset,inset),view-Vector2(inset*2.0,inset*2.0)),Color(warning_color.r,warning_color.g,warning_color.b,.030*strength*(.6+.4*pulse)),false,view.y*.012)
+ draw_rect(Rect2(Vector2.ZERO,view),Color(warning_color.r,warning_color.g,warning_color.b,.10*strength*pulse),false,6.0)
+ draw_rect(Rect2(Vector2(4,4),view-Vector2(8,8)),Color(warning_color.r,warning_color.g,warning_color.b,.22*strength),false,2.0)
+ # 테두리에서 안으로 흐르는 경고 파형
+ for i in range(18):
+  var t: float=fmod(clock*.6+float(i)/18.0,1.0)
+  var alpha: float=(1.0-t)*.10*strength
+  var h: float=view.y*.05
+  draw_rect(Rect2(Vector2(0,t*view.y-h*.5),Vector2(view.x,h)),Color(warning_color.r,warning_color.g,warning_color.b,alpha))
+  draw_rect(Rect2(Vector2(t*view.x-h*.5,0),Vector2(h,view.y)),Color(warning_color.r,warning_color.g,warning_color.b,alpha*.7))

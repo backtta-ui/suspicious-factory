@@ -45,6 +45,16 @@ var ingame_art:=false:
 var ingame_sprite: Node2D
 var extracted_visual: SealEnvironmentAsset
 const SKILL_SHEET=preload("res://assets/woo/v20/skills.png")
+## 2.0.34 강남역 둔갑 사물(아이스커피·자판기·키오스크·배너·캐리어·소화전·배달로봇·킥보드).
+const GANGNAM_FORMS={
+ "iced_coffee":preload("res://assets/woo/gangnam/props/prop_iced_coffee.png"),
+ "vending":preload("res://assets/woo/gangnam/props/prop_vending_machine.png"),
+ "kiosk":preload("res://assets/woo/gangnam/props/prop_kiosk.png"),
+ "banner":preload("res://assets/woo/gangnam/props/prop_banner.png"),
+ "luggage":preload("res://assets/woo/gangnam/props/prop_luggage.png"),
+ "hydrant":preload("res://assets/woo/gangnam/props/prop_hydrant.png"),
+ "delivery_robot":preload("res://assets/woo/gangnam/props/prop_delivery_robot.png"),
+ "kickboard":preload("res://assets/woo/gangnam/props/prop_kickboard.png")}
 const SEOWON_FORMS={"jar":preload("res://assets/woo/seowon/prop_jar.png"),"crate":preload("res://assets/woo/seowon/prop_crate.png"),"lantern":preload("res://assets/woo/seowon/prop_lantern.png"),"stele":preload("res://assets/woo/seowon/prop_stele.png"),"cat":preload("res://assets/woo/seowon/prop_cat.png"),"dog":preload("res://assets/woo/seowon/prop_crate.png")}
 ## 2.0.27: 맵을 실제로 걷는 고양이·강아지의 2프레임 걷기 원화. 둔갑하면 그 동물과
 ## 같은 원화·같은 걷기 박자로 움직인다.
@@ -215,8 +225,8 @@ func update_sprite() -> void:
 	if ingame_art:
 		if is_instance_valid(wardrobe_visual):wardrobe_visual.hide()
 		if is_instance_valid(ingame_sprite):ingame_sprite.visible=appearance_form=="" or appearance_form=="human"
-	if appearance_form.begins_with("seowon:"):
-		var form_kind:=appearance_form.trim_prefix("seowon:")
+	if appearance_form.begins_with("seowon:") or appearance_form.begins_with("prop:"):
+		var form_kind:=appearance_form.trim_prefix("seowon:").trim_prefix("prop:")
 		if form_kind in ANIMAL_KINDS:
 			# 동물 둔갑: 맵의 고양이·강아지와 같은 4x4 걷기 시트를 같은 박자로 재생한다.
 			var sheet: Dictionary=C.animal_sheet(form_kind)
@@ -246,12 +256,47 @@ func update_sprite() -> void:
 			sprite.modulate=Color("e5d8ff") if transforming>0 else Color.WHITE
 			if is_instance_valid(extracted_visual):extracted_visual.visible=false
 			return
-		var form_texture: Texture2D=SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar)
+		# 움직이는 둔갑(배달 로봇·킥보드)은 맵 NPC와 같은 8방향 주행 시트를 그대로 쓴다.
+		var prop_sheet: Dictionary=C.prop_sheet(form_kind)
+		if not prop_sheet.is_empty():
+			var sheet_path: String=String(prop_sheet.get("sheet",""))
+			var prop_texture: Texture2D=animal_textures.get(sheet_path)
+			if prop_texture==null:prop_texture=load(sheet_path);animal_textures[sheet_path]=prop_texture
+			if prop_texture!=null:
+				var cell: Array=prop_sheet.get("cell",[256,256])
+				var rows_p: Array=prop_sheet.get("rows",C.DIRECTIONS8)
+				var mapped_p: Dictionary=C.sheet_row(rows_p,facing)
+				var columns: int=int(prop_sheet.get("cols",4))
+				var column: int=posmod(int(floor(gait_phase/(PI*.62))),columns) if gait_weight>.05 else 0
+				var extent:=Vector2(float(cell[0]),float(cell[1]))
+				var prop_height: float=float(form_height)
+				var prop_scale: float=prop_height/maxf(1.0,C.sheet_art_height(prop_sheet))
+				sprite.texture=prop_texture;sprite.region_enabled=true
+				sprite.region_rect=Rect2(Vector2(float(column)*extent.x,float(int(mapped_p.row))*extent.y),extent)
+				sprite.centered=false;sprite.offset=Vector2.ZERO
+				sprite.scale=Vector2(prop_scale,prop_scale)
+				var foot_p: Array=prop_sheet.get("foot",[128.0,232.0])
+				var bob_p: float=absf(sin(gait_phase))*3.0*gait_weight
+				sprite.position=-Vector2(float(foot_p[0]),float(foot_p[1]))*prop_scale-Vector2(0,bob_p)
+				sprite.rotation=sin(gait_phase)*.05*gait_weight
+				sprite.flip_h=false
+				sprite.visible=true
+				if is_instance_valid(extracted_visual):extracted_visual.visible=false
+				sprite.modulate=Color("e5d8ff") if transforming>0 else Color.WHITE
+				return
+		var form_texture: Texture2D=GANGNAM_FORMS.get(form_kind,SEOWON_FORMS.get(form_kind,SEOWON_FORMS.jar))
 		# 맵 사물과 같은 월드 높이. 액터 배율만큼 나눠 로컬 크기를 맞춘다.
 		var local_height: float=form_height/maxf(costume_scale,.01)
 		sprite.texture=form_texture;sprite.region_enabled=false;sprite.centered=true
 		sprite.scale=Vector2.ONE*(local_height/form_texture.get_height())
-		sprite.offset=Vector2.ZERO;sprite.position=Vector2(0,-local_height*.5)
+		sprite.offset=Vector2.ZERO
+		# 2.0.34: 고정 사물로 둔갑해 걸어도 미끄러지지 않는다 — 통통 튀는 보행 바운스와
+		# 이동 방향 좌우 기울기를 사물 그림 자체에 준다(그림자도 함께 신축).
+		var bump: float=absf(sin(gait_phase))*2.6*gait_weight
+		var lean_dir: float=1.0 if facing in [0,1,7] else (-1.0 if facing in [3,4,5] else 0.0)
+		var tilt: float=sin(gait_phase)*.11*gait_weight*lean_dir
+		sprite.position=Vector2(0,-local_height*.5-bump)
+		sprite.rotation=tilt
 		sprite.visible=true;sprite.flip_h=false
 		if is_instance_valid(extracted_visual):extracted_visual.visible=false
 		# 둔갑 중에는 캐릭터 색조를 섮지 않는다(진짜 사물과 같은 색).
@@ -328,7 +373,17 @@ var draw_ground:=true
 func _draw() -> void:
 	if not draw_ground:return
 	if not appearance_form.begins_with("asset:"):
-		draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
+		var form_shadow_scale: float=1.0
+		var prop_form: bool=appearance_form.begins_with("seowon:") or appearance_form.begins_with("prop:")
+		if prop_form:
+			# 둔갑 사물의 그림자: 사물 폭에 맞춰 늘고, 보행 박자에 맞춰 가로로 늘었다 줄었다 한다.
+			form_shadow_scale=clampf(form_shadow/12.0,.6,2.8)
+			var squash: float=1.0+.12*sin(gait_phase*2.0)*gait_weight
+			draw_set_transform(Vector2(0,0),0,Vector2(form_shadow_scale*squash,.5*form_shadow_scale))
+			draw_circle(Vector2.ZERO,9.0,Color(0.02,0.04,0.06,0.36))
+			draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+		else:
+			draw_colored_polygon(PackedVector2Array([Vector2(-10,0),Vector2(0,-4),Vector2(12,1),Vector2(1,5)]),Color(0.02,0.04,0.06,0.38))
 	if landing_left>0:
 		draw_arc(Vector2.ZERO,10+(1-landing_left/.18)*12,0,TAU,16,Color(.8,.75,.65,landing_left/.18*.5),2)
 	if highlighted:

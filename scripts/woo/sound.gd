@@ -14,8 +14,23 @@ const CLIPS = {
  "door":preload("res://assets/audio/door.wav"),
  "seal":preload("res://assets/audio/seal.wav"),
  "rescue":preload("res://assets/audio/rescue.wav"),
- "transform":preload("res://assets/audio/transform.wav")
+ "transform":preload("res://assets/audio/transform.wav"),
+ ## 2.0.34 UI·기믹 사운드(전부 numpy로 직접 합성한 무저작권 WAV).
+ "ui_tap":preload("res://assets/audio/ui_tap.wav"),
+ "ui_tab":preload("res://assets/audio/ui_tab.wav"),
+ "ui_back":preload("res://assets/audio/ui_back.wav"),
+ "match_join":preload("res://assets/audio/match_join.wav"),
+ "match_found":preload("res://assets/audio/match_found.wav"),
+ "lock_in":preload("res://assets/audio/lock_in.wav"),
+ "gimmick_turnstile":preload("res://assets/audio/gimmick_turnstile.wav"),
+ "gimmick_cctv":preload("res://assets/audio/gimmick_cctv.wav"),
+ "gimmick_lights_off":preload("res://assets/audio/gimmick_lights_off.wav"),
+ "gimmick_lights_on":preload("res://assets/audio/gimmick_lights_on.wav"),
+ "gimmick_shutter":preload("res://assets/audio/gimmick_shutter.wav"),
+ "zone_warning":preload("res://assets/audio/zone_warning.wav")
 }
+## 2.0.34 기존 호출부 호환: button/tab/back을 새 목재·옥구슬 사운드로 연결한다.
+const ALIASES={"button":"ui_tap","tab":"ui_tab","back":"ui_back"}
 const INGAME=preload("res://assets/audio/seowon_ingame.wav")
 ## 2.0.31 도술별 맞춤 효과음: 도사·도술마다 다른 재질(종이·바람·나무·대나무·현·북·연기·차임)로
 ## 합성한 30종. `tools/prepare_v31_audio.py`가 만들고 `tools/verify_v31_audio.py`가 검증한다.
@@ -53,12 +68,18 @@ const SKILLS={
 }
 ## 로비 음악: tools/prepare_ingame_audio.py가 numpy로 직접 합성한 무저작권 WAV.
 const MUSIC=preload("res://assets/audio/lobby_night.wav")
+## 2.0.34 맵별 BGM: 서원=국악기 기반 달밤(기존 seowon_ingame), 강남역=도심 심야 신스.
+const MAP_BGM={
+ "seowon":INGAME,
+ "gangnam":preload("res://assets/audio/bgm_gangnam.wav")}
 const STEPS=[preload("res://assets/audio/step.wav"),preload("res://assets/audio/step2.wav"),preload("res://assets/audio/step3.wav")]
 const SURFACES={"stone":STEPS[0],"grass":preload("res://assets/audio/grass.wav"),"dirt":preload("res://assets/audio/dirt.wav"),"wood":preload("res://assets/audio/wood.wav"),"water":preload("res://assets/audio/water.wav")}
 var terrain_stream: AudioStream
 var last_surface:="stone"
 var nearby_trackers: Dictionary={}
 var map_id:="gyewol_village"
+## 2.0.34 지금 깔린 경기 BGM의 맵 id(서원/강남역).
+var current_map:="seowon"
 var ambience: AudioStreamPlayer
 const WIND=preload("res://assets/audio/forest_wind.ogg")
 var music: AudioStreamPlayer
@@ -75,6 +96,9 @@ var voices: Array[AudioStreamPlayer] = []
 var played := 0
 ## 2.0.31: 어떤 도술 소리를 마지막으로 냈는지(테스트·디버그용).
 var last_skill:=""
+## 2.0.34: 마지막으로 낸 일반 클립(테스트·디버그용).
+var last_clip:=""
+var clips_played:=0
 var skills_played:=0
 var step_distance := 0.0
 var previous_position := Vector2.ZERO
@@ -93,6 +117,33 @@ func _ready() -> void:
   var voice:=AudioStreamPlayer.new()
   voice.volume_db=-6
   add_child(voice);voices.append(voice)
+## 2.0.34: 맵 id에 따라 BGM을 갈아 끼운다. 서원=국악 달밤, 강남역=도심 신스.
+func play_map_bgm(map_id_value: String) -> void:
+ current_map=map_id_value
+ var target: AudioStream=MAP_BGM.get(map_id_value,MAP_BGM["seowon"])
+ if not is_instance_valid(music):return
+ if music.stream==target:
+  return
+ music.stop()
+ music.stream=target
+ if target is AudioStreamWAV:
+  var wav: AudioStreamWAV=target.duplicate()
+  wav.loop_mode=AudioStreamWAV.LOOP_FORWARD
+  wav.loop_begin=0
+  wav.loop_end=maxi(1,int(wav.get_length()*wav.mix_rate)-1)
+  music.stream=wav
+ if music_enabled and AudioServer.get_driver_name()!="Dummy":music.play()
+## 매칭 합류: 인원이 늘수록 음이 올라가는 영롱한 차임.
+func play_match_join(count: int) -> void:
+ if not enabled or backgrounded or not CLIPS.has("match_join"):return
+ for voice in voices:
+  if not voice.playing:
+   voice.stream=CLIPS["match_join"]
+   voice.volume_db=-10
+   voice.pitch_scale=pow(2.0,clampf(float(count)/12.0,0.0,1.0))
+   if AudioServer.get_driver_name()!="Dummy":voice.play()
+   played+=1;clips_played+=1;last_clip="match_join"
+   return
 func set_context(value: String) -> void:
  if context==value:return
  context=value
@@ -137,16 +188,22 @@ func shutdown() -> void:
 func _exit_tree() -> void:
  shutdown()
 func play_clip(name: String) -> void:
+ if ALIASES.has(name): name=String(ALIASES[name])
  if not enabled or backgrounded or not CLIPS.has(name): return
  for voice in voices:
   if not voice.playing:
    voice.stream=(terrain_stream if terrain_stream!=null else STEPS[step_index%STEPS.size()]) if name=="step" else CLIPS[name]
    if name=="step":step_index+=1
    voice.volume_db=-11 if name in ["step","jar_step"] else (-7 if name=="spell" else -10)
-   voice.pitch_scale=1.0+(-.025 if step_index%2==0 else .025) if name=="step" else 1.0
+   # 2.0.34: 같은 UI 사운드도 매번 미세하게 달라지도록 피치를 흔든다(반복 피로 감소).
+   var pitch_jitter:=0.0
+   if name in ["ui_tap","ui_tab","ui_back","gimmick_cctv","gimmick_turnstile"]:
+    pitch_jitter=float((played*37)%11-5)/220.0
+   voice.pitch_scale=(1.0+(-.025 if step_index%2==0 else .025)) if name=="step" else 1.0+pitch_jitter
    # Dummy has no mixer to retire WAV playbacks (headless/render CI).
    if AudioServer.get_driver_name()!="Dummy": voice.play()
-   played+=1;return
+   played+=1;clips_played+=1;last_clip=name
+   return
 ## 2.0.31: 도술 id에 맞는 효과음을 낸다. 등록되지 않은 id는 공용 도술음으로 대체한다.
 ## 내 시전과 주변 인물의 시전 모두 이 함수를 쓴다(2.0.30까지는 전부 'spell' 하나였다).
 func play_skill(skill_id: String) -> void:

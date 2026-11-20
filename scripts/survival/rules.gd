@@ -1,6 +1,22 @@
 extends RefCounted
-const L=preload("res://scripts/survival/layout.gd")
+## 2.0.34: 맵은 Maps가 정한다. L은 지금 맵의 레이아웃 스크립트(서원/강남역)이며,
+## 충돌·스폰·둔갑 사물·기믹이 모두 그 맵 기준으로 움직인다.
+const Maps=preload("res://scripts/survival/maps.gd")
+const Gimmicks=preload("res://scripts/survival/gimmicks.gd")
+const SkillFX=preload("res://scripts/survival/skill_fx.gd")
 const C=preload("res://scripts/survival/characters.gd")
+var L: Script=Maps.SEOWON
+var map_id: String="seowon"
+var gimmicks: RefCounted
+## 안전구역 밖 체류시간을 3초까지는 유지해 경계를 들락날락하는 악용을 막는다.
+const OUTSIDE_GRACE=3.0
+const OUTSIDE_REVEAL=2.0
+const OUTSIDE_SLOW_DAOIST=5.0
+const OUTSIDE_SLOW_YOKAI=0.0
+const OUTSIDE_LIFE_START=10.0
+const OUTSIDE_LIFE_EVERY=15.0
+const OUTSIDE_WEAK_DETECT=3.0
+const OUTSIDE_CD_PENALTY=5.0
 var players: Dictionary={}
 var rng:=RandomNumberGenerator.new()
 var phase:="room"
@@ -72,14 +88,27 @@ func burst(at: Vector2,kind: String,duration: float,extra: Dictionary={}) -> voi
 func signature(p: Dictionary,skill_id: String,aim: Vector2=Vector2.ZERO) -> void:
  var extra:={"skill":skill_id,"facing":p.facing,"cosmetic":C.look(p.character)}
  if aim!=Vector2.ZERO:extra["aim"]=aim
- burst(p.position,"fx_sig",0.85,extra)
+ ## 스킨 전용 이펙트가 있으면 기본 도형 연출 대신 스킨 아트만 크게 터뜨린다(이중 노출 방지).
+ var skin_fx: String=SkillFX.file_for(p.get("character",""),skill_id,p.get("skin",""))
+ if String(p.get("skin",""))=="":
+  burst(p.position,"fx_sig",0.85,extra)
+ # 2.0.34: 10인 기본 스킨 전용 이펙트 PNG(부침개 전우치는 김치전·부침개 이펙트).
+ if skin_fx!="":
+  burst(p.position,"fx_png",1.35,{"file":skin_fx,"texture":load(skin_fx),"facing":p.facing})
 func _init(seed_value: int=0) -> void:
  if seed_value==0:rng.randomize()
  else:rng.seed=seed_value
+ use_map(Maps.current_id)
+## 맵을 적용한다. 경기 시작 전에 호출하면 스폰·사물·기믹이 그 맵으로 바뀐다.
+func use_map(id: String) -> void:
+ map_id=Maps.set_current(id)
+ L=Maps.layout()
+ gimmicks=Gimmicks.new()
+ gimmicks.setup(self)
 func add(id: String,name: String,daoist: String,yokai: String) -> bool:
  if phase!="room" or players.size()>=8 or C.find(daoist).is_empty() or C.find(yokai).is_empty():return false
  players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"home":L.SPAWN,"sealed_pos":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"wobble":0.0,"form_origin":L.SPAWN,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stagger":0.0,"lives":3,"stats":{"seals":0,"misses":0,"rescues":0,"lost":0},"confirmed":false,"ready":id!="human","color":players.size(),
-  "ult":0.0,"stun":0.0,"slow_until":0.0,"slow_factor":1.0,"speed_until":0.0,"speed_factor":1.0,"seal_bonus":0.0,"mark":Vector2.INF,"last_hurt":0.0,"blind_until":0.0,"hint":"","last_skill":"","last_skill_name":"","last_skill_slot":"","last_skill_until":0.0}
+  "skin":"","inside_reset":0.0,"outside_life":0,"ult":0.0,"stun":0.0,"slow_until":0.0,"slow_factor":1.0,"speed_until":0.0,"speed_factor":1.0,"seal_bonus":0.0,"mark":Vector2.INF,"last_hurt":0.0,"blind_until":0.0,"hint":"","last_skill":"","last_skill_name":"","last_skill_slot":"","last_skill_until":0.0}
  return true
 ## 시작 직후 요괴가 바로 봉인하지 못하도록 주는 유예(초).
 const SEAL_GRACE=6.0
@@ -137,6 +166,8 @@ func start() -> bool:
  orbs=[]
  for spot in L.ORBS:orbs.append({"p":spot,"ready":0.0})
  traps=[];marks=[];pings=[];dark_until=0.0;map_dark_until=0.0;reveal_until=0.0;trail_all_until=0.0;lantern_until.clear();prop_flips.clear()
+ for p in players.values():p.outside=0.0;p.inside_reset=0.0;p.outside_life=0
+ if gimmicks!=null:gimmicks.reset()
  phase="selection";selection_left=25;selection_elapsed=0;ready_left=0.0;return true
 ## 희망 진영이 있으면 휴먼과 반대편 한 명의 역할·자리를 맞바꾼다(구성 비율 유지).
 func apply_preference() -> void:
@@ -200,15 +231,21 @@ func command(id: String,op: String,data: Dictionary={}) -> bool:
   if p.form!="":p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.4)
   p.jump=.8;p.ground=p.position;return true
  if op=="seal":return seal(p)
+ if op=="gimmick":
+  if gimmicks==null:return false
+  var used: bool=gimmicks.interact(p)
+  if used:event("gimmick_use",p.id)
+  return used
  if op=="interact":
   if p.form!="":
    p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.5);event("untransform",p.id);return true
-  var door:=L.door_near(p.position,70)
+  var door: String=L.door_near(p.position,70)
   if door!="":doors[door]=elapsed+1.4;burst(L.door(door).center,"fx_door",.6);event("door",p.id,door);return true
-  var near:=L.object_near(p.position,84)
+  var near: Dictionary=L.object_near(p.position,84)
   if near.is_empty():near=animal_near(p.position,84)
   if near.is_empty():return false
   # 형상 추출: 누구나 사물·동물 무리에 섞여 숨을 수 있는 공용 둔갑.
+  if float(p.get("outside",0.0))>0.0:return false
   if float(p.cd.get("disguise",0))>elapsed:return false
   p.form=near.kind;p.form_origin=near.p;p.wobble=0;p.buff.transform=elapsed+9;p.cd.disguise=elapsed+12
   burst(p.position,"fx_poof",.6);event("transform",p.id,near.kind);return true
@@ -306,7 +343,10 @@ func skill(p: Dictionary,aim: Vector2,slot: String="main") -> bool:
   event("skill_fail",p.id,id,{"name":String(spec.get("name",id)),"reason":_fail_reason(id,p)})
   return false
  signature(p,id,aim)
- p.cd[id]=elapsed+float(spec.get("cd",12.0))
+ var cooldown: float=float(spec.get("cd",12.0))
+ # 2.0.34: 안전구역 밖 요괴는 5초 뒤 새 스킬 쿨타임이 25% 길어진다(복귀하면 즉시 원래대로).
+ cooldown*=outside_cooldown_factor(p)
+ p.cd[id]=elapsed+cooldown
  if slot=="ult":p.ult=0.0
  # 시전 순간을 HUD 배너·상태 뱃지·미니맵·시야 연출이 함께 읽는다.
  var skill_name: String=String(spec.get("name",C.SKILLS.get(id,{}).get("name",id)))
@@ -330,6 +370,7 @@ func _fail_reason(id: String,p: Dictionary) -> String:
   "mimic":return "가까이에 둔갑할 도사가 없습니다"
   "transform","disguise":
    if in_mischief(p.position):return "도깨비 장난 지대에서는 둔갑할 수 없습니다"
+   if float(p.get("outside",0.0))>0.0:return "안전구역 밖에서는 둔갑할 수 없습니다"
    return "가까이에 둔갑할 사물이 없습니다"
   "underworldgate":return "혼길표식을 먼저 세워야 합니다"
   "returnpath":return "위기에 빠진 동료가 없습니다"
@@ -339,8 +380,9 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
  match id:
   "transform","disguise":
    if p.form=="":
-    # 도깨비 장난 지대 안에서는 새로 둔갑할 수 없다(해제는 언제나 가능).
+    # 도깨비 장난 지대·안전구역 밖에서는 새로 둔갑할 수 없다(해제는 언제나 가능).
     if in_mischief(p.position):return false
+    if float(p.get("outside",0.0))>0.0:return false
    if p.form!="":
     p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.5);event("untransform",p.id);return true
    var nearest: Dictionary=L.object_near(p.position,90)
@@ -456,7 +498,7 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
     burst(q.position,"fx_foxfire",1.2)
    burst(p.position,"fx_mist",1.4);return true
   "voicemimic":
-   var decoy_at:=L.safe(p.position+aim*180.0)
+   var decoy_at: Vector2=L.safe(p.position+aim*180.0)
    serial+=1;effects.append({"id":serial,"kind":"fake_rescue","owner":p.id,"position":decoy_at,"born":elapsed,"until":elapsed+6.0})
    burst(decoy_at,"fx_sound",1.4)
    event("fakerescue",p.id)
@@ -587,25 +629,109 @@ func animal_near(p: Vector2,distance: float=84.0) -> Dictionary:
   if d<gap:gap=d;best={"kind":String(entry.kind),"p":entry.p}
  return best
 func circle() -> Dictionary:
- var centers: Array[Vector2]=[Vector2(1700,1360),Vector2(1700,1360),Vector2(1700,1370),Vector2(1710,1380)]
- var radii: Array[float]=[2700,1750,1150,620]
- var stage:=0 if elapsed<180 else (1 if elapsed<360 else (2 if elapsed<480 else 3))
- var next:=mini(3,stage+1);var due:=180.0 if stage==0 else (360.0 if stage==1 else (480.0 if stage==2 else 600.0))
- var blend:=clampf((elapsed-([0,180,360,480][stage]))/30.0,0,1) if stage>0 else 1.0
- return {"stage":stage,"center":centers[stage-1].lerp(centers[stage],blend) if stage>0 else centers[0],"radius":lerpf(radii[stage-1],radii[stage],blend) if stage>0 else radii[0],"next_center":centers[next],"next_radius":radii[next],"until":maxf(0,due-elapsed)}
+ ## 2.0.34 개편: 시작 원은 맵 네 모서리를 '딱' 포함하는 최소 반경이어야 한다.
+ ## (예전에는 2700으로 맵 밖 한참에서 시작해 초반 안전구역이 의미가 없었다.)
+ var radii: Array=L.circle_radii()
+ var due: Array=L.circle_due()
+ var corners: float=L.corner_radius()
+ var start: Vector2=L.circle_center_start()
+ var last: Vector2=L.circle_final_center()
+ var centers: Array=[start,start.lerp(last,.34),start.lerp(last,.68),last]
+ var stage:=0
+ if elapsed>=float(due[0]) and elapsed<float(due[1]):stage=1
+ elif elapsed>=float(due[1]) and elapsed<float(due[2]):stage=2
+ elif elapsed>=float(due[2]):stage=3
+ var next:=mini(3,stage+1)
+ var blend:=1.0
+ if stage>0:blend=clampf((elapsed-float(due[stage-1]))/30.0,0.0,1.0)
+ var from_center: Vector2=centers[stage-1] if stage>0 else centers[0]
+ var to_center: Vector2=centers[stage]
+ var from_radius: float=minf(float(radii[maxi(0,stage-1)]),corners) if stage>0 else minf(float(radii[0]),corners)
+ var to_radius: float=minf(float(radii[stage]),corners)
+ var center: Vector2=from_center.lerp(to_center,blend)
+ var radius: float=lerpf(from_radius,to_radius,blend)
+ var until: float=maxf(0.0,float(due[stage])-elapsed) if stage<3 else 0.0
+ return {"stage":stage,"center":center,"radius":radius,
+  "next_center":centers[next],"next_radius":minf(float(radii[next]),corners),"until":until,
+  "corner_radius":corners,"final_center":last}
+## 안전구역 밖인가(그리고 얼마나 오래 있었는가).
+func outside_state(p: Dictionary) -> Dictionary:
+ var zone:=circle()
+ var out: float=maxf(0.0,float(p.get("outside",0.0)))
+ var dist: float=(p.position as Vector2).distance_to(zone.center)
+ return {"outside":dist>float(zone.radius),"distance":dist,"radius":float(zone.radius),
+  "time":out,"dark":float(p.get("outside",0.0))>=OUTSIDE_SLOW_DAOIST}
+## 안전구역 밖 불이익(역할별 차등). 매 틱 호출해도 같은 결과가 나오게 만든다.
+func _outside_penalties(delta: float) -> void:
+ var zone:=circle()
+ var radius: float=float(zone.radius)
+ var center: Vector2=zone.center
+ for p in players.values():
+  if p.eliminated or p.role=="":continue
+  var outside: bool=(p.position as Vector2).distance_to(center)>radius
+  if outside:
+   p.outside=float(p.get("outside",0.0))+delta
+   p.inside_reset=0.0
+  elif float(p.get("outside",0.0))>0.0:
+   # 3초 이내 들락날락은 누적 시간을 유지한다(경계 악용 방지).
+   p.inside_reset=float(p.get("inside_reset",0.0))+delta
+   if p.inside_reset>=OUTSIDE_GRACE:
+    p.outside=0.0;p.inside_reset=0.0;p.outside_life=0
+  var t: float=float(p.get("outside",0.0))
+  if t<=0.0:continue
+  if p.role=="daoist":
+   # 즉시: 둔갑 강제 해제(둔갑 금지는 _effect가 outside를 보고 막는다).
+   if p.form!="":
+    p.form="";p.buff.erase("transform");p.wobble=0
+    burst(p.position,"fx_poof",.5);event("untransform",p.id,"",{"reason":"outside"})
+   # 2초: 요괴의 미니맵·시야에 위치가 드러난다.
+   if t>=OUTSIDE_REVEAL:p.buff.revealed=maxf(float(p.buff.get("revealed",0.0)),elapsed+.4)
+   # 10초: 목숨 1개, 이후 15초마다 추가 차감.
+   if t>=OUTSIDE_LIFE_START:
+    var expected: int=1+int(floor((t-OUTSIDE_LIFE_START)/OUTSIDE_LIFE_EVERY))
+    if int(p.get("outside_life",0))<expected:
+     var gap: int=expected-int(p.get("outside_life",0))
+     p.outside_life=expected
+     for i in range(gap):
+      if p.eliminated:break
+      _outside_life_loss(p)
+  else:
+   # 요괴: 3초 후 탐지 약화(visible/map_contacts가 이 값을 읽는다).
+   if t>=OUTSIDE_WEAK_DETECT:p.slow_until=maxf(float(p.slow_until),elapsed+.2)
+## 안전구역 밖 이동 감속 배율(도사 5초 뒤 10%, 요괴는 즉시 15%).
+func outside_speed_factor(p: Dictionary) -> float:
+ var t: float=float(p.get("outside",0.0))
+ if t<=0.0:return 1.0
+ if String(p.get("role",""))=="yokai":return .85
+ return .90 if t>=OUTSIDE_SLOW_DAOIST else 1.0
+## 안전구역 밖 요괴의 새 스킬 쿨타임 배율(5초 뒤 1.25배, 복귀하면 1.0).
+func outside_cooldown_factor(p: Dictionary) -> float:
+ if String(p.get("role",""))!="yokai":return 1.0
+ return 1.25 if float(p.get("outside",0.0))>=OUTSIDE_CD_PENALTY else 1.0
+## 안전구역 밖에서 목숨을 잃는다(봉인과 별개로 즉시 차감).
+func _outside_life_loss(p: Dictionary) -> void:
+ if p.eliminated:return
+ p.lives=maxi(0,int(p.get("lives",LIVES))-1)
+ p.stats.lost=maxi(0,int(p.stats.get("lost",0)))+1
+ burst(p.position,"fx_darkness",1.0,{"big":true})
+ event("outside_damage",p.id,"",{"lives":int(p.lives)})
+ if int(p.lives)<=0:
+  p.eliminated=true;p.captured=false;event("eliminate",p.id)
+ else:
+  p.immune=maxf(p.immune,elapsed+1.2)
+
 ## 맵을 걷는 고양이·강아지. rules가 위치의 권한자이며 world가 그린다.
 var walkers: Array=[]
 func build_walkers() -> void:
  walkers=[]
- var routes: Array=[
-  {"kind":"cat","path":[Vector2(690,1060),Vector2(980,900),Vector2(1300,880),Vector2(1620,860),Vector2(1900,900),Vector2(2200,960),Vector2(2400,1100),Vector2(2100,1240),Vector2(1700,1240),Vector2(1300,1200),Vector2(1000,1140)]},
-  {"kind":"dog","path":[Vector2(1560,1800),Vector2(1900,1960),Vector2(2200,2100),Vector2(2520,2200),Vector2(2820,2020),Vector2(2600,1800),Vector2(2200,1740),Vector2(1860,1660)]},
-  {"kind":"cat","path":[Vector2(2750,980),Vector2(2960,1120),Vector2(3080,1360),Vector2(2920,1600),Vector2(2660,1500),Vector2(2580,1240)]},
-  {"kind":"dog","path":[Vector2(600,1900),Vector2(880,2050),Vector2(1150,2250),Vector2(900,2380),Vector2(640,2200)]}]
+ ## 맵마다 다른 순찰로(서원: 고양이·강아지 / 강남역: 배달 로봇·전동킥보드).
+ var routes: Array=L.walker_routes()
  for i in range(routes.size()):
   var route: Dictionary=routes[i]
   var path: Array=route.path
-  walkers.append({"id":"animal-%d"%i,"kind":String(route.kind),"p":path[0],"path":path,"next":1,"facing":0,"phase":0.0,"speed":31.0 if route.kind=="cat" else 42.0,"moving":true,"wait":0.0})
+  var kind: String=String(route.kind)
+  walkers.append({"id":"walker-%d"%i,"kind":kind,"p":path[0],"path":path,"next":1,"facing":0,
+   "phase":0.0,"speed":float(route.get("speed",31.0)),"moving":true,"wait":0.0})
 func _tick_walkers(delta: float) -> void:
  for entry in walkers:
   if float(entry.wait)>0.0:
@@ -694,7 +820,16 @@ func tick(delta: float) -> void:
   if p.slow_until>elapsed:speed*=float(p.slow_factor)
   if p.speed_until>elapsed:speed*=float(p.speed_factor)
   if p.outside>circle_penalty_after:speed*=circle_speed_factor
-  if p.form!="":speed*=(.98 if String(p.form) in ["cat","dog"] else .88)
+  # 2.0.34: 모든 둔갑 사물은 고정형 구분 없이 자유롭게 이동한다(감속 없음).
+  ## 안전구역 밖 실제 불이익: 도사는 5초 뒤 10% 감속, 요괴는 즉시 15% 감속.
+  speed*=outside_speed_factor(p)
+  ## 에스컬레이터: 작동 방향으로 타면 가속, 반대로 걸으면 느려지고 살짝 밀린다.
+  var escalator: Dictionary=gimmicks.on_escalator(p.position) if gimmicks!=null else {}
+  if not escalator.is_empty():
+   var flow:=Vector2(0,-1.0 if gimmicks.escalator_dir>0 else 1.0)
+   var along: float=p.intent.dot(flow)
+   if along>.12:speed*=1.45
+   elif along<-.12:speed*=.80
   if p.buff.get("painting",0)>elapsed:
    # 그림 속 차원: 벽을 통과해 곧장 이동한다(맵 밖으로는 못 나간다).
    p.position+=(p.intent*speed*1.15*delta)
@@ -702,10 +837,20 @@ func tick(delta: float) -> void:
   else:
    p.position=L.move(p.position,p.position+p.intent*speed*delta,p.height>12)
    if p.jump<=0 and not L.can_stand(p.position):p.position=L.safe(p.position)
+   # 잠긴 개찰구·내려온 셔터는 실제로 막는다(그림과 판정이 같다).
+   if gimmicks!=null and gimmicks.blocked(p.position):
+    p.position=previous
+    if gimmicks.blocked(p.position):p.position=L.safe(previous)
+   if not escalator.is_empty():
+    var drift: Vector2=Vector2(0,-1.0 if gimmicks.escalator_dir>0 else 1.0)*34.0*delta
+    var moved: Vector2=L.move(p.position,p.position+drift)
+    if not gimmicks.blocked(moved):p.position=moved
   if L.can_stand(p.position):p.ground=p.position
   var distance: float=p.position.distance_to(previous);p.stride+=distance
   if distance>0 and float(p.buff.get("stealth",0.0))<=elapsed and (p.trail.is_empty() or p.position.distance_to(p.trail[-1].position)>=18):p.trail.append({"position":p.position,"time":elapsed,"facing":p.facing})
   while not p.trail.is_empty() and elapsed-p.trail[0].time>6:p.trail.pop_front()
+ _outside_penalties(delta)
+ if gimmicks!=null:gimmicks.tick(delta)
  contact_seal()
  _tick_traps(delta)
  for orb in orbs:
@@ -767,6 +912,9 @@ func visible(id: String) -> Array:
  var blind: bool=float(viewer.get("blind_until",0.0))>elapsed
  var reach: float=360.0
  if blind:reach=150.0
+ ## 2.0.34: 요괴가 안전구역 밖에 3초 이상 있으면 탐지 반경이 줄어든다.
+ if viewer.role=="yokai" and float(viewer.get("outside",0.0))>=OUTSIDE_WEAK_DETECT:reach=minf(reach,220.0)
+ if viewer.role=="yokai" and float(viewer.get("outside",0.0))>0.0:reach=minf(reach,280.0)
  # 귀문보기: 한옥 한 채 너머까지 투시하는 사거리(벽은 그대로 통과).
  if see_through:reach=760.0
  # 천문기계는 "서원 전역을 꿰뚫어" 본다: 사거리뿐 아니라 벽·한옥도 통과한다.
@@ -778,6 +926,12 @@ func visible(id: String) -> Array:
   if p.id!=id and float(p.buff.get("stealth",0.0))>elapsed:continue
   if p.id!=id and distance>reach:continue
   if p.id!=id and not see_through and not L.line(viewer.position,p.position):continue
+  # 2.0.34: 내려온 셔터는 시야도 막는다.
+  if p.id!=id and gimmicks!=null and not see_through and gimmicks.line_blocked(viewer.position,p.position):continue
+  # 암전 구역(조명 끔)의 대상은 멀리서 식별되지 않는다(도사 은신에 유리).
+  if p.id!=id and gimmicks!=null and distance>240.0:
+   var target_zone: String=String(L.zone_at(p.position).get("id",""))
+   if gimmicks.zone_dark(target_zone):continue
   var blocked:=false
   for e in effects:
    if e.kind=="smoke" and distance>85 and Geometry2D.get_closest_point_to_segment(e.position,viewer.position,p.position).distance_to(e.position)<115:blocked=true
@@ -820,8 +974,10 @@ func map_contacts(id: String) -> Array:
   if reveal_until>elapsed:seeing=true;label="천문기계"
   if float(viewer.buff.get("ghostgate",0.0))>elapsed:seeing=true;label="귀문보기"
  else:
-  if trail_all_until>elapsed:seeing=true;label="발자국"
-  if float(viewer.buff.get("sense",0.0))>elapsed:seeing=true;label="청각사냥"
+  ## 2.0.34: 안전구역 밖 요괴는 3초 뒤 탐지 도술이 약해진다.
+  var weak: bool=float(viewer.get("outside",0.0))>=OUTSIDE_WEAK_DETECT
+  if not weak and trail_all_until>elapsed:seeing=true;label="발자국"
+  if not weak and float(viewer.buff.get("sense",0.0))>elapsed:seeing=true;label="청각사냥"
  # 요괴 진영이 찍어 둔 야광가루·목소리흉내 표식도 탐지 시간 동안만 유지된다.
  for m in marks:
   if String(m.get("kind",""))!="glow":continue
@@ -853,6 +1009,17 @@ func vision_for(id: String) -> Dictionary:
  if map_dark_until>elapsed and me.role=="daoist":
   out.dark=maxf(float(out.dark),.55);out.fog=maxf(float(out.fog),.35)
   if String(out.source)=="":out.source="moonless"
+ ## 2.0.34: 조명이 꺼진 구역은 안이 어둡고, 구역 밖에서도 경계가 어둡게 보인다.
+ if gimmicks!=null:
+  var zone_id: String=String(L.zone_at(me.position).get("id",""))
+  if gimmicks.zone_dark(zone_id):
+   out.dark=maxf(float(out.dark),.46);out.fog=maxf(float(out.fog),.28)
+   if String(out.source)=="":out.source="lights"
+ ## 안전구역 밖 경고: 화면 테두리가 맵 색으로 맥동한다(서원=보랏빛/강남=붉은 비상).
+ var outside: float=float(me.get("outside",0.0))
+ if outside>0.0:
+  out.warning=clampf(.35+outside*.12,0.0,1.0)
+  out.warning_color="7a4bff" if map_id=="seowon" else "ff3b4a"
  if dark_until>elapsed:
   var gap: float=(me.position as Vector2).distance_to(dark_center)
   if me.role=="daoist":
