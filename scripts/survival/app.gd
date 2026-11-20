@@ -83,6 +83,9 @@ var ult_button: WooMobileButton
 var codex_filter:="all"
 ## 전체 지도 오버레이(닫기 버튼·바깥 클릭·Esc로 닫힌다).
 var map_overlay: Control
+## 지도를 연/닫은 직후의 입력을 삼키는 시각(ms). 전체 지도를 여는 그 손가락이
+## 곧바로 어두운 배경(닫기)으로도 전달돼 '눌러도 안 열리는' 것처럼 보이던 문제를 막는다.
+var map_guard_msec:=0
 var minimap: Control
 var survivor_label: Label
 var seal_label: Label
@@ -908,16 +911,18 @@ func hud() -> void:
  status_label.offset_left=14;status_label.offset_right=330;status_label.offset_top=122;status_label.offset_bottom=152
  pill(status_label,Color(.03,.04,.09,.55),10)
  status_label.add_theme_color_override("font_color",Color("ffd0d4"))
+ # 2.0.31 상단 우측 정렬: 미니맵(-156~-6) 왼쪽에 설정(64폭)·메뉴(130폭)를 8px 간격으로
+ # 실제 크기대로 배치한다. 기존 오프셋은 최소 크기보다 좁아 버튼이 서로/미니맵을 덮었다.
  var menu:=button("메뉴",pause_menu);menu.name="Menu";ui.add_child(menu)
  menu.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- menu.offset_left=-318;menu.offset_right=-220;menu.offset_top=14;menu.offset_bottom=58
+ menu.offset_left=-366;menu.offset_right=-236;menu.offset_top=14;menu.offset_bottom=58
  for state in ["normal","hover","pressed","hover_pressed","disabled"]:
   var style:=D.panel(Color("141d33"),20);style.border_color=GOLD;style.set_border_width_all(1);style.content_margin_top=4;style.content_margin_bottom=4;style.content_margin_left=8;style.content_margin_right=8
   menu.add_theme_stylebox_override(state,style)
  menu.add_theme_color_override("font_color",Color("f0dcae"))
- var gear:=button("",show_settings);gear.name="Settings";gear.custom_minimum_size=Vector2(50,44);ui.add_child(gear)
+ var gear:=button("",show_settings);gear.name="Settings";gear.custom_minimum_size=Vector2(64,56);ui.add_child(gear)
  gear.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- gear.offset_left=-212;gear.offset_right=-162;gear.offset_top=14;gear.offset_bottom=58
+ gear.offset_left=-228;gear.offset_right=-164;gear.offset_top=14;gear.offset_bottom=58
  for state in ["normal","hover","pressed","hover_pressed","disabled"]:
   var style:=D.panel(Color("141d33"),14);style.border_color=GOLD;style.set_border_width_all(1)
   gear.add_theme_stylebox_override(state,style)
@@ -1012,7 +1017,9 @@ func hud() -> void:
 func cast_slot(slot: String,direction: Vector2) -> void:
  var me: Dictionary=rules.players.human
  var path_aim: Vector2=direction if direction!=Vector2.ZERO else Vector2.from_angle(me.facing*PI/4)
- if rules.command("human","skill",{"aim":path_aim,"slot":slot}):sound.play_clip("spell")
+ # 2.0.31: 어떤 도사가 어떤 도술을 쓰든 그 도술의 효과음을 낸다(전부 'spell' 하나였던 것 수정).
+ var cast_id:=String(C.ability(String(me.get("character","")),slot).get("skill",""))
+ if rules.command("human","skill",{"aim":path_aim,"slot":slot}):sound.play_skill(cast_id)
  aim=Vector2.ZERO;aim_cancelled=false;aim_slot=slot
 ## 스킬 버튼 배지에 쓰는 아이콘 이름(능력 설명 문구가 아니라 아이콘).
 func ability_hint(ability: Dictionary) -> String:
@@ -1456,10 +1463,13 @@ func update_hud() -> void:
   hud_view.banner_alpha=clampf(minf((3.0-banner_left)/0.2,banner_left/0.7),0,1)
   hud_view.queue_redraw()
  var status:=""
+ var mimic_left: float=float(me.get("buff",{}).get("mimic",0.0))-rules.elapsed
  if me.captured:status="구조 대기 %d초 · 목숨 %s" % [maxi(0,int(ceil(me.deadline-rules.elapsed))),hearts(int(me.get("lives",rules.LIVES)))]
  elif me.eliminated:status="탈락 · 관전 중"
  elif me.immune>rules.elapsed:status="재봉인 면역 %.1f초"%maxf(0,me.immune-rules.elapsed)
  elif me.outside>0:status="서클 밖 · 안으로 이동"
+ # 2.0.31 인간둔갑: 내 화면에서도 누구로 둔갑했는지 바로 읽게 한다(남의 눈에는 그 도사로만 보임).
+ elif mimic_left>0.0:status="인간둔갑"+rules.mimic_label(me)+" · %.1f초" % mimic_left
  else:status="내 역할 · "+("도사" if me.role=="daoist" else "요괴")+" / "+spec.name+(" · 목숨 %s"%hearts(int(me.get("lives",rules.LIVES))) if me.role=="daoist" else "")
  set_text(status_label,status)
  if aiming():set_text(status_label,"위로 멀리 끌면 취소" if not aim_cancelled else "취소 · 쿨타임 없음")
@@ -1487,6 +1497,7 @@ func update_hud() -> void:
   for i in range(event_cursor,rules.events.size()):
    var e: Dictionary=rules.events[i]
    var clip: String=""
+   var cast_skill: String=""
    match String(e.kind):
     "seal","miss":clip="seal"
     "rescue","revive","fakerescue":clip="rescue"
@@ -1494,7 +1505,8 @@ func update_hud() -> void:
     "transform","untransform":clip="transform"
     "lose_life":clip="seal"
     "douse":clip="seal"
-    "skill":clip="spell"
+    # 2.0.31: 시전한 도술 id(e.target)의 맞춤 효과음을 쓴다.
+    "skill":cast_skill=String(e.get("target",""))
    var target_name: String=String(rules.players[e.target].name) if rules.players.has(String(e.get("target",""))) else ""
    match String(e.kind):
     "seal":show_banner(target_name+"님이 봉인되었습니다! (10초)",Color("ffb0bf"))
@@ -1514,8 +1526,10 @@ func update_hud() -> void:
      # 왜 안 됐는지 화면에 그대로 알려 준다(내 시전만).
      if String(e.actor)=="human":
       show_banner(String(e.get("name","도술"))+" — "+String(e.get("reason","지금은 쓸 수 없습니다")),Color("ffc2b8"))
-   if clip!="" and rules.players.has(e.actor):
-    if me.position.distance_to(rules.players[e.actor].position)<520:sound.play_clip(clip)
+   if (clip!="" or cast_skill!="") and rules.players.has(e.actor):
+    if me.position.distance_to(rules.players[e.actor].position)<520:
+     if cast_skill!="":sound.play_skill(cast_skill)
+     else:sound.play_clip(clip)
     var caster: Node=avatars.get(String(e.actor))
     if caster!=null and String(e.kind) in ["skill","seal","rescue","transform"]:
      caster.action_left=.5
@@ -1737,6 +1751,10 @@ func record_match() -> void:
 ## 2.0.27 전체 지도: 어떤 화면비(20:9 포함)에서도 지도·닫기 버튼이 화면 안에 있어야 한다.
 ## 팝업의 세로 자동 배치 대신, 화면 크기에 맞춰 지도 한 변을 계산해 직접 배치한다.
 func show_map() -> void:
+ # 여는 손가락의 여운(같은 터치의 두 번째 이벤트)은 무시한다.
+ var now_msec:=Time.get_ticks_msec()
+ if now_msec-map_guard_msec<200:return
+ map_guard_msec=now_msec
  if modal!=null:close_popup()
  var view:=get_viewport().get_visible_rect().size
  var s:=clampf(view.y/720.0,.62,2.6)
@@ -1746,8 +1764,9 @@ func show_map() -> void:
  modal=overlay;map_overlay=overlay
  var shade:=ColorRect.new();shade.color=Color(.012,.015,.035,.9);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
  overlay.add_child(shade)
- # 바깥(어두운 곳)을 누르면 닫힌다.
+ # 바깥(어두운 곳)을 누르면 닫힌다. 지도를 연 손가락이 이 배경까지 닿아도 무시한다.
  shade.gui_input.connect(func(event: InputEvent)->void:
+  if Time.get_ticks_msec()-map_guard_msec<200:return
   if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:close_map()
   elif event is InputEventScreenTouch and event.pressed:close_map())
  var header: float=54.0*s
@@ -1795,6 +1814,7 @@ func show_map() -> void:
  panel.add_child(hint2)
  hint2.position=Vector2(pad,header+side+20*s);hint2.size=Vector2(side,20*s)
 func close_map() -> void:
+ map_guard_msec=Time.get_ticks_msec()
  map_overlay=null
  close_popup()
 func back() -> void:

@@ -840,6 +840,14 @@ func vision_for(id: String) -> Dictionary:
     if String(out.source)=="":out.source="douse"
  return out
 ## HUD 상태 뱃지·지도 범례가 함께 쓰는 활성 효과 목록.
+## 2.0.31: 인간둔갑은 '누구 모습인지'까지 뱃지에 적어 준다(예: 인간둔갑 · 전우치 모습).
+func mimic_label(p: Dictionary) -> String:
+ var target: String=String(p.get("copy",""))
+ if target=="" or not players.has(target):return ""
+ var spec: Dictionary=C.find(String(players[target].get("character","")))
+ var shown: String=String(spec.get("name",""))
+ if shown=="":shown=String(players[target].get("name",""))
+ return "" if shown=="" else " · "+shown+" 모습"
 func active_effects(id: String) -> Array:
  var out: Array=[]
  if not players.has(id):return out
@@ -847,7 +855,7 @@ func active_effects(id: String) -> Array:
  var now:=elapsed
  var add_effect:=func(key: String,name: String,left: float,color: String,good: bool) -> void:
   if left>0.0:out.append({"key":key,"name":name,"left":left,"color":color,"good":good})
- add_effect.call("mimic","인간둔갑",float(p.buff.get("mimic",0.0))-now,"ff9ee0",true)
+ add_effect.call("mimic","인간둔갑"+mimic_label(p),float(p.buff.get("mimic",0.0))-now,"ff9ee0",true)
  if String(p.get("form",""))!="":add_effect.call("transform","둔갑 · "+String(L.form(String(p.form)).get("name","사물")),float(p.buff.get("transform",0.0))-now,"c2a8ff",true)
  add_effect.call("painting","화중은신",float(p.buff.get("painting",0.0))-now,"f0d79b",true)
  if hidden(p) and float(p.buff.get("painting",0.0))<=now:add_effect.call("stealth","은신",float(p.buff.get("stealth",0.0))-now,"b48cf0",true)

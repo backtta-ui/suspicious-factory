@@ -17,12 +17,29 @@ var _dirty:=true
 var _clock:=0.0
 var _refresh:=0.0
 var _pulse:=0.0
+## 마지막으로 지도를 연/닫은 시각. 한 번의 손가락이 '터치 + 에뮬레이트된 마우스'로
+## 두 번 들어와도 지도가 열렸다가 곧바로 닫히지 않게 한다(2.0.31 실기기 수정).
+var _press_msec:=0
 func _ready() -> void:
  mouse_filter=Control.MOUSE_FILTER_STOP
  resized.connect(func()->void:_dirty=true;queue_redraw())
+## 안드로이드 실기기에서는 손가락이 InputEventScreenTouch로도, 마우스 에뮬레이션으로도
+## 들어온다. 두 경우를 모두 받아 어느 쪽이든 한 번만 열리게 한다(기존에는 마우스만 받아
+## 기기에 따라 미니맵이 전혀 반응하지 않았다).
 func _gui_input(event: InputEvent) -> void:
- if event is InputEventMouseButton and event.button_index==MOUSE_BUTTON_LEFT and event.pressed:
-  map_requested.emit();accept_event()
+ var pressed:=false
+ if event is InputEventScreenTouch:
+  pressed=event.pressed
+ elif event is InputEventMouseButton:
+  pressed=event.pressed and event.button_index==MOUSE_BUTTON_LEFT
+ else:
+  return
+ if not pressed:return
+ var now:=Time.get_ticks_msec()
+ if now-_press_msec<150:accept_event();return
+ _press_msec=now
+ map_requested.emit()
+ accept_event()
 func at(p: Vector2) -> Vector2:
  var box:=size-Vector2(44,44)
  return Vector2(22,22)+p/L.SIZE*box

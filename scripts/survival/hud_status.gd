@@ -115,10 +115,11 @@ func _draw() -> void:
  draw_buffs()
  # 마지막으로 쓴 도술 이름을 짧은 칩으로 남긴다(초상화 오른쪽 아래).
  if cast_left>0.01 and cast_name!="":
-  var chip:=Rect2(240,86,minf(190.0,26.0+cast_name.length()*13.0),22)
+  # 2.0.31: 도술 이름만 짧게. '발동'까지 붙이면 패널 밖으로 넘쳐 잘렸다.
+  var chip:=Rect2(240,86,minf(80.0,20.0+cast_name.length()*12.0),22)
   rounded(chip,Color(.06,.05,.09,.82),8)
   draw_rect(chip,Color(GOLD,.6),false,1.2)
-  draw_string(FONT,Vector2(chip.position.x+8,chip.position.y+16),cast_name+" 발동",HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color(GOLD_SOFT))
+  draw_string(FONT,Vector2(chip.position.x+8,chip.position.y+16),cast_name,HORIZONTAL_ALIGNMENT_LEFT,chip.size.x-14,12,Color(GOLD_SOFT))
  # ---------------------------------------------------------------- 우측 참가자 목록
  if rules!=null:
   var players: Array=rules.players.values()
