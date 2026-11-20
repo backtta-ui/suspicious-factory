@@ -40,6 +40,9 @@ var sound: WooSound
 var layer: CanvasLayer
 var fog_layer: CanvasLayer
 var fog: TextureRect
+## 2.0.30 시야 연출 레이어(월드 위, HUD 아래). 시야 좁히기·등불끄기 안개가 여기에 그려진다.
+var vision_layer: CanvasLayer
+var vision: Control
 var ui: Control
 var content: Control
 var modal: Control
@@ -66,8 +69,8 @@ var jump_button: WooMobileButton
 var skill_button: WooMobileButton
 var skill_badge: WooSkillBadge
 ## 2.0.28: 범용 '상호작용' 버튼을 없앴다. 행동이 실제로 가능한 순간에만
-## 그 자리에 전용 버튼(문 열기 / 구출 / 둔갑 / 확인)이 하나씩 나타난다.
-var door_button: WooMobileButton
+## 그 자리에 전용 버튼(구출 / 둔갑 / 확인)이 하나씩 나타난다.
+## 2.0.30: 건물 문은 늘 열려 있어 문 열기 버튼 없이 그냥 걸어 드나든다.
 var rescue_button: WooMobileButton
 var disguise_button: WooMobileButton
 var confirm_button: WooMobileButton
@@ -138,6 +141,8 @@ func _ready() -> void:
  storage=Storage.new();sound=preload("res://scripts/woo/sound.gd").new();add_child(sound)
  layer=CanvasLayer.new();layer.layer=3;add_child(layer)
  fog_layer=CanvasLayer.new();fog_layer.layer=2;add_child(fog_layer)
+ vision_layer=CanvasLayer.new();vision_layer.layer=1;add_child(vision_layer)
+ vision=preload("res://scripts/survival/vision_overlay.gd").new();vision.visible=false;full(vision,vision_layer)
  fog=TextureRect.new();fog.texture=preload("res://assets/woo/seowon/vignette.png");fog.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;fog.stretch_mode=TextureRect.STRETCH_SCALE;fog.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(fog,fog_layer);fog.visible=false
  for bus in ["DosaMusic","DosaSfx"]:
   if AudioServer.get_bus_index(bus)<0:AudioServer.add_bus();AudioServer.set_bus_name(AudioServer.bus_count-1,bus)
@@ -230,6 +235,9 @@ func transition(destination: String) -> void:
 func build(destination: String) -> void:
  clear_ui();screen=destination
  if is_instance_valid(fog):fog.visible=destination=="match"
+ if is_instance_valid(vision):
+  vision.visible=false
+  vision.rules=rules if destination=="match" else null
  if is_instance_valid(sound):sound.set_context("match" if destination=="match" else "menu")
  match destination:
   "title":title_screen()
@@ -965,9 +973,6 @@ func hud() -> void:
  action_badge=null
  # 2.0.28: 평상시 떠 있는 범용 버튼은 없다. 아래 네 버튼은 필요한 순간에만 보인다.
  action_buttons={}
- door_button=context_action("문 열기","door","talisman")
- door_button.pressed.connect(func()->void:
-  if rules.command("human","interact"):sound.play_clip("door"))
  if rules.players.human.role=="yokai":
   confirm_button=context_action("확인","confirm","capture")
   confirm_button.pressed.connect(func()->void:
@@ -1025,14 +1030,9 @@ func interaction_context() -> Dictionary:
  var me: Dictionary=rules.players.human
  if me.eliminated or me.captured:return {}
  if me.role=="yokai":
-  var door_id:=L.door_near(me.position,70)
   var suspect: Dictionary=_suspect_near(me)
-  var door_gap: float=me.position.distance_to(L.door(door_id).center) if door_id!="" else 1e9
-  var suspect_gap: float=me.position.distance_to(suspect.p) if not suspect.is_empty() else 1e9
-  if not suspect.is_empty() and suspect_gap<=door_gap:
+  if not suspect.is_empty():
    return {"kind":"confirm","label":"확인","icon":"capture","enabled":float(me.cd.get("seal",0))<=rules.elapsed,"hint":"의심스러운 사물을 쳐서 둔갑한 도사를 찾아냅니다"}
-  if door_id!="":
-   return {"kind":"door","label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 문을 열고 들어갑니다"}
   return {}
  # 둔갑술(transform)을 가진 도사는 윗줄 '둔갑술' 버튼 하나로 둔갑·해제를 모두 한다.
  # 그래서 아래 공통 자리에 '둔갑' 버튼을 따로 띄우지 않는다(중복 표시 금지).
@@ -1040,7 +1040,6 @@ func interaction_context() -> Dictionary:
  if me.form!="" and not has_transform:return {"kind":"disguise","label":"둔갑 해제","icon":"jar","enabled":true,"hint":"둔갑 중 · 다시 누르면 사물에서 풀려납니다"}
  var target:=rescue_target()
  if target!="":return {"kind":"rescue","label":"구출","icon":"rescue","enabled":true,"hint":"구조 버튼을 2.5초간 유지하면 동료가 풀려납니다"}
- if L.door_near(me.position,70)!="":return {"kind":"door","label":"문 열기","icon":"talisman","enabled":true,"hint":"문 앞 · 바로 들어가거나 나갑니다"}
  if has_transform:return {}
  var spot: Dictionary=_form_target_near(me)
  if not spot.is_empty():
@@ -1178,7 +1177,7 @@ func pause_menu() -> void:
  paused=true;world.process_mode=Node.PROCESS_MODE_DISABLED;rules.command("human","move",{"vector":Vector2.ZERO});rules.command("human","cancel_rescue")
  var box:=popup("일시정지 · 월하의 서원")
  box.add_child(text("도사 6명 vs 요괴 2명 · 10분간 술래잡기",19,Color("f0dcae")))
- box.add_child(text("도사는 목숨 3개. 봉인되면 10초 안에 동료가 2.5초 구조하면 목숨을 지키고,\n구조받지 못하면 목숨 1개를 잃은 뒤 시작 자리에서 다시 일어납니다. 목숨을 모두 잃으면 탈락합니다.\n항아리·나무 상자·등불·고양이·비석 5종에 둔갑해 움직이며 숨을 수 있습니다.",16,Color("cfd7ea")))
+ box.add_child(text("도사는 목숨 3개. 봉인되면 10초 안에 동료가 2.5초 구조하면 목숨을 지키고,\n구조받지 못하면 목숨 1개를 잃은 뒤 시작 자리에서 다시 일어납니다. 목숨을 모두 잃으면 탈락합니다.\n항아리·나무 상자·등불·고양이·강아지·비석 6종에 둔갑해 움직이며 숨을 수 있습니다.",16,Color("cfd7ea")))
  box.add_child(button("계속하기",resume_match,true));box.add_child(button("설정",show_settings));box.add_child(button("로비로 나가기",func()->void:confirm("경기를 나가시겠습니까?",func()->void:cleanup_match();room={};paused=false;transition("lobby"))))
 func resume_match() -> void:
  close_popup();paused=false
@@ -1235,6 +1234,12 @@ func update_avatars() -> void:
    var mark:=preload("res://scripts/seal/color_marker.gd").new();mark.actor=actor;mark.name="Identity";actor.add_child(mark)
    var aura:=preload("res://scripts/survival/actor_aura.gd").new();aura.name="Aura";actor.add_child(aura)
   var actor: WooActor=avatars[id]
+  # 2.0.30 집합: 겉모습(원화)은 매 프레임 관측자가 보는 character를 따른다.
+  # 인간둔갑이 끝나거나 둔갑이 풀리면 원래 모습으로 바로 돌아온다.
+  var wanted_art: String=C.fallback_art(String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
+  if wanted_art!="" and actor.art_id!=wanted_art:
+   actor.art_id=wanted_art
+   actor.update_sprite()
   # 60Hz 목표점을 매 프레임 부드럽게 따라가 뚝뚝 끊기는 이동을 없앤다.
   var previous: Vector2=actor.get_meta("target",target)
   var moved: float=previous.distance_to(target)
@@ -1261,9 +1266,16 @@ func update_avatars() -> void:
    aura.form_shadow=actor.form_shadow if disguised else 0.0
    aura.color=aura_color;aura.yokai=info.role=="yokai" and not disguised;aura.lit=lit_effect!="" and not disguised;aura.queue_redraw()
   var tag: String=info.name
-  if info.id=="human" and rules.players.has("human"):tag=("도사" if rules.players.human.role=="daoist" else "요괴")+" · "+C.find(rules.players.human.character).name
+  if info.id=="human" and rules.players.has("human") and not bool(info.get("mimic",false)):
+   # 내 이름표도 '캐릭터 이름' 형식으로 통일한다(인간둔갑과 구별되지 않게).
+   tag=String(info.get("character_name",C.find(rules.players.human.character).name))
+  else:
+   # 2.0.30 이름표는 모두 '캐릭터 이름' 기준으로 통일한다. 인간둔갑한 요괴가
+   # 복제한 도사와 이름표까지 갖아야 들키지 않는다.
+   var shown: String=String(info.get("character_name",""))
+   if shown!="":tag=shown
   if info.role=="daoist" and info.id!="":
-   var lives_left: int=int(rules.players.get(info.id,{}).get("lives",rules.LIVES))
+   var lives_left: int=int(info.get("lives",rules.players.get(info.id,{}).get("lives",rules.LIVES)))
    tag+=" · "+hearts(lives_left)
   actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=not disguised;actor.get_node("Identity").color_id=info.color
   actor.get_node("Identity").visible=not disguised
@@ -1271,6 +1283,11 @@ func update_avatars() -> void:
   # 화중은신: 다른 시점에는 아예 그려지지 않고, 본인 화면에서만 반투명 먹그림자로 보인다.
   if float(me.get("buff",{}).get("painting",0.0))>rules.elapsed and info.id=="human":
    actor.modulate=Color(.78,.72,.95,.42)
+   actor.get_node("Name").visible=false
+   actor.get_node("Identity").visible=false
+  elif rules.hidden(me) and info.id=="human":
+   # 무월야 등 다른 은신: 본인에게만 반투명+은은한 보랏빛으로 남겨, 내가 어디 있는지 잃지 않게 한다.
+   actor.modulate=Color(.86,.80,1.0,.55)
    actor.get_node("Name").visible=false
    actor.get_node("Identity").visible=false
  for id in avatars.keys():
@@ -1353,6 +1370,11 @@ func set_text(node: Label,value: String) -> void:
 func update_hud() -> void:
  var me: Dictionary=rules.players.human
  var live: bool=rules.available(me) and not paused and not backgrounded and modal==null
+ # 화면 시야 연출(시야 좁히기·등불끄기 안개·무월야)을 같은 프레임에 맞춘다.
+ if is_instance_valid(vision):
+  vision.rules=rules;vision.observer=spectate
+  vision.sync(get_process_delta_time())
+ if is_instance_valid(minimap):minimap.rules=rules;minimap.observer=spectate
  stick.input_enabled=live
  run_button.disabled=not live or me.exhausted
  jump_button.disabled=not live or me.jump>0
@@ -1425,6 +1447,10 @@ func update_hud() -> void:
   hud_view.lives=int(me.get("lives",rules.LIVES));hud_view.max_lives=rules.LIVES
   hud_view.stamina=me.stamina;hud_view.captured=me.captured;hud_view.eliminated=me.eliminated
   hud_view.character_name=String(spec.get("name",""))
+  # 2.0.30 지속 효과·버프·디버프 뱃지(이름 + 남은 시간)와 마지막 시전 칩.
+  hud_view.buffs=rules.active_effects(me.id)
+  hud_view.cast_name=String(me.get("last_skill_name",""))
+  hud_view.cast_left=maxf(0,float(me.get("last_skill_until",0.0))-rules.elapsed)
   if hud_view.portrait==null and String(spec.get("portrait",""))!="":hud_view.portrait=load(String(spec.portrait))
   banner_left=maxf(0,banner_left-get_process_delta_time())
   hud_view.banner_alpha=clampf(minf((3.0-banner_left)/0.2,banner_left/0.7),0,1)
@@ -1476,11 +1502,23 @@ func update_hud() -> void:
     "lose_life":show_banner(target_name+"님 목숨 -1 (남은 %d)" % int(rules.players[e.target].get("lives",0)),Color("ffd08a"))
     "revive":show_banner(target_name+"님이 시작 자리에서 다시 일어났습니다",Color("cfe4ff"))
     "eliminate":show_banner(target_name+"님 최종 탈락!",Color("f0a8b8"))
+    "skill":
+     # 2.0.30: 스킬을 썼는지 바로 읽히게 발동 배너를 띄운다(내 시전은 항상, 남의 시전은 가까울 때).
+     var cast_name: String=String(e.get("name",""))
+     if String(e.actor)=="human":
+      show_banner(("궁극기 · " if String(e.get("slot",""))=="ult" else "")+cast_name+" 발동!",Color("ffe0a8") if me.role=="daoist" else Color("ffc9d8"))
+     elif rules.players.has(String(e.actor)) and me.position.distance_to(rules.players[e.actor].position)<700:
+      var who: String=String(rules.players[e.actor].get("name",""))
+      show_banner(cast_name+" · "+who,Color("cfe4ff") if String(e.get("team",""))=="daoist" else Color("ffb0c8"))
+    "skill_fail":
+     # 왜 안 됐는지 화면에 그대로 알려 준다(내 시전만).
+     if String(e.actor)=="human":
+      show_banner(String(e.get("name","도술"))+" — "+String(e.get("reason","지금은 쓸 수 없습니다")),Color("ffc2b8"))
    if clip!="" and rules.players.has(e.actor):
     if me.position.distance_to(rules.players[e.actor].position)<520:sound.play_clip(clip)
     var caster: Node=avatars.get(String(e.actor))
     if caster!=null and String(e.kind) in ["skill","seal","rescue","transform"]:
-     caster.action_left=.34
+     caster.action_left=.5
      # 도술마다 다른 발동 모션(시전 고리의 색·형태)을 액터에 전달한다.
      if String(e.kind)=="skill":caster.action_skill=String(e.target)
     if String(e.actor)=="human":
@@ -1714,7 +1752,7 @@ func show_map() -> void:
   elif event is InputEventScreenTouch and event.pressed:close_map())
  var header: float=54.0*s
  var pad: float=18.0*s
- var hint_h: float=20.0*s
+ var hint_h: float=40.0*s
  var side: float=minf(view.y-header-hint_h-pad*2.6,view.x*.66)
  side=minf(side,1020.0*s)
  var frame_size:=Vector2(side+pad*2.0,side+header+hint_h+pad*2.0)
@@ -1747,10 +1785,15 @@ func show_map() -> void:
  panel.add_child(close_top)
  close_top.position=Vector2(frame_size.x-132*s,8*s);close_top.size=Vector2(118*s,header-16*s)
  close_top.add_theme_font_size_override("font_size",int(20*s))
- var hint:=text("금색 점 · 나 / 붉은 점 · 요괴 / 흰 점 · 도사 · 누르면 바로 닫힙니다",int(14*s),Color("cfd7ea"))
+ # 2.0.30 미니맵 범례: 같은 팀만 보이고, 적은 탐지 도술 동안만 나타난다.
+ var hint:=text("금빛 테 · 나 / 채운 점 · 같은 팀(도사 파랑 · 요괴 빨강) / 마름모 = 봉인 · X = 탈락",int(13*s),Color("cfd7ea"))
  hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  panel.add_child(hint)
- hint.position=Vector2(pad,header+side+2*s);hint.size=Vector2(side,hint_h)
+ hint.position=Vector2(pad,header+side+1*s);hint.size=Vector2(side,20*s)
+ var hint2:=text("테두리만 있는 점 = 탐지 도술(천문기계·귀문보기·발자국·야광가루)로 드러난 적",int(12.5*s),Color("a9b6cf"))
+ hint2.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ panel.add_child(hint2)
+ hint2.position=Vector2(pad,header+side+20*s);hint2.size=Vector2(side,20*s)
 func close_map() -> void:
  map_overlay=null
  close_popup()

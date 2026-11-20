@@ -164,6 +164,109 @@ static func draw_petals(node: Node2D,count: int,area: Rect2,color: Color) -> voi
   node.draw_circle(Vector2.ZERO,w,Color(color.r,color.g,color.b,color.a*(.35+shade(i,55)*.65)))
   node.draw_set_transform(Vector2.ZERO)
 ## 길이 아닌 잔디 위에만 잔풀·작은 꽃을 벡터로 얹어, 확대해도 결이 뭉개지지 않게 한다.
+## 2.0.30 보행 경계를 자연스럽게 보여 주는 바닥 연출.
+## 인위적인 경계선 대신, 막힌 곳마다 돌 턱·단차 그림자·흙·잔디 턱을 깐다.
+static func draw_edges(node: Node2D) -> void:
+ for rect in L.LOW:low_ledge(node,rect)
+ pond_rim(node)
+ for rect in L.BAMBOO:bamboo_base(node,rect)
+ # 한옥은 원화 자체에 계단·기단 그림자가 있어 따로 덧그리지 않는다(떠 보이는 띠 방지).
+## 낮은 담·평상: 눌러 앉은 돌 평상. 윗면(밝은 화강암) + 앞면(그림자) + 접지 그림자.
+static func low_ledge(node: Node2D,rect: Rect2) -> void:
+ var horizontal:=rect.size.x>=rect.size.y
+ var extent:=rect.size.x if horizontal else rect.size.y
+ if horizontal:
+  var left:=rect.position.x
+  var width:=rect.size.x
+  var base_y:=rect.end.y
+  # 1) 접지 그림자(바닥에 번지는 둥근 그림자)
+  node.draw_set_transform(Vector2(rect.get_center().x,base_y+3),0,Vector2(1.0,.30))
+  for i in range(4):
+   node.draw_circle(Vector2.ZERO,width*.52-float(i)*6.0,Color(.02,.03,.06,.10-float(i)*.02))
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  # 2) 앞면(어두운 돌 + 이음새)
+  node.draw_rect(Rect2(left,base_y-13.0,width,14.0),Color(.33,.32,.31,1.0))
+  node.draw_rect(Rect2(left,base_y-1.0,width,3.0),Color(.18,.17,.17,.85))
+  var blocks:=maxi(2,int(width/42.0))
+  for i in range(1,blocks):
+   var x:=left+width*float(i)/float(blocks)
+   node.draw_line(Vector2(x,base_y-12.0),Vector2(x,base_y-1.0),Color(.22,.21,.20,.65),1.0)
+  # 3) 윗면(밝은 판석) + 윗모서리 하이라이트
+  node.draw_rect(Rect2(left-3.0,base_y-24.0,width+6.0,12.0),Color(.60,.58,.54,1.0))
+  node.draw_rect(Rect2(left-3.0,base_y-24.0,width+6.0,2.4),Color(.80,.78,.72,.95))
+  node.draw_rect(Rect2(left-3.0,base_y-13.0,width+6.0,1.6),Color(.42,.41,.39,.9))
+  # 4) 이끼와 잔돌
+  for i in range(3):
+   var spot:=Vector2(left+width*(.18+.32*float(i)),base_y-22.0+float(i%2)*2.0)
+   node.draw_circle(spot,2.2,Color(.34,.46,.32,.55))
+  for i in range(2):
+   node.draw_circle(Vector2(left+width*(.30+.4*float(i)),base_y-4.0),1.4,Color(.52,.50,.46,.5))
+ else:
+  var top:=rect.position.y
+  var height:=rect.size.y
+  var right_x:=rect.end.x
+  node.draw_set_transform(Vector2(right_x+3,rect.get_center().y),0,Vector2(.30,1.0))
+  for i in range(4):
+   node.draw_circle(Vector2.ZERO,height*.52-float(i)*6.0,Color(.02,.03,.06,.10-float(i)*.02))
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  node.draw_rect(Rect2(right_x-13.0,top,14.0,height),Color(.33,.32,.31,1.0))
+  node.draw_rect(Rect2(right_x-1.0,top,3.0,height),Color(.18,.17,.17,.85))
+  node.draw_rect(Rect2(right_x-24.0,top-3.0,12.0,height+6.0),Color(.60,.58,.54,1.0))
+  node.draw_rect(Rect2(right_x-24.0,top-3.0,2.4,height+6.0),Color(.80,.78,.72,.95))
+## 연못 물가: 물과 땅 경계에 자연석을 늘어놓고, 물가 흙그림자로 한계를 보여 준다.
+static func pond_rim(node: Node2D) -> void:
+ var pond:=L.POND
+ # 1) 물 밖으로 번지는 축축한 흙 그림자
+ for i in range(4):
+  node.draw_rect(pond.grow(4.0+float(i)*7.0),Color(.02,.04,.06,.08*(1.0-float(i)/4.0)),false,8.0)
+ # 2) 물가의 얇은 젖은 흙 띠
+ node.draw_rect(pond.grow(6.0),Color(.16,.17,.14,.55),false,7.0)
+ # 3) 물 경계의 어두운 선(깊이감)
+ node.draw_rect(pond.grow(1.0),Color(.06,.13,.18,.85),false,2.6)
+ # 4) 바깥을 따라 늘어선 둥근 자연석
+ var perimeter:=2.0*(pond.size.x+pond.size.y)
+ var count:=maxi(12,int(perimeter/54.0))
+ for i in range(count):
+  var at:=fmod(float(i)*54.0+float(i%2)*13.0,perimeter)
+  var spot: Vector2=Vector2.ZERO
+  var along_x:=true
+  if at<pond.size.x:spot=Vector2(pond.position.x+at,pond.position.y-7.0)
+  elif at<pond.size.x+pond.size.y:spot=Vector2(pond.end.x+7.0,pond.position.y+(at-pond.size.x));along_x=false
+  elif at<pond.size.x*2.0+pond.size.y:spot=Vector2(pond.end.x-(at-pond.size.x-pond.size.y),pond.end.y+7.0)
+  else:spot=Vector2(pond.position.x-7.0,pond.end.y-(at-pond.size.x*2.0-pond.size.y));along_x=false
+  var wobble:=0.8+0.45*(float((i*37)%11)/11.0)
+  node.draw_set_transform(spot,0,Vector2(1.25,.86) if along_x else Vector2(.86,1.25))
+  node.draw_circle(Vector2.ZERO,5.6*wobble,Color(.42,.41,.38,1.0))
+  node.draw_circle(Vector2(-.8,-1.2),4.0*wobble,Color(.62,.60,.55,1.0))
+  node.draw_circle(Vector2(-1.2,-2.0),1.8*wobble,Color(.76,.74,.68,.9))
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+## 대나무 군락 발치: 흙과 잔디 턱으로 '들어갈 수 없는 덤불'임을 보여 준다.
+static func bamboo_base(node: Node2D,rect: Rect2) -> void:
+ var center:=Vector2(rect.position.x+rect.size.x*.5,rect.end.y-6.0)
+ node.draw_set_transform(center,0,Vector2(1.0,.34))
+ node.draw_circle(Vector2.ZERO,rect.size.x*.92,Color(.03,.05,.03,.35))
+ node.draw_circle(Vector2.ZERO,rect.size.x*.62,Color(.10,.16,.09,.35))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ for i in range(7):
+  var a:=TAU*float(i)/7.0
+  var spot:=center+Vector2.from_angle(a)*rect.size.x*.52+Vector2(0,-2)
+  node.draw_circle(spot,2.6,Color(.30,.42,.30,.5))
+## 한옥 기단: 건물 발치를 얇은 돌 턱으로 마감해 벽과 마당을 구분한다(떠 보이지 않게).
+static func building_base(node: Node2D,building: Dictionary) -> void:
+ var rect: Rect2=building.rect
+ var bottom:=rect.end.y
+ var left:=rect.position.x+6.0
+ var width:=rect.size.x-12.0
+ for i in range(5):
+  node.draw_rect(Rect2(left-4.0,bottom+1.0+float(i)*3.0,width+8.0,3.0),Color(.02,.03,.06,.09-float(i)*.016))
+ node.draw_rect(Rect2(left-5.0,bottom-7.0,width+10.0,5.0),Color(.56,.54,.50,1.0))
+ node.draw_rect(Rect2(left-5.0,bottom-7.0,width+10.0,1.6),Color(.76,.73,.67,.9))
+ node.draw_rect(Rect2(left-5.0,bottom-2.0,width+10.0,3.0),Color(.30,.29,.28,.9))
+ var blocks:=maxi(2,int(width/56.0))
+ for i in range(1,blocks):
+  var x:=left+width*float(i)/float(blocks)
+  node.draw_line(Vector2(x,bottom-6.6),Vector2(x,bottom-2.2),Color(.34,.33,.31,.55),1.0)
+## 바닥 장식: 길가 잔디·들꽃·갈대.
 static func draw_ground_decor(node: Node2D) -> void:
  var tufts:=0
  for i in range(1400):

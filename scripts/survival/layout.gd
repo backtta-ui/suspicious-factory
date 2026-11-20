@@ -67,7 +67,8 @@ const PATHS=[
  {"w":130.0,"p":[Vector2(875,1650),Vector2(770,1660)]},
  {"w":130.0,"p":[Vector2(1330,2320),Vector2(1385,2245)]},
  {"w":120.0,"p":[Vector2(3070,2170),Vector2(3010,2180)]}]
-## 뛰어넘을 수 있는 낮은 담·평상.
+## 뛰어넘을 수 있는 낮은 담·평상. 반드시 바닥에 '돌 던틱'으로 그려 보이게 한다(world.build_low).
+## 그림자와 높이 차가 있는 돌 평상이라 '막힌 곳'임이 한눈에 보인다.
 const LOW=[Rect2(1210,1715,140,14),Rect2(2205,1715,130,14),Rect2(1470,720,120,14),Rect2(940,720,120,14),Rect2(1150,1000,130,14)]
 ## 정원 담장(기와 담장). 길을 막지 않도록 화단 안쪽에만 짧게 둔다.
 ## 충돌은 HARD에 포함되고, 그림은 이 목록을 쓴다.
@@ -234,7 +235,8 @@ static func on_bridge(p: Vector2,margin: float=0.0) -> bool:
  return local.t>=0.0 and local.t<=1.0 and local.offset<=BRIDGE_HALF-margin
 static func bridge_height(t: float) -> float:return sin(clampf(t,0,1)*PI)*BRIDGE_RISE
 static func can_stand(p: Vector2,margin: float=9,jumping: bool=false) -> bool:
- if not p.is_finite() or not Rect2(Vector2(60,70),SIZE-Vector2(120,140)).grow(-margin).has_point(p):return false
+ # 경계는 눈에 보이는 담장 '안쪽 모서리'와 정확히 맞춘다(담 뒤 막다른 틘을 없앤다).
+ if not p.is_finite() or not Rect2(Vector2(94,124),Vector2(3212,2356)).grow(-margin).has_point(p):return false
  if POND.grow(margin).has_point(p) and not on_bridge(p,margin):return false
  for rect in HARD+FURNITURE+BAMBOO:
   if rect.grow(margin).has_point(p):return false

@@ -177,6 +177,7 @@ func run() -> void:
  var wall: Rect2=L.buildings()[0].rect
  other=helper(r,"bot-1","yokai","yokai:gumiho",Vector2(wall.position.x+wall.size.x*.5,wall.position.y-40))
  p.position=Vector2(wall.position.x+wall.size.x*.5,wall.end.y+40)
+ r.reveal_until=0.0
  check(not L.line(p.position,other.position),"a hanok wall really blocks the line of sight")
  check(not r.visible("human").any(func(a: Dictionary)->bool:return a.id=="bot-1"),"the yokai is hidden behind the wall")
  p.cd={}
@@ -195,7 +196,7 @@ func run() -> void:
  helper(r,"bot-3","daoist","daoist:woochi",p.position+Vector2(-120,0))
  check(r.skill(p,Vector2.RIGHT,"main") and p.copy=="bot-2" and p.buff.get("mimic",0)>r.elapsed,"인간둔갑 copies the nearest daoist")
  var mirror: Array=r.visible("bot-3").filter(func(a: Dictionary)->bool:return a.id=="human")
- check(not mirror.is_empty() and String(mirror[0].name)==String(ally.name) and String(mirror[0].role)=="daoist","the copied gumiho reads as that daoist to others")
+ check(not mirror.is_empty() and String(mirror[0].character)==String(ally.character) and String(mirror[0].role)=="daoist" and bool(mirror[0].mimic),"the copied gumiho reads as that daoist to others")
  p.cd={}
  ally.position=p.position+Vector2(200,0)
  check(r.skill(p,Vector2.RIGHT,"sub") and ally.slow_until>r.elapsed and ally.slow_factor<.6,"여우향 slows daoists in range")
@@ -317,7 +318,7 @@ func run() -> void:
  check(not game.action_buttons.has("confirm"),"daoists never get the yokai confirm button")
  me.position=L.OBJECTS[0].p+Vector2(6,0)
  game.update_hud()
- check(game.disguise_button.visible and not game.door_button.visible,"둔갑 button appears beside a prop")
+ check(game.disguise_button.visible,"둔갑 button appears beside a prop")
  # 전우치는 같은 자리에서 공용 둔갑 버튼이 뜨지 않고, 윗줄 둔갑술 버튼 하나로 둔갑한다.
  me.character="daoist:woochi";me.cd={}
  game.update_hud()
@@ -331,8 +332,8 @@ func run() -> void:
  var front: Vector2=(L.buildings()[0].doors as Dictionary).front
  me.position=front+Vector2(0,16)
  game.update_hud()
- check(game.door_button.visible and game.door_button.get_node("Caption").text=="문 열기","문 열기 appears only at a door")
- check(not game.disguise_button.visible,"the disguise button hides when a door takes priority")
+ check(not game.action_buttons.has("door"),"no 문 열기 button appears at a door any more")
+ check(L.can_stand(front+Vector2(0,-30)),"the door is simply walkable")
  me.form="jar";me.buff.transform=game.rules.elapsed+9;me.position=L.SPAWN
  game.update_hud()
  check(game.disguise_button.visible and game.disguise_button.get_node("Caption").text=="둔갑 해제","a disguised daoist gets 둔갑 해제")

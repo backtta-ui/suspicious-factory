@@ -46,6 +46,10 @@ var aim_active:=false
 var aim_cancelled:=false
 var ground: Node2D
 var under: Node2D
+## 2.0.30 바닥 경계 연출(돌 턱·연못 테두리·기단)과 캐릭터를 가리는 나무 목록.
+var edge: Node2D
+var occluders: Array=[]
+var occluder_tick:=0.0
 var water: Node2D
 var effects: Node2D
 ## 캐릭터 발밑(액터 아래)에서 그리는 바닥 장치 레이어(덫·미끼).
@@ -70,6 +74,8 @@ func _ready() -> void:
  build_medallion()
  build_pond()
  build_bridge()
+ # 막힌 곳을 자연스럽게 보이게 하는 바닥 경계층(돌 턱·물가·기단).
+ edge=Node2D.new();edge.name="Edges";edge.z_index=-89;edge.draw.connect(func()->void:Art.draw_edges(edge));add_child(edge)
  build_buildings()
  build_garden()
  water=Node2D.new();water.z_index=-88;water.draw.connect(func()->void:Art.draw_water_glints(water,L.POND,clock));add_child(water)
@@ -198,6 +204,7 @@ func build_garden() -> void:
   sprite.modulate=Color(.94,.90,.96)
   sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
   var holder:=Node2D.new();holder.position=p;holder.add_child(sprite);culled.append({"node":holder,"rect":Rect2(p-Vector2(190,360),Vector2(380,400))})
+  occluders.append({"node":sprite,"base":p,"half":132.0,"top":248.0,"alpha":1.0,"applied":1.0})
   var glow_node:=Node2D.new();glow_node.z_index=-1;glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-90),135,Color(.85,.45,.7,.12)));holder.add_child(glow_node)
   add_child(holder)
  # 대나무 군락
@@ -213,6 +220,7 @@ func build_garden() -> void:
    sprite.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
    var holder:=Node2D.new();holder.position=base
    holder.add_child(sprite);add_child(holder);culled.append({"node":holder,"rect":Rect2(base-Vector2(130,320),Vector2(260,350))})
+   occluders.append({"node":sprite,"base":base,"half":(rect.size.x+40.0)*.56,"top":300.0,"alpha":1.0,"applied":1.0})
  # 석등(장식): 부드러운 발밑 그림자 + 따뜻한 빛무리
  for p in Art.LANTERNS:
   shadow(p+Vector2(0,2),Vector2(72,30),.85)
@@ -222,7 +230,11 @@ func build_garden() -> void:
   var holder:=Node2D.new();holder.position=p;holder.add_child(sprite)
   var glow_node:=Node2D.new();glow_node.draw.connect(func()->void:Art.glow(glow_node,Vector2(0,-46),96,Color(1,.68,.32,.26)));holder.add_child(glow_node)
   add_child(holder);culled.append({"node":holder,"rect":Rect2(p-Vector2(70,100),Vector2(140,120))})
-  lantern_holders.append({"node":holder,"glow":glow_node})
+  # 2.0.30: 등불끄기에서 '이 석등만' 꺼지도록 위치·불빛·연기를 함께 보관한다.
+  var smoke:=Node2D.new();smoke.name="LanternSmoke";smoke.position=p;smoke.z_index=6
+  smoke.draw.connect(func()->void:draw_lantern_smoke(smoke,p))
+  add_child(smoke)
+  lantern_holders.append({"node":holder,"glow":glow_node,"at":p,"smoke":smoke,"level":1.0})
  # 둔갑 사물(군집): 같은 부드러운 그림자를 공유한다.
  for object_index in range(L.OBJECTS.size()):
   var data: Dictionary=L.OBJECTS[object_index]
@@ -270,6 +282,7 @@ func _process(delta: float) -> void:
  update_buildings(delta)
  var near:=L.object_near(observer,150)
  update_animals()
+ update_occluders(delta)
  update_props()
  fx_tick+=delta
  var busy: bool=aim_active or (rules!=null and (not rules.effects.is_empty() or not rules.walkers.is_empty() or not rules.traps.is_empty() or not rules.marks.is_empty() or rules.dark_until>rules.elapsed or rules.map_dark_until>rules.elapsed)) or not String(L.door_near(observer)).is_empty() or not near.is_empty()
@@ -303,7 +316,7 @@ func update_buildings(delta: float) -> void:
   var data: Dictionary=building.data
   var open:=0.0
   for entry in L.building_doors(String(data.id)):
-   var near:=observer.distance_to(entry.center)<64 or (rules!=null and float(rules.doors.get(entry.id,0.0))>clock)
+   var near:=observer.distance_to(entry.center)<92 or (rules!=null and float(rules.doors.get(entry.id,0.0))>clock)
    door_open[entry.id]=move_toward(float(door_open.get(entry.id,0.0)),1.0 if near else 0.0,delta*4)
    open=maxf(open,float(door_open[entry.id]))
   building.door=open
@@ -382,21 +395,87 @@ func form_target() -> Dictionary:
   var d: float=p.distance_to(entry.p)
   if d<gap:gap=d;best={"kind":String(entry.kind),"p":entry.p,"animal":true}
  return best
+## 2.0.30 나무·대나무 뒤로 들어간 캐릭터·동물이 가려지지 않게 수관을 옅게 만든다.
+## 나무 발치(y)보다 위(뒤)에 있고 수관 폭 안에 있으면 그 나무만 반투명해진다.
+func update_occluders(delta: float) -> void:
+ if rules==null or occluders.is_empty():return
+ occluder_tick+=delta
+ if occluder_tick<.05:return
+ occluder_tick=0.0
+ var actors: Array=[]
+ for p in rules.players.values():
+  if p.eliminated:continue
+  actors.append(p.position)
+ for entry in rules.walkers:actors.append(entry.p)
+ for o in occluders:
+  var base: Vector2=o.base
+  var hidden:=false
+  for a in actors:
+   if absf((a as Vector2).x-base.x)>float(o.half):continue
+   if (a as Vector2).y>base.y+12.0:continue
+   if (a as Vector2).y<base.y-float(o.top):continue
+   hidden=true;break
+  var target:=.40 if hidden else 1.0
+  var alpha: float=move_toward(float(o.alpha),target,delta*6.0)
+  o.alpha=alpha
+  if absf(alpha-float(o.applied))>.008:
+   o.applied=alpha
+   var node: CanvasItem=o.node
+   if is_instance_valid(node):node.modulate.a=alpha
 ## 등불끄기·도깨비장난이 실제로 만든 변화를 그림에 반영한다.
+## 2.0.30: 석등은 불빛(노란 글로우)이 실제로 꺼지고, 꺼진 자리에서 연기·불씨가
+## 조금씩 올라온다. 범위 밖의 석등은 그대로 켜져 있다.
+func lantern_doused(at: Vector2) -> bool:
+ if rules==null:return false
+ var all_out: float=float(rules.lantern_until.get("all",0.0))
+ if all_out<=rules.elapsed:return false
+ # 등불끄기는 시전자 주변만 끈다. 범위 밖 석등은 계속 불을 밝힌다.
+ if float(rules.dark_radius)>0.0 and at.distance_to(rules.dark_center)>float(rules.dark_radius)+50.0:return false
+ return true
 func update_props() -> void:
  if rules==null:return
- var doused: bool=float(rules.lantern_until.get("all",0.0))>rules.elapsed
  for entry in lantern_holders:
   var node: Node2D=entry.node
   if not is_instance_valid(node):continue
-  node.modulate=Color(.44,.42,.54,1.0) if doused else Color.WHITE
+  var doused: bool=lantern_doused(entry.at)
+  # 0.3초 정도에 걸쳐 불빛이 꺼지는 낙차를 준다(끊김 없이).
+  var target:=0.0 if doused else 1.0
+  var level: float=move_toward(float(entry.get("level",1.0)),target,.09)
+  entry.level=level
+  node.modulate=Color(.44,.42,.54,1.0).lerp(Color.WHITE,level)
   var glow: Node2D=entry.glow
-  if is_instance_valid(glow):glow.visible=not doused
+  if is_instance_valid(glow):
+   glow.visible=level>.02
+   glow.modulate.a=clampf(level,0.0,1.0)
+  var smoke: Node2D=entry.smoke
+  if is_instance_valid(smoke):
+   smoke.visible=level<.98
+   smoke.queue_redraw()
  for entry in prop_holders:
   var node: Node2D=entry.node
   if not is_instance_valid(node):continue
   var flipped: bool=float(rules.prop_flips.get(int(entry.index),0.0))>rules.elapsed
   node.rotation=(-1.08 if int(entry.index)%2==0 else 1.02) if flipped else float(entry.base)
+## 꺼진 석등에서 피어오르는 연기 사슬과 작은 불씨.
+func draw_lantern_smoke(node: Node2D,at: Vector2) -> void:
+ var t:=clock
+ # 연기: 위로 흐르는 회색 덩어리(석등 등불 높이 -46).
+ for i in range(7):
+  var life: float=fmod(t*.34+float(i)*.37,1.0)
+  var rise: float=8.0+life*54.0
+  var sway: float=sin(t*1.1+float(i)*1.7)*6.0*life
+  var alpha: float=(1.0-life)*.16
+  var size: float=3.0+life*8.0
+  node.draw_circle(Vector2(sway,-46.0-rise),size,Color(.14,.13,.18,alpha))
+  node.draw_circle(Vector2(sway+2.5,-46.0-rise-3.0),size*.7,Color(.22,.20,.26,alpha*.8))
+ # 불씨: 잠깐 반짝이며 사라지는 주홍 점.
+ for i in range(5):
+  var life2: float=fmod(t*.9+float(i)*.53,1.0)
+  var spot:=Vector2(sin(t*2.3+float(i)*2.1)*3.0,-44.0-life2*26.0)
+  node.draw_circle(spot,1.3*(1.0-life2)+.5,Color(1,.52,.22,(1.0-life2)*.55))
+ # 꺼진 등불 잔해: 어두운 불투명 웅덩이와 식어 가는 잔불색 테두리.
+ node.draw_circle(Vector2(0,-46),4.6,Color(.05,.04,.06,.75))
+ node.draw_arc(Vector2(0,-46),5.6,0,TAU,16,Color(.45,.16,.10,.25),1.0,true)
 func draw_form_target(node: Node2D,target: Dictionary) -> void:
  var pulse: float=.5+.5*sin(clock*3.4)
  var base: Vector2=target.p
@@ -448,7 +527,7 @@ func draw_effects() -> void:
     if rules.hidden(p):continue
     for i in range(p.trail.size()):
      var mark: Dictionary=p.trail[i]
-     if mark.position.distance_to(human.position)<220:marks.append([mark.position.x,mark.position.y,mark.facing*PI/4,i%2,rules.elapsed-mark.time])
+     if mark.position.distance_to(human.position)<float(rules.SENSE_RADIUS):marks.append([mark.position.x,mark.position.y,mark.facing*PI/4,i%2,rules.elapsed-mark.time])
    preload("res://scripts/spells/effects.gd").footprints(effects,marks)
   for e in rules.effects:FX.draw(effects,e,clock)
   for entry in L.DOORS:
@@ -508,6 +587,34 @@ func draw_detection(node: Node2D) -> void:
 ## 바닥 장치(압력기관·가짜보물)는 액터보다 아래 층에서 그린다.
 func draw_floor() -> void:
  if rules==null:return
+ # 도깨비 장난 지대: 바닥에서 춤추는 도깨비불 테두리와 갈라진 흙.
+ # 등불끄기·무월야의 밤안개 연막: 캐릭터보다 아래층에 깔아 실루엣이 살아 있게 한다.
+ if rules.dark_until>rules.elapsed:draw_douse_shade(floor_fx)
+ if rules.map_dark_until>rules.elapsed:draw_moonless_shade(floor_fx)
+ for z in rules.mischief_zones:
+  if float(z.until)<=rules.elapsed:continue
+  var left: float=clampf((float(z.until)-rules.elapsed)/6.0,0.0,1.0)
+  var reach: float=float(z.radius)
+  var center: Vector2=z.pos
+  var pulse: float=.5+.5*sin(clock*3.4)
+  floor_fx.draw_set_transform(center,0,Vector2(1.0,.44))
+  floor_fx.draw_circle(Vector2.ZERO,reach,Color(.06,.10,.08,.16*left))
+  floor_fx.draw_arc(Vector2.ZERO,reach,0,TAU,52,Color(.42,.98,.74,.30*left),3.0,true)
+  floor_fx.draw_arc(Vector2.ZERO,reach*.72,0,TAU,40,Color(.30,.80,.60,.16*left),2.0,true)
+  floor_fx.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  for i in range(14):
+   var a:=float(i)*TAU/14.0+clock*.9
+   var spot:=center+Vector2.from_angle(a)*reach*(.94+.04*sin(clock*3.0+float(i)))
+   var size:=4.0+2.2*absf(sin(clock*4.0+float(i)*1.7))
+   floor_fx.draw_circle(spot,size,Color(.40,.98,.74,.26*left))
+   floor_fx.draw_circle(spot,size*.45,Color(.92,1,.98,.36*left))
+  for i in range(9):
+   var a2:=float(i)*TAU/9.0+0.4
+   var crack:=center+Vector2.from_angle(a2)*reach*.8
+   for k in range(3):
+    var from:=center+Vector2.from_angle(a2)*(reach*.2*float(k))
+    var to:=center+Vector2.from_angle(a2+0.12*sin(float(k)+float(i)))*(reach*.2*float(k+1))
+    floor_fx.draw_line(from,to,Color(.16,.05,.18,.20*left),1.6,true)
  for t in rules.traps:
   var pulse: float=.5+.5*sin(clock*2.8+float(t.pos.x)*.01)
   var reach: float=float(t.radius)
@@ -515,21 +622,65 @@ func draw_floor() -> void:
    pressure_trap(floor_fx,t.pos,reach,pulse)
   else:
    treasure_trap(floor_fx,t.pos,reach,pulse)
-## 어둠(등불끄기·무월야)은 화면 위 레이어에서 덮는다.
+## 어둠(등불끄기·무월야)은 화면 위 레이어에서 덮되, 단색 원이 아니라 여러 겹의
+## 그라데이션 + 흘러가는 안개 + 꺼진 불씨로 겹쳐 그린다(2.0.30).
 func draw_traps(node: Node2D) -> void:
- # 등불끄기·무월야: 화면 전체와 주변을 어둡게 덮는다.
- var dark_alpha:=0.0
- if rules.map_dark_until>rules.elapsed:dark_alpha=maxf(dark_alpha,.42)
- if rules.dark_until>rules.elapsed:
-  var t: float=clampf((rules.dark_until-rules.elapsed)/9.0,0,1)
-  var dark_reach: float=rules.dark_radius*(1.0+(1.0-t)*.1)
-  Art.glow(node,rules.dark_center,dark_reach,Color(.02,.01,.06,.55))
-  node.draw_circle(rules.dark_center,dark_reach*.5,Color(.02,.015,.05,.42))
- if dark_alpha>0.01:
-  var camera:=get_viewport().get_camera_2d()
-  var center: Vector2=camera.get_screen_center_position() if camera!=null else rules.players.human.position
-  var view: Vector2=get_viewport().get_visible_rect().size/(camera.zoom if camera!=null else Vector2.ONE)
-  Art.glow(node,center,view.length()*.72,Color(.01,.01,.03,dark_alpha))
+ # 2.0.30: 밤안개·연막은 바닥층(draw_floor)에서 그린다. 캐릭터를 덮어 가리지 않고,
+ # 화면 어둡기는 시야 연출(vision_overlay)이 담당한다.
+ pass
+## 등불끄기: 단색 원이 아니라 먹빛 연막이 소용돌이치며 번지고, 그림자 촉수가 뻗으며,
+## 보랏빛 눈빛과 꺼진 등불의 불씨가 흩날린다(어둑시니 고유 연출).
+func draw_douse_shade(node: Node2D) -> void:
+ var fade: float=clampf((rules.dark_until-rules.elapsed)/9.0,0.0,1.0)
+ var strength: float=.35+.65*clampf(fade*1.6,0.0,1.0)
+ var reach: float=rules.dark_radius*(1.0+(1.0-fade)*.06)
+ var center: Vector2=rules.dark_center
+ var spin:=clock*1.2
+ # 1) 바닥을 까는 옅은 밤 그림자(부드러운 다층 그라데이션)
+ for i in range(14):
+  var k: float=1.0-float(i)/14.0
+  node.draw_circle(center,reach*k,Color(.014,.011,.038,.014*strength))
+ # 2) 소용돌이치는 먹빛 연막 덩어리(여러 겹, 서로 다른 속도)
+ FX.smoke(node,center,reach*.92,.18*strength,Color(.05,.035,.10,.55),10,spin)
+ FX.smoke(node,center+Vector2(reach*.18,-reach*.10),reach*.62,.22*strength,Color(.11,.07,.19,.42),8,-spin*.7)
+ FX.smoke(node,center+Vector2(-reach*.22,reach*.06),reach*.48,.26*strength,Color(.03,.02,.07,.55),6,spin*1.6)
+ # 3) 가장자리에서 안으로 뻗는 그림자 촉수
+ for i in range(14):
+  var a:=float(i)*TAU/14.0+sin(clock*.4+float(i))*0.16
+  var base: Vector2=center+Vector2.from_angle(a)*reach*.86
+  var mid: Vector2=center+Vector2.from_angle(a+0.5)*(reach*.58)
+  var tip: Vector2=center+Vector2.from_angle(a+0.9)*(reach*.34)
+  node.draw_line(base,mid,Color(.05,.035,.10,.22*strength),7.0,true)
+  node.draw_line(mid,tip,Color(.09,.06,.15,.14*strength),3.4,true)
+ # 4) 연무 속 보랏빛 눈빛
+ for i in range(5):
+  var phase:=clock*.7+float(i)*1.9
+  var spot: Vector2=center+Vector2(sin(phase)*reach*.52,cos(phase*.8)*reach*.34)
+  var glow:=.45+.55*sin(clock*2.6+float(i)*2.1)
+  node.draw_circle(spot,5.0,Color(.42,.24,.68,.16*glow*strength))
+  node.draw_circle(spot,1.6,Color(.88,.74,1,.55*glow*strength))
+ # 5) 꺼진 등불에서 떠오르는 불씨
+ for i in range(10):
+  var lift: float=fmod(clock*.5+float(i)*.31,1.0)
+  var spot2: Vector2=center+Vector2(sin(clock*1.3+float(i)*2.3)*(reach*.30),cos(clock*.9+float(i))*reach*.16)-Vector2(0,lift*140.0)
+  node.draw_circle(spot2,1.5*(1.0-lift)+.4,Color(1,.55,.24,(1.0-lift)*.30*strength))
+## 무월야: 밤하늘이 내려앉되 먹구름이 흐르고, 달이 잠식되는 연출.
+func draw_moonless_shade(node: Node2D) -> void:
+ var fade: float=clampf((rules.map_dark_until-rules.elapsed)/8.0,0.0,1.0)
+ var alpha: float=.30+.18*clampf(fade*1.5,0.0,1.0)
+ var camera:=get_viewport().get_camera_2d()
+ var center: Vector2=camera.get_screen_center_position() if camera!=null else rules.players.human.position
+ var view: Vector2=get_viewport().get_visible_rect().size/(camera.zoom if camera!=null else Vector2.ONE)
+ var far: float=view.length()*.62
+ for i in range(12):
+  var k: float=1.0-float(i)/12.0
+  node.draw_circle(center,far*k,Color(.010,.010,.028,.075*alpha))
+ FX.smoke(node,center,far*.55,.30*alpha,Color(.04,.04,.09,.40),9,clock*.7)
+ FX.smoke(node,center+Vector2(far*.3,far*.2),far*.34,.34*alpha,Color(.06,.05,.12,.34),7,-clock*.5)
+ # 잠식되는 달
+ var moon:=center+Vector2(far*.42,-far*.36)
+ node.draw_circle(moon,34.0,Color(.82,.86,.96,.16*alpha))
+ node.draw_circle(moon+Vector2(10.0,0),33.0,Color(.02,.02,.05,.30*alpha))
 ## 압력기관: 바닥 그림자 위에 청동 톱니 테두리·팔각 압력판·나사 핀·옥빛 맥동.
 func pressure_trap(node: Node2D,at: Vector2,radius: float,pulse: float) -> void:
  var bronze:=Color(.78,.60,.32)
