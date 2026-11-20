@@ -661,52 +661,160 @@ func _chip(parent: Node,text_value: String,r: Rect2,fill: Color,ink: Color) -> L
 	return node
 
 # ------------------------------------------------------------------ 하단 바
+## 2.0.33: 하단을 리그 오브 레전드식으로 두 그룹으로 나눈다.
+##  - 우리 팀(내 진영): 청월빛 라벨 + 청월 테두리 슬롯. 내 칸이 맨 앞, 선택 초상화·확정 인장.
+##  - 가운데 VS 세로 구분선.
+##  - 상대 팀: 자줏빛 라벨 + 붉은 테두리 비공개(여우 문양·?) 슬롯. 캐릭터는 경기 시작 때 공개.
+## 빠른 매치 진영 잠금 안내와 공개 안내는 같은 줄에 겹치지 않게 한 문장으로 합친다.
+const OWN_TINT=Color("7ea9f0")
+const OWN_INK=Color("cfe0ff")
+const OWN_DEEP=Color("101c36")
+const FOE_TINT=Color("e2776a")
+const FOE_INK=Color("ffd7cf")
+const FOE_DEEP=Color("2c1216")
+
+## 글자 폭(디자인 좌표). 라벨을 글자 길이에 맞춰 붙여 겹침을 없앤다.
+func _text_width(text_value: String,extent: float) -> float:
+	return FONT.get_string_size(text_value,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(9,int(extent*s))).x/s
+
 func _footer() -> void:
 	var area:=Rect2(MARGIN,570,width-MARGIN*2,132)
 	_reset_layer("footer")
-	_plate(footer_layer,area,UIK.TEX_PANEL,40,0.35,Color(1,.80,.44))
-	var count:=0
-	var confirmed:=0
-	var entries: Array=[]
-	entries.append(game.rules.players.human)
+	var plate:=_plate(footer_layer,area,UIK.TEX_PANEL,40,0.35,Color(1,.80,.44))
+	plate.name="SelectionFooterPlate"
+	var own_role:=side()
+	var own: Array=[]
+	var foe: Array=[]
 	for entry in game.rules.players.values():
-		if String(entry.get("id",""))!="human":entries.append(entry)
-	for entry in entries:
-		if String(entry.get("character",""))!="":count+=1
-		if bool(entry.get("confirmed",false)):confirmed+=1
-	var head:=_label(footer_layer,"선택 현황",14.5,Color(.90,.86,.80),false)
-	_add(footer_layer,head,Rect2(area.position.x+24,area.position.y+10,110,20))
-	var count_label:=_label(footer_layer,"%d / %d" % [count,entries.size()],18,P.BRASS_LIGHT,true)
+		var role:=String(entry.get("role",""))
+		if role=="":role=own_role
+		if role==own_role:own.append(entry)
+		else:foe.append(entry)
+	if own.is_empty():
+		return
+	# 내 칸을 우리 팀 맨 앞으로.
+	for i in range(own.size()):
+		if String(own[i].get("id",""))=="human":
+			var mine: Dictionary=own[i]
+			own.remove_at(i)
+			own.push_front(mine)
+			break
+	var chosen:=0
+	var confirmed:=0
+	for entry in own:
+		if String(entry.get("character",""))!="":chosen+=1
+		if String(entry.get("id",""))!="human" and bool(entry.get("confirmed",false)):confirmed+=1
+	# ── 좌표: 우리 팀은 왼쪽, 상대 팀은 확정 버튼 왼쪽에 붙이고 가운데에 VS.
+	var slot:=54.0
+	var pitch:=60.0
+	var own_left:=area.position.x+24.0
+	var confirm_left:=area.end.x-330.0
+	var foe_right:=confirm_left-26.0
+	var own_w:=float(own.size())*pitch-6.0
+	var foe_w:=float(foe.size())*pitch-6.0
+	var own_right:=own_left+own_w
+	var foe_left:=foe_right-foe_w
+	var vs_x:=(own_right+foe_left)*.5
+	var head_y:=area.position.y+6.0
+	var slot_y:=area.position.y+32.0
+	var top:=Color(.90,.90,.98)
+	# ── 우리 팀 머리글: 우리 팀 · 도사 + 선택 n / n + 팀원 확정 n / n
+	var own_text:="우리 팀 · "+("도사" if own_role=="daoist" else "요괴")
+	var own_mark:=Control.new()
+	own_mark.name="SelectionOwnMark"
+	own_mark.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	own_mark.draw.connect(func()->void:G.draw_glyph(own_mark,"lotus" if own_role=="daoist" else "fox",Rect2(Vector2.ZERO,own_mark.size),OWN_TINT,1.6))
+	_add(footer_layer,own_mark,Rect2(own_left,head_y+2.0,16,16))
+	var own_head_x:=own_left+22.0
+	var own_head:=_label(footer_layer,own_text,13.5,OWN_INK,true)
+	own_head.name="SelectionOwnLabel"
+	own_head.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+	_add(footer_layer,own_head,Rect2(own_head_x,head_y,_text_width(own_text,13.5)+8.0,20))
+	var count_text:="%d / %d" % [chosen,own.size()]
+	var count_x:=own_head_x+_text_width(own_text,13.5)+12.0
+	var count_label:=_label(footer_layer,count_text,15,P.BRASS_LIGHT,true)
 	count_label.name="SelectionCount"
-	_add(footer_layer,count_label,Rect2(area.position.x+126,area.position.y+7,90,24))
-	team_label=_label(footer_layer,"팀원 확정 %d / %d" % [confirmed,entries.size()],12.5,Color(.84,.84,.94),false)
-	_add(footer_layer,team_label,Rect2(area.position.x+214,area.position.y+10,220,20))
+	count_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+	_add(footer_layer,count_label,Rect2(count_x,head_y-1.0,_text_width(count_text,15)+8.0,22))
+	var team_text:="팀원 확정 %d / %d" % [confirmed,maxi(0,own.size()-1)]
+	var team_x:=count_x+_text_width(count_text,15)+14.0
+	team_label=_label(footer_layer,team_text,12.5,Color(.84,.84,.94),false)
+	team_label.name="SelectionTeam"
+	team_label.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+	_add(footer_layer,team_label,Rect2(team_x,head_y+1.0,_text_width(team_text,12.5)+8.0,20))
+	# ── 상대 팀 머리글: 상대 팀 · 요괴 2 (캐릭터는 비공개)
+	var foe_text:="상대 팀 · "+("요괴" if own_role=="daoist" else "도사")+("  %d" % foe.size())
+	var foe_text_w:=_text_width(foe_text,13.5)
+	var foe_head_x:=foe_left if foe_w>=foe_text_w+22.0 else foe_right-foe_text_w-22.0
+	var foe_mark:=Control.new()
+	foe_mark.name="SelectionFoeMark"
+	foe_mark.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	foe_mark.draw.connect(func()->void:G.draw_glyph(foe_mark,"fox" if own_role=="daoist" else "lotus",Rect2(Vector2.ZERO,foe_mark.size),FOE_TINT,1.6))
+	_add(footer_layer,foe_mark,Rect2(foe_head_x,head_y+2.0,16,16))
+	var foe_head:=_label(footer_layer,foe_text,13.5,FOE_INK,true)
+	foe_head.name="SelectionFoeLabel"
+	foe_head.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+	_add(footer_layer,foe_head,Rect2(foe_head_x+22.0,head_y,foe_text_w+8.0,20))
+	# ── 두 그룹을 잇는 가는 청월·자줏빛 선(가운데 VS까지 이어져 한 줄로 읽힌다)
+	var rail_y:=slot_y+slot*.5-0.6
+	if vs_x-32.0>own_right+10.0:
+		var blue_rail:=ColorRect.new()
+		blue_rail.color=P.alpha(OWN_TINT,.40)
+		blue_rail.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		_add(footer_layer,blue_rail,Rect2(own_right+10.0,rail_y,vs_x-32.0-own_right-10.0,1.6))
+	if foe_left-10.0>vs_x+32.0:
+		var red_rail:=ColorRect.new()
+		red_rail.color=P.alpha(FOE_TINT,.40)
+		red_rail.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		_add(footer_layer,red_rail,Rect2(vs_x+32.0,rail_y,foe_left-10.0-vs_x-32.0,1.6))
+	# ── 슬롯 두 그룹: 우리 팀(청월) · 상대 팀(자줏빛, 비공개)
 	strip=Control.new()
 	strip.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	_add(footer_layer,strip,Rect2(0,0,width,DESIGN_HEIGHT))
-	var slots_x:=area.position.x+24
-	var slot_y:=area.position.y+36
-	for i in range(8):
-		var entry: Dictionary={}
-		if i<entries.size():entry=entries[i]
-		_slot(Rect2(slots_x+float(i)*68.0,slot_y,60,60),entry,i)
-	var hint:=_label(footer_layer,"상대 진영 캐릭터는 경기 시작 때 공개됩니다",12,Color(.80,.82,.94),false)
-	_add(footer_layer,hint,Rect2(slots_x,area.end.y-28.0,520,18))
+	for i in range(own.size()):
+		_slot(Rect2(own_left+float(i)*pitch,slot_y,slot,slot),own[i],"own",i,OWN_TINT,false)
+	for i in range(foe.size()):
+		var hidden_entry: Dictionary=foe[i]
+		var masked: Dictionary={"id":String(hidden_entry.get("id","")),"character":"","confirmed":false}
+		_slot(Rect2(foe_left+float(i)*pitch,slot_y,slot,slot),masked,"foe",i,FOE_TINT,true)
+	# ── VS 구분선(두 그룹 사이)
+	var vs:=Control.new()
+	vs.name="SelectionVs"
+	vs.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	_add(footer_layer,vs,Rect2(vs_x-22.0,area.position.y+22.0,44,82))
+	vs.draw.connect(func()->void:
+		var cx:=vs.size.x*.5
+		vs.draw_rect(Rect2(cx-0.7,vs.size.y*.02,1.4,vs.size.y*.24),P.alpha(P.BRASS,.55))
+		vs.draw_rect(Rect2(cx-0.7,vs.size.y*.74,1.4,vs.size.y*.24),P.alpha(P.BRASS,.55))
+		var extent:=maxi(10,int(14.0*s))
+		var w2:=TITLE_FONT.get_string_size("VS",HORIZONTAL_ALIGNMENT_LEFT,-1,extent).x
+		var baseline:=vs.size.y*.5+(TITLE_FONT.get_ascent(extent)-TITLE_FONT.get_descent(extent))*.5
+		var at:=Vector2(cx-w2*.5,baseline)
+		vs.draw_string_outline(TITLE_FONT,at,"VS",HORIZONTAL_ALIGNMENT_LEFT,-1,extent,maxi(2,int(3.0*s)),Color(.02,.018,.04,.85))
+		vs.draw_string(TITLE_FONT,at,"VS",HORIZONTAL_ALIGNMENT_LEFT,-1,extent,P.BRASS_LIGHT))
+	# ── 확정 버튼 · 준비 안내 · 한 줄 안내
 	var locked_now:=locked or bool(me().get("confirmed",false))
-	confirm_button=_button("확정 완료 · 팀원 대기" if locked_now else "선택 확정",func()->void:game.confirm_selection(selection_id,self),"gold","check",Rect2(area.end.x-330,area.position.y+34,310,66),24.0,footer_layer)
+	confirm_button=_button("확정 완료 · 팀원 대기" if locked_now else "선택 확정",func()->void:game.confirm_selection(selection_id,self),"gold","check",Rect2(confirm_left,area.position.y+34,310,66),24.0,footer_layer)
 	confirm_button.name="SelectionConfirm"
 	confirm_button.disabled=locked_now or not owned(selection_id)
 	ready_label=_label(footer_layer,"",13,Color("ffe6a8"),false)
 	ready_label.name="SelectionReady"
 	ready_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-	_add(footer_layer,ready_label,Rect2(area.end.x-358,area.end.y-28.0,344,18))
+	_add(footer_layer,ready_label,Rect2(area.end.x-358,area.end.y-26.0,344,18))
 	ready_label.text="팀원 모두의 선택이 끝나면 3초 뒤 경기가 시작됩니다"
-	# 진영 잠금 안내
+	# 진영 잠금 안내 + 공개 안내: 두 문장을 한 줄로 합쳐 절대 겹치지 않게 한다.
+	var hint_text:="상대 진영 캐릭터는 경기 시작 때 공개됩니다"
 	if role_locked and locked_team!="":
-		var lock_note:=_label(footer_layer,"빠른 매치 · 배정된 진영만 선택할 수 있습니다",12,Color(.86,.82,.94),false)
-		_add(footer_layer,lock_note,Rect2(area.position.x+24,area.end.y-28.0,420,18))
+		hint_text="빠른 매치 · 배정된 진영만 선택 가능 · 상대 진영은 경기 시작 때 공개"
+	if own_left+_text_width(hint_text,12.0)>area.end.x-358.0-16.0:
+		hint_text="빠른 매치 · 배정된 진영만 선택 · 상대 진영 비공개" if role_locked and locked_team!="" else "상대 진영 캐릭터는 경기 시작 때 공개"
+	var hint:=_label(footer_layer,hint_text,12,top,false)
+	hint.name="SelectionHint"
+	hint.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+	_add(footer_layer,hint,Rect2(own_left,area.end.y-26.0,_text_width(hint_text,12.0)+8.0,18))
 
-func _slot(r: Rect2,entry: Dictionary,index: int) -> void:
+## 하단 슬롯 하나. `tint`는 팀 색(우리 팀 청월·상대 팀 자줏빛), `concealed`는 상대 진영 비공개 칸.
+func _slot(r: Rect2,entry: Dictionary,group: String,index: int,tint: Color,concealed: bool) -> void:
 	var filled:=not entry.is_empty()
 	var confirmed:=filled and bool(entry.get("confirmed",false))
 	var host:=filled and String(entry.get("id",""))=="human"
@@ -714,8 +822,14 @@ func _slot(r: Rect2,entry: Dictionary,index: int) -> void:
 	var spec:=C.find(character) if character!="" else {}
 	var box:=Control.new()
 	box.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	box.name="SelectionSlot_%d" % index
+	box.name="SelectionSlot_%s_%d" % [group,index]
+	box.set_meta("team",group)
+	box.set_meta("concealed",concealed)
 	_add(strip,box,r)
+	var back:=ColorRect.new()
+	back.color=P.alpha(FOE_DEEP if concealed else OWN_DEEP,.55)
+	back.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	_add(box,back,Rect2(3,3,r.size.x-6,r.size.y-6))
 	var glow:=UIK.Glow.new()
 	glow.color=Color(1,.84,.46)
 	glow.radius=9.0*s
@@ -728,20 +842,33 @@ func _slot(r: Rect2,entry: Dictionary,index: int) -> void:
 		var holder:=Control.new()
 		holder.clip_contents=true
 		holder.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		_add(box,holder,Rect2(4,4,r.size.x-8,r.size.y-8))
+		_add(box,holder,Rect2(5,5,r.size.x-10,r.size.y-10))
 		var portrait:=TextureRect.new()
 		portrait.texture=load(String(spec.portrait))
 		portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		portrait.modulate=Color(1,1,1,1.0 if confirmed else .72)
-		_add(holder,portrait,Rect2(0,0,r.size.x-8,r.size.y-8))
+		_add(holder,portrait,Rect2(0,0,r.size.x-10,r.size.y-10))
+	elif concealed:
+		# 상대 진영 비공개 칸: 여우 문양 + 물음표(캐릭터는 경기 시작 때 공개).
+		var mask:=Control.new()
+		mask.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		mask.draw.connect(func()->void:
+			var c: Vector2=mask.size*.5
+			var d:=minf(mask.size.x,mask.size.y)*.50
+			G.draw_glyph(mask,"fox",Rect2(c-Vector2(d*.5,d*.5),Vector2(d,d)),P.alpha(FOE_TINT,.70),1.5)
+			var extent:=maxi(9,int(12.0*s))
+			var qw:=FONT.get_string_size("?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent).x
+			mask.draw_string_outline(FONT,Vector2(mask.size.x-qw-4.0*s,4.0*s+FONT.get_ascent(extent)),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent,maxi(2,int(2.4*s)),Color(.02,.018,.04,.8))
+			mask.draw_string(FONT,Vector2(mask.size.x-qw-4.0*s,4.0*s+FONT.get_ascent(extent)),"?",HORIZONTAL_ALIGNMENT_LEFT,-1,extent,P.alpha(FOE_INK,.92)))
+		_add(box,mask,Rect2(0,0,r.size.x,r.size.y))
 	else:
 		var q:=Control.new()
 		q.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		q.draw.connect(func()->void:
 			var c: Vector2=q.size*.5
-			G.draw_glyph(q,"users",Rect2(c-Vector2(q.size.x*.24,q.size.x*.24),Vector2(q.size.x*.48,q.size.x*.48)),P.alpha(P.HANJI,.30),1.7))
+			G.draw_glyph(q,"users",Rect2(c-Vector2(q.size.x*.24,q.size.x*.24),Vector2(q.size.x*.48,q.size.x*.48)),P.alpha(tint,.38),1.7))
 		_add(box,q,Rect2(0,0,r.size.x,r.size.y))
 	if host:
 		var crown:=Control.new()
@@ -751,7 +878,14 @@ func _slot(r: Rect2,entry: Dictionary,index: int) -> void:
 	if confirmed:
 		var seal:=UIK.Seal.new()
 		seal.glowing=false
-		_add(box,seal,Rect2(r.size.x-22.0,r.size.y-22.0,19,19))
+		_add(box,seal,Rect2(r.size.x-24.0,r.size.y-24.0,20,20))
+	# 팀 색 테두리(우리 팀 청월 / 상대 팀 자줏빛) — 프레임 위에 얹어 그룹이 한눈에 갈린다.
+	var edge:=Control.new()
+	edge.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	edge.draw.connect(func()->void:
+		edge.draw_rect(Rect2(0.5,0.5,edge.size.x-1.0,edge.size.y-1.0),P.alpha(tint,.90),false,maxf(1.0,1.7*s))
+		edge.draw_rect(Rect2(3.5,3.5,edge.size.x-7.0,edge.size.y-7.0),P.alpha(tint,.22),false,maxf(1.0,1.0*s)))
+	_add(box,edge,Rect2(0,0,r.size.x,r.size.y))
 
 # ------------------------------------------------------------------ 동작
 ## 이 진영 카드를 지금 고를 수 있는지(빠른 매치 진영 잠금).

@@ -88,8 +88,21 @@ func build() -> void:
 	frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	add_child(frame)
 	preview_frame=frame
-	place(frame,Rect2(PANEL_POS,PANEL_SIZE))
+	place(frame,preview_box())
 	refresh()
+
+## 2.0.33: 미리보기 판의 실제 배치. 20:9에서는 판을 오른쪽 끝으로 옮긴다.
+## 판과 그 안의 내용물(제목·그림·이름·배지·설명·능력·버튼)이 항상 이 한 값을 쓴다.
+func preview_box() -> Rect2:
+	var dx:=right_edge()-(PANEL_POS.x+PANEL_SIZE.x)
+	return Rect2(Vector2(PANEL_POS.x+dx,PANEL_POS.y),PANEL_SIZE)
+
+## 판과 내용물을 같은 기준 x로 맞춘다. 내용물을 다시 그린 뒤에도 반드시 부른다.
+func align_preview() -> void:
+	var box:=preview_box()
+	if is_instance_valid(preview_frame):reshape(preview_frame,box)
+	if is_instance_valid(preview_body):
+		preview_body.position=origin+Vector2(box.position.x-PANEL_POS.x,0)*s
 
 # ---------------------------------------------------------------- 상단 바
 ## 뒤로가기: 시안의 다크네이비 팔각 판 + 금테. 기존 상단 뒤로가기와 같은 이름·자리를 쓴다.
@@ -611,6 +624,8 @@ func _rebuild_preview() -> void:
 		var pay_note:=label(preview_body,"게임 재화 전용 · 인앱결제·광고 없음",15,Color(0.78,0.80,0.90,0.86))
 		pay_note.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 		place(pay_note,Rect2(PANEL_POS.x+8,PANEL_POS.y+536,PANEL_SIZE.x-16,22))
+	# 제목부터 버튼까지 다 놓은 뒤, 판과 같은 기준 x로 맞춘다(캐릭터를 누를 때마다 다시 그린다).
+	align_preview()
 
 func _raw(id: String) -> Dictionary:
 	for item in _items():
@@ -702,10 +717,8 @@ func select_item(id: String) -> void:
 	_rebuild_preview()
 
 func arrange() -> void:
-	# 2.0.32: 가로가 넓으면(20:9) 미리보기 판·지갑을 화면 오른쪽 끝에 붙인다.
-	var dx:=right_edge()-(PANEL_POS.x+PANEL_SIZE.x)
-	if is_instance_valid(preview_frame):reshape(preview_frame,Rect2(Vector2(PANEL_POS.x+dx,PANEL_POS.y),PANEL_SIZE))
-	if is_instance_valid(preview_body):preview_body.position=origin+Vector2(dx,0)*s
+	# 2.0.32: 가로가 넓으면(20:9) 미리보기 판·지갑을 화면 오른쪽 끝에 붙인다(2.0.33: 판과 내용물을 같은 함수로).
+	align_preview()
 	_place_wallet_right()
 	# 제목은 시안처럼 연꽃 문장 오른쪽에서 시작한다.
 	if is_instance_valid(title_label):

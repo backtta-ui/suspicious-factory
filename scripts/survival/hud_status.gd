@@ -124,7 +124,7 @@ func _draw() -> void:
  if rules!=null:
   var players: Array=rules.players.values()
   var rows:=players.size()
-  var list:=Rect2(w-212,206,202,32+rows*23)
+  var list:=Rect2(w-242,206,232,32+rows*23)
   plate(list,14)
   draw_string(FONT,Vector2(list.position.x+14,list.position.y+21),"참가자 · 생존 %d"%survivor_count,HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("f0dcae"))
   for i in range(rows):
@@ -136,21 +136,20 @@ func _draw() -> void:
    if gone:tint=Color(.55,.58,.68,.75)
    elif catch:tint=Color("e2b2ff")
    draw_circle(Vector2(list.position.x+16,y+7),4.2,Color("c9556e") if p.get("role","")=="yokai" else Color("7fc4f0"))
+   # 2.0.33 참가자 목록도 닉네임으로 표기한다(내 줄은 '나·'를 앞에 붙여 바로 찾게).
    var label: String=String(p.get("name",""))
-   var piece: Dictionary=C.find(String(p.get("character","")))
-   if p.get("id","")=="human":label="나"
-   elif not piece.is_empty():label=String(piece.get("name",label))
-   draw_string(FONT,Vector2(list.position.x+26,y+12),label,HORIZONTAL_ALIGNMENT_LEFT,74,11,tint)
+   if p.get("id","")=="human":label="나·"+label
+   draw_string(FONT,Vector2(list.position.x+26,y+12),label,HORIZONTAL_ALIGNMENT_LEFT,94,11,tint)
    if gone:
-    draw_string(FONT,Vector2(list.position.x+150,y+12),"탈락",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color(.6,.62,.72))
+    draw_string(FONT,Vector2(list.position.x+124,y+12),"탈락",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color(.6,.62,.72))
    elif catch:
-    draw_string(FONT,Vector2(list.position.x+118,y+12),"봉인",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("e2b2ff"))
+    draw_string(FONT,Vector2(list.position.x+124,y+12),"봉인",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("e2b2ff"))
    elif p.get("role","")=="daoist":
     var left:=int(p.get("lives",3))
     for k in range(max_lives):
-     heart(Vector2(list.position.x+134+k*19,y+6),6,k<left)
+     heart(Vector2(list.position.x+132+k*19,y+6),6,k<left)
    else:
-    draw_string(FONT,Vector2(list.position.x+140,y+12),"추적자",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("f0a8b8"))
+    draw_string(FONT,Vector2(list.position.x+124,y+12),"추적자",HORIZONTAL_ALIGNMENT_LEFT,-1,11,Color("f0a8b8"))
  # ---------------------------------------------------------------- 중앙 알림 배너
  if banner_alpha>0.01 and banner!="":
   var alpha:=clampf(banner_alpha,0,1)
