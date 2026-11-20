@@ -285,7 +285,11 @@ func run() -> void:
   var cast: bool=rules.skill(imp,Vector2.LEFT,"main")
   print("MIMIC cast=",cast," copy=",imp.copy," remaining=",imp.buff.get("mimic",0.0)-rules.elapsed)
   game.update_avatars();game.update_hud()
-  await frames(12)
+  # 정지 상태에서는 elapsed가 멈춰 이펙트가 얼어붙으므로, 시간만 조금 넘겨 이펙트를 지운다.
+  rules.elapsed+=1.2
+  rules.effects.clear()
+  game.update_avatars();game.update_hud()
+  await frames(4)
   var real_actor: Node=game.avatars.get("human")
   var fake_actor: Node=game.avatars.get(impostor_id)
   print("MIMIC real art=",real_actor.art_id if real_actor!=null else "-"," name=",real_actor.get_node("Name").text if real_actor!=null else "-")
