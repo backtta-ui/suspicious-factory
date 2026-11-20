@@ -20,19 +20,20 @@ const LEGACY_SKINS=[
  {"id":"ink","name":"먹빛 도포","price":750,"color":"9aa0c8","desc":"밤 먹물처럼 깊게 가라앉은 색."},
  {"id":"ember","name":"불꽃 도포","price":900,"color":"ffb27a","desc":"홍련의 불씨를 닮은 주황빛."},
  {"id":"jade","name":"옥빛 도포","price":1100,"color":"a8f0d8","desc":"서원의 이끼 낀 옥빛."}]
+## `gems`는 코인 대신 낼 수 있는 보석 가격이다(2.0.32). 없으면 코인으로만 해금한다.
 const TITLES=[
  {"id":"","name":"칭호 없음","price":0,"desc":"칭호를 비웁니다."},
  {"id":"moon_guard","name":"달빛지기","price":300,"desc":"밤 서원을 지키는 이."},
  {"id":"first_seal","name":"첫 봉인","price":350,"desc":"요괴의 봉인을 처음 막아낸 도사."},
  {"id":"rescue_hand","name":"구조의 손","price":500,"desc":"봉인된 동료를 세 번 구출했습니다."},
- {"id":"shadow_hunter","name":"그림자 사냥꾼","price":700,"desc":"어둠 속 요괴를 쫓는 추적자."},
- {"id":"library_keeper","name":"서고지기","price":800,"desc":"세 한옥의 문을 모두 열어 본 이."}]
+ {"id":"shadow_hunter","name":"그림자 사냥꾼","price":700,"gems":15,"desc":"어둠 속 요괴를 쫓는 추적자."},
+ {"id":"library_keeper","name":"서고지기","price":800,"gems":20,"desc":"세 한옥의 문을 모두 열어 본 이."}]
 const EFFECTS=[
  {"id":"","name":"기본 빛","price":0,"color":"d9c8ff","desc":"캐릭터 고유의 기운."},
- {"id":"gold","name":"금빛 기운","price":600,"color":"ffd98a","desc":"발밑에 금빛 테두리가 돕니다."},
- {"id":"moonlight","name":"월광","price":800,"color":"bcd8ff","desc":"푸른 달빛이 감돕니다."},
- {"id":"foxfire","name":"여우불","price":1000,"color":"c39bff","desc":"보랏빛 도깨비불."},
- {"id":"lotus","name":"연꽃 안개","price":1000,"color":"ffb9cf","desc":"분홍 연꽃 안개."}]
+ {"id":"gold","name":"금빛 기운","price":600,"gems":12,"color":"ffd98a","desc":"발밑에 금빛 테두리가 돕니다."},
+ {"id":"moonlight","name":"월광","price":800,"gems":15,"color":"bcd8ff","desc":"푸른 달빛이 감돕니다."},
+ {"id":"foxfire","name":"여우불","price":1000,"gems":20,"color":"c39bff","desc":"보랏빛 도깨비불."},
+ {"id":"lotus","name":"연꽃 안개","price":1000,"gems":20,"color":"ffb9cf","desc":"분홍 연꽃 안개."}]
 const ACHIEVEMENTS=[
  {"id":"first_match","name":"월하의 첫 경기","desc":"경기를 한 번 끝까지 치릅니다.","stat":"matches","goal":1,"reward":300},
  {"id":"ten_matches","name":"서원의 단골","desc":"경기 10회를 완주합니다.","stat":"matches","goal":10,"reward":700},
@@ -42,11 +43,12 @@ const ACHIEVEMENTS=[
  {"id":"rescue_three","name":"구조의 손길","desc":"봉인된 동료를 3회 구출합니다.","stat":"rescues","goal":3,"reward":500},
  {"id":"door_walker","name":"세 한옥의 문","desc":"한옥 문을 6회 열어 안으로 들어갑니다.","stat":"doors","goal":6,"reward":450},
  {"id":"disguise_five","name":"사물의 달인","desc":"사물 둔갑을 5회 사용합니다.","stat":"disguises","goal":5,"reward":450}]
+## `reward`는 코인, `gems`는 함께 동봉되는 보석이다(2.0.32). 둘 다 수령할 때 실제 지갑에 들어간다.
 const MAILS=[
- {"id":"welcome","title":"월하의 서원에 오신 것을 환영합니다","body":"서원의 밤이 열렸습니다. 세 채의 한옥과 연못, 아치 목교를 걸어 보세요. 앞문과 뒷문으로 드나들 수 있고, 지붕은 들어가면 열립니다.","reward":500},
- {"id":"update_zoom","title":"2.5D 시점·대형 한옥 업데이트","body":"기본 시점을 넓은 2.5D(1.32배)로 잡았습니다. 청월당·서고·별채 세 채를 출입할 수 있고, 실내에서는 바깥이 밤안개로 가려집니다.","reward":300},
- {"id":"market_open","title":"무료 마켓이 문을 열었습니다","body":"결제 없이 경기 보상으로만 도포·칭호·기운을 장착할 수 있습니다. 업적과 우편에서도 재화를 받을 수 있습니다.","reward":400},
- {"id":"lobby_bgm","title":"새 로비 음악","body":"로비에는 자체 합성한 국악풍 밤 음악이 흐릅니다. 모든 음원은 이 게임을 위해 직접 합성했고 외부 저작권 음원을 쓰지 않습니다.","reward":200}]
+ {"id":"welcome","title":"월하의 서원에 오신 것을 환영합니다","body":"서원의 밤이 열렸습니다. 세 채의 한옥과 연못, 아치 목교를 걸어 보세요. 앞문과 뒷문으로 드나들 수 있고, 지붕은 들어가면 열립니다.","reward":500,"gems":2},
+ {"id":"update_zoom","title":"2.5D 시점·대형 한옥 업데이트","body":"기본 시점을 넓은 2.5D(1.32배)로 잡았습니다. 청월당·서고·별채 세 채를 출입할 수 있고, 실내에서는 바깥이 밤안개로 가려집니다.","reward":300,"gems":0},
+ {"id":"market_open","title":"무료 마켓이 문을 열었습니다","body":"결제 없이 경기 보상으로만 도포·칭호·기운을 장착할 수 있습니다. 업적과 우편에서도 재화를 받을 수 있습니다.","reward":400,"gems":1},
+ {"id":"lobby_bgm","title":"새 로비 음악","body":"로비에는 자체 합성한 국악풍 밤 음악이 흐릅니다. 모든 음원은 이 게임을 위해 직접 합성했고 외부 저작권 음원을 쓰지 않습니다.","reward":200,"gems":0}]
 ## 캐릭터 상점: 2.0.28 테스트·체험 단계라 10인 전원이 무료 해금 상태다. 인앱결제·광고 없음.
 const CHARACTERS=[
  {"id":"daoist:woochi","price":0,"tag":"무료"},
@@ -99,3 +101,8 @@ static func achievement(id: String) -> Dictionary:
  for item in ACHIEVEMENTS:
   if item.id==id:return item
  return {}
+## 보석으로도 해금할 수 있는 항목이면 그 가격, 아니면 0(코인 전용).
+static func gem_price(item: Dictionary) -> int:
+ return int(item.get("gems",0))
+static func mail_gems(item: Dictionary) -> int:
+ return int(item.get("gems",0))

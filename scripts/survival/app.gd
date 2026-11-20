@@ -30,11 +30,10 @@ const LOBBY_HOTSPOTS={
  "friends":Rect2(1148,458,674,136),
  "practice":Rect2(1262,641,238,77),
  "settings":Rect2(1554,641,240,77),
- "mail":Rect2(1642,22,60,70),
- "alerts":Rect2(1718,22,54,70),
- "gear":Rect2(1784,18,54,70),
 }
+## 2.0.32: 우편·알림·설정 아이콘은 원화에 그려진 가짜 배지 대신 상단 HUD가 직접 그린다.
 var lobby_hotspots: Dictionary={}
+var lobby_hud: Control
 var storage: RefCounted
 var sound: WooSound
 var layer: CanvasLayer
@@ -130,6 +129,8 @@ var status_message:=""
 var sequence:=0
 var result_seen:=false
 var recorded:=false
+## 2.0.32 매치 보상 내역(코인·보석). 결과 화면이 그대로 보여 준다.
+var last_reward: Dictionary={}
 var practice: Node
 var selection_view: Node
 var settings: Dictionary={"low_effects":false}
@@ -244,6 +245,7 @@ func build(destination: String) -> void:
  if is_instance_valid(sound):sound.set_context("match" if destination=="match" else "menu")
  match destination:
   "title":title_screen()
+  "nickname":nickname_screen()
   "lobby":lobby_screen()
   "rooms":rooms_screen()
   "quick":quick_screen()
@@ -265,7 +267,7 @@ func title_background() -> void:
 func title_screen() -> void:
  title_background()
  # Full-screen native start target; the painted controls stay above it.
- var start:=button("",func()->void:transition("lobby"));full(start,ui)
+ var start:=button("",enter_from_title);full(start,ui)
  for state in ["normal","pressed","hover","hover_pressed"]:start.add_theme_stylebox_override(state,StyleBoxEmpty.new())
  var view:=get_viewport().get_visible_rect().size
  var scale:=minf(view.x/TITLE_IMAGE.x,view.y/TITLE_IMAGE.y)
@@ -280,6 +282,159 @@ func title_screen() -> void:
  ui.add_child(settings)
  settings.position=center-extent/2;settings.size=extent
  ui.move_child(start,0)
+## 타이틀에서 게임 시작: 닉네임을 아직 정하지 않았으면 먼저 닉네임 설정 화면으로 간다.
+func enter_from_title() -> void:
+ transition("lobby" if storage.has_nickname() else "nickname")
+func display_name() -> String:
+ var chosen: String=String(storage.nickname())
+ return chosen if chosen!="" else "나"
+## 2.0.32 최초 진입 닉네임 설정. 2.0.25 시안과 같은 달빛 한옥 + 금테 판 + 금빛 세리프 제목
+## + 먹빛 입력칸 + 금빛 버튼으로 만들고, 친구 방·결과 화면·로비 상단 프로필에 그대로 쓴다.
+var nickname_edit:=false
+var nickname_input: LineEdit
+var nickname_hint: Label
+var nickname_suggest: Array=[]
+const NICKNAME_SUGGESTIONS=["달빛도사","서원지기","밤새는전우치","매화검객","한지붕도사","달그림자","안개술사","종이호랑이"]
+func nickname_screen() -> void:
+ var V=preload("res://scripts/ui/ui_v25.gd")
+ var view:=get_viewport().get_visible_rect().size
+ var s:=clampf(view.y/720.0,.5,3.0)
+ var dw:=view.x/s
+ # 2.0.25 시안과 같은 달빛 한옥 배경(가짜 숫자·레벨이 없는 순수 아트) + 금테 먹색 판.
+ var backdrop:=LArt.Backdrop.new()
+ backdrop.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ backdrop.set("mood",1.18)
+ backdrop.set("shade_strength",0.10)
+ backdrop.set("lattice_on",false)
+ backdrop.set("warm_strength",0.10)
+ backdrop.set("vignette_strength",0.38)
+ backdrop.set("dim_strength",0.42)
+ ui.add_child(backdrop)
+ var dim:=ColorRect.new();dim.color=Color(0.015,0.018,0.045,0.36);dim.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ ui.add_child(dim);dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ var panel_rect:=Rect2((dw-800.0)*.5,70.0,800.0,580.0)
+ var glow:=Panel.new();glow.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ glow.add_theme_stylebox_override("panel",LC.panel_box(Color(0.05,0.055,0.115,0.94),20,Color(0.85,0.72,0.47,0.55),1,Color(0.55,0.45,1.0,0.20),24))
+ ui.add_child(glow);glow.position=panel_rect.position*s;glow.size=panel_rect.size*s
+ var frame:=V.frame(ui,Rect2(Vector2.ZERO,panel_rect.size))
+ frame.name="NicknameFrame";frame.modulate=Color(1,1,1,0.55)
+ frame.position=panel_rect.position*s;frame.size=panel_rect.size*s
+ var trim:=LArt.Filigree.new();trim.color=Color(0.85,0.72,0.47,0.55);trim.arm=30.0
+ ui.add_child(trim);trim.set_anchors_preset(Control.PRESET_TOP_LEFT);trim.position=panel_rect.position*s;trim.size=panel_rect.size*s
+ var center:=panel_rect.position.x+panel_rect.size.x*.5
+ var title_text:="닉네임 바꾸기" if nickname_edit else "도호를 정하세요"
+ var title:=text(title_text,50,LC.GOLD_SOFT);title.add_theme_font_override("font",preload("res://assets/fonts/WooTitle.otf"))
+ title.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ title.position=Vector2(panel_rect.position.x,panel_rect.position.y+44)*s;title.size=Vector2(panel_rect.size.x,64)*s
+ title.add_theme_font_size_override("font_size",maxi(16,int(50*s)))
+ ui.add_child(title)
+ ui.add_child(nickname_rule(Vector2(center-150,panel_rect.position.y+118),Vector2(300,2),s))
+ var lead:="월하의 서원에서 부를 이름입니다. 친구 방과 결과 화면에도 이 이름이 보입니다." if not nickname_edit else "새로 부를 이름을 정해 주세요."
+ var lead_label:=text(lead,17,Color(0.82,0.85,0.95));lead_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ lead_label.position=Vector2(panel_rect.position.x+40,panel_rect.position.y+132)*s;lead_label.size=Vector2(panel_rect.size.x-80,26)*s
+ lead_label.add_theme_font_size_override("font_size",maxi(10,int(17*s)))
+ ui.add_child(lead_label)
+ nickname_input=LineEdit.new()
+ nickname_input.name="NicknameInput"
+ nickname_input.max_length=10
+ nickname_input.placeholder_text="2~10자 · 한글·영문·숫자"
+ nickname_input.text=storage.nickname()
+ nickname_input.alignment=HORIZONTAL_ALIGNMENT_CENTER
+ nickname_input.add_theme_font_override("font",LC.FONT)
+ nickname_input.add_theme_font_size_override("font_size",maxi(12,int(28*s)))
+ nickname_input.add_theme_color_override("font_color",Color("f6efdf"))
+ nickname_input.add_theme_color_override("font_placeholder_color",Color(0.72,0.74,0.86,0.6))
+ nickname_input.add_theme_color_override("caret_color",Color("f2cf8e"))
+ var input_box:=LC.panel_box(Color(0.055,0.045,0.10,0.97),10,Color(0.85,0.72,0.47,0.8),2)
+ input_box.content_margin_left=18;input_box.content_margin_right=18;input_box.content_margin_top=8;input_box.content_margin_bottom=8
+ nickname_input.add_theme_stylebox_override("normal",input_box)
+ var focus_box:=input_box.duplicate() as StyleBoxFlat
+ focus_box.bg_color=Color(0.085,0.070,0.145,0.98)
+ focus_box.border_color=Color(1.0,0.88,0.60,0.95)
+ nickname_input.add_theme_stylebox_override("focus",focus_box)
+ nickname_input.text_submitted.connect(func(_text: String)->void:submit_nickname())
+ ui.add_child(nickname_input)
+ nickname_input.position=Vector2(center-232,panel_rect.position.y+180)*s;nickname_input.size=Vector2(464,68)*s
+ nickname_hint=text("",15,Color("ff9b8a"));nickname_hint.name="NicknameHint";nickname_hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ nickname_hint.position=Vector2(panel_rect.position.x+40,panel_rect.position.y+256)*s;nickname_hint.size=Vector2(panel_rect.size.x-80,24)*s
+ nickname_hint.add_theme_font_size_override("font_size",maxi(9,int(15*s)))
+ ui.add_child(nickname_hint)
+ var pick: Label=text("추천 이름",14,Color(0.76,0.78,0.90));pick.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ pick.position=Vector2(panel_rect.position.x+40,panel_rect.position.y+290)*s;pick.size=Vector2(panel_rect.size.x-80,20)*s
+ pick.add_theme_font_size_override("font_size",maxi(9,int(14*s)))
+ ui.add_child(pick)
+ nickname_suggest=[]
+ var picks: Array=NICKNAME_SUGGESTIONS.duplicate()
+ picks.shuffle()
+ for i in range(3):
+  var suggestion:=String(picks[i])
+  var chip:=nickname_plate(suggestion,func()->void:nickname_input.text=suggestion;nickname_input.grab_focus();nickname_hint.text="",false)
+  chip.name="NicknameSuggestion%d"%i
+  chip.position=Vector2(center-312.0+i*212.0,panel_rect.position.y+316)*s
+  chip.size=Vector2(190,46)*s
+  nickname_suggest.append(chip)
+ var submit:=nickname_plate("이름 정하고 시작하기" if not nickname_edit else "이 이름으로 저장",submit_nickname,true)
+ submit.name="NicknameSubmit"
+ submit.position=Vector2(center-200,panel_rect.position.y+392)*s;submit.size=Vector2(400,64)*s
+ var foot:=text("인게임 이름표는 캐릭터 이름으로 표시됩니다 · 월하의 서원 최초 설정",13,Color(0.70,0.72,0.84))
+ foot.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+ foot.position=Vector2(panel_rect.position.x+40,panel_rect.position.y+482)*s;foot.size=Vector2(panel_rect.size.x-80,20)*s
+ foot.add_theme_font_size_override("font_size",maxi(9,int(13*s)))
+ ui.add_child(foot)
+ if nickname_edit:
+  var cancel:=nickname_plate("취소",func()->void:nickname_edit=false;transition("lobby"),false)
+  cancel.name="NicknameCancel"
+  cancel.position=Vector2(center-90,panel_rect.position.y+512)*s;cancel.size=Vector2(180,40)*s
+ if not OS.has_feature("mobile"):nickname_input.grab_focus()
+
+## 닉네임 화면용 금빛/어두운 9-slice 판 버튼(2.0.25 상점·대기실과 같은 질감).
+func nickname_plate(caption: String,action: Callable,primary: bool) -> WooMobileButton:
+ var V=preload("res://scripts/ui/ui_v25.gd")
+ var node: WooMobileButton=V.PlateButton.new()
+ node.text=caption
+ node.kind="gold" if primary else "dark"
+ node.font_size=22 if primary else 17
+ node.custom_minimum_size=Vector2.ZERO
+ node.name="NicknamePlate"
+ node.allowed=func()->bool:return not changing and modal==null
+ node.pressed.connect(func()->void:
+  if node.usable():sound.play_clip("button");action.call())
+ ui.add_child(node)
+ node.custom_minimum_size=Vector2.ZERO
+ button_feel(node)
+ return node
+
+## 화면 제목 아래 금빛 장식선.
+func nickname_rule(at: Vector2,extent: Vector2,scale_value: float) -> Control:
+ var node:=Control.new()
+ node.mouse_filter=Control.MOUSE_FILTER_IGNORE
+ node.position=at*scale_value
+ node.size=extent*scale_value
+ var draw:=func()->void:
+  var y:=node.size.y*.5
+  node.draw_line(Vector2(0,y),Vector2(node.size.x,y),Color(0.85,0.72,0.47,0.55),1.6,true)
+  LC.diamond(node,Vector2(node.size.x*.5,y),4.0*scale_value,Color(0.85,0.72,0.47,0.8))
+ node.draw.connect(draw)
+ return node
+
+func submit_nickname() -> void:
+ if nickname_input==null:return
+ var message:=Storage.nickname_error(nickname_input.text)
+ if message!="":
+  nickname_hint.text=message
+  nickname_input.grab_focus();return
+ storage.set_nickname(nickname_input.text)
+ if storage.save()!=OK:notice("닉네임을 저장하지 못했습니다.");return
+ # 내 플레이어 표시 이름(친구 방·결과 화면)도 새 닉네임으로 맞춘다.
+ if rules!=null and rules.players.has("human"):rules.players.human.name=display_name()
+ nickname_edit=false
+ transition("lobby")
+func open_nickname_edit() -> void:
+ if changing or modal!=null:return
+ nickname_edit=true
+ if screen=="lobby":transition("nickname")
+ else:
+  close_popup();build("nickname")
 func lobby_background() -> void:
  var night:=ColorRect.new();night.color=Color(.19,.14,.28);night.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(night,ui)
  var art:=TextureRect.new();art.texture=load(LOBBY_ART);art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;art.mouse_filter=Control.MOUSE_FILTER_IGNORE;full(art,ui)
@@ -302,41 +457,67 @@ func lobby_layout() -> void:
  for key in lobby_hotspots:
   var target: WooMobileButton=lobby_hotspots[key]
   if not is_instance_valid(target):continue
+  # 우편·알림·설정은 상단 HUD가 스스로 배치한다.
+  if not LOBBY_HOTSPOTS.has(key):continue
   var rect: Rect2=LOBBY_HOTSPOTS[key]
   target.position=origin+rect.position*scale;target.size=rect.size*scale
+ if is_instance_valid(lobby_hud):lobby_hud.place_hud(origin,scale)
 func lobby_screen() -> void:
  lobby_hotspots={}
+ lobby_hud=null
  lobby_background()
  # 2.0.29: 그림의 캐릭터 메달을 지우고 도감·업적·상점 세 칸만 같은 간격으로 남겼다.
  lobby_hotspot("quick","빠른 매치",open_quick)
  lobby_hotspot("friends","친구와 함께",func()->void:transition("friends"))
  lobby_hotspot("practice","연습 (봇)",start_practice_match)
  lobby_hotspot("settings","설정",show_settings)
- lobby_hotspot("gear","설정",show_settings)
  lobby_hotspot("codex","도감",func()->void:open_codex("all"))
  lobby_hotspot("achievements","업적",func()->void:transition("achievements"))
  # 그림에는 상점으로 그려져 있고, 화면은 무료 마켓으로 연결된다.
  lobby_hotspot("shop","마켓",func()->void:transition("market"))
- lobby_hotspot("mail","우편",func()->void:transition("mail"))
- lobby_hotspot("alerts","알림",func()->void:transition("alerts"))
- lobby_badges()
+ # 2.0.32: 원화 위에 박혀 있던 가짜 지갑·LV·빨간 점 배지를 반투명 금테 HUD로 덮고
+ # 그 자리에 storage.gd의 실제 값(초상화·이름·칭호·코인·보석·우편/알림 배지)을 띄운다.
+ lobby_hud=preload("res://scripts/ui/lobby_hud.gd").new()
+ lobby_hud.name="LobbyHud"
+ ui.add_child(lobby_hud)
+ lobby_hud.setup(self)
+ lobby_hotspots["mail"]=lobby_hud.mail_button
+ lobby_hotspots["alerts"]=lobby_hud.bell_button
+ lobby_hotspots["gear"]=lobby_hud.gear_button
  lobby_layout()
  if not ui.resized.is_connected(lobby_layout):ui.resized.connect(lobby_layout)
-## 로비 위에 지갑·칭호·안읽은 우편/알림 수를 얹어 실제 상태를 보여준다.
-func lobby_badges() -> void:
- var bar:=HBoxContainer.new();bar.name="LobbyBadges";bar.add_theme_constant_override("separation",10);bar.mouse_filter=Control.MOUSE_FILTER_IGNORE
- ui.add_child(bar)
- bar.set_anchors_and_offsets_preset(Control.PRESET_BOTTOM_LEFT)
- bar.offset_left=150;bar.offset_top=-58;bar.offset_bottom=-24
- for spec in [["코인 %d"%int(storage.data.coins),"f4d98a"],["보석 %d"%int(storage.data.gems),"9fe8ff"],["칭호 · "+Market.title(storage.equipped("title")).name,"e8dcc0"]]:
-  var label:=text(String(spec[0]),16,Color(String(spec[1])));pill(label,Color(.03,.04,.09,.62),10);bar.add_child(label)
- var unread:=0
+## 지갑·배지가 실제 storage 값으로 맞도록 HUD만 다시 그린다.
+func refresh_lobby_hud() -> void:
+ if is_instance_valid(lobby_hud):lobby_hud.refresh()
+## 우편 배지: 읽지 않았거나 보상을 받지 않은 편지 수(전부 확인·수령하면 0).
+func unread_mail_count() -> int:
+ var count:=0
  for mail in Market.MAILS:
-  if not (storage.data.mail.read as Array).has(String(mail.id)):unread+=1
- var alerts:=0
+  var id:=String(mail.id)
+  if not (storage.data.mail.read as Array).has(id) or not (storage.data.mail.claimed as Array).has(id):count+=1
+ return count
+## 알림 배지: 확인하지 않은 공지 수.
+func unread_alert_count() -> int:
+ var count:=0
  for alert in Market.ALERTS:
-  if not (storage.data.alerts.read as Array).has(String(alert.id)):alerts+=1
- var notice:=text("우편 %d · 알림 %d" % [unread,alerts],16,Color("ffd9b0"));pill(notice,Color(.03,.04,.09,.62),10);bar.add_child(notice)
+  if not (storage.data.alerts.read as Array).has(String(alert.id)):count+=1
+ return count
+## 로비 지갑의 + 버튼: 결제가 아니라 게임 안 획득처를 알려 준다.
+func earn_guide(kind: String) -> void:
+ if changing:return
+ var gem:=kind=="gem"
+ var box:=popup("보석 획득처" if gem else "코인 획득처")
+ var lead:=text("결제·광고 없이 게임 안에서만 모읍니다. 지금 값은 실제 지갑 값입니다.",17,Color(.86,.88,.96))
+ lead.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(lead)
+ var lines:=(["· 경기 승리 보너스","· 첫 경기·첫 승리 보너스","· 봉인 3회 보너스","· 우편 동봉 보상"] if gem else ["· 경기 참가·봉인·구출·생존 보상","· 경기 승리 보너스","· 업적 달성 보상","· 우편 동봉 보상"])
+ for line in lines:
+  box.add_child(text(String(line),17,Color(.93,.95,1.0)))
+ box.add_child(text("현재 보유: 코인 %s · 보석 %s"%[comma(int(storage.data.coins)),comma(int(storage.data.gems))],20,D.GOLD))
+ var row:=HBoxContainer.new();row.add_theme_constant_override("separation",10);box.add_child(row)
+ row.add_child(button("업적 보기",func()->void:close_popup();transition("achievements"),true))
+ row.add_child(button("우편 보기",func()->void:close_popup();transition("mail")))
+ row.add_child(button("상점 열기",func()->void:close_popup();transition("market")))
+ row.add_child(button("닫기",close_popup))
 func rooms_screen() -> void:
  var box:=page("게임 방 · 로컬 테스트 방만 표시")
  var list:=panel(box);list.size_flags_vertical=Control.SIZE_EXPAND_FILL
@@ -365,11 +546,11 @@ func create_room(name_value: String,count: int,fill_bots: bool,code: String="",y
  room_code=used_code;remember_code(used_code)
  setup_participants();transition("room")
 func setup_participants(seed_value: int=0) -> void:
- rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.preferred_role=preferred_role;rules.add("human","나",storage.data.daoist,storage.data.yokai)
+ rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.preferred_role=preferred_role;rules.add("human",display_name(),storage.data.daoist,storage.data.yokai)
  if room.fill:
   var daoists: Array=C.catalog("daoist");var yokai: Array=C.catalog("yokai")
   for i in range(1,room.count):rules.add("bot-%d"%i,("요괴 %d" if i<3 else "도사 %d")%i,String(daoists[i%daoists.size()].id),String(yokai[i%yokai.size()].id))
- result_seen=false;recorded=false;spectate="human";fixed_clock=0;bot_clock=0
+ result_seen=false;recorded=false;last_reward={};spectate="human";fixed_clock=0;bot_clock=0
 ## 카드·배너용 둥근 테두리 박스(내용 여백은 카드 크기에 맞춰 작게).
 func box_style(fill: Color,radius: int,border: Color,width: int=1) -> StyleBoxFlat:
  var style:=StyleBoxFlat.new();style.bg_color=fill;style.border_color=border;style.set_border_width_all(width);style.set_corner_radius_all(radius)
@@ -1151,6 +1332,8 @@ func settings_row(box: VBoxContainer,title_value: String,detail: String) -> HBox
  return row
 func show_settings() -> void:
  var box:=popup("설정 · 소리와 화면")
+ var nickname_row:=settings_row(box,"닉네임",display_name())
+ nickname_row.add_child(button("바꾸기",open_nickname_edit))
  for spec in [["배경음악","music","music_mute","로비·경기 음악"],["효과음","sfx","sfx_mute","버튼·도술 효과음"]]:
   var row:=settings_row(box,String(spec[0]),String(spec[3]))
   var slider:=HSlider.new();slider.min_value=0;slider.max_value=1;slider.step=.05;slider.value=storage.data[spec[1]];slider.custom_minimum_size=Vector2(280,44);style_slider(slider);row.add_child(slider)
@@ -1204,11 +1387,24 @@ func spectator_menu() -> void:
 func result_screen() -> void:
  if not recorded:recorded=true;record_match()
  var box:=page(("승리" if rules.winner==rules.players.human.role else "패배")+" · "+("도사팀 승리 / 요괴팀 패배" if rules.winner=="daoist" else "요괴팀 승리 / 도사팀 패배"))
- var center:=HBoxContainer.new();center.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(center);portrait(center,rules.players.human.character,Vector2(370,330))
- var stats:=panel(center);stats.add_child(text("월하의 서원 · %02d:%02d"%[int(rules.elapsed)/60,int(rules.elapsed)%60],27,D.GOLD))
+ var center:=HBoxContainer.new();center.size_flags_vertical=Control.SIZE_SHRINK_CENTER;center.add_theme_constant_override("separation",18);box.add_child(center);portrait(center,rules.players.human.character,Vector2(340,320))
+ var stats:=panel(center);stats.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ if stats.get_parent() is Control:(stats.get_parent() as Control).size_flags_vertical=Control.SIZE_SHRINK_CENTER
+ stats.add_child(text("월하의 서원 · %02d:%02d"%[int(rules.elapsed)/60,int(rules.elapsed)%60],27,D.GOLD))
  var me: Dictionary=rules.players.human
- stats.add_child(text("내 역할: "+("도사" if me.role=="daoist" else "요괴")+(" · 목숨 %s"%hearts(int(me.get("lives",rules.LIVES))) if me.role=="daoist" else ""),24));stats.add_child(text("봉인 %d회 · 구조 %d회 · 생존 %.0f초"%[me.stats.seals,me.stats.rescues,me.alive_seconds],22))
- for p in rules.players.values():stats.add_child(text(p.name+" · "+("도사" if p.role=="daoist" else "요괴")+" · "+("탈락" if p.eliminated else "생존"),18))
+ stats.add_child(text(display_name()+" · "+("도사" if me.role=="daoist" else "요괴")+(" · 목숨 %s"%hearts(int(me.get("lives",rules.LIVES))) if me.role=="daoist" else ""),24));stats.add_child(text("봉인 %d회 · 구조 %d회 · 생존 %.0f초"%[me.stats.seals,me.stats.rescues,me.alive_seconds],22))
+ # 2.0.32 이번 경기 보상: 실제 storage에 지급된 코인·보석을 그대로 보여 준다.
+ var reward: Dictionary=last_reward if not last_reward.is_empty() else match_reward()
+ var reward_title:=text("이번 경기 보상",23,Color("ffe6b4"));stats.add_child(reward_title)
+ var pocket:=HBoxContainer.new();pocket.name="MatchReward";pocket.add_theme_constant_override("separation",12);stats.add_child(pocket)
+ var coin_chip:=text("+%s 코인"%comma(int(reward.get("coins",0))),26,Color("ffd98a"));coin_chip.name="MatchRewardCoins";pill(coin_chip,Color(.20,.14,.04,.9),12);pocket.add_child(coin_chip)
+ var gem_chip:=text("+%s 보석"%comma(int(reward.get("gems",0))),26,Color("d9b8ff"));gem_chip.name="MatchRewardGems";pill(gem_chip,Color(.12,.07,.20,.9),12);pocket.add_child(gem_chip)
+ var detail:=" · ".join(PackedStringArray(reward.get("lines",[])))
+ var detail_label:=text(detail,15,Color(.84,.86,.95));detail_label.name="MatchRewardDetail";detail_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;detail_label.custom_minimum_size=Vector2(440,0);detail_label.size_flags_horizontal=Control.SIZE_EXPAND_FILL;stats.add_child(detail_label)
+ var note_label:=text("획득한 재화는 로비 상단 지갑과 상점에 바로 반영됩니다.",14,Color(.78,.80,.92));stats.add_child(note_label)
+ var daoist_alive: int=rules.players.values().filter(func(p: Dictionary)->bool:return String(p.role)=="daoist" and not p.eliminated).size()
+ var yokai_alive: int=rules.players.values().filter(func(p: Dictionary)->bool:return String(p.role)=="yokai" and not p.eliminated).size()
+ stats.add_child(text("도사 생존 %d · 요괴 생존 %d · 전체 %d인"%[daoist_alive,yokai_alive,daoist_alive+yokai_alive],16,Color(.80,.82,.92)))
  var row:=HBoxContainer.new();box.add_child(row);row.add_child(button("재경기",func()->void:cleanup_match();setup_participants();transition("room"),true));row.add_child(button("메인 로비",func()->void:cleanup_match();room={};transition("lobby")))
 func enter_practice() -> void:
  if screen!="lobby" or changing:return
@@ -1641,26 +1837,31 @@ func refresh_shop() -> void:
  else:market_screen()
 
 ## 스킨·칭호·기운 해금/장착. 테스트와 화면이 같은 경로를 쓴다.
-func market_buy(item: Dictionary,kind: String) -> void:
+func market_buy(item: Dictionary,kind: String,currency: String="coin") -> void:
  var id: String=String(item.get("id",""))
  if storage.equipped(kind)==id:
   storage.equip(kind,"" if kind!="skin" else "default")
-  storage.save();refresh_shop();return
+  storage.save();refresh_shop();refresh_lobby_hud();return
  if not storage.owns(id):
-  var price:=int(item.get("price",0))
-  if price>int(storage.data.coins):notice("코인이 부족합니다. 업적·우편 보상으로 모아 주세요.");return
-  storage.add_coins(-price);storage.own(id)
+  var gem_price:=Market.gem_price(item)
+  if currency=="gem" and gem_price>0:
+   if not storage.spend_gems(gem_price):notice("보석이 부족합니다. 경기 승리·우편 보상으로 모아 주세요.");return
+  else:
+   var price:=int(item.get("price",0))
+   if not storage.spend_coins(price):notice("코인이 부족합니다. 경기·업적·우편 보상으로 모아 주세요.");return
+  storage.own(id)
  storage.equip(kind,id)
  if storage.save()!=OK:notice("장착 상태를 저장하지 못했습니다.")
  refresh_shop()
+ refresh_lobby_hud()
 
 ## 캐릭터 해금만 한다(2.0.22 상점). 경기 수락 후 캐릭터 선택창에서 고르므로
 ## 상점 해금은 대표 캐릭터를 바꾸지 않는다.
 func shop_unlock_character(id: String) -> void:
  if storage.owns_character(id):refresh_shop();return
  var price:=Market.character_price(id)
- if price>int(storage.data.coins):notice("코인이 부족합니다. 업적·우편 보상으로 모아 주세요.");return
- storage.add_coins(-price);storage.own_character(id)
+ if not storage.spend_coins(price):notice("코인이 부족합니다. 경기·업적·우편 보상으로 모아 주세요.");return
+ storage.own_character(id)
  if storage.save()!=OK:notice("캐릭터를 저장하지 못했습니다.")
  refresh_shop()
 
@@ -1669,8 +1870,8 @@ func shop_buy_character(id: String) -> void:
  var team:=String(C.find(id).get("team","daoist"))
  var price:=Market.character_price(id)
  if not storage.owns_character(id):
-  if price>int(storage.data.coins):notice("코인이 부족합니다. 업적·우편 보상으로 모아 주세요.");return
-  storage.add_coins(-price);storage.own_character(id)
+  if not storage.spend_coins(price):notice("코인이 부족합니다. 경기·업적·우편 보상으로 모아 주세요.");return
+  storage.own_character(id)
  storage.data[team]=id
  if storage.save()!=OK:notice("캐릭터를 저장하지 못했습니다.")
  refresh_shop()
@@ -1683,8 +1884,11 @@ func claim_achievement(item: Dictionary) -> void:
  var claimed: Array=storage.data.achievements.claimed
  if claimed.has(String(item.id)):return
  if storage.stat(String(item.stat))<int(item.goal):return
- claimed.append(String(item.id));storage.add_coins(int(item.reward))
+ claimed.append(String(item.id))
+ # 업적 보상도 코인·보석 모두 실제 지갑에 합산하고 바로 저장한다(중복 수령 불가).
+ storage.grant(int(item.reward),int(item.get("gems",0)))
  if storage.save()!=OK:notice("보상을 저장하지 못했습니다.")
+ refresh_lobby_hud()
  if is_instance_valid(achievements_view):achievements_view.refresh()
  else:achievements_screen()
 
@@ -1703,7 +1907,14 @@ func open_mail(mail: Dictionary) -> void:
 func claim_mail(mail: Dictionary) -> void:
  var claimed: Array=storage.data.mail.claimed
  if claimed.has(String(mail.id)):return
- claimed.append(String(mail.id));storage.add_coins(int(mail.reward));storage.save()
+ claimed.append(String(mail.id))
+ # 보상을 받은 편지는 읽은 것으로도 남긴다(배지는 확인·수령이 모두 끝나야 사라진다).
+ var read: Array=storage.data.mail.read
+ if not read.has(String(mail.id)):read.append(String(mail.id))
+ # 우편 동봉 보상(코인 + 보석)을 실제 지갑에 넣고 저장한다. 받은 편지는 다시 수령되지 않는다.
+ storage.grant(int(mail.reward),Market.mail_gems(mail))
+ if storage.save()!=OK:notice("보상을 저장하지 못했습니다.")
+ refresh_lobby_hud()
  refresh_correspondence()
 
 ## 우편함의 모든 동봉 보상을 한 번에 수령한다(이미 받은 것은 건너뜀).
@@ -1731,23 +1942,65 @@ func read_alert(alert: Dictionary) -> void:
 
 func refresh_correspondence() -> void:
  if is_instance_valid(correspondence):correspondence.refresh()
+ refresh_lobby_hud()
 
 func open_alert(alert: Dictionary) -> void:
  read_alert(alert)
  refresh_correspondence()
 
 ## 경기 종료 기록: 업적 진행도와 코인 보상을 실제 저장에 반영한다.
+## 2.0.32 매치 보상 내역. 결제 없이 경기만으로 코인·보석을 얻는다(레벨·경험치 없음).
+## 승리/패배 · 생존/봉인/구조 성과 · 첫 경기/첫 승리 보너스로 계산한다.
+func match_reward() -> Dictionary:
+ var me: Dictionary=rules.players.get("human",{}) if rules!=null else {}
+ var win: bool=not me.is_empty() and rules!=null and rules.winner==me.role
+ var stats: Dictionary=me.get("stats",{}) if not me.is_empty() else {}
+ var seals:=int(stats.get("seals",0))
+ var rescues:=int(stats.get("rescues",0))
+ var first_match: bool=storage.stat("matches")==0
+ var first_win: bool=win and storage.stat("wins")==0
+ var coins:=120
+ var gems:=0
+ var lines: Array=["참가 보상 120"]
+ if seals>0:
+  coins+=seals*40;lines.append("봉인 %d회 +%d"%[seals,seals*40])
+ if rescues>0:
+  coins+=rescues*30;lines.append("구출 %d회 +%d"%[rescues,rescues*30])
+ if win:
+  coins+=80;lines.append("승리 +80")
+  gems+=2;lines.append("승리 보석 +2")
+ if not me.is_empty() and String(me.get("role",""))=="daoist" and not bool(me.get("eliminated",false)):
+  coins+=20;lines.append("끝까지 생존 +20")
+ if first_match:
+  gems+=3;lines.append("첫 경기 보너스 보석 +3")
+ if first_win:
+  gems+=2;lines.append("첫 승리 보너스 보석 +2")
+ if seals>=3:
+  gems+=1;lines.append("봉인 3회 보너스 보석 +1")
+ return {"coins":coins,"gems":gems,"lines":lines,"win":win,"first_match":first_match,"first_win":first_win}
 func record_match() -> void:
  if rules==null or rules.players.is_empty():return
+ var reward:=match_reward()
  storage.bump("matches")
  var me: Dictionary=rules.players.get("human",{})
  if not me.is_empty() and rules.winner==me.role:storage.bump("wins")
  if not me.is_empty():
   storage.data.stats.seals=storage.stat("seals")+int(me.stats.get("seals",0))
   storage.data.stats.rescues=storage.stat("rescues")+int(me.stats.get("rescues",0))
- var reward:=120+40*int(me.stats.get("seals",0)) if not me.is_empty() else 120
- storage.add_coins(reward)
+ last_reward=reward
+ storage.grant(int(reward.coins),int(reward.gems))
  storage.save()
+ refresh_lobby_hud()
+## 천 단위 콤마(로비 HUD·결과 화면 공통).
+func comma(value: int) -> String:
+ var text:=str(absi(value))
+ var out:=""
+ var count:=0
+ for i in range(text.length()-1,-1,-1):
+  out=text[i]+out
+  count+=1
+  if count%3==0 and i>0:out=","+out
+ return ("-" if value<0 else "")+out
 ## 2.0.27 전체 지도: 어떤 화면비(20:9 포함)에서도 지도·닫기 버튼이 화면 안에 있어야 한다.
 ## 팝업의 세로 자동 배치 대신, 화면 크기에 맞춰 지도 한 변을 계산해 직접 배치한다.
 func show_map() -> void:

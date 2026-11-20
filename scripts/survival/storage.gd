@@ -2,6 +2,7 @@ extends RefCounted
 const PATH="user://survival_v13.json"
 var error:=""
 var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi","music":.7,"sfx":.8,"music_mute":false,"sfx_mute":false,"vibration":false,"quality":"보통","sensitivity":1.0,
+ "nickname":"",
  "coins":0,"gems":0,
  "stats":{"matches":0,"wins":0,"seals":0,"rescues":0,"doors":0,"disguises":0},
  "market":{"owned":["default"],"equipped":{"skin":"default","title":"","effect":""}},
@@ -17,6 +18,12 @@ func _init() -> void:
   if raw is Dictionary:
    for key in data:
     if not raw.has(key):continue
+    # 2.0.32: JSON은 모든 숫자를 실수로 읽어 오므로, 정수 기본값(코인·보석)이
+    # 타입 불일치로 버려져 재실행 시 0이 되던 문제를 바로잡는다.
+    if data[key] is int and raw[key] is float:
+     data[key]=int(raw[key]);continue
+    if data[key] is float and raw[key] is int:
+     data[key]=float(raw[key]);continue
     if typeof(raw[key])!=typeof(data[key]):continue
     if raw[key] is Dictionary:
      # A save written before a new field existed keeps the new default for it.
@@ -37,6 +44,8 @@ func _init() -> void:
    if not owned.has(id):owned.append(id)
  data.characters.owned=owned
  data.music=clampf(data.music,0,1);data.sfx=clampf(data.sfx,0,1);data.sensitivity=clampf(data.sensitivity,.6,1.5)
+ # 2.0.32: 재화는 정수로만 다룬다(JSON이 실수로 읽어 와도 지갑·상점 표시가 흔들리지 않게).
+ data.coins=maxi(0,int(data.coins));data.gems=maxi(0,int(data.gems))
 func backup_legacy() -> void:
  var dir:="user://legacy-backup-v13"
  if FileAccess.file_exists(dir+"/manifest.json"):return
@@ -56,8 +65,41 @@ func save() -> Error:
  f.store_string(JSON.stringify(data));f.flush();var result:=f.get_error();f.close()
  if result!=OK:return result
  return DirAccess.rename_absolute(PATH+".tmp",PATH)
+## 2.0.32 닉네임: 최초 실행 시 화면에서 정하고, 친구 방·결과 화면·로비 상단 프로필에 쓴다.
+## 인게임 필드 이름표는 인간둔갑 위장을 위해 기존처럼 캐릭터 이름을 쓴다.
+func nickname() -> String:return String(data.get("nickname","")).strip_edges()
+func has_nickname() -> bool:return nickname().length()>0
+func set_nickname(value: String) -> void:data.nickname=nickname_rules(value)
+## 검증을 통과한 닉네임을 돌려준다(공백 제거).
+static func nickname_rules(value: String) -> String:return value.strip_edges()
+## 닉네임 검증: 2~10자, 한글·영문·숫자만. 문제가 있으면 안내 문구를, 없으면 ""를 돌려준다.
+static func nickname_error(value: String) -> String:
+ var text:=value.strip_edges()
+ if text.length()<2:return "닉네임은 2자 이상이어야 합니다."
+ if text.length()>10:return "닉네임은 10자까지 정할 수 있습니다."
+ for index in range(text.length()):
+  var code:=text.unicode_at(index)
+  var hangul: bool=(code>=0xAC00 and code<=0xD7A3) or (code>=0x3131 and code<=0x318E)
+  var latin: bool=(code>=0x41 and code<=0x5A) or (code>=0x61 and code<=0x7A)
+  var digit: bool=code>=0x30 and code<=0x39
+  if not (hangul or latin or digit):return "공백과 특수문자는 쓸 수 없습니다. 한글·영문·숫자로 정해 주세요."
+ return ""
 ## 마켓·업적·우편에서 쓰는 재화/통계 갱신. 저장은 호출한 쪽이 결정한다.
+## 2.0.32: 이 게임에는 레벨·경험치가 없다. 재화는 코인과 보석 두 가지뿐이다.
+func coins() -> int:return int(data.coins)
+func gems() -> int:return int(data.gems)
 func add_coins(value: int) -> void:data.coins=maxi(0,int(data.coins)+value)
+func add_gems(value: int) -> void:data.gems=maxi(0,int(data.gems)+value)
+## 잔액이 모자라면 아무것도 바꾸지 않고 false를 돌려준다(상점·해금 공통).
+func spend_coins(value: int) -> bool:
+ if value<0 or int(data.coins)<value:return false
+ data.coins=int(data.coins)-value;return true
+func spend_gems(value: int) -> bool:
+ if value<0 or int(data.gems)<value:return false
+ data.gems=int(data.gems)-value;return true
+## 경기·업적·우편 보상 지급을 한 곳에서 처리한다.
+func grant(coin_amount: int,gem_amount: int=0) -> void:
+ add_coins(coin_amount);add_gems(gem_amount)
 func stat(key: String) -> int:return int((data.stats as Dictionary).get(key,0))
 func bump(key: String,value: int=1) -> void:data.stats[key]=stat(key)+value
 func owns(item: String) -> bool:return (data.market.owned as Array).has(item)
