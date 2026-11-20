@@ -191,7 +191,7 @@ func draw_zone_fog(node: Node2D) -> void:
    var a:=clock*.5+float(k)*TAU/7.0
    var at: Vector2=g.smoke_pos+Vector2.from_angle(a)*(float(g.smoke_radius)*.45)
    for j in range(3):
-    node.draw_circle(at+Vector2(sin(clock+k+j)*12.0,cos(clock*1.2+k-j)*9.0),float(g.smoke_radius)*(.28+.06*j),Color(.78,.76,.82,.075))
+    node.draw_circle(at+Vector2(sin(clock+k+j)*12.0,cos(clock*1.2+k-j)*9.0),float(g.smoke_radius)*(.28+.06*j),Color(.52,.52,.58,.045))
   node.draw_arc(g.smoke_pos,float(g.smoke_radius),0,TAU,44,Color(.85,.82,.9,.28),3.0,false)
   countdown_tag(node,g.smoke_pos-Vector2(0,float(g.smoke_radius)+14),float(g.smoke_until)-rules.elapsed,"환풍기 연기",Color(.9,.88,.95))
  if g.speaker_active():
