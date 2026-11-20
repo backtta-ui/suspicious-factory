@@ -677,10 +677,16 @@ const FOE_DEEP=Color("2c1216")
 func _text_width(text_value: String,extent: float) -> float:
 	return FONT.get_string_size(text_value,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(9,int(extent*s))).x/s
 
-## 라벨이 실제로 차지할 폭. 측정값과 라벨 자신의 최소 폭 중 큰 값을 쓴다.
-## (CI·기기에서 폰트 폴백이 달라 측정값이 작게 나와도 옆 라벨과 겹치지 않게)
-func _fit_width(node: Label,text_value: String,extent: float) -> float:
-	return maxf(_text_width(text_value,extent),node.get_minimum_size().x/maxf(s,.001))
+## 라벨이 실제로 차지할 폭(디자인 좌표). 폰트 측정값과 글자 수 기반 추정값 중 큰 쪽을 쓴다.
+## 기기·CI에서 폰트 폴백이 달라 측정값이 작게 나와도 옆 라벨과 겹치지 않게 하기 위해서다.
+func _fit_width(_node: Label,text_value: String,extent: float) -> float:
+	var estimate:=0.0
+	for i in range(text_value.length()):
+		var code: int=text_value.unicode_at(i)
+		if code==32:estimate+=extent*.34
+		elif code>0x2E80:estimate+=extent
+		else:estimate+=extent*.60
+	return maxf(_text_width(text_value,extent),estimate)
 
 func _footer() -> void:
 	var area:=Rect2(MARGIN,570,width-MARGIN*2,132)
