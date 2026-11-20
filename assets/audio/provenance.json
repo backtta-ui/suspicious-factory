@@ -1,7 +1,7 @@
 {
   "dialogue.wav": {
-    "sha256": "b0c8c002339294eb8a028b4f29ddaeea57632bd2c1c9797f8f49d96768108fb3",
-    "bytes": 20524
+    "sha256": "6ee2135f70fa0bf17300580d306c7442362c87a4707091287188bb31843fc4fd",
+    "bytes": 12392
   },
   "moonlit_plaza.ogg": {
     "sha256": "4a464fef9b6b5be067bc011b27696eb586bdf55324ac06acd4ffff74fd02448b",
@@ -20,16 +20,16 @@
     "bytes": 15404
   },
   "spell.wav": {
-    "sha256": "c1cff27b8c47cb507b853abf7fd0b9783512dfee3a9bc7195dcfe110e5d09d36",
-    "bytes": 54444
+    "sha256": "df29419250281e7f5b769d5d45ac6bce9f8d1d2394696e3eb123f2847577e1c9",
+    "bytes": 37528
   },
   "step.wav": {
     "sha256": "b5c2d77b7673faebb1706629af587b4fd230821314073fcdb30615246b4debd2",
     "bytes": 15404
   },
   "button.wav": {
-    "sha256": "fb20b8734334ad82d4476389b715d5ef5e17c79928aa56be7fbd8e5bb6c6b059",
-    "bytes": 11564
+    "sha256": "f8dfebd615df438ca1a87d7ec9ec736639579f4a9cc8eb9c1678b0999f350d74",
+    "bytes": 5336
   },
   "jump.wav": {
     "sha256": "a37a961732a4c0034034fc2d121bcaa86a8b238ec41568f6564598b579850b83",
@@ -40,23 +40,31 @@
     "bytes": 24298
   },
   "seal.wav": {
-    "sha256": "6ec650416d63c97c7de0e667a68c28fc2ff18e71f9c4db6e811ead679dcaaea6",
-    "bytes": 48554
+    "sha256": "9cf9adfdad1f4b41526a693d469e1defc3422e62700a5546af4e6ab4986e5db9",
+    "bytes": 66194
   },
   "rescue.wav": {
-    "sha256": "a0b17386f9b5b71ad765ea3b79110c3e2588caf372e5cc0fff55ec3e4e9d2083",
-    "bytes": 39734
+    "sha256": "6cdceed77a882df3943572704f2b8637162106db441e21d934e347ab9ea26cb6",
+    "bytes": 57374
   },
   "transform.wav": {
-    "sha256": "d301e1cef945215a3e096243d75dda2e862818bd917348a15c7616faf0761d94",
-    "bytes": 26504
+    "sha256": "427255fffbdcc0592d58e2bf9c7e828c9d637727ee38e2c480e26545f502b5bb",
+    "bytes": 30912
   },
   "seowon_ingame.wav": {
-    "sha256": "813d2e8d0883821d497e4895f1ff0520359c8033b0a9b5ac62b496724e1c5fe6",
-    "bytes": 1008044
+    "sha256": "81eee57f5cf818ce7f5978b39432e766ee87f2fbb9a340366f75e346a070f2ac",
+    "bytes": 1114148
   },
   "lobby_night.wav": {
     "sha256": "3c76b1ec369b719c7167608ac828fcdc3d9e21754630e5a86f9d4798e857572f",
     "bytes": 1282952
+  },
+  "attack.wav": {
+    "sha256": "153649ec4c4ecde8a5340993d70a5d029720c77740085b3e8162c86d52b7007f",
+    "bytes": 9746
+  },
+  "hit.wav": {
+    "sha256": "6e986726e586978dc78523348a5c90649aa79d1d26ed60ebf1fad7f80928815d",
+    "bytes": 13274
   }
 }

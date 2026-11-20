@@ -19,6 +19,14 @@ const ULT_RATE=1.55
 ## 기력 회복 구슬 상태({p, ready}). ready<=elapsed 이면 다시 생긴 구슬이다.
 var orbs: Array=[]
 var selection_left:=25.0
+## 2.0.30 도감 설명과 실제 판정을 맞춘 반경 값(문구는 characters.gd SKILLS가 권한자).
+const FOXSCENT_RADIUS=220.0
+const MOUNTAIN_RADIUS=320.0
+const GOBLINFEST_RADIUS=200.0
+const DOUSE_RADIUS=300.0
+## 인간둔갑이 겉모습을 훔칠 수 있는 거리(도감: "가까이 있는 도사").
+const MIMIC_RADIUS=420.0
+const SENSE_RADIUS=420.0
 ## 자동 배정이 고를 수 있는 캐릭터 목록(참가자별). 비어 있으면 전체 로스터.
 var restricted: Dictionary={}
 func restrict_choices(id: String,ids: Array) -> void:
@@ -48,6 +56,12 @@ var trail_all_until:=0.0
 var lantern_until: Dictionary={}
 ## 2.0.28 도깨비장난으로 옮겨 눕힌 사물(사물 인덱스 → 되돌아오는 시각).
 var prop_flips: Dictionary={}
+## 2.0.30 도깨비장난 지대: 이 안에서는 둔갑이 풀리고 새 둔갑도 막힌다(수색용 장판).
+var mischief_zones: Array=[]
+## 2.0.30: 마지막으로 발동한 도술의 이름·슬롯을 남겨 HUD 배너·미니맵·시야 연출이
+## 같은 값에서 출발하게 한다.
+const CAST_FEED_LIMIT=6
+var cast_feed: Array=[]
 func burst(at: Vector2,kind: String,duration: float,extra: Dictionary={}) -> void:
  serial+=1
  var entry:={"id":serial,"kind":kind,"position":at,"born":elapsed,"until":elapsed+duration}
@@ -65,7 +79,7 @@ func _init(seed_value: int=0) -> void:
 func add(id: String,name: String,daoist: String,yokai: String) -> bool:
  if phase!="room" or players.size()>=8 or C.find(daoist).is_empty() or C.find(yokai).is_empty():return false
  players[id]={"id":id,"name":name,"choices":{"daoist":daoist,"yokai":yokai},"role":"","character":"","position":L.SPAWN,"home":L.SPAWN,"sealed_pos":L.SPAWN,"facing":2,"intent":Vector2.ZERO,"running":false,"stamina":100.0,"exhausted":false,"wobble":0.0,"form_origin":L.SPAWN,"jump":0.0,"height":0.0,"ground":L.SPAWN,"cd":{},"buff":{},"captured":false,"deadline":0.0,"eliminated":false,"immune":0.0,"rescue":"","progress":0.0,"origin":L.SPAWN,"outside":0.0,"form":"","copy":"","trail":[],"stride":0.0,"alive_seconds":0.0,"stagger":0.0,"lives":3,"stats":{"seals":0,"misses":0,"rescues":0,"lost":0},"confirmed":false,"ready":id!="human","color":players.size(),
-  "ult":0.0,"stun":0.0,"slow_until":0.0,"slow_factor":1.0,"speed_until":0.0,"speed_factor":1.0,"seal_bonus":0.0,"mark":Vector2.INF,"last_hurt":0.0,"blind_until":0.0,"hint":""}
+  "ult":0.0,"stun":0.0,"slow_until":0.0,"slow_factor":1.0,"speed_until":0.0,"speed_factor":1.0,"seal_bonus":0.0,"mark":Vector2.INF,"last_hurt":0.0,"blind_until":0.0,"hint":"","last_skill":"","last_skill_name":"","last_skill_slot":"","last_skill_until":0.0}
  return true
 ## 시작 직후 요괴가 바로 봉인하지 못하도록 주는 유예(초).
 const SEAL_GRACE=6.0
@@ -141,8 +155,10 @@ func selection_view(id: String) -> Array:
 func ready_map() -> void:
  if phase=="loading":phase="countdown";countdown=3
 func available(p: Dictionary) -> bool:return phase=="live" and not p.captured and not p.eliminated
-func event(kind: String,actor: String,target: String="") -> void:
- events.append({"kind":kind,"actor":actor,"target":target,"time":elapsed})
+func event(kind: String,actor: String,target: String="",extra: Dictionary={}) -> void:
+ var entry:={"kind":kind,"actor":actor,"target":target,"time":elapsed}
+ entry.merge(extra,true)
+ events.append(entry)
 func command(id: String,op: String,data: Dictionary={}) -> bool:
  if not players.has(id):return false
  var p: Dictionary=players[id]
@@ -188,6 +204,8 @@ func seal(p: Dictionary) -> bool:
  # 기관인형·가짜 미끼를 먼저 친다.
  for e in effects:
   if e.kind in ["decoy","fake_rescue"] and e.get("owner","")!=p.id and p.position.distance_to(e.position)<CONFIRM_REACH+8:
+   # 구미환몽의 환영은 요괴 본인도 칠 수 없는 허상이다(진짜 미끼만 친다).
+   if bool(e.get("phantom",false)):continue
    e.until=0.0;p.cd.seal=elapsed+MISS_RECOVER;p.stats.misses+=1
    burst(e.position,"fx_poof",.6);event("miss",p.id);return true
  var q: Dictionary={};var best:=CONFIRM_REACH;var forward:=Vector2.from_angle(p.facing*PI/4)
@@ -260,16 +278,46 @@ func skill(p: Dictionary,aim: Vector2,slot: String="main") -> bool:
  if aim.length()<.01:aim=Vector2.from_angle(p.facing*PI/4)
  aim=aim.normalized();p.facing=posmod(roundi(aim.angle()/(PI/4)),8)
  if p.stun>elapsed:return false
- if not _effect(p,id,aim):return false
+ if not _effect(p,id,aim):
+  # 왜 안 됐는지 바로 알 수 있게 실패 사유를 남긴다(HUD 배너·상태 라벨).
+  event("skill_fail",p.id,id,{"name":String(spec.get("name",id)),"reason":_fail_reason(id,p)})
+  return false
  signature(p,id,aim)
  p.cd[id]=elapsed+float(spec.get("cd",12.0))
  if slot=="ult":p.ult=0.0
- event("skill",p.id,id);event("skill_slot",p.id,slot)
+ # 시전 순간을 HUD 배너·상태 뱃지·미니맵·시야 연출이 함께 읽는다.
+ var skill_name: String=String(spec.get("name",C.SKILLS.get(id,{}).get("name",id)))
+ p.last_skill=id;p.last_skill_name=skill_name;p.last_skill_slot=slot;p.last_skill_until=elapsed+1.6
+ serial+=1
+ var feed:={"id":serial,"actor":p.id,"skill":id,"name":skill_name,"slot":slot,"team":p.role,"at":p.position,"born":elapsed}
+ cast_feed.append(feed)
+ while cast_feed.size()>CAST_FEED_LIMIT:cast_feed.pop_front()
+ event("skill",p.id,id,{"slot":slot,"name":skill_name,"team":p.role});event("skill_slot",p.id,slot)
  return true
 ## 능력 하나의 실제 도술. 성공하면 true(쿨타임 소모).
+## 실패 사유 문구: 버튼을 눌렀는데 아무 일도 안 일어나는 것처럼 보이지 않게 한다.
+## 도깨비 장난 지대 안인지(둔갑 금지 구역).
+func in_mischief(pos: Vector2) -> bool:
+ for z in mischief_zones:
+  if float(z.until)<=elapsed:continue
+  if pos.distance_to(z.pos)<=float(z.radius):return true
+ return false
+func _fail_reason(id: String,p: Dictionary) -> String:
+ match id:
+  "mimic":return "가까이에 둔갑할 도사가 없습니다"
+  "transform","disguise":
+   if in_mischief(p.position):return "도깨비 장난 지대에서는 둔갑할 수 없습니다"
+   return "가까이에 둔갑할 사물이 없습니다"
+  "underworldgate":return "혼길표식을 먼저 세워야 합니다"
+  "returnpath":return "위기에 빠진 동료가 없습니다"
+  "wallhop":return "그 방향으로 넘어갈 수 없습니다"
+ return "지금은 대상이 없어 발동할 수 없습니다"
 func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
  match id:
   "transform","disguise":
+   if p.form=="":
+    # 도깨비 장난 지대 안에서는 새로 둔갑할 수 없다(해제는 언제나 가능).
+    if in_mischief(p.position):return false
    if p.form!="":
     p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.5);event("untransform",p.id);return true
    var nearest: Dictionary=L.object_near(p.position,90)
@@ -317,7 +365,9 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    for q in players.values():
     if q.role!="daoist" or q.eliminated or q.id==p.id:continue
     if q.position.distance_to(p.position)>280:continue
-    q.buff.lifelamp=elapsed+4.0;q.speed_until=elapsed+4.0;q.speed_factor=1.25
+    # 도감 설명 그대로 8초: 동료도 나와 같은 시간·같은 효과(이속·봉인 1회 방어)를 받는다.
+    q.buff.lifelamp=elapsed+8.0;q.speed_until=elapsed+8.0;q.speed_factor=1.25
+    q.buff.shield=maxf(float(q.buff.get("shield",0.0)),elapsed+8.0)
     burst(q.position,"fx_lotus",.8)
    burst(p.position,"fx_lotus",1.1);
    # 선한 기운은 봉인 한 번을 막는 보호막도 겸한다.
@@ -352,12 +402,13 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    p.position=L.safe(destination);p.ground=p.position;p.origin=p.position;p.immune=maxf(p.immune,elapsed+2.0)
    burst(p.position,"fx_ghostgate",1.0);event("warp",p.id);return true
   "mimic":
-   var targets:=visible(p.id).filter(func(a: Dictionary)->bool:return a.id!="" and a.id!=p.id)
+   # 인간둔갑은 '도사'의 겉모습만 훔친다. 같은 요괴 편의 모습을 쓰면 기만이 성립하지 않는다.
+   var targets:=visible(p.id).filter(func(a: Dictionary)->bool:return a.id!="" and a.id!=p.id and String(a.role)=="daoist")
    if targets.is_empty():
-    # 벽너머라도 바로 옆이면 겉모습은 훔칠 수 있다.
+    # 벽너머라도 바로 옆이면 겉모습은 훔칠 수 있다(대상은 역시 도사뿐).
     for q in players.values():
-     if q.id==p.id or q.eliminated or q.captured:continue
-     if q.position.distance_to(p.position)<=140:targets.append({"id":q.id,"position":q.position})
+     if q.id==p.id or q.eliminated or q.captured or q.role!="daoist":continue
+     if (q.position as Vector2).distance_to(p.position)<=MIMIC_RADIUS and L.line(p.position,q.position):targets.append({"id":q.id,"position":q.position})
    targets.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return p.position.distance_to(a.position)<p.position.distance_to(b.position))
    if targets.is_empty():return false
    p.copy=targets[0].id;p.buff.mimic=elapsed+9
@@ -366,7 +417,8 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    var charmed:=0
    for q in players.values():
     if q.role!="daoist" or q.captured or q.eliminated:continue
-    if q.position.distance_to(p.position)>240:continue
+    # 도감 표기(반경 220)와 같은 사거리.
+    if q.position.distance_to(p.position)>FOXSCENT_RADIUS:continue
     q.slow_until=elapsed+4.0;q.slow_factor=.55;charmed+=1
     burst(q.position,"fx_foxfire",.9)
    burst(p.position,"fx_foxfire",1.2)
@@ -397,7 +449,8 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
   "mountaingrowl":
    for q in players.values():
     if q.role!="daoist" or q.captured or q.eliminated:continue
-    if q.position.distance_to(p.position)>340:continue
+    # 도감 표기(반경 320)와 같은 사거리.
+    if q.position.distance_to(p.position)>MOUNTAIN_RADIUS:continue
     var push: Vector2=q.position-p.position
     if push.length()<1.0:push=Vector2.from_angle(rng.randf()*TAU)
     q.position=L.move(q.position,q.position+push.normalized()*110.0);q.ground=q.position
@@ -406,16 +459,25 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
    p.speed_until=elapsed+6.0;p.speed_factor=1.5
    burst(p.position,"fx_howl",1.6,{"big":true});return true
   "mischief":
-   var flipped:=0
+   # 도깨비장난: 반경 260의 사물을 뒤엉키게 흔들고, 둔갑한 도사를 강제로 드러낸 뒤
+   # 6초 동안 둔갑이 불가능한 '장난 지대'를 만든다(수색·추격용 실전 스킬).
+   var zone_radius:=260.0
+   mischief_zones=mischief_zones.filter(func(z: Dictionary)->bool:return float(z.until)>elapsed)
+   mischief_zones.append({"pos":p.position,"radius":zone_radius,"until":elapsed+6.0})
    for q in players.values():
-    if q.role!="daoist" or q.captured or q.eliminated or q.form=="":continue
-    if q.position.distance_to(p.position)>280:continue
-    q.form="";q.buff.erase("transform");q.stun=elapsed+.5;flipped+=1
-    burst(q.position,"fx_goblinfire",.8);event("untransform",q.id)
-   # 반경 안의 실제 사물도 옮겨 눕혀, 둔갑했다면 같은 자리에 있지 않게 한다.
+    if q.role!="daoist" or q.captured or q.eliminated:continue
+    if q.position.distance_to(p.position)>zone_radius:continue
+    # 위치를 잠깐 드러내고(3.5초) 느려지게 한다 — 둔갑이 아니어도 대응 가치가 있다.
+    q.buff.revealed=elapsed+3.5
+    q.slow_until=elapsed+3.5;q.slow_factor=.62
+    if q.form!="":
+     q.form="";q.buff.erase("transform");q.stun=elapsed+.45
+     burst(q.position,"fx_goblinfire",.9);event("untransform",q.id)
+   # 반경 안의 실제 사물을 크게 뒤엉키게 한다.
    for i in range(L.OBJECTS.size()):
-    if p.position.distance_to((L.OBJECTS[i] as Dictionary).p)<=260.0:prop_flips[i]=elapsed+7.0
-   burst(p.position,"fx_goblinfire",1.0)
+    if p.position.distance_to((L.OBJECTS[i] as Dictionary).p)<=zone_radius:prop_flips[i]=elapsed+7.0
+   burst(p.position,"fx_goblinfire",1.2,{"big":true})
+   event("mischief_zone",p.id)
    return true
   "faketreasure":
    traps.append({"kind":"treasure","owner":p.id,"pos":p.position,"until":elapsed+30.0,"radius":44.0,"armed":true})
@@ -423,7 +485,8 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
   "goblinfest":
    for q in players.values():
     if q.role!="daoist" or q.captured or q.eliminated:continue
-    if q.position.distance_to(p.position)>210:continue
+    # 도감 표기(반경 200)와 같은 사거리.
+    if q.position.distance_to(p.position)>GOBLINFEST_RADIUS:continue
     if q.form!="":q.form="";q.buff.erase("transform");event("untransform",q.id)
     var push: Vector2=q.position-p.position
     if push.length()<1.0:push=Vector2.from_angle(rng.randf()*TAU)
@@ -431,7 +494,8 @@ func _effect(p: Dictionary,id: String,aim: Vector2) -> bool:
     q.stun=elapsed+.4;burst(q.position,"fx_goblinfire",1.0)
    burst(p.position,"fx_goblinfire",1.8,{"big":true});return true
   "douse":
-   dark_until=elapsed+9.0;dark_center=p.position;dark_radius=330.0
+   # 도감 표기(주변 300의 석등을 9초)와 같은 범위. 범위 안의 석등만 실제로 꺼진다.
+   dark_until=elapsed+9.0;dark_center=p.position;dark_radius=DOUSE_RADIUS
    lantern_until["all"]=elapsed+9.0
    event("douse",p.id)
    burst(p.position,"fx_darkness",1.2,{"big":true});return true
@@ -587,6 +651,8 @@ func tick(delta: float) -> void:
   if p.captured:continue
   if p.form!="" and p.buff.get("transform",0)<=elapsed:
    p.form="";p.buff.erase("transform");event("untransform",p.id)
+  # 둔갑한 그 자체는 다른 시점에 사라지고, 본인에게만 남는다.
+  if String(p.get("copy",""))!="" and float(p.buff.get("mimic",0.0))<=elapsed:p.copy=""
   var previous: Vector2=p.position
   p.outside=p.outside+delta if p.position.distance_to(zone.center)>zone.radius else 0.0
   if p.exhausted and p.stamina>=25:p.exhausted=false
@@ -635,6 +701,15 @@ func tick(delta: float) -> void:
    burst(q.position,"fx_lotus",.9)
  for e in effects:
   if e.kind in ["clone","decoy"]:e.position=L.move(e.position,e.position+Vector2.from_angle(float(e.facing)*PI/4)*(0 if e.kind=="decoy" else 36)*delta)
+ # 도깨비 장난 지대: 안에 있는 도사는 계속 느려지고 둔갑이 풀린다.
+ mischief_zones=mischief_zones.filter(func(z: Dictionary)->bool:return float(z.until)>elapsed)
+ for z in mischief_zones:
+  for q in players.values():
+   if q.role!="daoist" or q.captured or q.eliminated:continue
+   if (q.position as Vector2).distance_to(z.pos)>float(z.radius):continue
+   q.slow_until=maxf(float(q.slow_until),elapsed+.3);q.slow_factor=minf(float(q.slow_factor),.80)
+   if q.form!="":
+    q.form="";q.buff.erase("transform");burst(q.position,"fx_goblinfire",.6);event("untransform",q.id)
  effects=effects.filter(func(e: Dictionary)->bool:return e.until>elapsed)
  traps=traps.filter(func(t: Dictionary)->bool:return float(t.until)>elapsed and bool(t.armed))
  marks=marks.filter(func(m: Dictionary)->bool:return float(m.get("until",0.0))>elapsed)
@@ -669,7 +744,10 @@ func visible(id: String) -> Array:
  var blind: bool=float(viewer.get("blind_until",0.0))>elapsed
  var reach: float=360.0
  if blind:reach=150.0
- if reveal_until>elapsed and viewer.role=="daoist":reach=9999.0
+ # 귀문보기: 한옥 한 채 너머까지 투시하는 사거리(벽은 그대로 통과).
+ if see_through:reach=760.0
+ # 천문기계는 "서원 전역을 꿰뚫어" 본다: 사거리뿐 아니라 벽·한옥도 통과한다.
+ if reveal_until>elapsed and viewer.role=="daoist":reach=9999.0;see_through=true
  if foot_scope(viewer) and viewer.role=="yokai":reach=9999.0
  for p in players.values():
   if p.eliminated:continue
@@ -681,9 +759,108 @@ func visible(id: String) -> Array:
   for e in effects:
    if e.kind=="smoke" and distance>85 and Geometry2D.get_closest_point_to_segment(e.position,viewer.position,p.position).distance_to(e.position)<115:blocked=true
   if blocked and p.id!=id:continue
-  var source: Dictionary=players.get(p.copy,p) if p.buff.get("mimic",0)>elapsed else p
-  result.append({"id":"" if p.form!="" and p.id!=id else p.id,"position":p.position,"form":p.form,"name":source.name,"role":source.role,"color":source.color,"cosmetic":C.look(source.character),"character":source.character,"facing":p.facing,"height":p.height,"moving":p.intent.length()>.05 and not p.captured,"captured":p.captured,"immune":p.immune>elapsed,"shield":p.buff.get("shield",0)>elapsed or p.buff.get("lifelamp",0)>elapsed,"revealed":float(p.buff.get("glowing",0.0))>elapsed or float(p.buff.get("revealed",0.0))>elapsed,"disguised":p.form!=""})
+  # 인간둔갑: 겉모습·이름표·팀 색·미니맵 점까지 복제한 도사의 것을 그대로 쓴다.
+  var mimicking: bool=float(p.buff.get("mimic",0.0))>elapsed and players.has(String(p.copy))
+  var source: Dictionary=players[p.copy] if mimicking else p
+  var source_spec: Dictionary=C.find(String(source.character))
+  var shown_name: String=String(source.name)
+  if mimicking and not source_spec.is_empty():shown_name=String(source_spec.get("name",source.name))
+  result.append({"id":"" if p.form!="" and p.id!=id else p.id,"position":p.position,"form":p.form,"name":shown_name,"player_name":source.name,"role":source.role,"color":source.color,"cosmetic":C.look(source.character),"character":source.character,"character_name":String(source_spec.get("name","")),"lives":int(source.get("lives",LIVES)),"facing":p.facing,"height":p.height,"moving":p.intent.length()>.05 and not p.captured,"captured":p.captured,"immune":p.immune>elapsed,"shield":p.buff.get("shield",0)>elapsed or p.buff.get("lifelamp",0)>elapsed,"revealed":float(p.buff.get("glowing",0.0))>elapsed or float(p.buff.get("revealed",0.0))>elapsed,"disguised":p.form!="","mimic":mimicking})
  return result
 ## 발자국·동선을 전부 비추는 효과가 켜져 있는지(요괴 시점).
 func foot_scope(p: Dictionary) -> bool:
  return trail_all_until>elapsed
+
+## ---------------------------------------------------------------- 2.0.30 미니맵·시야 공용
+## 같은 팀 아군은 언제나 보인다(은신 중인 아군도 자기 편 지도에는 남는다).
+## 생존·봉인·구조(구조 중)·탈락을 구분해 돌려준다.
+func allies(id: String) -> Array:
+ var out: Array=[]
+ if not players.has(id):return out
+ var viewer: Dictionary=players[id]
+ for p in players.values():
+  if p.role!=viewer.role:continue
+  out.append({"id":p.id,"name":p.name,"character":p.character,"position":p.position,
+   "self":p.id==id,"captured":bool(p.captured),"eliminated":bool(p.eliminated),
+   "lives":int(p.get("lives",LIVES)),"rescuing":String(p.get("rescue","")),
+   "progress":float(p.get("progress",0.0)),"hidden":hidden(p)})
+ return out
+## 미니맵에는 맵 구조와 같은 팀만 보인다. 적은 '탐지 도술'이 켜져 있는 동안만
+## 그 위치가 드러난다(평상시에는 어떤 적도 지도에 찍히지 않는다).
+func map_contacts(id: String) -> Array:
+ var out: Array=[]
+ if not players.has(id):return out
+ var viewer: Dictionary=players[id]
+ var seeing:=false
+ var label:=""
+ if viewer.role=="daoist":
+  if reveal_until>elapsed:seeing=true;label="천문기계"
+  if float(viewer.buff.get("ghostgate",0.0))>elapsed:seeing=true;label="귀문보기"
+ else:
+  if trail_all_until>elapsed:seeing=true;label="발자국"
+  if float(viewer.buff.get("sense",0.0))>elapsed:seeing=true;label="청각사냥"
+ # 요괴 진영이 찍어 둔 야광가루·목소리흉내 표식도 탐지 시간 동안만 유지된다.
+ for m in marks:
+  if String(m.get("kind",""))!="glow":continue
+  var q: Dictionary=players.get(String(m.get("target","")),{})
+  if q.is_empty() or hidden(q) or q.eliminated:continue
+  if viewer.role=="yokai":out.append({"id":q.id,"pos":q.position,"team":"daoist","source":"야광가루"})
+ for q in players.values():
+  if q.eliminated or q.role==viewer.role or hidden(q):continue
+  if float(q.buff.get("revealed",0.0))>elapsed and viewer.role=="yokai":
+   out.append({"id":q.id,"pos":q.position,"team":q.role,"source":"위치 노출"})
+  if not seeing:continue
+  # 같은 id가 이미 담겼으면 한 번만.
+  var dup:=false
+  for entry in out:
+   if String(entry.id)==String(q.id):dup=true
+  if dup:continue
+  out.append({"id":q.id,"pos":q.position,"team":q.role,"source":label})
+ return out
+## 관측자 픽셀 시점에서 화면에 입힐 어둡·시야 좁히기 강도(0~1).
+func vision_for(id: String) -> Dictionary:
+ var out:={"narrow":0.0,"dark":0.0,"fog":0.0,"source":"","center":Vector2.ZERO,"radius":0.0}
+ if not players.has(id):return out
+ var me: Dictionary=players[id]
+ var blind: float=float(me.get("blind_until",0.0))-elapsed
+ if blind>0.0:
+  out.narrow=clampf(blind/6.0,.32,1.0);out.source="blind"
+ if float(me.buff.get("painting",0.0))>elapsed:
+  out.narrow=maxf(float(out.narrow),.55);out.fog=maxf(float(out.fog),.5);out.source="painting"
+ if map_dark_until>elapsed and me.role=="daoist":
+  out.dark=maxf(float(out.dark),.55);out.fog=maxf(float(out.fog),.35)
+  if String(out.source)=="":out.source="moonless"
+ if dark_until>elapsed:
+  var gap: float=(me.position as Vector2).distance_to(dark_center)
+  if me.role=="daoist":
+   var inside: float=clampf(1.0-gap/maxf(1.0,dark_radius),0.0,1.0)
+   if inside>0.0:
+    out.dark=maxf(float(out.dark),.25+.5*inside);out.fog=maxf(float(out.fog),.5*inside)
+    out.center=dark_center;out.radius=dark_radius
+    if String(out.source)=="":out.source="douse"
+ return out
+## HUD 상태 뱃지·지도 범례가 함께 쓰는 활성 효과 목록.
+func active_effects(id: String) -> Array:
+ var out: Array=[]
+ if not players.has(id):return out
+ var p: Dictionary=players[id]
+ var now:=elapsed
+ var add_effect:=func(key: String,name: String,left: float,color: String,good: bool) -> void:
+  if left>0.0:out.append({"key":key,"name":name,"left":left,"color":color,"good":good})
+ add_effect.call("mimic","인간둔갑",float(p.buff.get("mimic",0.0))-now,"ff9ee0",true)
+ if String(p.get("form",""))!="":add_effect.call("transform","둔갑 · "+String(L.form(String(p.form)).get("name","사물")),float(p.buff.get("transform",0.0))-now,"c2a8ff",true)
+ add_effect.call("painting","화중은신",float(p.buff.get("painting",0.0))-now,"f0d79b",true)
+ if hidden(p) and float(p.buff.get("painting",0.0))<=now:add_effect.call("stealth","은신",float(p.buff.get("stealth",0.0))-now,"b48cf0",true)
+ add_effect.call("shield","보호막",float(p.buff.get("shield",0.0))-now,"ffd9a0",true)
+ add_effect.call("lifelamp","생명등불",float(p.buff.get("lifelamp",0.0))-now,"ffd08a",true)
+ add_effect.call("deathflower","저승꽃",float(p.buff.get("deathflower",0.0))-now,"d9c0ff",true)
+ add_effect.call("ghostgate","귀문보기",float(p.buff.get("ghostgate",0.0))-now,"c9b6ff",true)
+ add_effect.call("sense","발자국 감지",float(p.buff.get("sense",0.0))-now,"8fd8ff",true)
+ add_effect.call("speed","가속",float(p.get("speed_until",0.0))-now,"a8f0d0",true)
+ add_effect.call("glowing","야광 표식",float(p.buff.get("glowing",0.0))-now,"a8ffe8",false)
+ add_effect.call("revealed","위치 노출",float(p.buff.get("revealed",0.0))-now,"ffd08a",false)
+ add_effect.call("blind","시야 좁아짐",float(p.get("blind_until",0.0))-now,"9a8fd0",false)
+ add_effect.call("slow","느려짐",float(p.get("slow_until",0.0))-now,"7fe4d6",false)
+ add_effect.call("stun","꼼짝 못함",float(p.get("stun",0.0))-now,"ff9a5a",false)
+ add_effect.call("mark","혼길표식",1.0 if (p.mark as Vector2).is_finite() else 0.0,"ffd98a",true)
+ return out

@@ -67,7 +67,8 @@ func think(delta: float) -> void:
   go(p,target)
  else:
   # 미둔갑 도사는 몸이 닿는 순간 봉인되므로 버튼 없이 그대로 밀어붙인다.
-  var targets: Array=actors.filter(func(a: Dictionary)->bool:return a.id!=id and a.role=="daoist" and not a.captured and a.form=="")
+  # 인간둔갑한 동료 요괴는 도사처럼 보이므로 진짜 역할을 확인해 제외한다.
+  var targets: Array=actors.filter(func(a: Dictionary)->bool:return a.id!=id and a.role=="daoist" and not a.captured and a.form=="" and String(rules.players.get(String(a.id),{}).get("role","daoist"))=="daoist")
   targets.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return p.distance_to(a.position)<p.distance_to(b.position))
   if not targets.is_empty():
    var q: Dictionary=targets[0];go(p,q.position)

@@ -103,7 +103,11 @@ func run() -> void:
  me.position=front+Vector2(0,16);me.facing=6
  game.update_avatars();game.update_hud();await frames(3)
  check(game.camera.position.distance_to(me.position+Vector2(0,-L.CAMERA_LIFT))<1.5,"camera follows the player with the 36px lift")
- check(game.door_button.visible and game.door_button.get_node("Caption").text=="문 열기","dedicated door button appears at the enlarged hanok")
+ # 2.0.30: 문 열기 버튼 없이 문을 그냥 통과해 출입한다.
+ var through: Vector2=front+Vector2(0,-34)
+ check(not game.action_buttons.has("door") and not is_instance_valid(game.get("door_button")),"no door button exists at the hanok")
+ check(L.can_stand(front+Vector2(0,10)) and L.can_stand(front+Vector2(0,-40)),"the doorway itself is walkable")
+ check(not L.interior_at(through,6).is_empty(),"walking past the threshold enters the hanok")
  check(game.ui.find_children("*","Button",true,false).size()>=6,"HUD buttons present")
  check(game.world.buildings.size()==6,"world draws all six hanok")
  for building in game.world.buildings:

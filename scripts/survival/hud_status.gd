@@ -26,6 +26,10 @@ var survivor_count:=0
 var banner:=""
 var banner_alpha:=0.0
 var banner_color:=Color("ffe0a8")
+## 2.0.30 지속 효과·버프·디버프 뱃지(이름 + 남은 초)와 마지막 시전 표시.
+var buffs: Array=[]
+var cast_name:=""
+var cast_left:=0.0
 func _ready() -> void:
  mouse_filter=Control.MOUSE_FILTER_IGNORE
  set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -44,6 +48,27 @@ func rounded(rect: Rect2,color: Color,radius: float) -> void:
  for corner in [rect.position+Vector2(r,r),Vector2(rect.end.x-r,rect.position.y+r),rect.position+Vector2(r,rect.size.y-r),rect.end-Vector2(r,r)]:
   draw_circle(corner,r,color)
 ## 하트 하나: filled=false면 빈 하트(잃은 목숨).
+## 지속 효과·버프·디버프 뱃지: 왼쪽 상태판 아래에 이름·남은 초·남은 비율 바를 쌓는다.
+func draw_buffs() -> void:
+ if buffs.is_empty():return
+ var top:=160.0
+ var shown:=mini(buffs.size(),6)
+ for i in range(shown):
+  var entry: Dictionary=buffs[i]
+  var name_value: String=String(entry.get("name",""))
+  var tint:=Color(String(entry.get("color","ffe0a8")))
+  var left:=maxf(0.0,float(entry.get("left",0.0)))
+  var good:=bool(entry.get("good",true))
+  var width: float=minf(232.0,74.0+name_value.length()*13.0)
+  var rect:=Rect2(16,top+i*27.0,width,23)
+  rounded(rect,Color(.03,.04,.09,.68),9)
+  draw_rect(rect,Color(tint.r,tint.g,tint.b,.42),false,1.1)
+  # 남은 시간을 얇은 채움 바로 깔아 준다.
+  var ratio:=clampf(left/8.0,0.0,1.0)
+  rounded(Rect2(rect.position+Vector2(1,rect.size.y-3.2),Vector2((rect.size.x-2)*ratio,2.2)),Color(tint.r,tint.g,tint.b,.55),1)
+  draw_circle(Vector2(rect.position.x+11,rect.position.y+11.5),3.4,tint)
+  draw_string(FONT,Vector2(rect.position.x+20,rect.position.y+16),name_value,HORIZONTAL_ALIGNMENT_LEFT,rect.size.x-58,12,Color("f4ecd8") if good else Color("ffd8cf"))
+  draw_string(FONT,Vector2(rect.end.x-34,rect.position.y+16),("%d초"%int(ceil(left))) if left>=0.999 else "지속",HORIZONTAL_ALIGNMENT_RIGHT,30,11,Color(tint.r,tint.g,tint.b,.9))
 func heart(center: Vector2,radius: float,filled: bool) -> void:
  var color:=RED if filled else Color(.30,.33,.44,.85)
  draw_circle(center+Vector2(-radius*.5,-radius*.35),radius*.55,color)
@@ -86,6 +111,14 @@ func _draw() -> void:
  draw_string(FONT,Vector2(114,88),"달리기 %d%%"%int(stamina),HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("dceaff"))
  draw_string(FONT,Vector2(196,88),("봉인 %d"%sealed_count) if role=="yokai" else "생존 도사 %d"%survivor_count,HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("f4e6c6"))
  draw_string(FONT,Vector2(114,104),(("탈락 · 관전") if eliminated else ("봉인됨" if captured else character_name)),HORIZONTAL_ALIGNMENT_LEFT,180,12,Color("ffd0d4") if (captured or eliminated) else Color("b9c6dd"))
+ # ---------------------------------------------------------------- 지속 효과·버프·디버프 뱃지
+ draw_buffs()
+ # 마지막으로 쓴 도술 이름을 짧은 칩으로 남긴다(초상화 오른쪽 아래).
+ if cast_left>0.01 and cast_name!="":
+  var chip:=Rect2(240,86,minf(190.0,26.0+cast_name.length()*13.0),22)
+  rounded(chip,Color(.06,.05,.09,.82),8)
+  draw_rect(chip,Color(GOLD,.6),false,1.2)
+  draw_string(FONT,Vector2(chip.position.x+8,chip.position.y+16),cast_name+" 발동",HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color(GOLD_SOFT))
  # ---------------------------------------------------------------- 우측 참가자 목록
  if rules!=null:
   var players: Array=rules.players.values()
