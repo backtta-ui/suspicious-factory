@@ -15,6 +15,8 @@ const C=preload("res://scripts/survival/characters.gd")
 const SkillFX=preload("res://scripts/survival/skill_fx.gd")
 const Market=preload("res://scripts/survival/market.gd")
 const Actor=preload("res://scripts/woo/actor.gd")
+## 2.0.37 선택창 10인 전용 등장·대기 모션.
+const SelMotion=preload("res://scripts/survival/selection_motion.gd")
 ## 캐릭터 고유 테마색(전우치 청람 · 홍길동 하늘 · 장영실 황동 · 바리 연꽃 분홍금 ·
 ## 강림 보랏빛 · 구미호 자주 · 장산범 서릿빛 · 도깨비 주홍 · 어둑시니 심연 · 야광귀 연두).
 const THEME_COLORS={
@@ -76,6 +78,8 @@ var hero_fx_angle:=0.0
 var hero_motion:=0.0
 var hero_action:=0.0
 var hero_skin:=""
+## 지금 연출 중인 캐릭터 원화 id(전우치 woochi, 홍길동 gildong …).
+var hero_art_id:=""
 var hero_skin_fx:=""
 ## 2.0.34 테마 컬러 플러드 + 확정 임팩트.
 var theme_color:=Color("5fb0ff")
@@ -102,10 +106,30 @@ func _process(delta: float) -> void:
 	var breathe:=sin(hero_anim*2.3)
 	var sway:=sin(hero_anim*1.35)
 	var pop:=lerpf(.84,1.0,ease_out)+sin(hero_entry*PI)*.09+hero_action*.06
+	# 2.0.37 캐릭터별 몸짓: 부유·도약·웅크림·갸웃이 서로 다르다.
+	var bob:=SelMotion.bob_of(hero_art_id)
+	var tilt:=SelMotion.tilt_of(hero_art_id)
+	var kit: String=String(SelMotion.kit_of(hero_art_id).get("name",""))
+	var lift:=0.0
+	var squash:=1.0
+	if kit.begins_with("웅크렸다"):
+		# 장산범: 웅크렸다 앞으로 훅 나간다.
+		var crouch: float=clampf(hero_entry/.45,0.0,1.0)
+		var lunge: float=clampf((hero_entry-.45)/.55,0.0,1.0)
+		squash=1.0-crouch*.14+lunge*.10
+		lift=crouch*10.0
+	elif kit.begins_with("저승문"):
+		lift=(1.0-ease_out)*-18.0
+	elif kit.begins_with("그림자에서"):
+		lift=(1.0-ease_out)*26.0
+	elif kit.begins_with("귀화 통통"):
+		lift=-absf(sin(hero_anim*3.6))*7.0
+	elif kit.begins_with("2단 도약"):
+		lift=-absf(sin(hero_entry*PI*2.0))*(1.0-maxf(0.0,hero_entry-.85)/.15)*26.0
 	hero_art.pivot_offset=hero_art.size*.5
-	hero_art.scale=Vector2(pop*(1.0+.010*breathe),pop*(1.0-.014*breathe))
-	hero_art.position=hero_base.position+Vector2(sway*3.0,(1.0-ease_out)*34.0+breathe*2.0)
-	hero_art.rotation=0.0
+	hero_art.scale=Vector2(pop*(1.0+.010*breathe),pop*(1.0-.014*breathe)*squash)
+	hero_art.position=hero_base.position+Vector2(sway*3.0,(1.0-ease_out)*34.0+breathe*(bob*.5)+lift)
+	hero_art.rotation=tilt*sin(hero_anim*2.1)
 	# 확정 임팩트: 금빛 플래시 + 1.1배 줌 강조가 짧게 터진다.
 	lock_flash=maxf(0.0,lock_flash-delta*1.9)
 	lock_zoom=maxf(0.0,lock_zoom-delta*2.2)
@@ -664,9 +688,10 @@ func _hero() -> void:
 				theme_layer.draw_circle(spot,2.6*flash,Color(1,.95,.78,.9*flash)))
 	# 캐릭터의 대표 도술 이름·고유 연출
 	hero_fx_file=character_fx_file(selection_id)
+	hero_art_id=C.fallback_art(String(spec.get("art",selection_id)))
 	hero_accent=accent
-	hero_skin=String(game.storage.equipped("skin")) if is_instance_valid(game) else ""
-	if not SkillFX.skin_allows(hero_skin,selection_id):hero_skin=""
+	# 2.0.37 스킨은 캐릭터 전용이다. 지금 고른 캐릭터에 장착된 스킨만 보여 준다.
+	hero_skin=game.storage.skin_for(selection_id) if is_instance_valid(game) else ""
 	hero_skin_fx=SkillFX.file_for(selection_id,hero_fx_skill,hero_skin) if hero_skin!="" else ""
 	var art_bottom:=area.end.y-44.0
 	var actor_height:=minf(area.size.y-30.0,340.0)
@@ -691,6 +716,8 @@ func _hero() -> void:
 				hero_fx.draw_texture(skin_tex,-skin_tex.get_size()*.5,Color(1,1,1,.55+.20*pulse))
 				hero_fx.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
 		# 10인 고유 선택 모션: 대표 도술의 실제 연출(부적·항아리·깃발·방울·여우불·기계·먹장막).
+		# 2.0.37 캐릭터마다 확실히 다른 등장·대기 연출(전우치 부적·홍길동 2단 도약·강림 저승문 등).
+		SelMotion.draw(hero_fx,hero_art_id,hero_entry,hero_motion,fx_size,hero_accent,float(hero_actor.facing if is_instance_valid(hero_actor) else 2))
 		var loop_p:=fmod(hero_motion+0.35,2.8)/2.8
 		var cast_p:=clampf(loop_p/.72,0.0,1.0)
 		preload("res://scripts/survival/fx.gd").signature(hero_fx,c,cast_p,hero_fx_skill,float(hero_actor.facing if is_instance_valid(hero_actor) else 2))
@@ -765,6 +792,9 @@ func play_select_sound(id: String) -> void:
 		if String(entry.get("slot",""))=="main":skill=String(entry.get("skill",""));break
 	last_sound_skill=skill
 	if skill!="":game.sound.play_skill(skill)
+	# 등장 모션에 맞는 소리도 캐릭터마다 다르게(부적·바람·톱니·문·쿵…).
+	var entry_clip:=SelMotion.entry_clip(C.fallback_art(String(C.find(id).get("art",id))))
+	if entry_clip!="":game.sound.play_clip(entry_clip)
 
 # ------------------------------------------------------------------ 우측 상세
 func _detail() -> void:

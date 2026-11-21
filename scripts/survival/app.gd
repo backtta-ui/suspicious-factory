@@ -232,7 +232,7 @@ func panel(parent: Node) -> VBoxContainer:
 func portrait(parent: Node,id: String,extent: Vector2=Vector2(330,360)) -> Control:
  var holder:=Control.new();holder.custom_minimum_size=extent;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;holder.size_flags_horizontal=Control.SIZE_EXPAND_FILL;holder.mouse_filter=Control.MOUSE_FILTER_IGNORE;parent.add_child(holder)
  var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.4,extent.y/72);holder.add_child(actor);actor.ingame_art=true
- var skin_key:=SkillFX.sheet_key(id,String(storage.equipped("skin")))
+ var skin_key:=SkillFX.sheet_key(id,storage.skin_for(id))
  actor.art_id=skin_key if skin_key!="" else C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"))
  actor.skin_tint=Color.WHITE
  holder.resized.connect(func()->void:
@@ -568,7 +568,7 @@ func setup_participants(seed_value: int=0) -> void:
  L=Maps.layout()
  rules=Rules.new(seed_value);rules.yokai_count=int(room.get("yokai",2));rules.preferred_role=preferred_role;rules.add("human",display_name(),storage.data.daoist,storage.data.yokai)
  rules.use_map(Maps.current_id)
- rules.players.human.skin=String(storage.equipped("skin"))
+ rules.players.human.skin=String(storage.skin_for(String(storage.data.daoist)))
  if room.fill:
   var daoists: Array=C.catalog("daoist");var yokai: Array=C.catalog("yokai")
   # 2.0.33 봇 7명에게도 자연스러운 닉네임을 붙인다(중복 없음). 이름표는 '닉네임 [캐릭터명]' 형식.
@@ -1104,7 +1104,7 @@ func hud() -> void:
  var hud_spec: Dictionary=C.find(hud_me.character)
  hud_view.portrait=load(String(hud_spec.get("portrait",""))) if String(hud_spec.get("portrait",""))!="" else null
  hud_view.character_name=String(hud_spec.get("name",""))
- var hud_skin_portrait:=SkillFX.portrait_for(String(hud_me.get("character","")),String(storage.equipped("skin")))
+ var hud_skin_portrait:=SkillFX.portrait_for(String(hud_me.get("character","")),storage.skin_for(String(hud_me.get("character",""))))
  if hud_skin_portrait!="" and ResourceLoader.exists(hud_skin_portrait):hud_view.portrait=load(hud_skin_portrait)
  hud_view.role=hud_me.role;hud_view.max_lives=rules.LIVES;hud_view.rules=rules
  hud_view.banner="%s · 도사 6·요괴 2 · 10분 생존"%Maps.name();hud_view.banner_alpha=1.0;banner_left=3.0
@@ -1565,7 +1565,11 @@ func update_avatars() -> void:
   var frame: float=clampf(get_process_delta_time(),0.001,0.05)
   if target.distance_to(actor.position)>AVATAR_SNAP:actor.position=target
   else:actor.position=actor.position.lerp(target,1.0-exp(-AVATAR_FOLLOW*frame))
-  actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height;actor.gait_phase+=moved/22.0*PI;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;  var disguised: bool=info.form!=""
+  actor.cosmetic=info.cosmetic;actor.facing=info.facing;actor.jump_height=info.height
+  # 2.0.37 이름표·표식도 점프 높이를 따라 올라간다(캐릭터만 뛰고 글자는 바닥에 남지 않게).
+  var name_node: Label=actor.get_node_or_null("Name") as Label
+  if name_node!=null:name_node.position=Vector2(-120.0,-68.0-float(info.height))
+  actor.gait_phase+=moved/22.0*PI;actor.gait_weight=move_toward(actor.gait_weight,1.0 if info.moving else 0.0,.2);actor.velocity=Vector2(88,0) if info.moving else Vector2.ZERO;  var disguised: bool=info.form!=""
   if disguised:
    # 둔갑하면 맵에 놓인 같은 사물과 100% 같은 크기·원화·그림자로 그린다.
    var shape: Dictionary=L.form_visual(String(info.form))
@@ -1590,7 +1594,8 @@ func update_avatars() -> void:
   var tag_character: String=String(info.get("character_name",""))
   if tag_character=="" and info.id=="human" and rules.players.has("human"):
    tag_character=String(C.find(rules.players.human.character).get("name",""))
-  if String(info.get("skin",""))=="woochi_pancake" and tag_character!="":tag_character+=" · 부침개"
+  # 2.0.37 스킨은 캐릭터 전용: 전우치가 아닌 캐릭터에는 절대 "· 부침개"를 붙이지 않는다.
+  if String(info.get("skin",""))=="woochi_pancake" and SkillFX.skin_allows("woochi_pancake",String(info.get("character",""))) and tag_character!="":tag_character+=" · 부침개"
   var lives_left: int=int(info.get("lives",rules.players.get(info.id,{}).get("lives",rules.LIVES)))
   var tag:=person_tag(tag_nick,tag_character,String(info.get("role","")),lives_left)
   actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=not disguised;actor.get_node("Identity").color_id=info.color
@@ -1797,7 +1802,8 @@ func update_hud() -> void:
   hud_view.lives=int(me.get("lives",rules.LIVES));hud_view.max_lives=rules.LIVES
   hud_view.stamina=me.stamina;hud_view.captured=me.captured;hud_view.eliminated=me.eliminated
   var worn:=String(me.get("skin",""))
-  hud_view.character_name=String(spec.get("name",""))+(" · 부침개" if worn=="woochi_pancake" else "")
+  var pancake: bool=worn=="woochi_pancake" and SkillFX.skin_allows(worn,String(me.get("character","")))
+  hud_view.character_name=String(spec.get("name",""))+(" · 부침개" if pancake else "")
   # 2.0.30 지속 효과·버프·디버프 뱃지(이름 + 남은 시간)와 마지막 시전 칩.
   hud_view.buffs=rules.active_effects(me.id)
   hud_view.cast_name=String(me.get("last_skill_name",""))
@@ -1899,8 +1905,8 @@ func update_hud() -> void:
      elif String(e.kind)=="transform":storage.bump("disguises")
   event_cursor=rules.events.size()
  if is_instance_valid(sound):
-  sound.map_id="seowon"
-  sound.update_steps(me.position,me.intent.length()>.05 and live,false)
+  sound.map_id=Maps.current_id
+  sound.update_steps(me.position,me.intent.length()>.05 and live,String(me.get("form",""))!="")
 ## ---------------------------------------------------------------- 로비 실화면
 ## 모든 로비 하위 화면은 scripts/ui/lobby_screen.gd 공통 프레임을 쓴다.
 ## 빠른 매치 구성은 도사 6 : 요괴 2로 고정이다(사용자·ChatGPT 합의).
@@ -2003,8 +2009,13 @@ func refresh_shop() -> void:
 ## 스킨·칭호·기운 해금/장착. 테스트와 화면이 같은 경로를 쓴다.
 func market_buy(item: Dictionary,kind: String,currency: String="coin") -> void:
  var id: String=String(item.get("id",""))
- if storage.equipped(kind)==id:
-  storage.equip(kind,"" if kind!="skin" else "default")
+ # 2.0.37 스킨은 캐릭터 전용이라 그 스킨의 주인 캐릭터 칸에만 장착한다.
+ var skin_owner:=String(item.get("character",storage.data.daoist))
+ if kind=="skin" and storage.skin_for(skin_owner)==id:
+  storage.equip_skin(skin_owner,"")
+  storage.save();refresh_shop();refresh_lobby_hud();return
+ if kind!="skin" and storage.equipped(kind)==id:
+  storage.equip(kind,"")
   storage.save();refresh_shop();refresh_lobby_hud();return
  if not storage.owns(id):
   var gem_price:=Market.gem_price(item)
@@ -2014,7 +2025,13 @@ func market_buy(item: Dictionary,kind: String,currency: String="coin") -> void:
    var price:=int(item.get("price",0))
    if not storage.spend_coins(price):notice("코인이 부족합니다. 경기·업적·우편 보상으로 모아 주세요.");return
   storage.own(id)
- storage.equip(kind,id)
+ if kind=="skin":
+  storage.equip_skin(skin_owner,id)
+  # 그 캐릭터로 플레이 중이면 경기 스킨도 바로 바뀐다.
+  if rules!=null and rules.players.has("human") and String(rules.players.human.character)==skin_owner:
+   rules.players.human.skin=storage.skin_for(skin_owner)
+ else:
+  storage.equip(kind,id)
  if storage.save()!=OK:notice("장착 상태를 저장하지 못했습니다.")
  refresh_shop()
  refresh_lobby_hud()

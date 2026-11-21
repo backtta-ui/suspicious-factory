@@ -42,3 +42,13 @@ V2.0.17 SELF-SYNTHESIZED MUSIC (no third-party audio)
 - seowon_ingame.wav, jump/door/seal/rescue/transform.wav: same script, same rule.
 - moonlit_plaza.ogg (CC-BY 4.0, listed above) is no longer played by the lobby.
   It stays in the repository only as a historical asset for the earlier build.
+
+
+V2.0.37 CC0 RECORDED AUDIO (synthesized SFX and music retired)
+- Music: Heartfelt Battle (request), Fairy Battles / Trance City / Urban Theme (MintoDog),
+  Beach Sports Theme (Trex0n) - all OpenGameArt, CC0 1.0.
+- Footsteps by floor material, 30 skill sounds, UI and gimmick clips: Fantozzi footsteps,
+  TinyWorlds (kdd steps, horror SFX), Peludo beach sand, Kenney RPG audio, Vehicle tinysized SFX,
+  JaggedStone magic spells, congusbongus abyss, Kresiek dark stinger - all CC0 1.0.
+- Full source table with page URLs: assets/audio/CC0_SOURCES.md
+- Rebuilt offline by tools/prepare_v37_audio.py; verified by tools/verify_v37_audio.py.
