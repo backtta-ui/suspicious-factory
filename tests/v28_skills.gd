@@ -345,7 +345,22 @@ func run() -> void:
  me.position=L.OBJECTS[0].p+Vector2(10,0);me.form="";me.cd={}
  game.update_hud()
  check(game.confirm_button!=null and game.confirm_button.visible,"the yokai gets 확인 next to a suspicious prop")
- me.position=L.SPAWN
+ # 2.0.36: 새 배치·움직이는 사물 때문에 스폰 근처에도 사물이 있을 수 있다.
+ # 모든 사물·움직이는 사물에서 220px 이상 떨어진 실제 바닥을 찾아 확인 버튼이 사라지는지 본다.
+ var away: Vector2=L.SPAWN
+ for gy in range(160,2400,160):
+  for gx in range(160,3200,160):
+   var cand:=Vector2(gx,gy)
+   if not L.can_stand(cand,10):continue
+   var clear:=true
+   for object in L.OBJECTS:
+    if cand.distance_to(object.p)<220.0:clear=false;break
+   if clear and game.rules.walkers!=null:
+    for walker in game.rules.walkers:
+     if walker.has("position") and cand.distance_to(walker.position)<220.0:clear=false;break
+   if clear:away=cand;break
+  if away!=L.SPAWN:break
+ me.position=away
  game.update_hud()
  check(not game.confirm_button.visible,"확인 disappears away from props")
  # 동물 크기: 맵·둔갑 모두 22~26px.
