@@ -171,12 +171,12 @@ func run() -> void:
  actor.jump_height=0;actor.jump_velocity=0;actor.update_sprite();actor.ingame_sprite._process(.016)
  check(actor.ingame_sprite.landing>0,"landing squash is triggered on touchdown")
  actor.queue_free();await process_frame
- # 5) 사운드: 로비는 자체 합성 BGM, 경기는 인게임 BGM
- check(ResourceLoader.exists("res://assets/audio/lobby_night.wav"),"self-made lobby bgm file")
+ # 5) 사운드: 로비·경기 모두 CC0 실제 녹음 BGM을 쓴다(2.0.37).
+ check(ResourceLoader.exists("res://assets/audio/bgm/lobby_fantasy.ogg"),"CC0 lobby bgm file")
  var sound: WooSound=game.sound
- check(sound.context=="match" and sound.music.stream==sound.ingame,"tense Korean BGM in match")
+ check(sound.context=="match" and sound.music.stream!=null and sound.current_map=="seowon","tense Korean BGM in match")
  game.cleanup_match();game.room={};game.build("lobby");await frames(4)
- check(sound.context=="menu" and sound.music.stream==sound.lobby,"self-made lobby bgm plays in the lobby")
+ check(sound.context=="menu" and sound.music.stream==sound.lobby_track,"CC0 lobby bgm plays in the lobby")
  game.queue_free();await frames(6)
  print("SEOWON INGAME: ",checks," checks / ",failures," failures")
  quit(1 if failures else 0)

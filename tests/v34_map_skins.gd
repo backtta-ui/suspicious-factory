@@ -258,7 +258,7 @@ func run() -> void:
  for clip_name in ["ui_tap","ui_tab","ui_back","match_join","match_found","lock_in","gimmick_turnstile","gimmick_cctv","gimmick_lights_off","gimmick_lights_on","gimmick_shutter","zone_warning"]:
   if not ResourceLoader.exists("res://assets/audio/%s.wav"%clip_name):clips_ok=false
  check(clips_ok,"2.0.34 UI·기믹 사운드 12종이 등록된다")
- check(ResourceLoader.exists("res://assets/audio/bgm_gangnam.wav"),"강남역 전용 BGM 파일이 있다")
+ check(ResourceLoader.exists("res://assets/audio/bgm/gangnam_trance.ogg"),"강남역 전용 BGM 파일이 있다")
  if snd!=null:
   snd.play_clip("button")
   check(snd.last_clip=="ui_tap","기존 button 호출이 새 목재 탭 사운드로 연결된다")

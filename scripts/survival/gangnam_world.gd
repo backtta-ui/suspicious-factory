@@ -6,6 +6,8 @@ extends Node2D
 const L=preload("res://scripts/survival/gangnam_layout.gd")
 const Art=preload("res://scripts/survival/gangnam_art.gd")
 const FX=preload("res://scripts/survival/fx.gd")
+## 2.0.37 네 맵 공통 이펙트 렌더러(함정·장판·연막·감지).
+const MapFx=preload("res://scripts/survival/map_fx.gd")
 const C=preload("res://scripts/survival/characters.gd")
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const TITLE_FONT=preload("res://assets/fonts/WooTitle.otf")
@@ -194,6 +196,7 @@ func draw_floor() -> void:
  draw_escalator(floor_fx)
  draw_zone_lights(floor_fx)
  draw_safe_zone(floor_fx)
+ MapFx.floor_layer(floor_fx,rules,clock,MapFx.TONE_BRIGHT)
 func draw_zone_lights(node: Node2D) -> void:
  if rules.gimmicks==null:return
  for zone_id in rules.gimmicks.lit_zones().keys():
@@ -388,39 +391,8 @@ func draw_form_target(node: Node2D,target: Dictionary) -> void:
   node.draw_circle(spark,1.7,Color(1,.94,.72,.55+.35*pulse))
 ## 요괴의 감지(발자국·탐지·핑) — 서원과 같은 규칙, 강남 바닥에 맞춘 색만 다르다.
 func draw_detection(node: Node2D) -> void:
- var human: Dictionary=rules.players.get("human",{})
- var sense: bool=rules.trail_all_until>rules.elapsed or (human.get("role","")=="daoist" and float(human.buff.get("sense",0.0))>rules.elapsed)
- if sense:
-  for p in rules.players.values():
-   if p.role!="daoist" or p.eliminated or p.id=="human":continue
-   if rules.hidden(p):continue
-   for i in range(p.trail.size()):
-    var mark: Dictionary=p.trail[i]
-    var age: float=rules.elapsed-float(mark.time)
-    var alpha: float=clampf(1.0-age/6.0,0,1)*.55
-    var facing: float=float(mark.facing)*PI/4
-    node.draw_set_transform(mark.position,0,Vector2(1,.5))
-    node.draw_arc(Vector2.ZERO,7,0,TAU,12,Color(.55,.9,1,alpha*.5),1.4,true)
-    node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
-    node.draw_line(mark.position-Vector2.from_angle(facing)*5,mark.position+Vector2.from_angle(facing)*5,Color(.7,.95,1,alpha*.7),1.6,true)
- for mark in rules.marks:
-  if String(mark.get("kind",""))=="glow":
-   var target: Dictionary=rules.players.get(String(mark.get("target","")),{})
-   if target.is_empty():continue
-   var pulse: float=.5+.5*sin(clock*3.0)
-   node.draw_set_transform(target.position,0,Vector2(1,.45))
-   node.draw_arc(Vector2.ZERO,20+pulse*6,0,TAU,26,Color(.85,1,.92,.5+.3*pulse),2.2,true)
-   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
-  else:
-   var pulse2: float=.5+.5*sin(clock*2.4)
-   node.draw_set_transform(mark.pos,0,Vector2(1,.42))
-   node.draw_arc(Vector2.ZERO,14+pulse2*5,0,TAU,24,Color(1,.9,.6,.5),2.0,true)
-   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
- for ping in rules.pings:
-  var t: float=clampf((float(ping.until)-rules.elapsed)/3.0,0,1)
-  node.draw_set_transform(ping.pos,0,Vector2(1,.45))
-  node.draw_arc(Vector2.ZERO,18+(1.0-t)*50,0,TAU,30,Color(1,.85,.55,.34*t+.14),2.4,true)
-  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ MapFx.detection(node,rules,clock,MapFx.TONE_BRIGHT)
+
 func draw_orbs() -> void:
  if rules==null:return
  var pulse:=.5+.5*sin(clock*2.0)
@@ -434,6 +406,7 @@ func draw_orbs() -> void:
 func draw_effects() -> void:
  if rules==null:return
  draw_shield_bubbles(effects)
+ MapFx.dash_trails(effects,rules,clock)
  if aim_active and rules.players.has("human"):
   var origin: Vector2=rules.players.human.position
   effects.draw_line(origin,origin+aim*120,Color("e77b95") if aim_cancelled else Color("9fcaff"),3,true)
@@ -448,19 +421,8 @@ func door_at(p: Vector2) -> String:return L.door_near(p,64)
 
 ## 2.0.36 보호막 시인성: shield·생명등불·저승꽃이 켜진 캐릭터는 몸을 감싸는 방어막이 보인다.
 func draw_shield_bubbles(node: Node2D) -> void:
- if rules==null:return
- for p in rules.players.values():
-  if p.eliminated or p.captured:continue
-  var shield: bool=float(p.buff.get("shield",0.0))>rules.elapsed
-  var flower: bool=float(p.buff.get("deathflower",0.0))>rules.elapsed
-  var lamp: bool=float(p.buff.get("lifelamp",0.0))>rules.elapsed
-  if not shield and not flower and not lamp:continue
-  var tint: Color=Color("d9c0ff") if flower else (Color("ffd08a") if lamp else Color("ffb9cf"))
-  var at: Vector2=(p.position as Vector2)-Vector2(0,L.elevation(p.position))
-  FX.shield_bubble(node,at,clock,tint,1.0 if shield else .6)
+ MapFx.shield_bubbles(node,rules,clock,L)
 
-## 2.0.36 실제 탑승형 에스컬레이터 바닥 연출: 캐릭터 아래에서 그려 절대 가리지 않는다.
-## 계단 띠·손잡이·흐르는 화살표가 작동 방향(위/아래)을 그대로 보여 준다.
 func draw_escalator(node: Node2D) -> void:
  var g: RefCounted=rules.gimmicks
  var item: Dictionary={}

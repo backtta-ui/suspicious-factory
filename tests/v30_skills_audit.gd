@@ -468,8 +468,8 @@ func run() -> void:
   var clip: AudioStream=S.CLIPS[name]
   if clip==null or clip.get_length()<=0.02:clip_ok=false
  check(clip_ok,"every sound effect loads with real length")
- check(S.INGAME!=null and S.INGAME.get_length()>18.0,"the tense match loop is longer than eighteen seconds")
- check(S.MUSIC!=null and S.MUSIC.get_length()>5.0,"the lobby music still loads")
+ check(S.MAP_BGM["seowon"]!=null and S.MAP_BGM["seowon"].get_length()>18.0,"the tense match loop is longer than eighteen seconds")
+ check(S.MUSIC!=null and S.MUSIC.get_length()>5.0 and S.MAP_BGM.size()==4,"the CC0 lobby music and four map tracks load")
  var audio:=S.new();root.add_child(audio);await frames(2)
  audio.play_clip("spell");audio.play_clip("seal");audio.play_clip("rescue");audio.play_clip("button")
  check(audio.played>=4,"the mixer accepts the new clips headlessly")

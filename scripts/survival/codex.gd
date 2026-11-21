@@ -435,7 +435,8 @@ func _ability_row(index: int,ability: Dictionary) -> void:
 func _fill_skins() -> void:
  if not is_instance_valid(skin_row):return
  for child in skin_row.get_children():child.free()
- var equipped: String=String(game.storage.equipped("skin"))
+ # 2.0.37 스킨은 캐릭터별로 장착한다(전우치의 부침개가 다른 캐릭터에 붙지 않는다).
+ var equipped: String=game.storage.skin_for(selected_id)
  if equipped=="":equipped="default"
  var options: Array=[preload("res://scripts/survival/market.gd").DEFAULT_SKIN]
  options.append_array(preload("res://scripts/survival/market.gd").skins_for(selected_id))
@@ -484,11 +485,12 @@ func _pick_skin(item: Dictionary) -> void:
  var id: String=String(item.id)
  skin_view=id
  if id=="default" or game.storage.owns(id):
-  game.storage.equip("skin",id)
+  game.storage.equip_skin(selected_id,id)
   game.storage.save()
   # 매칭 전에 갈아입혀도 선택창·경기에 바로 반영되게 rules의 내 스킨도 맞춘다.
-  if game.rules!=null and game.rules.players.has("human"):
-   game.rules.players.human.skin=id
+  # (도감에서 보고 있는 캐릭터가 실제 내 캐릭터일 때만 경기 스킨을 바꾼다.)
+  if game.rules!=null and game.rules.players.has("human") and String(game.rules.players.human.character)==selected_id:
+   game.rules.players.human.skin=game.storage.skin_for(selected_id)
   game.sound.play_clip("button")
  else:
   # 미보유 스킨은 화면을 가리는 팝업 대신 스킨 줄 옆 안내로 '상점에서 구매'를 알린다.
@@ -498,7 +500,8 @@ func _pick_skin(item: Dictionary) -> void:
  _layout.call_deferred()
 ## 현재 미리보기/장착 스킨의 전용 전신 원화를 중앙 단상에 보여 준다(없으면 캐릭터 원화).
 func _paint_stand_skin() -> void:
- var equipped: String=String(game.storage.equipped("skin"))
+ # 2.0.37 스킨은 캐릭터별로 장착한다(전우치의 부침개가 다른 캐릭터에 붙지 않는다).
+ var equipped: String=game.storage.skin_for(selected_id)
  if equipped=="":equipped="default"
  var view_id:=skin_view if skin_view!="" else equipped
  var name_value:="기본 모습"

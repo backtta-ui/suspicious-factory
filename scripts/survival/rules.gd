@@ -956,7 +956,9 @@ func visible(id: String) -> Array:
   var source_spec: Dictionary=C.find(String(source.character))
   var shown_name: String=String(source.name)
   if mimicking and not source_spec.is_empty():shown_name=String(source_spec.get("name",source.name))
-  result.append({"id":"" if p.form!="" and p.id!=id else p.id,"position":p.position,"form":p.form,"name":shown_name,"player_name":source.name,"role":source.role,"color":source.color,"cosmetic":C.look(source.character),"character":source.character,"character_name":String(source_spec.get("name","")),"lives":int(source.get("lives",LIVES)),"facing":p.facing,"height":p.height,"moving":p.intent.length()>.05 and not p.captured,"captured":p.captured,"immune":p.immune>elapsed,"shield":p.buff.get("shield",0)>elapsed or p.buff.get("lifelamp",0)>elapsed,"revealed":float(p.buff.get("glowing",0.0))>elapsed or float(p.buff.get("revealed",0.0))>elapsed,"disguised":p.form!="","mimic":mimicking,"skin":String(source.get("skin",""))})
+  result.append({"id":"" if p.form!="" and p.id!=id else p.id,"position":p.position,"form":p.form,"name":shown_name,"player_name":source.name,"role":source.role,"color":source.color,"cosmetic":C.look(source.character),"character":source.character,"character_name":String(source_spec.get("name","")),"lives":int(source.get("lives",LIVES)),"facing":p.facing,"height":p.height,"moving":p.intent.length()>.05 and not p.captured,"captured":p.captured,"immune":p.immune>elapsed,"shield":p.buff.get("shield",0)>elapsed or p.buff.get("lifelamp",0)>elapsed,"revealed":float(p.buff.get("glowing",0.0))>elapsed or float(p.buff.get("revealed",0.0))>elapsed,"disguised":p.form!="","mimic":mimicking,
+  # 2.0.37 스킨은 그 캐릭터 전용일 때만 유효하다(다른 캐릭터는 기본 이름표·기본 모습).
+  "skin":String(source.get("skin","")) if SkillFX.skin_allows(String(source.get("skin","")),String(source.get("character",""))) else ""})
  return result
 ## 발자국·동선을 전부 비추는 효과가 켜져 있는지(요괴 시점).
 func foot_scope(p: Dictionary) -> bool:

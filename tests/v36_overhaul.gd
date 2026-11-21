@@ -231,7 +231,7 @@ func run() -> void:
  # ---------------------------------------------------------------- 11) 버전
  var project:=FileAccess.get_file_as_string("res://project.godot")
  var preset:=FileAccess.get_file_as_string("res://export_presets.cfg")
- check(project.contains("config/version=\"2.0.36\""),"project version is 2.0.36")
- check(preset.contains("version/code=47") and preset.contains("version/name=\"2.0.36\""),"Android versionCode 47 / 2.0.36")
+ check(project.contains("config/version=\"2.0.37\""),"project version is 2.0.37")
+ check(preset.contains("version/code=48") and preset.contains("version/name=\"2.0.37\""),"Android versionCode 48 / 2.0.37")
  print("V36 RESULT checks=",checks," failures=",failures)
  quit(1 if failures>0 else 0)

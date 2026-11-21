@@ -5,7 +5,7 @@ var data: Dictionary={"version":1,"daoist":"daoist:woochi","yokai":"yokai:woochi
  "nickname":"",
  "coins":0,"gems":0,
  "stats":{"matches":0,"wins":0,"seals":0,"rescues":0,"doors":0,"disguises":0},
- "market":{"owned":["default"],"equipped":{"skin":"default","title":"","effect":""}},
+ "market":{"owned":["default"],"equipped":{"skin":"default","title":"","effect":""},"skins_by_character":{}},
  "characters":{"owned":["daoist:woochi","daoist:yeonhwa","yokai:gumiho","yokai:jangsanbeom"]},
  "achievements":{"claimed":[]},
  "mail":{"read":[],"claimed":[]},
@@ -48,6 +48,19 @@ func _init() -> void:
  var owned_skins: Array=data.market.owned
  if not owned_skins.has("woochi_pancake"):owned_skins.append("woochi_pancake")
  data.market.owned=owned_skins
+ # 2.0.37 스킨은 캐릭터 전용이다. 예전 저장의 전역 equipped.skin(부침개 전우치)은
+ # 전우치 칸으로 옮기고, 다른 캐릭터를 골라도 기본 모습·기본 이름표만 쓰게 한다.
+ var per_character: Dictionary=data.market.skins_by_character
+ if not (per_character is Dictionary):
+  per_character={};data.market.skins_by_character=per_character
+ var legacy_skin:=String(data.market.equipped.get("skin",""))
+ if legacy_skin=="woochi_pancake" and not per_character.has("daoist:woochi"):
+  per_character["daoist:woochi"]="woochi_pancake"
+ data.market.equipped.skin="default"
+ for character_id in per_character.keys():
+  var worn:=String(per_character[character_id])
+  if worn=="" or not owned_skins.has(worn) or not preload("res://scripts/survival/skill_fx.gd").skin_allows(worn,String(character_id)):
+   per_character.erase(character_id)
  # 2.0.32: 재화는 정수로만 다룬다(JSON이 실수로 읽어 와도 지갑·상점 표시가 흔들리지 않게).
  data.coins=maxi(0,int(data.coins));data.gems=maxi(0,int(data.gems))
 func backup_legacy() -> void:
@@ -111,6 +124,25 @@ func own(item: String) -> void:
  if not owns(item):(data.market.owned as Array).append(item)
 func equip(kind: String,id: String) -> void:data.market.equipped[kind]=id
 func equipped(kind: String) -> String:return String((data.market.equipped as Dictionary).get(kind,""))
+## 2.0.37 캐릭터별 스킨: 그 캐릭터의 전용 스킨만 돌려주고, 아니면 ""(기본 모습).
+func skin_for(character_id: String) -> String:
+ var book: Dictionary=data.market.get("skins_by_character",{})
+ if not (book is Dictionary):return ""
+ var worn: String=String(book.get(character_id,""))
+ if worn=="" or not owns(worn):return ""
+ if not preload("res://scripts/survival/skill_fx.gd").skin_allows(worn,character_id):return ""
+ return worn
+## 그 캐릭터에 스킨을 입히거나("" / "default"면 벗긴다). 다른 캐릭터의 스킨은 건드리지 않는다.
+func equip_skin(character_id: String,skin: String) -> void:
+ var book: Dictionary=data.market.get("skins_by_character",{})
+ if not (book is Dictionary):book={};data.market.skins_by_character=book
+ if skin=="" or skin=="default":
+  book.erase(character_id)
+  return
+ if not preload("res://scripts/survival/skill_fx.gd").skin_allows(skin,character_id):return
+ book[character_id]=skin
+## 지금 도사 진영에 고른 캐릭터가 입고 있는 스킨.
+func worn_skin() -> String:return skin_for(String(data.daoist))
 ## 캐릭터 해금 상태. 무료 캐릭터는 처음부터 보유한다.
 func owns_character(id: String) -> bool:return (data.characters.owned as Array).has(id)
 func own_character(id: String) -> void:

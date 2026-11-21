@@ -132,7 +132,8 @@ func run() -> void:
   check(path!="" and ResourceLoader.exists(path),"새 맵 둔갑 원화: "+path)
  # ---------------------------------------------------------------- 5) BGM
  for map_id in ["haeundae","dongseongno"]:
-  check(ResourceLoader.exists("res://assets/audio/bgm_%s.wav"%map_id),"맵 전용 BGM 파일: "+map_id)
+  var bgm_file: String="res://assets/audio/bgm/haeundae_beach.ogg" if map_id=="haeundae" else "res://assets/audio/bgm/dongseongno_urban.ogg"
+  check(ResourceLoader.exists(bgm_file),"맵 전용 BGM 파일: "+map_id)
  root.size=Vector2i(1600,720)
  var game:=App.instantiate();root.add_child(game)
  await frames(10)
