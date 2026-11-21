@@ -296,7 +296,7 @@ func _make_summary(claimed: int) -> void:
 		y+=40
 		shown+=1
 	if shown==0:
-		var all_done:=label(self,"서원의 모든 기록을 세웠습니다.",14.5,V.GOLD_BRIGHT)
+		var all_done:=label(self,"조선의 모든 기록을 세웠습니다.",14.5,V.GOLD_BRIGHT)
 		summary_parts.append(all_done)
 		place(all_done,Rect2(box.position.x+148,box.position.y+420,box.size.x-170,22))
 	var tip:=label(self,"경기를 끝내면 진행도가 저장됩니다.",13,Color(.78,.76,.90))

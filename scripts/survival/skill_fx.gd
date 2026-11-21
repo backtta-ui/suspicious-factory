@@ -19,7 +19,8 @@ const CHAR_FX={
  "yagwanggwi":"fx_glow_steps"}
 ## 도술별 전용 이펙트(캐릭터 기본보다 우선). 표에 없으면 캐릭터 기본을 쓴다.
 const SKILL_FX={
- "clone":"fx_dojutsu","transform":"fx_dojutsu",
+ ## 2.0.36: 기본 전우치는 수묵 부적(fx_talisman), 화중은신은 산수 족자. 부침개 스킨은 SKIN_FX가 우선한다.
+ "clone":"fx_talisman","transform":"fx_talisman",
  "painting":"fx_scroll_sansuhwa",
  "wallhop":"fx_feather_wind","windstep":"fx_feather_wind","eightleap":"fx_feather_wind",
  "puppet":"fx_clockwork","trap":"fx_clockwork","astrolabe":"fx_clockwork",

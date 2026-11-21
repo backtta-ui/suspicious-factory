@@ -231,7 +231,10 @@ func panel(parent: Node) -> VBoxContainer:
  var box:=VBoxContainer.new();box.add_theme_constant_override("separation",12);frame.add_child(box);return box
 func portrait(parent: Node,id: String,extent: Vector2=Vector2(330,360)) -> Control:
  var holder:=Control.new();holder.custom_minimum_size=extent;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;holder.size_flags_horizontal=Control.SIZE_EXPAND_FILL;holder.mouse_filter=Control.MOUSE_FILTER_IGNORE;parent.add_child(holder)
- var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.4,extent.y/72);holder.add_child(actor);actor.ingame_art=true;actor.art_id=C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"));actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
+ var actor:=Actor.new();actor.network_remote=true;actor.cosmetic=C.look(id);actor.collision_layer=0;actor.collision_mask=0;actor.scale=Vector2.ONE*minf(4.4,extent.y/72);holder.add_child(actor);actor.ingame_art=true
+ var skin_key:=SkillFX.sheet_key(id,String(storage.equipped("skin")))
+ actor.art_id=skin_key if skin_key!="" else C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"))
+ actor.skin_tint=Color.WHITE
  holder.resized.connect(func()->void:
   actor.position=Vector2(holder.size.x/2,holder.size.y*.85)
   actor.scale=Vector2.ONE*minf(7.2,holder.size.y/72.0))
@@ -303,7 +306,7 @@ var nickname_edit:=false
 var nickname_input: LineEdit
 var nickname_hint: Label
 var nickname_suggest: Array=[]
-const NICKNAME_SUGGESTIONS=["달빛도사","서원지기","밤새는전우치","매화검객","한지붕도사","달그림자","안개술사","종이호랑이"]
+const NICKNAME_SUGGESTIONS=["달빛도사","조선지기","밤새는전우치","매화검객","한지붕도사","달그림자","안개술사","종이호랑이"]
 func nickname_screen() -> void:
  var V=preload("res://scripts/ui/ui_v25.gd")
  var view:=get_viewport().get_visible_rect().size
@@ -544,7 +547,7 @@ func rooms_screen() -> void:
  row.add_child(button("새로고침",func()->void:build("rooms")));row.add_child(button("뒤로가기",func()->void:transition("lobby")))
 func room_dialog() -> void:
  var box:=popup("게임 방 만들기")
- var name_input:=LineEdit.new();name_input.placeholder_text="방 이름";name_input.text="월하의 모의전";name_input.max_length=16;name_input.custom_minimum_size.y=56;name_input.add_theme_font_override("font",D.FONT);box.add_child(name_input)
+ var name_input:=LineEdit.new();name_input.placeholder_text="방 이름";name_input.text="조선의 모의전";name_input.max_length=16;name_input.custom_minimum_size.y=56;name_input.add_theme_font_override("font",D.FONT);box.add_child(name_input)
  var count:=OptionButton.new();count.add_item("6인전 · 도사4 / 요괴2");count.add_item("8인전 · 도사6 / 요괴2");count.custom_minimum_size.y=56;count.add_theme_font_override("font",D.FONT);box.add_child(count)
  var bots_check:=CheckBox.new();bots_check.text="봇 자동 채우기";bots_check.button_pressed=true;bots_check.custom_minimum_size.y=56;bots_check.add_theme_font_override("font",D.FONT);box.add_child(bots_check)
  box.add_child(text("맵: %s · 오프라인"%Maps.name_of(String(room.get("map","seowon"))),20))
@@ -955,7 +958,7 @@ func loading_screen() -> void:
  plaque_sub.position=Vector2(center-140,398)*scale
  plaque_sub.size=Vector2(280,26)*scale
  # 하단 상태·게이지
- status_label=text(String(Maps.info().get("tip","달빛이 서원을 비춥니다…")),18,Color("f4e6c6"))
+ status_label=text(String(Maps.info().get("tip","달빛이 조선을 비춥니다…")),18,Color("f4e6c6"))
  status_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  status_label.add_theme_constant_override("outline_size",4)
  status_label.add_theme_color_override("font_outline_color",Color(.05,.03,.08,.9))
@@ -1155,6 +1158,15 @@ func hud() -> void:
  minimap.map_requested.connect(show_map)
  ## 2.0.34 관리실 CCTV 실시간 미니 뷰(강남역에서만 값이 찬다).
  cctv_view=preload("res://scripts/survival/cctv_view.gd").new();cctv_view.rules=rules;cctv_view.observer="human"
+ # 2.0.36 실제 CCTV: 이 월드의 World2D를 공유하는 SubViewport + Camera2D가 구역을 비춘다.
+ var feed:=SubViewport.new();feed.name="CctvFeed";feed.size=Vector2i(480,320)
+ feed.transparent_bg=false;feed.disable_3d=true;feed.render_target_update_mode=SubViewport.UPDATE_DISABLED
+ feed.gui_disable_input=true
+ ui.add_child(feed)
+ var feed_camera:=Camera2D.new();feed_camera.name="CctvCamera";feed.add_child(feed_camera)
+ feed_camera.enabled=true;feed_camera.position=rules.players.human.position;feed_camera.make_current()
+ feed.world_2d=world.get_world_2d()
+ cctv_view.feed=feed;cctv_view.camera=feed_camera
  ui.add_child(cctv_view)
  cctv_view.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
  cctv_view.offset_left=16;cctv_view.offset_right=252;cctv_view.offset_top=170;cctv_view.offset_bottom=340
@@ -1166,7 +1178,7 @@ func hud() -> void:
  circle_label=text("",15,Color("cfd7ea"))
  ui.add_child(circle_label)
  circle_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
- circle_label.offset_left=-300;circle_label.offset_right=-8;circle_label.offset_top=166;circle_label.offset_bottom=194
+ circle_label.offset_left=-380;circle_label.offset_right=-8;circle_label.offset_top=166;circle_label.offset_bottom=194
  circle_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
  pill(circle_label,Color(.03,.04,.09,.5),9)
  stick=preload("res://scripts/joystick.gd").new();ui.add_child(stick);D.position_stick(stick)
@@ -1289,6 +1301,7 @@ func interaction_context() -> Dictionary:
  ## 강남역 기믹(개찰구·에스컬레이터·자판기·CCTV·조명·셔터): 코앞에 있으면 우선한다.
  if rules.gimmicks!=null:
   var gimmick: Dictionary=rules.gimmicks.entry_at(me.position,72.0)
+  if gimmick.is_empty():gimmick=rules.gimmicks.on_escalator(me.position)
   if not gimmick.is_empty():
    var kind_g: String=String(gimmick.kind)
    var label_g: String=String(gimmick.get("label","기믹"))
@@ -1527,10 +1540,9 @@ func update_avatars() -> void:
   if not avatars.has(id):
    var actor:=Actor.new();actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0;actor.costume_scale=ACTOR_SCALE;actor.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(actor);actor.ingame_art=true
    var base_art:=C.fallback_art(String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
-   # 2.0.34 부침개 전우치: 장착 스킨이 그 캐릭터 전용이면 전용 8방향 시트를 쓴다.
-   var skin_key:=SkillFX.sheet_key(String(info.get("character","")),String(storage.equipped("skin"))) if info.id=="human" else ""
+   # 2.0.36 스킨 동기화: 내 캐릭터뿐 아니라 분신·인간둔갑한 요괴도 대상의 실제 스킨 시트를 쓴다.
+   var skin_key:=SkillFX.sheet_key(String(info.get("character","")),String(info.get("skin","")))
    actor.art_id=skin_key if skin_key!="" else base_art
-   if info.id=="human" and skin_key=="":actor.skin_tint=Market.skin_color(storage.equipped("skin")).lerp(Color.WHITE,.45)
    actor.position=target;actor.set_meta("target",target)
    avatars[id]=actor
    # 2.0.33 이름표: '닉네임 [캐릭터명] · ♥♥♥' 길이를 담을 만큼 넓게 잡는다.
@@ -1541,7 +1553,7 @@ func update_avatars() -> void:
   # 2.0.30 집합: 겉모습(원화)은 매 프레임 관측자가 보는 character를 따른다.
   # 인간둔갑이 끝나거나 둔갑이 풀리면 원래 모습으로 바로 돌아온다.
   var wanted_art: String=C.fallback_art(String(info.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
-  var wanted_skin:=SkillFX.sheet_key(String(info.get("character","")),String(storage.equipped("skin"))) if info.id=="human" else ""
+  var wanted_skin:=SkillFX.sheet_key(String(info.get("character","")),String(info.get("skin","")))
   if wanted_skin!="":wanted_art=wanted_skin
   if wanted_art!="" and actor.art_id!=wanted_art:
    actor.art_id=wanted_art
@@ -1578,6 +1590,7 @@ func update_avatars() -> void:
   var tag_character: String=String(info.get("character_name",""))
   if tag_character=="" and info.id=="human" and rules.players.has("human"):
    tag_character=String(C.find(rules.players.human.character).get("name",""))
+  if String(info.get("skin",""))=="woochi_pancake" and tag_character!="":tag_character+=" · 부침개"
   var lives_left: int=int(info.get("lives",rules.players.get(info.id,{}).get("lives",rules.LIVES)))
   var tag:=person_tag(tag_nick,tag_character,String(info.get("role","")),lives_left)
   actor.get_node("Name").text=tag+(" · 봉인" if info.captured else "");actor.get_node("Name").visible=not disguised;actor.get_node("Identity").color_id=info.color
@@ -1606,6 +1619,10 @@ func update_avatars() -> void:
    clone.ingame_art=true
    clone.art_id=C.fallback_art(String(effect.get("character","")).trim_prefix("yokai:").trim_prefix("daoist:"))
    if clone.art_id=="":clone.art_id=String(effect.cosmetic.get("character","woochi"))
+   # 2.0.36 분신도 시전자가 실제 장착한 스킨(예: 부침개 전우치)을 그대로 입는다.
+   var clone_skin:=String(effect.get("identity",{}).get("skin",""))
+   var clone_skin_key:=SkillFX.sheet_key(String(effect.get("character","")),clone_skin)
+   if clone_skin_key!="":clone.art_id=clone_skin_key
    clone.collision_layer=0;clone.collision_mask=0;clone.scale=Vector2(ACTOR_SCALE,ACTOR_SCALE);world.add_child(clone);clone.update_sprite();clones[key]=clone
    # 2.0.33 분신·환영도 본체와 똑같은 이름표를 단다(이름표가 없으면 가짜임이 바로 들킨다).
    var clone_label:=text("",11);clone_label.name="Name";clone_label.position=Vector2(-120,-68);clone_label.size=Vector2(240,18);clone_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;name_plate(clone_label);clone.add_child(clone_label)
@@ -1664,7 +1681,9 @@ func _process(delta: float) -> void:
  var me: Dictionary=rules.players.human
  ## 2.0.34: 오버레이(지도·설정·메뉴)가 열려 있어도 경기 시뮬레이션과 타이머는 계속 돈다.
  if not backgrounded:
-  if modal==null and rules.available(me):rules.command("human","move",{"vector":stick.vector*float(storage.data.sensitivity)})
+  # 2.0.36: 전체 지도를 연 상태에서도 조이스틱으로 계속 이동할 수 있다.
+  var map_open:=modal!=null and is_instance_valid(map_overlay) and modal==map_overlay
+  if (modal==null or map_open) and rules.available(me):rules.command("human","move",{"vector":stick.vector*float(storage.data.sensitivity)})
   elif not modal==null:rules.command("human","move",{"vector":Vector2.ZERO})
   fixed_clock+=minf(delta,.25)
   while fixed_clock>=STEP:
@@ -1696,7 +1715,8 @@ func set_text(node: Label,value: String) -> void:
  if node.text!=value:node.text=value
 func update_hud() -> void:
  var me: Dictionary=rules.players.human
- var live: bool=rules.available(me) and not paused and not backgrounded and modal==null
+ # 2.0.36 지도 오버레이는 조작을 막지 않는다(이동·스킬·구출 가능).
+ var live: bool=rules.available(me) and not paused and not backgrounded and (modal==null or (is_instance_valid(map_overlay) and modal==map_overlay))
  # 화면 시야 연출(시야 좁히기·등불끄기 안개·무월야)을 같은 프레임에 맞춘다.
  if is_instance_valid(vision):
   vision.rules=rules;vision.observer=spectate
@@ -1767,7 +1787,7 @@ func update_hud() -> void:
  set_text(seal_label,"봉인 %d / 5"%mini(5,captured));seal_label.visible=false
  if hud_view!=null:hud_view.survivor_count=dao;hud_view.sealed_count=captured
  var zone: Dictionary=rules.circle()
- set_text(circle_label,"안전구역 %d단계 · 축소 %02d:%02d"%[zone.stage,int(zone.until)/60,int(zone.until)%60])
+ set_text(circle_label,"%s · 안전구역 %d단계 · 축소 %02d:%02d"%[String(Maps.info().get("circle","안전구역")),int(zone.stage),int(zone.until)/60,int(zone.until)%60])
  if int(zone.stage)!=zone_stage_seen:
   if zone_stage_seen>=0:show_banner("안전구역 축소 시작! %d단계"%int(zone.stage),Color("ffd08a"))
   zone_stage_seen=int(zone.stage)
@@ -1776,7 +1796,8 @@ func update_hud() -> void:
   hud_view.rules=rules;hud_view.role=me.role
   hud_view.lives=int(me.get("lives",rules.LIVES));hud_view.max_lives=rules.LIVES
   hud_view.stamina=me.stamina;hud_view.captured=me.captured;hud_view.eliminated=me.eliminated
-  hud_view.character_name=String(spec.get("name",""))
+  var worn:=String(me.get("skin",""))
+  hud_view.character_name=String(spec.get("name",""))+(" · 부침개" if worn=="woochi_pancake" else "")
   # 2.0.30 지속 효과·버프·디버프 뱃지(이름 + 남은 시간)와 마지막 시전 칩.
   hud_view.buffs=rules.active_effects(me.id)
   hud_view.cast_name=String(me.get("last_skill_name",""))
@@ -1787,7 +1808,10 @@ func update_hud() -> void:
   hud_view.queue_redraw()
  var status:=""
  var mimic_left: float=float(me.get("buff",{}).get("mimic",0.0))-rules.elapsed
- if me.captured:status="구조 대기 %d초 · 목숨 %s" % [maxi(0,int(ceil(me.deadline-rules.elapsed))),hearts(int(me.get("lives",rules.LIVES)))]
+ var riding: Dictionary=rules.gimmicks.on_escalator(me.position) if rules.gimmicks!=null else {}
+ if not riding.is_empty():
+  status="에스컬레이터 탑승 · "+("▲ 위로" if rules.gimmicks.escalator_dir>0 else "▼ 아래로")+" · 실려 가는 중"
+ elif me.captured:status="구조 대기 %d초 · 목숨 %s" % [maxi(0,int(ceil(me.deadline-rules.elapsed))),hearts(int(me.get("lives",rules.LIVES)))]
  elif me.eliminated:status="탈락 · 관전 중"
  elif me.immune>rules.elapsed:status="재봉인 면역 %.1f초"%maxf(0,me.immune-rules.elapsed)
  elif me.outside>0:status="서클 밖 · 안으로 이동"
@@ -1841,11 +1865,12 @@ func update_hud() -> void:
     "douse":clip="seal"
     # 2.0.31: 시전한 도술 id(e.target)의 맞춤 효과음을 쓴다.
     "skill":cast_skill=String(e.get("target",""))
-   var target_name: String=String(rules.players[e.target].name) if rules.players.has(String(e.get("target",""))) else ""
+   var target_id: String=String(e.get("target",""))
+   var target_name: String=String(rules.players[target_id].name) if rules.players.has(target_id) else ""
    match String(e.kind):
     "seal":show_banner(target_name+"님이 봉인되었습니다! (10초)",Color("ffb0bf"))
     "rescue":show_banner(target_name+"님이 구출되었습니다!",Color("a8f0d0"))
-    "lose_life":show_banner(target_name+"님 목숨 -1 (남은 %d)" % int(rules.players[e.target].get("lives",0)),Color("ffd08a"))
+    "lose_life":show_banner(target_name+"님 목숨 -1 (남은 %d)" % int(rules.players.get(target_id,{}).get("lives",0)),Color("ffd08a"))
     "revive":show_banner(target_name+"님이 시작 자리에서 다시 일어났습니다",Color("cfe4ff"))
     "eliminate":show_banner(target_name+"님 최종 탈락!",Color("f0a8b8"))
     "skill":
@@ -1951,7 +1976,7 @@ func Copyinvite() -> void:
  notice("초대 문구를 복사했습니다.\n친구에게 붙여넣어 보내세요.")
 
 func generate_code() -> String:
- var words: Array=["달빛","서원","매화","한옥","밤새","연못","바람","등불"]
+ var words: Array=["달빛","조선","매화","한옥","밤새","연못","바람","등불"]
  var index:=absi(randi())%words.size()
  return "%s-%04d" % [words[index],absi(randi())%10000]
 
@@ -2152,15 +2177,12 @@ func show_map() -> void:
  var s:=clampf(view.y/720.0,.62,2.6)
  var overlay:=Control.new();overlay.name="MapOverlay"
  full(overlay,ui)
- overlay.mouse_filter=Control.MOUSE_FILTER_STOP
+ overlay.mouse_filter=Control.MOUSE_FILTER_PASS
  modal=overlay;map_overlay=overlay
  var shade:=ColorRect.new();shade.color=Color(.012,.015,.035,.9);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+ # 2.0.36: 지도 바깥 어두운 곳은 조작(조이스틱·스킬)을 그대로 통과시킨다. 닫기는 큰 닫기 버튼.
+ shade.mouse_filter=Control.MOUSE_FILTER_IGNORE
  overlay.add_child(shade)
- # 바깥(어두운 곳)을 누르면 닫힌다. 지도를 연 손가락이 이 배경까지 닿아도 무시한다.
- shade.gui_input.connect(func(event: InputEvent)->void:
-  if Time.get_ticks_msec()-map_guard_msec<200:return
-  if event is InputEventMouseButton and event.pressed and event.button_index==MOUSE_BUTTON_LEFT:close_map()
-  elif event is InputEventScreenTouch and event.pressed:close_map())
  var header: float=54.0*s
  var pad: float=18.0*s
  var hint_h: float=40.0*s
@@ -2197,7 +2219,7 @@ func show_map() -> void:
  close_top.position=Vector2(frame_size.x-132*s,8*s);close_top.size=Vector2(118*s,header-16*s)
  close_top.add_theme_font_size_override("font_size",int(20*s))
  # 2.0.30 미니맵 범례: 같은 팀만 보이고, 적은 탐지 도술 동안만 나타난다.
- var hint:=text("금빛 테 · 나 / 채운 점 · 같은 팀(도사 파랑 · 요괴 빨강) / 주황 ⊕ = 봉인(구출 필요) · X = 탈락 / 지도는 실시간",int(13*s),Color("cfd7ea"))
+ var hint:=text("금빛 테 · 나 / 같은 팀(도사 파랑 · 요괴 빨강) / 주황 ⊕ = 봉인(구출 필요) · X = 탈락 / 지도는 실시간 · 지도를 연 채로 이동할 수 있습니다",int(13*s),Color("cfd7ea"))
  hint.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
  panel.add_child(hint)
  hint.position=Vector2(pad,header+side+1*s);hint.size=Vector2(side,20*s)

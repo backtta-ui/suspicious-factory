@@ -61,13 +61,19 @@ func run() -> void:
   await tap(center)
   check(game.map_overlay!=null,"map reopens after closing")
   if game.map_overlay!=null:
-   # 전체 지도(한가운데 큰 지도)를 다시 누르면 닫힌다.
-   await tap(Vector2(root.size.x,root.size.y)*.5,63)
-   check(game.map_overlay==null,"tapping the open map closes it")
-  # 바깥 어두운 배경을 눌러도 닫힌다.
-  if game.map_overlay==null:await tap(center)
-  await tap(Vector2(8,root.size.y-8),64)
-  check(game.map_overlay==null,"tapping the dim backdrop closes the map")
+   # 2.0.36: 지도를 연 채로 이동 조작이 가능해야 한다(어두운 배경은 입력을 통과시킨다).
+   game.rules.phase="live"
+   game.update_hud()
+   check(game.stick!=null and game.stick.input_enabled,"joystick stays enabled while the full map is open")
+   var me: Dictionary=game.rules.players.human
+   var before_pos: Vector2=me.position
+   me.intent=Vector2(1,0)
+   for i in range(8):game.rules.tick(.05)
+   check(me.position.distance_to(before_pos)>3.0,"the player keeps moving while the map is open")
+   me.intent=Vector2.ZERO
+   # 바깥 어두운 배경을 눌러도 닫히지 않는다(조작 통과).
+   await tap(Vector2(8,root.size.y-8),64)
+   check(game.map_overlay!=null,"the dim backdrop passes touches through instead of closing")
   # 지도는 열린 동안에도 시뮬레이션을 세우지 않는다(일시정지 팝업).
   game.rules.phase="live";game.rules.elapsed=30.0
   await tap(center)

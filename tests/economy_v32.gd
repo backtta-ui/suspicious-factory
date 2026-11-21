@@ -151,17 +151,18 @@ func run() -> void:
  # ── ④ 상점: 실제 차감 · 보유/장착 · 잔액 부족
  game.build("market");await frames(4)
  game.storage.data.coins=3000;game.storage.data.gems=12
- var moon: Dictionary=Market.skin("moon")
- game.market_buy(moon,"skin");await frames(3)
- check(int(game.storage.data.coins)==3000-int(moon.price),"스킨 값이 실제 코인에서 차감된다")
- check(game.storage.owns("moon") and game.storage.equipped("skin")=="moon","구매한 스킨이 보유·장착으로 저장된다")
+ # 2.0.36: 도포 색 스킨은 제거됐다. 유료 칭호로 실제 코인 차감·장착을 검증한다.
+ var paid_title: Dictionary=Market.TITLES[1]
+ game.market_buy(paid_title,"title");await frames(3)
+ check(int(game.storage.data.coins)==3000-int(paid_title.price),"칭호 값이 실제 코인에서 차감된다")
+ check(game.storage.owns(String(paid_title.id)) and game.storage.equipped("title")==String(paid_title.id),"구매한 칭호가 보유·장착으로 저장된다")
  var shop_coin: Node=game.ui.find_child("ShopWallet_coin",true,false)
  var shop_gem: Node=game.ui.find_child("ShopWallet_gem",true,false)
- check(shop_coin!=null and String(shop_coin.get("text_value")).contains("2,550"),"상점 지갑이 차감된 실제 코인을 보여 준다")
+ check(shop_coin!=null and String(shop_coin.get("text_value")).contains("2,700"),"상점 지갑이 차감된 실제 코인을 보여 준다")
  check(shop_gem!=null and String(shop_gem.get("text_value")).contains("12"),"상점 지갑이 실제 보석 잔액을 보여 준다")
  game.storage.data.coins=100
- game.market_buy(Market.skin("ember"),"skin");await frames(2)
- check(int(game.storage.data.coins)==100 and not game.storage.owns("ember"),"코인이 모자라면 차감 없이 안내만 한다")
+ game.market_buy(Market.TITLES[2],"title");await frames(2)
+ check(int(game.storage.data.coins)==100 and not game.storage.owns("first_seal"),"코인이 모자라면 차감 없이 안내만 한다")
  check(game.modal!=null,"잔액 부족은 안내 팝업으로 알린다")
  game.close_popup();await frames(2)
  var gem_item: Dictionary=Market.EFFECTS[1]
@@ -179,7 +180,7 @@ func run() -> void:
  var reloaded: RefCounted=Storage.new()
  check(int(reloaded.data.coins)==int(game.storage.data.coins),"재로드 후 코인이 유지된다")
  check(int(reloaded.data.gems)==int(game.storage.data.gems),"재로드 후 보석이 유지된다")
- check(reloaded.owns("moon") and reloaded.equipped("skin")=="moon","재로드 후 보유·장착 상태가 유지된다")
+ check(reloaded.owns(String(paid_title.id)) and reloaded.equipped("title")==String(paid_title.id),"재로드 후 보유·장착 상태가 유지된다")
  check((reloaded.data.achievements.claimed as Array).has(String(Market.ACHIEVEMENTS[0].id)),"재로드 후 업적 수령 기록이 유지된다")
  check((reloaded.data.mail.claimed as Array).has(String(Market.MAILS[0].id)),"재로드 후 우편 수령 기록이 유지된다")
  check(reloaded.save()==OK,"저장 파일을 다시 쓸 수 있다")

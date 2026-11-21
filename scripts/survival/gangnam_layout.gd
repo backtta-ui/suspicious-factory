@@ -133,17 +133,8 @@ const GIMMICKS=[
  {"id":"turnstile","kind":"turnstile","zone":"gate","pos":Vector2(1500,1930),
   "rect":Rect2(1280,1912,440,36),"label":"개찰구","hint":"도사가 지나가면 4초 잠깁니다"},
  {"id":"escalator","kind":"escalator","zone":"escalator","pos":Vector2(560,1520),
-  "rect":Rect2(280,1380,560,280),"label":"에스컬레이터","hint":"작동 방향으로 타면 빨라집니다"},
- {"id":"vending_a","kind":"vending","zone":"vending","pos":Vector2(300,1000),"label":"자판기","hint":"눌러서 소음 파동을 냅니다"},
- {"id":"vending_b","kind":"vending","zone":"vending","pos":Vector2(430,1000),"label":"자판기","hint":"눌러서 소음 파동을 냅니다"},
- {"id":"vending_c","kind":"vending","zone":"vending","pos":Vector2(560,1000),"label":"자판기","hint":"눌러서 소음 파동을 냅니다"},
- {"id":"cctv","kind":"cctv","zone":"control","pos":Vector2(2840,430),"label":"CCTV 모니터","hint":"다른 구역을 실시간으로 감시합니다"},
- {"id":"light_cafe","kind":"light","zone":"cafe","pos":Vector2(1250,320),"label":"조명 스위치","hint":"도사는 끄고, 요괴는 다시 켭니다"},
- {"id":"light_lobby","kind":"light","zone":"lobby","pos":Vector2(1250,1000),"label":"조명 스위치","hint":"도사는 끄고, 요괴는 다시 켭니다"},
- {"id":"light_popup","kind":"light","zone":"popup","pos":Vector2(2340,1000),"label":"조명 스위치","hint":"도사는 끄고, 요괴는 다시 켭니다"},
- {"id":"light_platform","kind":"light","zone":"platform","pos":Vector2(1500,2205),"label":"조명 스위치","hint":"도사는 끄고, 요괴는 다시 켭니다"},
- {"id":"shutter","kind":"shutter","zone":"popup","pos":Vector2(2320,1620),
-  "rect":Rect2(2266,1520,28,200),"label":"팝업존 셔터","hint":"5초 동안 시야와 통로를 막습니다"}]
+  "rect":Rect2(280,1380,560,280),"label":"에스컬레이터","hint":"작동 방향으로 타면 실제로 실려 갑니다"},
+ {"id":"cctv","kind":"cctv","zone":"control","pos":Vector2(2840,430),"label":"CCTV 모니터","hint":"다른 구역을 실제 카메라로 감시합니다"}]
 ## CCTV로 볼 수 있는 구역(누를 때마다 다음 구역으로 넘어간다).
 const CCTV_ZONES=["lobby","cafe","platform","gate"]
 ## ---- 기력 구슬 ---------------------------------------------------------
@@ -191,18 +182,30 @@ const MEDALLION_RADIUS=120.0
 const DOOR_WIDTH=0.0
 const DOORS=[]
 const BUILDINGS=[]
+## 2.0.36 실제로 들어가는 실내 2곳: 카페와 편의점. 앞문·뒷문이 있고 들어가면
+## 지붕이 사라지듯 실내(카운터·테이블·진열장·조명)가 드러난다.
+const INTERIOR_DEFS=[
+ {"id":"cafe_room","name":"카페","sub":"커피와 디저트","rect":Rect2(1560,430,260,170),"kind":"cafe","accent":Color("ffcf8a")},
+ {"id":"store_room","name":"편의점","sub":"음료와 간식","rect":Rect2(2560,1300,260,190),"kind":"shop","accent":Color("7fe4d6")}]
+static var INTERIORS: Array=_make_interiors()
 static var HARD: Array=_make_hard()
 static var _spawn_cache: Dictionary={}
+static func _make_interiors() -> Array:
+ var out: Array=[]
+ for spec in INTERIOR_DEFS:
+  out.append(preload("res://scripts/survival/interiors.gd").make_entry(String(spec.id),String(spec.name),spec.rect as Rect2,String(spec.kind),spec.accent as Color,String(spec.get("sub",""))))
+ return out
 static func _make_hard() -> Array:
  var out: Array=[]
  out.append_array(OUTER_WALLS)
  out.append_array(WALLS)
  out.append_array(ISLANDS)
  out.append(TRACK)
+ for entry in _make_interiors():preload("res://scripts/survival/interiors.gd").add_walls(out,entry)
  return out
 static func map_id() -> String:return MAP_ID
 static func map_name() -> String:return NAME
-static func has_interiors() -> bool:return false
+static func has_interiors() -> bool:return true
 static func zones() -> Array:return ZONES
 static func zone(id: String) -> Dictionary:
  for entry in ZONES:
@@ -228,14 +231,38 @@ static func circle_final_center() -> Vector2:
  return CIRCLE_CENTER_FINAL if can_stand(CIRCLE_CENTER_FINAL,12) else safe(CIRCLE_CENTER_FINAL)
 static func corner_radius() -> float:
  return Vector2(SIZE.x*.5,SIZE.y*.5).length()
-static func buildings() -> Array:return BUILDINGS
-static func painted_door(_id: String) -> Vector2:return Vector2.ZERO
-static func building(_id: String) -> Dictionary:return {}
-static func door(_id: String) -> Dictionary:return {}
-static func building_doors(_id: String) -> Array:return []
-static func door_near(_p: Vector2,_distance: float=62.0) -> String:return ""
-static func interior_at(_p: Vector2,_pad: float=10.0) -> Dictionary:return {}
-static func inside(_p: Vector2) -> bool:return false
+static func buildings() -> Array:return INTERIORS
+static func painted_door(id: String) -> Vector2:
+ var entry:=building(id)
+ return entry.get("painted_door",Vector2.ZERO) if not entry.is_empty() else Vector2.ZERO
+static func building(id: String) -> Dictionary:
+ for entry in INTERIORS:
+  if String(entry.id)==id:return entry
+ return {}
+static func door(id: String) -> Dictionary:
+ for entry in INTERIORS:
+  for side in ["front","back"]:
+   if String(entry.id)+":"+side==id:return {"id":id,"building":entry.id,"side":side,"center":entry.doors[side],"label":String(entry.name)+(" 정문" if side=="front" else " 뒷문")}
+ return {}
+static func building_doors(id: String) -> Array:
+ var out: Array=[]
+ for side in ["front","back"]:
+  var entry:=door(id+":"+side)
+  if not entry.is_empty():out.append(entry)
+ return out
+static func door_near(p: Vector2,distance: float=62.0) -> String:
+ var best:="";var gap:=distance
+ for entry in INTERIORS:
+  for side in ["front","back"]:
+   var center: Vector2=entry.doors[side]
+   var d: float=p.distance_to(center)
+   if d<gap:gap=d;best=String(entry.id)+":"+side
+ return best
+static func interior_at(p: Vector2,pad: float=10.0) -> Dictionary:
+ for entry in INTERIORS:
+  if (entry.interior as Rect2).grow(pad).has_point(p):return entry
+ return {}
+static func inside(p: Vector2) -> bool:return not interior_at(p).is_empty()
 static func object_near(p: Vector2,distance: float=74.0) -> Dictionary:
  var best: Dictionary={};var gap:=distance
  for object in OBJECTS:

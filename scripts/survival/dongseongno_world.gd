@@ -30,6 +30,8 @@ const ANIMAL_HEIGHT={"mascot":46.0,"delivery_cart":42.0}
 var rules: RefCounted
 var observer:=L.SPAWN
 var clock:=0.0
+## 2.0.36 들어가면 지붕이 사라지는 실내 레이어.
+var interior_layer: Node2D
 var aim:=Vector2.ZERO
 var aim_active:=false
 var aim_cancelled:=false
@@ -72,6 +74,11 @@ func _ready() -> void:
  build_walkers()
  dynamic=Node2D.new();dynamic.name="Dynamic";dynamic.z_index=6;dynamic.draw.connect(draw_dynamic);add_child(dynamic)
  effects=Node2D.new();effects.name="Effects";effects.z_index=9;effects.draw.connect(draw_effects);add_child(effects)
+ interior_layer=preload("res://scripts/survival/interior_layer.gd").new()
+ interior_layer.name="Interiors"
+ interior_layer.layout=L
+ add_child(interior_layer)
+
 func tex(path: String) -> Texture2D:
  if textures.has(path):return textures[path]
  var full: String=path if path.begins_with("res://") else PROP_DIR+path
@@ -127,6 +134,7 @@ func update_cull() -> void:
   if is_instance_valid(node):node.visible=rect.intersects(entry.rect)
 func _process(delta: float) -> void:
  clock+=delta
+ if is_instance_valid(interior_layer):interior_layer.observer=observer
  update_cull()
  update_walkers()
  tick+=delta
@@ -201,29 +209,46 @@ func draw_zone_fog(node: Node2D) -> void:
   for k in range(3):
    node.draw_arc(g.speaker_pos,float(g.speaker_radius)*(.35+float(k)*.22),0,TAU,48,Color(.85,.55,1,.10*life),2.0,false)
 ## 안전구역: 네온 번화가에 맞춘 마젠타/시안 경고 링.
+## 2.0.36 동성로 자기장: 폭염경보. 안전구역 밖은 작열하는 아스팔트와 아지랑이,
+## 경계는 타오르는 주황 링. 시간이 갈수록 열기 선이 더 흔들린다.
 func draw_safe_zone(node: Node2D) -> void:
  var zone: Dictionary=rules.circle()
  var center: Vector2=zone.center
  var radius: float=float(zone.radius)
- var pulse: float=.5+.5*sin(clock*2.6)
- for i in range(14):
-  var inner: float=radius+float(i)*64.0
-  node.draw_arc(center,inner+32.0,0,TAU,110,Color(.45,.05,.30,.030),64.0,false)
- for i in range(72):
-  if i%2==1:continue
-  var a0: float=float(i)*TAU/72.0
-  node.draw_arc(center,radius+16.0,a0,a0+TAU/72.0,10,Color(1,.28,.55,.40),18.0,false)
- node.draw_arc(center,radius,0,TAU,128,Color(.62,.20,.80,.85),7.0,true)
- node.draw_arc(center,radius-8.0,0,TAU,128,Color(1,.45,.85,.55+.25*pulse),3.0,true)
- node.draw_arc(center,radius+9.0,0,TAU,128,Color(.35,.95,1,.55+.30*pulse),4.0,true)
- var sweep: float=clock*.8
- node.draw_arc(center,radius-3.0,sweep,sweep+0.5,12,Color(1,.55,.9,.45),4.0,true)
+ var pulse: float=.5+.5*sin(clock*2.8)
+ # 원 밖: 작열하는 열기(주황·적갈 밴드)
+ for i in range(16):
+  var inner: float=radius+float(i)*58.0
+  node.draw_arc(center,inner+29.0,0,TAU,110,Color(.30,.09,.02,.032+.008*float(16-i)),58.0,false)
+ # 아지랑이: 원 밖을 흔들리는 열기 선
+ for i in range(5):
+  var rr: float=radius+30.0+float(i)*64.0+sin(clock*1.6+float(i))*8.0
+  for k in range(40):
+   var a0: float=float(k)*TAU/40.0
+   var wobble: float=sin(clock*4.0+float(k)*.7+float(i))*3.0
+   node.draw_arc(center,rr+wobble,a0,a0+TAU/40.0*.58,7,Color(1,.56,.16,.14+.04*float(5-i)),2.6,true)
+ # 경계: 타오르는 주황·노랑 이중 링
+ node.draw_arc(center,radius,0,TAU,128,Color(1,.52,.12,.92),7.0,true)
+ node.draw_arc(center,radius-5.0,0,TAU,128,Color(1,.86,.38,.60+.22*pulse),3.0,true)
+ # 불티가 경계에서 튀어 오른다
+ for i in range(40):
+  var a:=float(i)*TAU/40.0+clock*.4
+  var base:=center+Vector2.from_angle(a)*radius
+  var rise:=fmod(clock*.7+float(i)*.13,1.0)
+  node.draw_circle(base+Vector2(0,-rise*26.0),1.6*(1.0-rise)+.4,Color(1,.62,.18,(1.0-rise)*.65))
+ # 햇빛 눈금: 바깥으로 뻗는 빛살
+ for i in range(24):
+  var a:=float(i)*TAU/24.0+clock*.05
+  var p0:=center+Vector2.from_angle(a)*(radius+10.0)
+  var p1:=center+Vector2.from_angle(a)*(radius+10.0+26.0+14.0*pulse)
+  node.draw_line(p0,p1,Color(1,.72,.26,.18+.12*pulse),2.0,true)
  var next_radius: float=float(zone.get("next_radius",radius))
  var next_center: Vector2=zone.get("next_center",center)
  for i in range(64):
   if i%3!=0:continue
   var a1: float=float(i)*TAU/64.0
-  node.draw_arc(next_center,next_radius,a1,a1+TAU/64.0*.55,5,Color(.6,.9,1,.22),2.0,true)
+  node.draw_arc(next_center,next_radius,a1,a1+TAU/64.0*.55,5,Color(1,.82,.40,.24),2.0,true)
+ node.draw_string(FONT,center+Vector2(-150,-radius-18),"폭염경보 · 안쪽으로",HORIZONTAL_ALIGNMENT_CENTER,300,20,Color(1,.90,.66,.80))
 ## ---------------------------------------------------------------- 기믹·연출
 func draw_dynamic() -> void:
  if rules==null:return
@@ -402,6 +427,7 @@ func draw_orbs() -> void:
   orbs.draw_arc(at,11+pulse*3,0,TAU,18,Color(1,.7,.9,.34),1.4,true)
 func draw_effects() -> void:
  if rules==null:return
+ draw_shield_bubbles(effects)
  if aim_active and rules.players.has("human"):
   var origin: Vector2=rules.players.human.position
   effects.draw_line(origin,origin+aim*120,Color("e77b95") if aim_cancelled else Color("9fcaff"),3,true)
@@ -413,3 +439,16 @@ func draw_effects() -> void:
   var ready: bool=String(human.get("character",""))!="" and float(human.buff.get("transform",0.0))<=rules.elapsed and String(human.get("form",""))==""
   if ready:draw_form_target(effects,target)
 func door_at(p: Vector2) -> String:return L.door_near(p,64)
+
+## 2.0.36 보호막 시인성: shield·생명등불·저승꽃이 켜진 캐릭터는 몸을 감싸는 방어막이 보인다.
+func draw_shield_bubbles(node: Node2D) -> void:
+ if rules==null:return
+ for p in rules.players.values():
+  if p.eliminated or p.captured:continue
+  var shield: bool=float(p.buff.get("shield",0.0))>rules.elapsed
+  var flower: bool=float(p.buff.get("deathflower",0.0))>rules.elapsed
+  var lamp: bool=float(p.buff.get("lifelamp",0.0))>rules.elapsed
+  if not shield and not flower and not lamp:continue
+  var tint: Color=Color("d9c0ff") if flower else (Color("ffd08a") if lamp else Color("ffb9cf"))
+  var at: Vector2=p.position
+  FX.shield_bubble(node,at,clock,tint,1.0 if shield else .6)

@@ -917,3 +917,39 @@ static func kit_glow(node: Node2D,at: Vector2,center: Vector2,p: float) -> void:
   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
  for i in range(4):
   node.draw_arc(at-Vector2(0,10),14.0+p*34.0+float(i)*8.0,0,TAU,34,Color(.55,1,.92,alpha*(.24-.05*float(i))),1.6,true)
+
+## 2.0.36 바리공주 보호막/생명등불의 '실제로 보이는 방어막'.
+## 몸을 감싸는 반투명 타원 + 여섯 장의 부적 + 아래에서 올라오는 연꽃 빛.
+## rules의 shield 시간과 1:1로 그리므로, 막이 보이면 실제로 봉인 1회를 막는다.
+static func shield_bubble(node: Node2D,at: Vector2,t: float,tint: Color=LOTUS,strength: float=1.0) -> void:
+ var pulse: float=.5+.5*sin(t*3.2)
+ var center: Vector2=at-Vector2(0,30)
+ # 바닥의 연꽃 문양
+ node.draw_set_transform(at,0,Vector2(1.0,.42))
+ node.draw_circle(Vector2.ZERO,20.0,Color(tint.r,tint.g,tint.b,.10*strength))
+ node.draw_arc(Vector2.ZERO,20.0+pulse*2.0,0,TAU,36,Color(tint.r,tint.g,tint.b,.42*strength),2.0,true)
+ for i in range(6):
+  var a:=float(i)*TAU/6.0+t*.5
+  var petal:=Vector2.from_angle(a)*15.0
+  node.draw_circle(petal,4.0,Color(tint.r,tint.g,tint.b,.16*strength))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 몸을 감싸는 타원 돔
+ for i in range(3):
+  node.draw_set_transform(center,0,Vector2(1.0,1.28))
+  node.draw_arc(Vector2.ZERO,19.0+float(i)*4.0+pulse*1.4,0,TAU,40,Color(tint.r,tint.g,tint.b,(.34-.09*float(i))*strength),2.2,true)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 도는 부적 6장
+ for i in range(6):
+  var a:=float(i)*TAU/6.0-t*.9
+  var spot:=center+Vector2(cos(a)*24.0,sin(a)*30.0)
+  var alpha: float=(.55+.30*sin(t*3.0+float(i)))*strength
+  node.draw_set_transform(spot,a+PI*.5,Vector2(1.0,.62))
+  node.draw_rect(Rect2(-4,-7,8,14),Color(tint.r,tint.g,tint.b,alpha))
+  node.draw_rect(Rect2(-4,-7,8,14),Color(.55,.30,.10,.45*strength),false,1.0)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 저승꽃(보라)일 때만 꽃잎이 흩날린다.
+ if tint.b>tint.g:
+  for i in range(8):
+   var phase:=fmod(t*.55+float(i)*.19,1.0)
+   var petal_at:=at+Vector2(sin(float(i)*2.1+t)*22.0,-phase*70.0)
+   node.draw_circle(petal_at,2.2*(1.0-phase)+.6,Color(tint.r,tint.g,tint.b,(1.0-phase)*.45*strength))

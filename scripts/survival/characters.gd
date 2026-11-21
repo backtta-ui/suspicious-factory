@@ -18,7 +18,7 @@ const SKILLS={
  "eightleap":{"name":"팔방도약","description":"조준한 방향을 중심으로 세 방향으로 연속 도약하며 분신 잔상을 남깁니다.","cd":50.0,"icon":"blink","aim":true},
  "puppet":{"name":"기관인형","description":"내 모습의 기관 인형을 9초 세워 요괴를 유인합니다.","cd":20.0,"icon":"mimic","aim":false},
  "trap":{"name":"압력기관","description":"밟으면 3초 동안 요괴를 느리게 만드는 압력 덫을 설치합니다.","cd":18.0,"icon":"capture","aim":false},
- "astrolabe":{"name":"천문기계","description":"8초 동안 서원 전역의 요괴 위치를 벽 너머까지 꿰뚫어 봅니다.","cd":60.0,"icon":"track","aim":false},
+ "astrolabe":{"name":"천문기계","description":"8초 동안 조선 전역의 요괴 위치를 벽 너머까지 꿰뚫어 봅니다.","cd":60.0,"icon":"track","aim":false},
  "lifelamp":{"name":"생명등불","description":"8초 동안 나와 가까운 동료의 이동속도를 올리고 봉인을 한 번 막습니다.","cd":20.0,"icon":"shield","aim":false},
  "deathflower":{"name":"저승꽃","description":"8초 보호막을 두르고, 봉인되어도 구조 시간을 6초 더 벌어 줍니다.","cd":22.0,"icon":"talisman","aim":false},
  "returnpath":{"name":"귀환의 길","description":"봉인되었거나 위기에 몰린 동료 곁으로 즉시 합류해 보호막을 나눕니다.","cd":55.0,"icon":"rescue","aim":false},
@@ -56,10 +56,10 @@ const ROSTER={
    {"slot":"main","skill":"wallhop","name":"담장넘기","icon":"jump","cd":12.0,"description":"조준한 방향으로 190만큼 담장과 장애물을 넘어 도약합니다.","aim":true},
    {"slot":"sub","skill":"windstep","name":"바람발","icon":"dodge","cd":16.0,"description":"5초 동안 이동속도가 1.7배로 폭발합니다."},
    {"slot":"ult","skill":"eightleap","name":"팔방도약","icon":"blink","cd":50.0,"description":"조준한 방향을 중심으로 세 방향으로 연속 도약하며 분신 잔상을 남깁니다.","aim":true}]},
-  {"id":"jangyeongsil","name":"장영실","art":"yeongsil","body":"hongryeon","tint":"ffcf9a","role":"설치·정보","intro":"기관 인형과 천문 기계로 서원을 읽는 도사","abilities":[
+  {"id":"jangyeongsil","name":"장영실","art":"yeongsil","body":"hongryeon","tint":"ffcf9a","role":"설치·정보","intro":"기관 인형과 천문 기계로 조선을 읽는 도사","abilities":[
    {"slot":"main","skill":"puppet","name":"기관인형","icon":"mimic","cd":20.0,"description":"내 모습의 기관 인형을 9초 세워 요괴를 유인합니다."},
    {"slot":"sub","skill":"trap","name":"압력기관","icon":"capture","cd":18.0,"description":"밟으면 3초 동안 요괴를 느리게 만드는 압력 덫을 설치합니다."},
-   {"slot":"ult","skill":"astrolabe","name":"천문기계","icon":"track","cd":60.0,"description":"8초 동안 서원 전역의 요괴 위치를 벽 너머까지 꿰뚫어 봅니다."}]},
+   {"slot":"ult","skill":"astrolabe","name":"천문기계","icon":"track","cd":60.0,"description":"8초 동안 조선 전역의 요괴 위치를 벽 너머까지 꿰뚫어 봅니다."}]},
   {"id":"barigongju","name":"바리공주","art":"bari","body":"yeonhwa","tint":"ffd6e6","role":"지원·생존","intro":"저승의 길을 알고 동료를 되살리는 도사","abilities":[
    {"slot":"main","skill":"lifelamp","name":"생명등불","icon":"shield","cd":20.0,"description":"8초 동안 나와 가까운 동료의 이동속도를 올리고 봉인을 한 번 막습니다."},
    {"slot":"sub","skill":"deathflower","name":"저승꽃","icon":"talisman","cd":22.0,"description":"8초 보호막을 두르고, 봉인되어도 구조 시간을 6초 더 벌어 줍니다."},

@@ -36,25 +36,25 @@ const OUTER_WALLS=[Rect2(80,110,3240,26),Rect2(80,2464,3240,26),Rect2(80,110,26,
 ## 시장·상점·포장마차 건물. 좁은 골목(80~120px)이 미로를 만든다.
 const BUILDINGS_RECTS=[
  # 좌상단 전통시장
- Rect2(200,190,190,150),Rect2(480,190,150,150),Rect2(720,200,170,140),Rect2(930,200,90,240),
+ Rect2(200,190,190,150),Rect2(480,190,150,150),Rect2(700,190,200,200),Rect2(930,200,90,240),
  Rect2(200,430,220,140),Rect2(510,420,180,150),Rect2(790,440,230,130),
  Rect2(250,650,180,70),Rect2(600,650,220,70),
  # 구남로
  Rect2(1250,200,130,130),Rect2(1600,220,150,120),Rect2(1900,200,120,100),
  Rect2(1250,470,200,160),Rect2(1750,480,180,150),
  # 서핑샵·샤워장
- Rect2(2260,200,250,180),Rect2(2600,200,170,140),Rect2(2900,230,300,210),
+ Rect2(2240,190,280,210),Rect2(2600,200,170,140),Rect2(2900,230,300,210),
  Rect2(2300,470,210,150),Rect2(2680,500,190,120),
  # 해변 산책로
  Rect2(200,900,240,200),Rect2(540,960,180,160),Rect2(860,900,140,180),
  # 포장마차 먹자골목
- Rect2(1200,900,240,150),Rect2(1580,940,220,140),Rect2(1900,880,150,180),
+ Rect2(1180,890,260,200),Rect2(1580,940,220,140),Rect2(1900,880,150,180),
  # 중앙 우측 상가
  Rect2(2250,900,180,160),
  # 동백섬 건물
  Rect2(2880,1040,170,140),
  # 해변 산책로 상가(탈의실·매점·횟집)
- Rect2(280,1180,200,150),Rect2(760,1200,180,140),Rect2(1350,1180,220,150),
+ Rect2(280,1180,200,150),Rect2(760,1200,180,140),Rect2(1330,1170,250,190),
  Rect2(1830,1200,170,140),Rect2(2260,1180,180,140),
  # 백사장 바위·파라솔 하우스
  Rect2(900,1760,160,90),Rect2(1500,1860,120,80),Rect2(600,2120,140,90),Rect2(1900,2210,160,80)]
@@ -72,7 +72,7 @@ const TIDE_BRIDGE=Rect2(2560,1180,140,70)
 const OBJECTS=[
  # 전통시장 골목
  {"kind":"pocha_stall","p":Vector2(420,380)},{"kind":"plastic_chair","p":Vector2(470,405)},
- {"kind":"cooler","p":Vector2(690,380)},{"kind":"plastic_chair","p":Vector2(730,400)},
+ {"kind":"cooler","p":Vector2(660,300)},{"kind":"plastic_chair","p":Vector2(740,440)},
  {"kind":"pocha_stall","p":Vector2(240,620)},{"kind":"cooler","p":Vector2(320,600)},
  {"kind":"plastic_chair","p":Vector2(520,620)},{"kind":"beach_ball","p":Vector2(880,640)},
  # 구남로
@@ -167,20 +167,8 @@ const GIMMICKS=[
   "zones":["beach","seashore","dongbaek"]},
  {"id":"tide","kind":"tide","zone":"dongbaek","pos":Vector2(2630,1210),"rect":Rect2(2556,1160,150,90),
   "label":"밀물","hint":"다리 지름길이 잠깐 잠깁니다 · 데크 두 갈래로 우회","period":34.0,"duration":8.0},
- {"id":"light_surf","kind":"light","zone":"surf","pos":Vector2(2240,330),
-  "label":"서핑샵 조명","hint":"도사는 끄고, 요괴는 다시 켭니다"},
  {"id":"mist","kind":"mist","zone":"surf","pos":Vector2(2210,540),"radius":250.0,
-  "label":"샤워기 물안개","hint":"5초 동안 앞이 흐려집니다"},
- {"id":"telescope","kind":"telescope","zone":"beach","pos":Vector2(1120,1980),
-  "label":"전망대 망원경","hint":"멀리 있는 사람을 관측합니다"},
- {"id":"bell_a","kind":"bell","zone":"market","pos":Vector2(380,360),
-  "label":"포장마차 주문벨","hint":"눌러서 소음으로 요괴를 유인합니다"},
- {"id":"bell_b","kind":"bell","zone":"food","pos":Vector2(1560,880),
-  "label":"포장마차 주문벨","hint":"눌러서 소음으로 요괴를 유인합니다"},
- {"id":"lighthouse","kind":"lighthouse","zone":"dongbaek","pos":Vector2(3160,1360),
-  "label":"등대","hint":"불빛이 바다를 비춥니다"},
- {"id":"tent","kind":"tent","zone":"food","pos":Vector2(2050,800),
-  "label":"포장마차 천막","hint":"바닷바람에 천막이 흔들립니다"}]
+  "label":"샤워기 물안개","hint":"5초 동안 앞이 흐려집니다"}]
 const CCTV_ZONES=[]
 ## ---- 기력 구슬 ----------------------------------------------------------
 const ORBS=[Vector2(560,720),Vector2(1080,600),Vector2(1450,700),Vector2(1850,720),
@@ -233,17 +221,36 @@ const MEDALLION_RADIUS=0.0
 const DOOR_WIDTH=0.0
 const DOORS=[]
 const BUILDINGS=[]
+## 2.0.36 실제로 들어가는 실내 4곳: 겉만 있는 빈 상자를 없애고 앞문·뒷문이 있는 가게로 만든다.
+const INTERIOR_DEFS=[
+ {"id":"market_shop","name":"전통시장 상점","sub":"건어물과 그릇","rect":Rect2(700,190,200,200),"kind":"shop","accent":Color("ffb46b")},
+ {"id":"food_house","name":"포장마차 식당","sub":"국수와 어묵","rect":Rect2(1180,890,260,200),"kind":"food","accent":Color("ff9ecb")},
+ {"id":"surf_shop","name":"서핑샵","sub":"보드와 슈트","rect":Rect2(2240,190,280,210),"kind":"shop","accent":Color("8ff0d8")},
+ {"id":"beach_store","name":"해변 매점","sub":"음료와 튜브","rect":Rect2(1330,1170,250,190),"kind":"shop","accent":Color("ffd9a0")}]
+static var INTERIORS: Array=_make_interiors()
 static var HARD: Array=_make_hard()
 static var _spawn_cache: Dictionary={}
+static func _make_interiors() -> Array:
+ var out: Array=[]
+ for spec in INTERIOR_DEFS:
+  out.append(preload("res://scripts/survival/interiors.gd").make_entry(String(spec.id),String(spec.name),spec.rect as Rect2,String(spec.kind),spec.accent as Color,String(spec.get("sub",""))))
+ return out
 static func _make_hard() -> Array:
  var out: Array=[]
  out.append_array(OUTER_WALLS)
- out.append_array(BUILDINGS_RECTS)
+ var rooms:=_make_interiors()
+ for rect in BUILDINGS_RECTS:
+  var is_room:=false
+  for entry in rooms:
+   if (entry.rect as Rect2).is_equal_approx(rect):is_room=true;break
+  if is_room:continue
+  out.append(rect)
+ for entry in rooms:preload("res://scripts/survival/interiors.gd").add_walls(out,entry)
  out.append_array(WATER)
  return out
 static func map_id() -> String:return MAP_ID
 static func map_name() -> String:return NAME
-static func has_interiors() -> bool:return false
+static func has_interiors() -> bool:return true
 static func zones() -> Array:return ZONES
 static func zone(id: String) -> Dictionary:
  for entry in ZONES:
@@ -268,14 +275,38 @@ static func circle_final_center() -> Vector2:
  return CIRCLE_CENTER_FINAL if can_stand(CIRCLE_CENTER_FINAL,12) else safe(CIRCLE_CENTER_FINAL)
 static func corner_radius() -> float:
  return Vector2(SIZE.x*.5,SIZE.y*.5).length()
-static func buildings() -> Array:return BUILDINGS
-static func painted_door(_id: String) -> Vector2:return Vector2.ZERO
-static func building(_id: String) -> Dictionary:return {}
-static func door(_id: String) -> Dictionary:return {}
-static func building_doors(_id: String) -> Array:return []
-static func door_near(_p: Vector2,_distance: float=62.0) -> String:return ""
-static func interior_at(_p: Vector2,_pad: float=10.0) -> Dictionary:return {}
-static func inside(_p: Vector2) -> bool:return false
+static func buildings() -> Array:return INTERIORS
+static func painted_door(id: String) -> Vector2:
+ var entry:=building(id)
+ return entry.get("painted_door",Vector2.ZERO) if not entry.is_empty() else Vector2.ZERO
+static func building(id: String) -> Dictionary:
+ for entry in INTERIORS:
+  if String(entry.id)==id:return entry
+ return {}
+static func door(id: String) -> Dictionary:
+ for entry in INTERIORS:
+  for side in ["front","back"]:
+   if String(entry.id)+":"+side==id:return {"id":id,"building":entry.id,"side":side,"center":entry.doors[side],"label":String(entry.name)+(" 정문" if side=="front" else " 뒷문")}
+ return {}
+static func building_doors(id: String) -> Array:
+ var out: Array=[]
+ for side in ["front","back"]:
+  var entry:=door(id+":"+side)
+  if not entry.is_empty():out.append(entry)
+ return out
+static func door_near(p: Vector2,distance: float=62.0) -> String:
+ var best:="";var gap:=distance
+ for entry in INTERIORS:
+  for side in ["front","back"]:
+   var center: Vector2=entry.doors[side]
+   var d: float=p.distance_to(center)
+   if d<gap:gap=d;best=String(entry.id)+":"+side
+ return best
+static func interior_at(p: Vector2,pad: float=10.0) -> Dictionary:
+ for entry in INTERIORS:
+  if (entry.interior as Rect2).grow(pad).has_point(p):return entry
+ return {}
+static func inside(p: Vector2) -> bool:return not interior_at(p).is_empty()
 static func object_near(p: Vector2,distance: float=74.0) -> Dictionary:
  var best: Dictionary={};var gap:=distance
  for object in OBJECTS:

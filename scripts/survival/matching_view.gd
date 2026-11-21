@@ -9,7 +9,7 @@ const SLOTS:=8
 const DAOISTS:=6
 const RING:=176.0
 const SLOT_SIZE:=92.0
-const NAMES=["나","달빛여우","서원지기","밤도사","호랑이님","그림자","연꽃","도깨비"]
+const NAMES=["나","달빛여우","조선지기","밤도사","호랑이님","그림자","연꽃","도깨비"]
 var slots: Array=[]
 var status_label: Label
 var timer_label: Label

@@ -21,8 +21,8 @@ const DECOR_LANTERN=7
 const DECOR_BRIDGE=8
 const TREE_BASE=472.0
 ## 벚꽃나무·석등의 실제 배치(충돌은 layout.gd가 담당). 길·화단 안쪽에만 둔다.
-const TREES=[Vector2(220,260),Vector2(220,1100),Vector2(220,2060),Vector2(700,1760),Vector2(700,2360),Vector2(820,260),Vector2(820,1100),Vector2(1300,560),Vector2(1300,2360),Vector2(1660,1880),Vector2(1780,260),Vector2(1960,2360),Vector2(2260,860),Vector2(2260,1460),Vector2(2440,2000),Vector2(2500,260),Vector2(3100,920),Vector2(3160,1520)]
-const LANTERNS=[Vector2(931,855),Vector2(1262,993),Vector2(1499,716),Vector2(1792,914),Vector2(2061,932),Vector2(2291,992),Vector2(2636,889),Vector2(2886,1121),Vector2(3228,1068),Vector2(3059,1394),Vector2(3281,1676),Vector2(3031,1929),Vector2(2967,2109),Vector2(2748,2193),Vector2(2491,2446),Vector2(2200,2235),Vector2(1918,2461),Vector2(1634,2235),Vector2(1340,2441),Vector2(1120,2186),Vector2(793,2134),Vector2(990,1799),Vector2(764,1519),Vector2(948,1208),Vector2(1771,414),Vector2(1576,1280),Vector2(1804,1559),Vector2(1544,1827),Vector2(1772,2123),Vector2(1529,2396),Vector2(2335,1228),Vector2(1046,1377)]
+const TREES=[Vector2(1150,300),Vector2(2150,250),Vector2(2950,250),Vector2(200,700),Vector2(950,600),Vector2(1900,950),Vector2(2200,950),Vector2(1200,1750),Vector2(1500,1600),Vector2(1850,1750),Vector2(2300,1600),Vector2(2600,1600),Vector2(3160,1050),Vector2(3160,2150),Vector2(1700,2250),Vector2(900,2380),Vector2(500,2320),Vector2(2500,2400)]
+const LANTERNS=[Vector2(880,900),Vector2(1100,1060),Vector2(1400,1130),Vector2(1750,1190),Vector2(2100,1120),Vector2(2400,1050),Vector2(2600,940),Vector2(2750,1050),Vector2(2900,1250),Vector2(3050,1500),Vector2(3100,1750),Vector2(3000,2000),Vector2(2800,2100),Vector2(2500,2160),Vector2(2200,2150),Vector2(1800,2120),Vector2(1400,2080),Vector2(1100,2150),Vector2(950,2250),Vector2(700,2200),Vector2(600,2000),Vector2(560,1800),Vector2(600,1600),Vector2(700,1450),Vector2(800,1200),Vector2(900,1000),Vector2(1600,1000),Vector2(1750,850),Vector2(520,1150),Vector2(2100,340),Vector2(1500,850),Vector2(2300,1300)]
 ## 담장 기와 빛깔(밤 하늘 아래 청회색 기와 + 화강석 벽체).
 const TILE_DARK=Color("171d2c")
 const TILE_MID=Color("42557a")

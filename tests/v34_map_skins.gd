@@ -31,7 +31,7 @@ func run() -> void:
  Maps.set_preferred("gangnam")
  check(Maps.pick(rng)=="gangnam","디버그 맵 지정이 무작위보다 우선한다")
  Maps.set_preferred("random");Maps.set_current("seowon")
- check(Maps.name_of("gangnam")=="서울 강남역" and Maps.name_of("seowon")=="월하의 서원","맵 이름 표시 값")
+ check(Maps.name_of("gangnam")=="서울 강남역" and Maps.name_of("seowon")=="조선","맵 이름 표시 값")
  check(Maps.scene_of("gangnam").ends_with("gangnam_world.gd") and Maps.arena_of("gangnam")=="gangnam","강남역 월드·아레나 연결")
  # ---------------------------------------------------------------- 2) 강남역 구조
  var L: Script=GangnamL
@@ -122,7 +122,7 @@ func run() -> void:
  check(str(game.timer_label.text).contains("서울 강남역"),"상단 HUD에 현재 맵 이름 표시: "+str(game.timer_label.text))
  if game.minimap!=null:game.minimap.sync_map()
  check(game.minimap!=null and game.minimap.L.map_id()=="gangnam","미니맵이 강남역 구조를 쓴다")
- check(game.rules.gimmicks!=null and game.rules.gimmicks.defs.size()>=6,"기믹 6종이 rules에 연결")
+ check(game.rules.gimmicks!=null and game.rules.gimmicks.defs.size()==3,"핵심 기믹 3종이 rules에 연결")
  var human: Dictionary=game.rules.players.human
  human.role="daoist"
  # ---------------------------------------------------------------- 4) 둔갑(모든 사물 자유 이동)
@@ -153,45 +153,30 @@ func run() -> void:
  check(g.entry_at(gate_center,120).get("kind","")=="turnstile","개찰구 기믹 위치 조회")
  game.rules.elapsed=g.turnstile_until+.1
  check(not g.blocked(gate_center),"잠금이 풀리면 다시 통과된다")
- # 자판기: 소음 파동
- human.position=Vector2(300,1040)
- var vend: bool=game.rules.command("human","gimmick")
- check(vend and g.noise_until>game.rules.elapsed,"자판기를 눌러 소음 파동이 발생")
- check(g.noise_pos.distance_to(Vector2(300,1000))<60.0,"소음 위치가 자판기 근처")
- # 에스컬레이터: 요괴가 방향 반전
+ # 에스컬레이터: 서 있어도 작동 방향으로 실제로 실려 간다.
+ var before_dir: int=g.escalator_dir
+ human.position=Vector2(560,1520)
+ var ride_from: Vector2=human.position
+ human.intent=Vector2.ZERO
+ game.rules.tick(.1)
+ check(human.position.distance_to(ride_from)>6.0,"the escalator actually carries a standing passenger")
  var yokai_id: String=""
  for p in game.rules.players.values():
   if String(p.role)=="yokai" and p.id!="human":yokai_id=String(p.id);break
- var before_dir: int=g.escalator_dir
  var yokai: Dictionary=game.rules.players[yokai_id]
  yokai.position=Vector2(560,1520)
  game.rules.gimmicks.cooldown.clear()
  var flipped: bool=game.rules.gimmicks.interact(yokai)
- check(flipped and g.escalator_dir==-before_dir,"요괴가 에스컬레이터 방향을 반전")
- check(not g.on_escalator(Vector2(560,1520)).is_empty(),"에스컬레이터 위 판정")
- # 조명: 도사가 끄고 요괴가 켠다
- human.position=Vector2(1250,1000)
- game.rules.gimmicks.cooldown.clear()
- game.rules.command("human","gimmick")
- check(g.zone_dark("lobby"),"도사가 조명을 꺼 암전")
- check(float(game.rules.vision_for("human").get("dark",0.0))>0.2,"암전 구역은 실제로 어둡게 보인다")
- yokai.position=Vector2(1250,1000)
- game.rules.gimmicks.cooldown.clear()
- game.rules.gimmicks.interact(yokai)
- check(not g.zone_dark("lobby"),"요괴가 조명을 다시 켠다")
- # CCTV: 다른 구역 실시간 감시
+ check(flipped and g.escalator_dir==-before_dir,"a yokai can reverse the escalator")
+ check(not g.on_escalator(Vector2(560,1520)).is_empty(),"escalator area is recognized")
+ # CCTV: 실제 SubViewport 카메라가 선택한 구역을 비춘다.
  human.position=Vector2(2840,430)
  game.rules.gimmicks.cooldown.clear()
  game.rules.command("human","gimmick")
- check(g.cctv_until>game.rules.elapsed and L.CCTV_ZONES.has(g.cctv_zone),"CCTV가 구역을 감시한다: "+g.cctv_zone)
- # 셔터: 통로·시야 차단
- human.position=Vector2(2320,1620)
- game.rules.gimmicks.cooldown.clear()
- game.rules.command("human","gimmick")
- check(g.shutter_until>game.rules.elapsed,"팝업존 셔터가 내려온다")
- var shutter_rect: Rect2=Rect2(2266,1520,28,200)
- check(g.blocked(shutter_rect.get_center()),"셔터가 통로를 막는다")
- check(g.line_blocked(Vector2(2190,1600),Vector2(2400,1600)),"셔터가 시야도 막는다")
+ check(g.cctv_until>game.rules.elapsed and L.CCTV_ZONES.has(g.cctv_zone),"CCTV selects a live zone: "+g.cctv_zone)
+ check(game.cctv_view!=null and game.cctv_view.feed!=null and game.cctv_view.camera!=null,"CCTV is a real camera feed (SubViewport + Camera2D)")
+ game.cctv_view.focus_zone()
+ check(game.cctv_view.camera.position.distance_to(L.zone_rect(g.cctv_zone).get_center())<2.0,"CCTV camera points at the selected zone")
  # ---------------------------------------------------------------- 6) 안전구역 개편
  game.rules.elapsed=0.0
  var c0: Dictionary=game.rules.circle()

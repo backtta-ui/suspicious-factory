@@ -94,6 +94,17 @@ static func draw_base(node: Node2D) -> void:
   if String(zone2.id)=="gate":at=Vector2(rect2.position.x+2350,rect2.position.y+152)
   if String(zone2.id)=="platform":at=Vector2(rect2.position.x+2050,rect2.position.y+196)
   var width: float=26.0+label.length()*26.0
+  # 2.0.36: 바닥 글씨가 벽에 반쯤 가려지지 않도록, 벽과 겹치면 아래/오른쪽으로 밀어낸다.
+  for attempt in range(8):
+   var box:=Rect2(at-Vector2(16,38),Vector2(width,58))
+   var blocked:=false
+   for wall in L.HARD:
+    if (wall as Rect2).intersects(box):blocked=true;break
+   if not blocked:break
+   at+=Vector2(26 if attempt%2==0 else 0,30 if attempt%2==1 else 0)
+  # 구역 밖으로 넘치지 않게
+  at.x=clampf(at.x,rect2.position.x+20,rect2.end.x-width-10)
+  at.y=clampf(at.y,rect2.position.y+70,rect2.end.y-20)
   node.draw_rect(Rect2(at-Vector2(16,38),Vector2(width,58)),Color(.03,.04,.08,.46))
   node.draw_rect(Rect2(at-Vector2(16,38),Vector2(width,58)),Color(zone2.accent.r,zone2.accent.g,zone2.accent.b,.45),false,2.0)
   node.draw_string(TITLE_FONT,at-Vector2(2,36),label,HORIZONTAL_ALIGNMENT_LEFT,-1,40,Color(0,0,0,.45))

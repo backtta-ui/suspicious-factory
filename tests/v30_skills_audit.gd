@@ -260,8 +260,8 @@ func run() -> void:
  me=caster(r,"yokai:jangsanbeom",at);r.effects.clear();check(r.skill(me,Vector2.RIGHT,"sub") and float(me.buff.get("sense",0.0))-r.elapsed>3.5,"청각사냥 opens four seconds of hearing")
  # 산군의 울음: 반경 320만 민다.
  me=caster(r,"yokai:jangsanbeom",at,["bot-1","bot-2"])
- var pushed: Dictionary=helper(r,"bot-1","daoist","daoist:honggildong",at+Vector2(300,0))
- var safe_far: Dictionary=helper(r,"bot-2","daoist","daoist:honggildong",at+Vector2(340,0))
+ var pushed: Dictionary=helper(r,"bot-1","daoist","daoist:honggildong",at+Vector2(0,-300))
+ var safe_far: Dictionary=helper(r,"bot-2","daoist","daoist:honggildong",at+Vector2(0,-340))
  var pushed_from: Vector2=pushed.position;var far_from: Vector2=safe_far.position
  r.effects.clear();check(r.skill(me,Vector2.RIGHT,"ult"),"산군의 울음 casts")
  check(pushed.position.distance_to(pushed_from)>60 and safe_far.position.distance_to(far_from)<2.0,"산군의 울음 reaches 320 and no further")

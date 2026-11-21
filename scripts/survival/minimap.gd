@@ -70,6 +70,8 @@ func _draw() -> void:
  draw_circle(center,radius*.94,Color("101a30"))
  if rules!=null:
   draw_structure(to_map,scale_factor)
+  # 2.0.36 확대 지도: 각 구역 장소 이름을 지도 위에 표기한다(작은 미니맵에서는 생략).
+  if size.x>260.0:draw_zone_names(to_map,scale_factor)
   var circle: Dictionary=rules.circle()
   # 안전구역: 현재 원(굵은 금빛) + 다음 원(점선 느낌의 옅은 청록)
   draw_arc(to_map.call(circle.center),float(circle.radius)*scale_factor,0,TAU,64,Color(.35,1,1,.55),1.6,true)
@@ -137,11 +139,33 @@ func draw_structure(to_map: Callable,scale_factor: float) -> void:
   var points2: Array=path2.p
   for i in range(points2.size()-1):
    draw_line(to_map.call(points2[i]),to_map.call(points2[i+1]),Color(.62,.52,.36,.30),maxf(1.0,float(path2.w)*scale_factor*.5))
+## 구역 이름: 확대 지도에서만. 벽 위에 겹치지 않도록 구역 중심을 걷는 자리로 보정한다.
+func draw_zone_names(to_map: Callable,scale_factor: float) -> void:
+ var zones: Array=L.zones()
+ var font_size: int=maxi(11,int(clampf(size.x/46.0,11.0,20.0)))
+ for zone in zones:
+  var rect: Rect2=zone.rect
+  if rect.size.x<=0.0:continue
+  var spot:=rect.get_center()
+  if not L.can_stand(spot,10):spot=L.safe(spot)
+  var at: Vector2=to_map.call(spot)
+  var label: String=String(zone.get("name",zone.get("id","")))
+  if label=="":continue
+  var width: float=FONT.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x
+  var box:=Rect2(at-Vector2(width*.5+5.0,float(font_size)*.72),Vector2(width+10.0,float(font_size)+7.0))
+  draw_rect(box,Color(.02,.03,.06,.72))
+  draw_string_outline(FONT,Vector2(box.position.x+5.0,box.position.y+font_size+1.0),label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,maxi(2,int(font_size*.22)),Color(.01,.01,.03,.9))
+  draw_string(FONT,Vector2(box.position.x+5.0,box.position.y+font_size+1.0),label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color(.96,.92,.80,.96))
+
 ## 같은 팀원(항상) + 탐지 중인 적(그 시간 동안만) + 봉인된 동료의 구출 아이콘.
 func draw_units(to_map: Callable,unit: float) -> void:
- var self_role: String=String(rules.players.get(observer,{}).get("role","daoist"))
+ var me: Dictionary=rules.players.get(observer,{})
+ var self_role: String=String(me.get("role","daoist"))
  var team: Color=team_color(self_role)
+ # 2.0.36 어둑시니에게 시야를 빼앗긴 동안에는 미니맵에서 팀원 위치가 보이지 않는다.
+ var blinded: bool=blind_hides_allies()
  for a in rules.allies(observer):
+  if blinded and not bool(a.get("self",false)):continue
   var p: Vector2=to_map.call(a.position)
   if bool(a.eliminated):
    var s:=unit*.85
@@ -176,6 +200,22 @@ func draw_units(to_map: Callable,unit: float) -> void:
   var enemy:=team_color(String(c.team))
   draw_arc(p2,unit*(1.5+_pulse*.25),0,TAU,18,Color(enemy.r,enemy.g,enemy.b,.95),maxf(1.0,unit*.3),true)
   draw_circle(p2,unit*.42,enemy)
+ if float(me.get("blind_until",0.0))>rules.elapsed:
+  var radius_map: float=minf(size.x,size.y)*.5-16.0
+  draw_arc(size*.5,radius_map,0,TAU,48,Color(.55,.42,.85,.55),3.0,true)
+  # 2.0.36 피드백: 하단 범례·링과 겹치지 않게, 원 안쪽 상단에 어두운 알약 배경으로 띄운다.
+  var label: String="시야 차단 · 팀원 위치 표시 불가"
+  var font_size: int=maxi(10,int(unit*2.2))
+  var text_w: float=FONT.get_string_size(label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size).x+18.0
+  var pill:=Rect2(Vector2(size.x*.5-text_w*.5,size.y*.5-radius_map+18.0),Vector2(text_w,font_size+12.0))
+  draw_rect(pill,Color(.06,.04,.12,.88))
+  draw_rect(pill,Color(.62,.48,.95,.75),false,1.4)
+  draw_string(FONT,pill.position+Vector2(9,font_size+4),label,HORIZONTAL_ALIGNMENT_LEFT,-1,font_size,Color(.86,.78,1,.98))
+## 2.0.36: 어둑시니의 시야 감소(검은시야)에 맞은 동안 팀원 위치를 숨기는지(테스트·디버그).
+func blind_hides_allies() -> bool:
+ if rules==null:return false
+ var me: Dictionary=rules.players.get(observer,{})
+ return float(me.get("blind_until",0.0))>rules.elapsed
 func refresh() -> void:
  _dirty=true;queue_redraw()
 func _process(delta: float) -> void:

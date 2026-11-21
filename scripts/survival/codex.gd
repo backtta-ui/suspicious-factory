@@ -260,7 +260,7 @@ func _build() -> void:
 
 func _build_header() -> void:
  title_label=label_text(self,"도감",34,Color("ffe6b4"),true)
- subtitle=label_text(self,"월하의 서원에 등장하는 도사와 요괴를 확인하세요",14,Color("d8cfe8"))
+ subtitle=label_text(self,"조선에 등장하는 도사와 요괴를 확인하세요",14,Color("d8cfe8"))
  back_button=V.PlateButton.new()
  back_button.kind="dark"
  back_button.text="뒤로"
@@ -429,40 +429,53 @@ func _ability_row(index: int,ability: Dictionary) -> void:
  target.mouse_exited.connect(func()->void:_hover_row(index,false))
  _paint_row(target,false,false)
 
-## 도포 스킨 한 줄: 보유 스킨은 눌러서 바로 장착하고, 미보유 스킨은 중앙 원화에
-## 미리보기만 보여 주고 구매는 마켓(상점)에서 안내한다(도감은 장착·구경 전용).
+## 2.0.36 스킨 줄: 이 캐릭터가 입을 수 있는 전용 스킨만 보여 준다(도포 색 스킨 없음).
+## 보유 스킨은 눌러서 바로 장착하고, 미보유 스킨은 중앙 원화에 미리보기만 보여 주고
+## 구매는 마켓(상점)에서 안내한다(도감은 장착·구경 전용).
 func _fill_skins() -> void:
  if not is_instance_valid(skin_row):return
  for child in skin_row.get_children():child.free()
- var skins: Array=preload("res://scripts/survival/market.gd").SKINS
  var equipped: String=String(game.storage.equipped("skin"))
  if equipped=="":equipped="default"
- if skin_view=="" or not skins.any(func(item: Dictionary)->bool:return String(item.id)==skin_view):skin_view=equipped
+ var options: Array=[preload("res://scripts/survival/market.gd").DEFAULT_SKIN]
+ options.append_array(preload("res://scripts/survival/market.gd").skins_for(selected_id))
+ if skin_view=="" or not options.any(func(item: Dictionary)->bool:return String(item.id)==skin_view):skin_view=equipped
  var per: float=50.0
- for i in range(skins.size()):
-  var item: Dictionary=skins[i]
+ for i in range(options.size()):
+  var item: Dictionary=options[i]
   var id: String=String(item.id)
-  var owned: bool=game.storage.owns(String(id))
+  var owned: bool=id=="default" or game.storage.owns(id)
   var chosen: bool=id==equipped
   var previewing: bool=id==skin_view
   var target:=button("",func()->void:_pick_skin(item),skin_row)
   target.name="CodexSkin_"+id
   place(target,Rect2(24.0+float(i%6)*per,SKIN_Y,per-6.0,44.0))
-  var swatch:=Panel.new();swatch.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  # 초상 썸네일(스킨 전용 초상이 없으면 캐릭터 초상)을 금테 판에 넣는다.
+  var art_path:=String(item.get("portrait",""))
+  if art_path=="" or not ResourceLoader.exists(art_path):art_path=String(selected.get("portrait",""))
+  if art_path!="" and ResourceLoader.exists(art_path):
+   var thumb:=TextureRect.new()
+   thumb.texture=load(art_path)
+   thumb.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+   thumb.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
+   thumb.mouse_filter=Control.MOUSE_FILTER_IGNORE
+   thumb.modulate=Color(1,1,1,1.0 if owned else .45)
+   var clip:=Control.new();clip.clip_contents=true;clip.mouse_filter=Control.MOUSE_FILTER_IGNORE
+   target.add_child(clip);clip.position=Vector2.ZERO;clip.size=target.size
+   clip.add_child(thumb);thumb.position=Vector2.ZERO;thumb.size=target.size
   var border_color:=GOLD if chosen else (VIOLET if previewing else Color(GOLD.r,GOLD.g,GOLD.b,.32))
-  var style:=flat(Color(String(item.color)),border_color,3 if chosen or previewing else 1,10)
-  if not owned:style.bg_color=Color(String(item.color)).darkened(.35)
-  swatch.add_theme_stylebox_override("panel",style)
-  target.add_child(swatch)
-  swatch.position=Vector2.ZERO;swatch.size=target.size
+  var frame:=Panel.new();frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
+  frame.add_theme_stylebox_override("panel",flat(Color(0,0,0,0),border_color,3 if chosen or previewing else 1,8))
+  target.add_child(frame);frame.position=Vector2.ZERO;frame.size=target.size
   if not owned:
    var lock:=label_text(target,"미보유",10,Color("ffe6c0"))
    lock.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-   place(lock,Rect2(0,13,per-6.0,16))
+   lock.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+   place(lock,Rect2(0,0,per-6.0,44.0))
   if chosen:
    var mark:=label_text(target,"✓",13,Color("2a1e08"))
    mark.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-   place(mark,Rect2(0,8,per-6.0,18))
+   place(mark,Rect2(0,26,per-6.0,18))
   target.set_meta("skin",item)
   target.tooltip_text=String(item.name)
  _paint_stand_skin()
@@ -470,9 +483,12 @@ func _fill_skins() -> void:
 func _pick_skin(item: Dictionary) -> void:
  var id: String=String(item.id)
  skin_view=id
- if game.storage.owns(id):
+ if id=="default" or game.storage.owns(id):
   game.storage.equip("skin",id)
   game.storage.save()
+  # 매칭 전에 갈아입혀도 선택창·경기에 바로 반영되게 rules의 내 스킨도 맞춘다.
+  if game.rules!=null and game.rules.players.has("human"):
+   game.rules.players.human.skin=id
   game.sound.play_clip("button")
  else:
   # 미보유 스킨은 화면을 가리는 팝업 대신 스킨 줄 옆 안내로 '상점에서 구매'를 알린다.
@@ -480,25 +496,30 @@ func _pick_skin(item: Dictionary) -> void:
  # 누르는 중인 버튼을 즉시 지우면 신호 처리 중에 노드가 사라진다. 다음 프레임에 다시 그린다.
  _fill_skins.call_deferred()
  _layout.call_deferred()
-## 현재 미리보기/장착 스킨 색을 중앙 원화에 입혀 구경할 수 있게 한다.
+## 현재 미리보기/장착 스킨의 전용 전신 원화를 중앙 단상에 보여 준다(없으면 캐릭터 원화).
 func _paint_stand_skin() -> void:
- var skins: Array=preload("res://scripts/survival/market.gd").SKINS
  var equipped: String=String(game.storage.equipped("skin"))
  if equipped=="":equipped="default"
  var view_id:=skin_view if skin_view!="" else equipped
- var skin_color:=Color.WHITE
- var name_value:="기본 도포"
+ var name_value:="기본 모습"
  var owned:=true
- for item in skins:
-  if String(item.id)!=view_id:continue
-  skin_color=Color(String(item.color));name_value=String(item.name);owned=game.storage.owns(view_id)
- if view_id=="default":skin_color=Color("ffffff")
+ var full:=""
+ if view_id!="default":
+  var item: Dictionary=preload("res://scripts/survival/market.gd").skin(view_id)
+  name_value=String(item.get("name",view_id))
+  owned=game.storage.owns(view_id)
+  if String(item.get("skin_of",""))!="" and String(selected.get("art",""))==String(item.get("skin_of","")):
+   full=String(item.get("full",""))
+ # 스킨 전용 원화가 있으면 그것을, 없으면 캐릭터 원화를 그대로 쓴다(색 틴트 없음).
  if is_instance_valid(stand):
-  stand.modulate=Color.WHITE if view_id=="default" else Color.WHITE.lerp(skin_color,.75)
+  var path:=full if full!="" and ResourceLoader.exists(full) else String(selected.get("sprite",""))
+  if path!="" and ResourceLoader.exists(path):
+   var texture: Texture2D=load(path)
+   if texture!=null:stand.texture=texture
+  stand.modulate=Color.WHITE
  if is_instance_valid(skin_status):
   if view_id!=equipped and owned:skin_status.text="미리보기 · "+name_value+" · 장착"
   elif view_id!=equipped:skin_status.text="미리보기 · 상점에서 구매"
-  elif view_id=="default":skin_status.text="장착 중 · "+name_value
   else:skin_status.text="장착 중 · "+name_value
   skin_status.add_theme_color_override("font_color",GOLD if view_id==equipped else Color("c79bff"))
 func _rows() -> Array:

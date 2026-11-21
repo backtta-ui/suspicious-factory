@@ -71,8 +71,14 @@ func run() -> void:
  human.position=L.door(first_door).center+Vector2(0,26)
  check(r.command("human","interact") and r.doors.get(first_door,0.0)>r.elapsed,"front door opens by interaction")
  check(r.events.any(func(e: Dictionary)->bool:return e.kind=="door"),"door event for sound")
- # 시작 스폰과 겹치지 않는 동쪽 항아리에서 둔갑·근접 봉인을 확인한다.
- var jar_point: Vector2=Vector2(1430,556)
+ # 2.0.36 비대칭 동선에서도 문과 떨어진 항아리를 골라 둔갑·근접 봉인을 확인한다.
+ var jar_point: Vector2=Vector2.ZERO
+ for object in L.OBJECTS:
+  if String(object.kind)!="jar":continue
+  if not L.can_stand(object.p,10):continue
+  if L.door_near(object.p,96)!="":continue
+  jar_point=object.p;break
+ check(jar_point!=Vector2.ZERO,"a jar away from every door exists for the disguise check")
  human.position=jar_point;human.facing=2;human.cd.erase("transform")
  check(r.command("human","interact") and human.form=="jar","jar disguise still works")
  check(L.door_near(jar_point,70)=="","no door reported far from a hanok")

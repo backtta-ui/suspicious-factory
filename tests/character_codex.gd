@@ -116,20 +116,26 @@ func run() -> void:
  for id in codex.cards:
   var name_label: Label=codex.cards[id].get_meta("name")
   if is_instance_valid(name_label):check(not name_label.get_global_rect().intersects(guide_rect),"name label of %s stays clear of the guide"%id)
- # 도감 안에서 도포 스킨을 바로 장착한다(구매는 마켓 전용).
- var skin:=named(game.ui,"CodexSkin_default")
- check(skin!=null and named(game.ui,"CodexSkin_moon")!=null,"guide lists robe skins for equipping")
- await tap(skin.get_global_rect().get_center())
- check(String(game.storage.equipped("skin"))=="default","tapping a robe equips it in the guide")
- # 미보유 스킨은 중앙 원화 미리보기만 하고 장착하지 않는다.
- var locked_skin:=named(game.ui,"CodexSkin_moon")
- check(locked_skin!=null and not game.storage.owns("moon"),"an unowned robe is listed with a preview")
- # 미보유 스킨은 안내 팝업을 띄우므로 터치 대신 같은 핸들러를 직접 호출해 검증한다.
- codex._pick_skin(codex.skin_row.get_node("CodexSkin_moon").get_meta("skin"))
+ # 2.0.36: 도포 색 스킨은 사라지고, 이 캐릭터 전용 스킨만 도감에 나온다.
+ if codex.filter!="all":await tap(named(game.ui,"CodexTab_all").get_global_rect().get_center())
+ await tap(named(game.ui,"CodexCard_woochi").get_global_rect().get_center())
  await frames(4)
- check(String(game.storage.equipped("skin"))=="default" and codex.skin_view=="moon","choosing an unowned robe only previews it")
- check(codex.stand.modulate!=Color.WHITE,"the preview really tints the standing figure")
- check(codex.skin_status.text.contains("상점"),"an unowned robe points to the shop inline")
+ var skin:=named(game.ui,"CodexSkin_default")
+ check(skin!=null and named(game.ui,"CodexSkin_woochi_pancake")!=null,"guide lists the character's own skins")
+ await tap(skin.get_global_rect().get_center())
+ check(String(game.storage.equipped("skin"))=="default","tapping the base look equips it in the guide")
+ # 미보유 스킨은 중앙 원화 미리보기만 하고 장착하지 않는다.
+ game.storage.data.market.owned.erase("woochi_pancake")
+ game.storage.equip("skin","default")
+ codex._select("daoist:woochi")
+ await frames(2)
+ var locked_skin:=named(game.ui,"CodexSkin_woochi_pancake")
+ check(locked_skin!=null and not game.storage.owns("woochi_pancake"),"an unowned character skin is listed with a preview")
+ codex._pick_skin(codex.skin_row.get_node("CodexSkin_woochi_pancake").get_meta("skin"))
+ await frames(4)
+ check(String(game.storage.equipped("skin"))=="default" and codex.skin_view=="woochi_pancake","choosing an unowned skin only previews it")
+ check(String(codex.stand.texture.resource_path).contains("woochi_pancake"),"the preview really shows the skin's own full art")
+ check(codex.skin_status.text.contains("상점"),"an unowned skin points to the shop inline")
  for size in [Vector2i(960,540),Vector2i(1280,720),Vector2i(2340,1080)]:
   root.size=size
   await frames(8)

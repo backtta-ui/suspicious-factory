@@ -195,7 +195,7 @@ func frame(parent: Node,rect: Rect2) -> NinePatchRect:
 		node.position=Vector2.ZERO
 	return node
 
-func figure(parent: Node,id: String,extent: Vector2,tint: Color=Color.WHITE) -> Control:
+func figure(parent: Node,id: String,extent: Vector2,tint: Color=Color.WHITE,skin: String="") -> Control:
 	var holder:=Control.new()
 	holder.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	holder.custom_minimum_size=extent
@@ -206,7 +206,9 @@ func figure(parent: Node,id: String,extent: Vector2,tint: Color=Color.WHITE) -> 
 	actor.collision_layer=0
 	actor.collision_mask=0
 	actor.ingame_art=true
-	actor.art_id=C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"))
+	# 2.0.36: 전용 스킨을 입은 모습은 스킨 8방향 시트로 보여 준다(도포 색 틴트 없음).
+	var skin_key:=preload("res://scripts/survival/skill_fx.gd").sheet_key(id,skin)
+	actor.art_id=skin_key if skin_key!="" else C.fallback_art(id.trim_prefix("yokai:").trim_prefix("daoist:"))
 	actor.skin_tint=tint
 	actor.scale=Vector2.ONE*minf(4.6,maxf(.6,extent.y/74.0))
 	holder.add_child(actor)
