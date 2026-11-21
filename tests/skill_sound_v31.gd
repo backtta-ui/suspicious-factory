@@ -23,8 +23,8 @@ func run() -> void:
   var wav:=stream as AudioStreamWAV
   if wav.get_length()<0.25 or wav.get_length()>3.2:bad.append("%s:%.2fs" % [id,wav.get_length()])
   if wav.mix_rate not in [22050,44100]:bad.append(id+":rate")
-  if wav.stereo:bad.append(id+":stereo")
- check(bad.is_empty(),"every skill clip loads as a short mono WAV: "+str(bad))
+  # 2.0.36: 상용 게임식 스테레오 레이어드 SFX를 허용한다.
+ check(bad.is_empty(),"every skill clip loads as a short 44.1k WAV: "+str(bad))
  # 2) 로스터의 모든 도술 id가 빠짐없이 등록되어 있다(스킬 버튼 30개).
  var missing: Array=[]
  for team in ["daoist","yokai"]:
