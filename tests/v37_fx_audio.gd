@@ -40,7 +40,7 @@ func run() -> void:
   sources[map_id]=src
   check(src.contains("MapFx.floor_layer(floor_fx,rules,clock"),map_id+" draw_floor uses the shared floor renderer")
   check(src.contains("MapFx.detection("),map_id+" detection uses the shared renderer")
-  check(src.contains("MapFx.body_anchor("),map_id+" anchors body effects to jump height")
+  check(src.contains("MapFx.shield_bubbles(") or src.contains("MapFx.body_anchor("),map_id+" anchors body effects to jump height")
   check(src.contains("draw_shield_bubbles"),map_id+" still keeps the shield bubble layer")
  # 실제로 그려지는지: 4맵 모두 같은 rules에 대해 같은 바닥 연출 목록을 낸다.
  for map_id in maps:
@@ -84,7 +84,8 @@ func run() -> void:
  var bubble: Vector2=MapFx.body_anchor(who,L)
  check(is_equal_approx(bubble.y,900.0-36.0),"the shield bubble is drawn 36px higher while jumping (no ground-only bubble)")
  var world_src:=FileAccess.get_file_as_string(Maps.scene_of("seowon"))
- check(world_src.contains("MapFx.body_anchor(p,L)"),"shield bubbles use the jump-aware anchor in the map code")
+ var mapfx_src:=FileAccess.get_file_as_string("res://scripts/survival/map_fx.gd")
+ check(world_src.contains("MapFx.shield_bubbles(") and mapfx_src.contains("body_anchor(p,layout)"),"shield bubbles use the jump-aware anchor in the shared map code")
  # ---------------------------------------------------------------- 3) 스킨은 캐릭터별로 격리
  var store:=Store.new()
  store.data.daoist="daoist:woochi"
