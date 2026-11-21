@@ -58,7 +58,7 @@ func check_map(L: Script,map_id: String,zone_count: int) -> void:
  for route in L.WALKER_ROUTES:
   var kind: String=String(route.kind)
   check(not C.prop_sheet(kind).is_empty(),"%s 움직이는 8방향 시트 등록: %s" % [map_id,kind])
- check(L.gimmicks().size()>=5,"%s 기믹 5종 이상" % map_id)
+ check(L.gimmicks().size()==3,"%s 핵심 기믹 3종" % map_id)
  check(L.circle_final_center().distance_to(L.SPAWN)<2000.0,"%s 최종 안전구역 중심이 맵 안" % map_id)
  for zone in L.ZONES:
   var near: Vector2=L.safe((zone.rect as Rect2).get_center())
@@ -191,22 +191,6 @@ func run() -> void:
   var mist_used: bool=g.interact(human)
   check(mist_used and g.mist_active() and g.zone_mist("surf"),"샤워기 물안개 발동")
   check(float(game.rules.vision_for("human").get("fog",0.0))>0.2,"물안개가 실제 시야를 흐린다")
-  # 서핑샵 조명
-  human.position=Vector2(2240,330)
-  g.cooldown.clear()
-  g.interact(human)
-  check(g.zone_dark("surf"),"서핑샵 조명 암전")
-  # 망원경: 멀리 관측(핑)
-  human.position=Vector2(1120,1980)
-  g.cooldown.clear()
-  var pings_before: int=game.rules.pings.size()
-  g.interact(human)
-  check(g.telescope_active() and game.rules.pings.size()>pings_before,"전망대 망원경이 멀리 위치를 관측")
-  # 주문벨: 소음 유인
-  human.position=Vector2(380,360)
-  g.cooldown.clear()
-  g.interact(human)
-  check(g.noise_until>game.rules.elapsed and g.noise_pos.distance_to(Vector2(380,360))<80.0,"포장마차 주문벨 소음")
   # 등대·천막 2프레임 연출
   check(ResourceLoader.exists("res://assets/woo/haeundae/gimmicks/lighthouse_beam_2f.png") and ResourceLoader.exists("res://assets/woo/haeundae/gimmicks/pocha_tent_sway_2f.png"),"해운대 2프레임 연출 에셋")
   # 자동 주기(밀물/파도)가 실제 tick에서 발동
@@ -273,16 +257,6 @@ func run() -> void:
   check(g2.fog_active(),"환풍기 연기 발동")
   check(g2.line_blocked(Vector2(2600,780),Vector2(2400,780)),"연기가 시선을 막는다")
   check(float(game.rules.vision_for("human").get("fog",0.0))>0.2,"연기 속에서는 화면이 뿌옇다")
-  # 인형뽑기 소음
-  human2.position=Vector2(2450,1100)
-  g2.cooldown.clear()
-  g2.interact(human2)
-  check(g2.noise_until>game.rules.elapsed,"인형뽑기 소음 유인")
-  # 아케이드 셔터
-  human2.position=Vector2(2436,1260)
-  g2.cooldown.clear()
-  g2.interact(human2)
-  check(g2.shutter_until>game.rules.elapsed and g2.blocked(Vector2(2436,1260)),"아케이드 셔터가 통로를 막는다")
   # 2프레임 연출 에셋
   for asset2 in ["sparkland_wheel_2f.png","arcade_gate_glow_2f.png","neon_sign_glow_2f.png","sparkland_gate.png","banwoldang_stairs.png","arcade_gate.png"]:
    check(ResourceLoader.exists("res://assets/woo/dongseongno/gimmicks/"+asset2),"동성로 연출 에셋: "+asset2)

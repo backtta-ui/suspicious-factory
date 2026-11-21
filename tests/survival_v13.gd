@@ -171,7 +171,7 @@ func run() -> void:
   doors_ok=doors_ok and L.can_stand(front+Vector2(0,12)) and L.can_stand(front+Vector2(0,-40)) and L.can_stand((building.interior as Rect2).get_center()) and L.can_stand(back+Vector2(0,-12))
  check(doors_ok,"every hanok front door, room and back door passable")
  for time in [0,180,360,480]:r.elapsed=time;check(r.circle().stage==[0,180,360,480].find(time),"circle stage %d"%time)
- r.elapsed=510;check(r.circle().radius>=600 and r.circle().radius<L.MEDALLION_RADIUS*5,"final zone still playable size")
+ r.elapsed=510;check(r.circle().radius>=600 and r.circle().radius<1200.0,"final zone still playable size")
  for p in r.players.values():p.intent=Vector2.ZERO;p.captured=false;p.eliminated=false;p.deadline=0
  r.elapsed=599.9;r.tick(.1);check(r.phase=="result" and r.winner=="daoist","surviving daoist wins ten minutes")
  var elapsed: float=r.elapsed;r.tick(.1);check(r.elapsed==elapsed and not r.command(evil.id,"seal"),"result freezes time and actions")

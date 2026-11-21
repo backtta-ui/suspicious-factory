@@ -32,6 +32,8 @@ const GIMMICK_TEX={
 var rules: RefCounted
 var observer:=L.SPAWN
 var clock:=0.0
+## 2.0.36 들어가면 지붕이 사라지는 실내 레이어.
+var interior_layer: Node2D
 var aim:=Vector2.ZERO
 var aim_active:=false
 var aim_cancelled:=false
@@ -74,6 +76,11 @@ func _ready() -> void:
  build_walkers()
  dynamic=Node2D.new();dynamic.name="Dynamic";dynamic.z_index=6;dynamic.draw.connect(draw_dynamic);add_child(dynamic)
  effects=Node2D.new();effects.name="Effects";effects.z_index=9;effects.draw.connect(draw_effects);add_child(effects)
+ interior_layer=preload("res://scripts/survival/interior_layer.gd").new()
+ interior_layer.name="Interiors"
+ interior_layer.layout=L
+ add_child(interior_layer)
+
 func tex(path: String) -> Texture2D:
  if textures.has(path):return textures[path]
  var full: String=path if path.begins_with("res://") else PROP_DIR+path
@@ -131,6 +138,7 @@ func update_cull() -> void:
   if is_instance_valid(node):node.visible=rect.intersects(entry.rect)
 func _process(delta: float) -> void:
  clock+=delta
+ if is_instance_valid(interior_layer):interior_layer.observer=observer
  update_cull()
  update_walkers()
  tick+=delta
@@ -183,6 +191,7 @@ func update_walkers() -> void:
 ## ---------------------------------------------------------------- 바닥층(동적)
 func draw_floor() -> void:
  if rules==null:return
+ draw_escalator(floor_fx)
  draw_zone_lights(floor_fx)
  draw_safe_zone(floor_fx)
 func draw_zone_lights(node: Node2D) -> void:
@@ -245,6 +254,9 @@ func draw_gimmick_objects(node: Node2D) -> void:
   var kind: String=String(item.kind)
   var id: String=String(item.id)
   var pos: Vector2=item.pos
+  # 2.0.36: 에스컬레이터는 바닥 장치다. 캐릭터 위층(dynamic)에 그리면 탄 사람이 가려지므로
+  # draw_floor의 draw_escalator가 액터 아래에서 그린다.
+  if kind=="escalator":continue
   match kind:
    "turnstile":
     var rect: Rect2=item.rect
@@ -421,6 +433,7 @@ func draw_orbs() -> void:
   orbs.draw_arc(at,11+pulse*3,0,TAU,18,Color(.62,.9,1,.34),1.4,true)
 func draw_effects() -> void:
  if rules==null:return
+ draw_shield_bubbles(effects)
  if aim_active and rules.players.has("human"):
   var origin: Vector2=rules.players.human.position
   effects.draw_line(origin,origin+aim*120,Color("e77b95") if aim_cancelled else Color("9fcaff"),3,true)
@@ -432,3 +445,51 @@ func draw_effects() -> void:
   var ready: bool=String(human.get("character",""))!="" and float(human.buff.get("transform",0.0))<=rules.elapsed and String(human.get("form",""))==""
   if ready:draw_form_target(effects,target)
 func door_at(p: Vector2) -> String:return L.door_near(p,64)
+
+## 2.0.36 보호막 시인성: shield·생명등불·저승꽃이 켜진 캐릭터는 몸을 감싸는 방어막이 보인다.
+func draw_shield_bubbles(node: Node2D) -> void:
+ if rules==null:return
+ for p in rules.players.values():
+  if p.eliminated or p.captured:continue
+  var shield: bool=float(p.buff.get("shield",0.0))>rules.elapsed
+  var flower: bool=float(p.buff.get("deathflower",0.0))>rules.elapsed
+  var lamp: bool=float(p.buff.get("lifelamp",0.0))>rules.elapsed
+  if not shield and not flower and not lamp:continue
+  var tint: Color=Color("d9c0ff") if flower else (Color("ffd08a") if lamp else Color("ffb9cf"))
+  var at: Vector2=(p.position as Vector2)-Vector2(0,L.elevation(p.position))
+  FX.shield_bubble(node,at,clock,tint,1.0 if shield else .6)
+
+## 2.0.36 실제 탑승형 에스컬레이터 바닥 연출: 캐릭터 아래에서 그려 절대 가리지 않는다.
+## 계단 띠·손잡이·흐르는 화살표가 작동 방향(위/아래)을 그대로 보여 준다.
+func draw_escalator(node: Node2D) -> void:
+ var g: RefCounted=rules.gimmicks
+ var item: Dictionary={}
+ for entry in L.GIMMICKS:
+  if String(entry.kind)=="escalator":item=entry;break
+ if item.is_empty():return
+ var rect: Rect2=item.rect
+ var now: float=rules.elapsed
+ # 계단 몸체
+ node.draw_rect(rect,Color(.10,.12,.17,.96))
+ node.draw_rect(rect.grow(-6),Color(.16,.19,.26,.96))
+ var step_h:=22.0
+ var count:=int(rect.size.y/step_h)
+ for i in range(count):
+  var y: float=rect.position.y+float(i)*step_h
+  var tone: float=.20+.06*sin(clock*2.0+float(i)*.5)
+  node.draw_rect(Rect2(rect.position.x+34,y,rect.size.x-68,3.0),Color(.42,.48,.60,tone))
+ # 좌우 손잡이
+ for side in [rect.position.x+9.0,rect.end.x-15.0]:
+  node.draw_rect(Rect2(side,rect.position.y,6,rect.size.y),Color(.55,.62,.74,.9))
+  node.draw_rect(Rect2(side-2,rect.position.y,10,4),Color(.80,.86,.95,.9))
+ # 흐르는 화살표(작동 방향)
+ var dir: float=-1.0 if g.escalator_dir>0 else 1.0
+ for k in range(7):
+  var t: float=fmod(clock*1.4+float(k)/7.0,1.0)
+  var y: float=rect.position.y+rect.size.y*(t if dir<0.0 else 1.0-t)
+  var x: float=rect.get_center().x
+  node.draw_colored_polygon(PackedVector2Array([Vector2(x-18,y-7*dir),Vector2(x+18,y-7*dir),Vector2(x,y+9*dir)]),Color(.55,1,1,.32+.30*(1.0-t)))
+ # 방향 안내판
+ node.draw_rect(Rect2(rect.position.x+70,rect.end.y-36,rect.size.x-140,26),Color(.03,.05,.08,.92))
+ node.draw_rect(Rect2(rect.position.x+70,rect.end.y-36,rect.size.x-140,26),Color(.35,.9,1,.55),false,1.2)
+ node.draw_string(FONT,Vector2(rect.position.x+80,rect.end.y-17),("▲ 위로 · 타면 실려 갑니다" if g.escalator_dir>0 else "▼ 아래로 · 타면 실려 갑니다"),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color(.7,.95,1))

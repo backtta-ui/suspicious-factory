@@ -88,16 +88,18 @@ func burst(at: Vector2,kind: String,duration: float,extra: Dictionary={}) -> voi
 func signature(p: Dictionary,skill_id: String,aim: Vector2=Vector2.ZERO) -> void:
  var extra:={"skill":skill_id,"facing":p.facing,"cosmetic":C.look(p.character)}
  if aim!=Vector2.ZERO:extra["aim"]=aim
- ## 스킨 전용 이펙트가 있으면 기본 도형 연출 대신 스킨 아트만 크게 터뜨린다(이중 노출 방지).
+ ## 스킨 전용 이펙트가 있으면 스킨 아트를, 없으면 그 캐릭터·도술의 기본 손그림 이펙트를 쓴다.
+ ## 2.0.36: 장영실(기관·천문)을 비롯한 10인 기본 이펙트가 실제 경기에서도 반드시 터진다.
  var skin_fx: String=SkillFX.file_for(p.get("character",""),skill_id,p.get("skin",""))
+ var base_fx: String=SkillFX.file_for(p.get("character",""),skill_id,"")
  if String(p.get("skin",""))=="":
   burst(p.position,"fx_sig",0.85,extra)
- # 2.0.34: 10인 기본 스킨 전용 이펙트 PNG(부침개 전우치는 김치전·부침개 이펙트).
- if skin_fx!="":
-  ## 2.0.34 피드백: 김치전·부침개 이펙트가 캐릭터를 너무 크게 가리지 않도록
-  ## 크기·투명도를 낮춰 발밑에서 펼쳐지게 한다.
-  var fx_size: float=96.0 if skin_fx.contains("kimchijeon") else 124.0
-  burst(p.position,"fx_png",1.2,{"file":skin_fx,"texture":load(skin_fx),"facing":p.facing,"size":fx_size,"alpha":.80})
+ var fx_file: String=skin_fx if skin_fx!="" else base_fx
+ if fx_file!="":
+  ## 2.0.34 피드백: 이펙트가 캐릭터를 너무 크게 가리지 않도록 크기·투명도를 낮춰
+  ## 발밑에서 펼쳐지게 한다.
+  var fx_size: float=96.0 if fx_file.contains("kimchijeon") else 124.0
+  burst(p.position,"fx_png",1.2,{"file":fx_file,"texture":load(fx_file),"facing":p.facing,"size":fx_size,"alpha":.86 if skin_fx!="" else .72})
 func _init(seed_value: int=0) -> void:
  if seed_value==0:rng.randomize()
  else:rng.seed=seed_value
@@ -130,7 +132,7 @@ const LIVES=3
 const REVIVE_IMMUNE=2.5
 ## 2.0.33 봇 닉네임: 인게임 이름표·대기실·참가자 목록이 '요괴 1' 같은 임시 이름 대신
 ## 이용자 닉네임과 같은 자리에 자연스러운 이름을 쓴다(중복 없이 배정).
-const BOT_NICKNAMES=["서원지킴이","밤도깨비","달빛여우","한옥탐정","부적장인","새벽바람","월하검객","청사초롱","별빛도사","구름나그네","먹빛도령","은하수비","호롱불지기","산그림자","해질녘손님","새벽종소리"]
+const BOT_NICKNAMES=["조선지킴이","밤도깨비","달빛여우","한옥탐정","부적장인","새벽바람","월하검객","청사초롱","별빛도사","구름나그네","먹빛도령","은하수비","호롱불지기","산그림자","해질녘손님","새벽종소리"]
 static func bot_nicknames(count: int,seed_value: int=0) -> Array:
  var pool: Array=BOT_NICKNAMES.duplicate()
  var rng:=RandomNumberGenerator.new()
@@ -148,9 +150,12 @@ func apparent_identity(p: Dictionary) -> Dictionary:
  var mimicking: bool=float(p.buff.get("mimic",0.0))>elapsed and players.has(String(p.copy))
  var source: Dictionary=players[String(p.copy)] if mimicking else p
  var spec: Dictionary=C.find(String(source.get("character","")))
+ # 2.0.36 스킨 동기화: 분신·인간둔갑도 대상이 실제 장착 중인 스킨을 그대로 쓴다.
+ var skin: String=String(source.get("skin",""))
+ if not SkillFX.skin_allows(skin,String(source.get("character",""))):skin=""
  return {"name":String(source.get("name","")),"character":String(source.get("character","")),
   "character_name":String(spec.get("name","")),"lives":int(source.get("lives",LIVES)),
-  "role":String(source.get("role","")),"color":int(source.get("color",0))}
+  "role":String(source.get("role","")),"color":int(source.get("color",0)),"skin":skin}
 func start() -> bool:
  if phase!="room" or players.size() not in [6,8]:return false
  if not players.values().all(func(p: Dictionary)->bool:return p.ready):return false
@@ -847,7 +852,8 @@ func tick(delta: float) -> void:
     p.position=previous
     if gimmicks.blocked(p.position):p.position=L.safe(previous)
    if not escalator.is_empty():
-    var drift: Vector2=Vector2(0,-1.0 if gimmicks.escalator_dir>0 else 1.0)*34.0*delta
+    # 2.0.36 실제 탑승형: 서 있어도 작동 방향으로 105px/s 실려 간다(걸으면 그 위에 더해진다).
+    var drift: Vector2=Vector2(0,-1.0 if gimmicks.escalator_dir>0 else 1.0)*105.0*delta
     var moved: Vector2=L.move(p.position,p.position+drift)
     if not gimmicks.blocked(moved):p.position=moved
   if L.can_stand(p.position):p.ground=p.position
@@ -950,7 +956,7 @@ func visible(id: String) -> Array:
   var source_spec: Dictionary=C.find(String(source.character))
   var shown_name: String=String(source.name)
   if mimicking and not source_spec.is_empty():shown_name=String(source_spec.get("name",source.name))
-  result.append({"id":"" if p.form!="" and p.id!=id else p.id,"position":p.position,"form":p.form,"name":shown_name,"player_name":source.name,"role":source.role,"color":source.color,"cosmetic":C.look(source.character),"character":source.character,"character_name":String(source_spec.get("name","")),"lives":int(source.get("lives",LIVES)),"facing":p.facing,"height":p.height,"moving":p.intent.length()>.05 and not p.captured,"captured":p.captured,"immune":p.immune>elapsed,"shield":p.buff.get("shield",0)>elapsed or p.buff.get("lifelamp",0)>elapsed,"revealed":float(p.buff.get("glowing",0.0))>elapsed or float(p.buff.get("revealed",0.0))>elapsed,"disguised":p.form!="","mimic":mimicking})
+  result.append({"id":"" if p.form!="" and p.id!=id else p.id,"position":p.position,"form":p.form,"name":shown_name,"player_name":source.name,"role":source.role,"color":source.color,"cosmetic":C.look(source.character),"character":source.character,"character_name":String(source_spec.get("name","")),"lives":int(source.get("lives",LIVES)),"facing":p.facing,"height":p.height,"moving":p.intent.length()>.05 and not p.captured,"captured":p.captured,"immune":p.immune>elapsed,"shield":p.buff.get("shield",0)>elapsed or p.buff.get("lifelamp",0)>elapsed,"revealed":float(p.buff.get("glowing",0.0))>elapsed or float(p.buff.get("revealed",0.0))>elapsed,"disguised":p.form!="","mimic":mimicking,"skin":String(source.get("skin",""))})
  return result
 ## 발자국·동선을 전부 비추는 효과가 켜져 있는지(요괴 시점).
 func foot_scope(p: Dictionary) -> bool:

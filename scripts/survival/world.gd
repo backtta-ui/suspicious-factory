@@ -126,6 +126,7 @@ func draw_ground() -> void:
  Art.draw_ground_decor(ground)
 ## 마당 팔각 문양은 원화 한 장으로 깔고, 돌바닥 위에 자연스럽게 얹는다.
 func build_medallion() -> void:
+ if L.MEDALLION_RADIUS<=0.0:return
  var sprite:=Sprite2D.new();sprite.texture=MEDALLION_TEX;sprite.centered=true;sprite.z_index=-96
  var diameter:=L.MEDALLION_RADIUS*2.0
  var side: float=maxf(MEDALLION_TEX.get_width(),MEDALLION_TEX.get_height())
@@ -258,9 +259,9 @@ func build_garden() -> void:
   smoke.draw.connect(func()->void:draw_lantern_smoke(smoke,p))
   add_child(smoke)
   lantern_holders.append({"node":holder,"glow":glow_node,"at":p,"smoke":smoke,"level":1.0,"on":on_sprite,"off":off_sprite})
- # 2.0.35 리뉴얼: 팔각 마당 네 모서리의 정자 기둥(등불 포함). 충돌 없는 장식이다.
- for corner in [Vector2(L.STONE.position.x-18,L.STONE.position.y-14),Vector2(L.STONE.end.x+18,L.STONE.position.y-14),
-  Vector2(L.STONE.position.x-18,L.STONE.end.y+14),Vector2(L.STONE.end.x+18,L.STONE.end.y+14)]:
+ # 2.0.36 비대칭 마당: 팔각 돌마당을 없앴으므로 기둥도 그리지 않는다.
+ for corner in ([] if L.STONE.size.x<=0.0 else [Vector2(L.STONE.position.x-18,L.STONE.position.y-14),Vector2(L.STONE.end.x+18,L.STONE.position.y-14),
+  Vector2(L.STONE.position.x-18,L.STONE.end.y+14),Vector2(L.STONE.end.x+18,L.STONE.end.y+14)]):
   shadow(corner+Vector2(0,4),Vector2(74,30),.8)
   var pillar:=Sprite2D.new();pillar.texture=PAVILION_PILLAR
   var ps:=148.0/PAVILION_PILLAR.get_height()
@@ -536,6 +537,7 @@ func draw_form_target(node: Node2D,target: Dictionary) -> void:
   node.draw_circle(spark,1.7,Color(1,.94,.72,.55+.35*pulse))
  # 화면을 가리는 글자 상자는 쓰지 않는다. 둔갑은 상황 버튼(둔갑)이 알려 준다.
 func draw_effects() -> void:
+ draw_shield_bubbles(effects)
  if aim_active:
   var origin: Vector2=rules.players.human.position
   effects.draw_line(origin,origin+aim*120,Color("e77b95") if aim_cancelled else Color("9fcaff"),3,true)
@@ -622,6 +624,7 @@ func draw_detection(node: Node2D) -> void:
 ## 바닥 장치(압력기관·가짜보물)는 액터보다 아래 층에서 그린다.
 func draw_floor() -> void:
  if rules==null:return
+ draw_gimmick_fx(floor_fx)
  # 도깨비 장난 지대: 바닥에서 춤추는 도깨비불 테두리와 갈라진 흙.
  # 등불끄기·무월야의 밤안개 연막: 캐릭터보다 아래층에 깔아 실루엣이 살아 있게 한다.
  if rules.dark_until>rules.elapsed:draw_douse_shade(floor_fx)
@@ -840,3 +843,50 @@ func draw_safe_zone(node: Node2D) -> void:
   if i%3!=0:continue
   var a1: float=float(i)*TAU/72.0
   node.draw_arc(next_center,next_radius,a1,a1+TAU/72.0*.55,5,Color(.68,.56,1,.22),2.0,true)
+
+## 2.0.36 보호막 시인성: shield·생명등불·저승꽃이 켜진 캐릭터는 몸을 감싸는 방어막이 보인다.
+func draw_shield_bubbles(node: Node2D) -> void:
+ if rules==null:return
+ for p in rules.players.values():
+  if p.eliminated or p.captured:continue
+  var shield: bool=float(p.buff.get("shield",0.0))>rules.elapsed
+  var flower: bool=float(p.buff.get("deathflower",0.0))>rules.elapsed
+  var lamp: bool=float(p.buff.get("lifelamp",0.0))>rules.elapsed
+  if not shield and not flower and not lamp:continue
+  var tint: Color=Color("d9c0ff") if flower else (Color("ffd08a") if lamp else Color("ffb9cf"))
+  var at: Vector2=(p.position as Vector2)-Vector2(0,L.elevation(p.position))
+  FX.shield_bubble(node,at,clock,tint,1.0 if shield else .6)
+
+## 2.0.36 서원 기믹 3종(석등 암전·연못 물안개·장독대 방울)의 실제 상태를 바닥에 그린다.
+## 위치에 금빛 표식을 두어 '누를 수 있는 것'이 눈에 보이게 한다.
+func draw_gimmick_fx(node: Node2D) -> void:
+ if rules==null or rules.gimmicks==null:return
+ var g: RefCounted=rules.gimmicks
+ var now: float=rules.elapsed
+ for item in L.GIMMICKS:
+  var at: Vector2=item.pos
+  var pulse: float=.5+.5*sin(clock*3.0+at.x*.01)
+  node.draw_set_transform(at,0,Vector2(1,.42))
+  node.draw_arc(Vector2.ZERO,16.0+pulse*3.0,0,TAU,24,Color(1,.86,.52,.42+.22*pulse),1.6,true)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  if observer.distance_to(at)<260.0:
+   node.draw_string(FONT,at+Vector2(-60,-44),String(item.get("label","기믹")),HORIZONTAL_ALIGNMENT_CENTER,120,12,Color(.98,.90,.70,.9))
+ for zone_id in g.lit_zones().keys():
+  var rect: Rect2=L.zone_rect(String(zone_id))
+  if rect.size.x<=0.0:continue
+  node.draw_rect(rect,Color(.02,.02,.05,.40))
+  node.draw_rect(rect,Color(.30,.46,.80,.22),false,3.0)
+  node.draw_string(FONT,rect.position+Vector2(24,rect.size.y-18),"암전 · LIGHTS OUT",HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color(.62,.76,1,.60))
+ if g.mist_active():
+  var center: Vector2=g.mist_pos
+  for i in range(6):
+   var radius: float=g.mist_radius*(.30+float(i)*.14)
+   node.draw_circle(center,radius,Color(.62,.74,.86,.035+.02*float(6-i)))
+  FX.smoke(node,center,g.mist_radius*.9,.35,Color(.70,.80,.92,.20),7,clock*.4)
+  node.draw_string(FONT,center+Vector2(-90,-g.mist_radius*.5),"물안개",HORIZONTAL_ALIGNMENT_CENTER,180,15,Color(.82,.92,1,.8))
+ if g.noise_until>now:
+  var left: float=clampf((g.noise_until-now)/3.0,0.0,1.0)
+  node.draw_set_transform(g.noise_pos,0,Vector2(1,.42))
+  for i in range(3):
+   node.draw_arc(Vector2.ZERO,(1.0-left)*160.0+float(i)*46.0,0,TAU,40,Color(1,.85,.4,.30*left),3.0,true)
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)

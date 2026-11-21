@@ -209,8 +209,16 @@ func view_item(raw: Dictionary) -> Dictionary:
 			"ability":String((spec.get("skill",{}) as Dictionary).get("name","")),
 			"price":int(raw.price),"owned":owned}
 	if tab=="skin":
-		return {"id":String(raw.id),"kind":"skin","name":String(raw.name),"role":"도포 색","intro":String(raw.desc),
-			"color":Color(String(raw.color)),"ability":"도포 염색","price":int(raw.price),"owned":game.storage.owns(String(raw.id))}
+		# 2.0.36: 스킨은 그 캐릭터 전용 의상이다. 미리보기·초상도 그 캐릭터의 전용 원화를 쓴다.
+		var owner_id: String=String(raw.get("character",""))
+		var owner_spec:=C.find(owner_id)
+		return {"id":String(raw.id),"kind":"skin","name":String(raw.name),
+			"role":"%s 전용 스킨"%String(owner_spec.get("name","전용")),"intro":String(raw.desc),
+			"color":Color(String(raw.get("color","ffffff"))),"ability":String(owner_spec.get("name","전용"))+" 외형",
+			"price":int(raw.price),"owned":game.storage.owns(String(raw.id)),
+			"character":owner_id,"portrait":String(raw.get("portrait","")),
+			"full":String(raw.get("full","")),"sheet":String(raw.get("sheet","")),
+			"skin_of":String(raw.get("skin_of","")),"team":String(owner_spec.get("team","daoist"))}
 	var item: Dictionary=raw.title
 	var kind: String=String(raw.get("kind","title"))
 	return {"id":String(raw.id),"kind":kind,"name":String(item.name),"role":"칭호" if kind=="title" else "기운",
@@ -289,23 +297,22 @@ func _make_card(item: Dictionary,rect: Rect2) -> void:
 			place(aura,Rect2(rect.position.x-16,rect.position.y-6,rect.size.x+32,art_bottom+26))
 			cover_art(card,String(item.portrait),Rect2(rect.position+Vector2(3,3),Vector2(rect.size.x-6,art_bottom-3.0)),0.02)
 		"skin":
-			# 도포 색은 얼굴 확대 대신 실제 인게임 캐릭터에 입혀 보여 준다.
-			var wash:=ColorRect.new()
-			wash.color=Color(item.color).lerp(Color(0.03,0.035,0.08),.74)
-			wash.mouse_filter=Control.MOUSE_FILTER_IGNORE
-			card.add_child(wash)
-			place(wash,Rect2(rect.position+Vector2(3,3),Vector2(rect.size.x-6,art_bottom-3.0)))
-			var glow:=TextureRect.new()
-			glow.texture=T.GLOW
-			glow.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-			glow.stretch_mode=TextureRect.STRETCH_SCALE
-			glow.modulate=Color(item.color).lerp(Color.WHITE,.15)
-			glow.modulate.a=0.22
-			glow.mouse_filter=Control.MOUSE_FILTER_IGNORE
-			card.add_child(glow)
-			place(glow,Rect2(rect.position.x-10,rect.position.y+10,rect.size.x+20,art_bottom))
-			var holder:=figure(card,String(game.storage.data.daoist),Vector2(rect.size.x-34,art_bottom-30.0),Color(item.color).lerp(Color.WHITE,.45))
-			place(holder,Rect2(rect.position.x+17,rect.position.y+8,rect.size.x-34,art_bottom-30.0))
+			# 2.0.36: 도포 색이 아니라 그 캐릭터가 스킨을 입은 모습(전용 원화)을 보여 준다.
+			var aura2:=TextureRect.new()
+			aura2.texture=T.GLOW
+			aura2.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
+			aura2.stretch_mode=TextureRect.STRETCH_SCALE
+			aura2.modulate=Color(1.0,.82,.42,.26)
+			aura2.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			card.add_child(aura2)
+			place(aura2,Rect2(rect.position.x-16,rect.position.y-6,rect.size.x+32,art_bottom+26))
+			# 전용 전신 원화가 있으면 아트를, 없으면 스킨 시트를 입은 인게임 캐릭터를 보여 준다.
+			var full_art:=String(item.get("full",""))
+			if full_art!="" and ResourceLoader.exists(full_art):
+				cover_art(card,full_art,Rect2(rect.position+Vector2(3,3),Vector2(rect.size.x-6,art_bottom-3.0)),0.0)
+			else:
+				var holder:=figure(card,String(item.get("character",game.storage.data.daoist)),Vector2(rect.size.x-34,art_bottom-30.0),Color.WHITE,String(item.id))
+				place(holder,Rect2(rect.position.x+17,rect.position.y+8,rect.size.x-34,art_bottom-30.0))
 		"effect":
 			var orb:=Art.Orb.new()
 			orb.color=Color(item.color)
@@ -508,7 +515,7 @@ func _rebuild_preview() -> void:
 	# ── 캐릭터(실제 인게임 아트)가 단상 위에 선다
 	var character_id:=_preview_character(item)
 	var tint:=Color.WHITE
-	if tab=="skin":tint=Color(item.color).lerp(Color.WHITE,.35)
+	if tab=="skin":tint=Color.WHITE
 	if String(item.kind)=="effect":
 		var ring:=Art.AuraRing.new()
 		ring.color=Color(item.color)
@@ -638,6 +645,7 @@ func _team_of(id: String) -> String:
 
 func _preview_character(item: Dictionary) -> String:
 	if tab=="character":return String(item.id)
+	if tab=="skin":return String(item.get("character",game.storage.data.daoist))
 	return String(game.storage.data.daoist)
 
 func _equipped(item: Dictionary) -> bool:

@@ -2,27 +2,21 @@ extends RefCounted
 ## 무료 꾸미기 마켓·업적·우편·알림 카탈로그.
 ## 재화는 경기·업적·우편 보상으로만 얻고,
 ## 모든 아이템은 게임 안에서 실제로 장착되어 화면에 반영된다.
-## 2.0.19: 스킨 상점은 기본 도포 한 종만 노출한다.
-## 캐릭터 외형을 나중에 바꿀 수 있으므로 예전 색상 스킨은 판매 목록에서 뺐다.
-## (저장 데이터 호환을 위해 예전 id의 색상 값은 LEGACY_SKINS에 그대로 남긴다.)
-## 2.0.27: 도감에서 바로 갈아입을 수 있도록 도포 스킨을 판매 목록으로 되살렸다.
-## 구매는 마켓(코인)에서만, 장착은 도감·마켓 어디서든 할 수 있다.
+## 2.0.36 스킨 정리: 기본/달빛/연꽃/먹빛/불꽃/옥빛 같은 '도포 색깔 스킨'은
+## 상점·도감·선택창에서 완전히 뺐다. 스킨은 이제 그 캐릭터만 쓰는 전용 의상이다.
+## 저장 데이터 호환을 위해 예전 색 스킨 id는 LEGACY_SKINS에서만 해석한다(판매·표시 없음).
+const DEFAULT_SKIN={"id":"default","name":"기본 모습","price":0,"color":"ffffff",
+ "desc":"스킨을 입히지 않은 캐릭터 본래의 모습입니다."}
 const SKINS=[
- {"id":"default","name":"기본 도포","price":0,"color":"ffffff","desc":"캐릭터 원화 본연의 색입니다."},
  ## 2.0.34: 전우치 전용 스킨(부침개 전우치). 전용 8방향·김치전 은신·부침개 이펙트가 붙는다.
- {"id":"woochi_pancake","name":"부침개 전우치","price":0,"color":"ffd79a","character":"daoist:woochi",
+ {"id":"woochi_pancake","name":"부침개 전우치","price":0,"color":"ffd79a","character":"daoist:woochi","skin_of":"woochi",
   "desc":"김치전을 둘러쓴 부침개 전우치 · 전우치 전용 스킨",
   "portrait":"res://assets/woo/skins/woochi_pancake/portrait.png",
   "full":"res://assets/woo/skins/woochi_pancake/full.png",
   "sheet":"res://assets/woo/skins/woochi_pancake/walk_8dir.png",
   "fx_stealth":"res://assets/woo/skins/woochi_pancake/fx_kimchijeon_cloak.png",
-  "fx_cast":"res://assets/woo/skins/woochi_pancake/fx_pancake_flip.png",
-  "skin_of":"woochi"},
- {"id":"moon","name":"달빛 도포","price":450,"color":"cfe0ff","desc":"달빛을 머금은 옅은 청백색으로 물듭니다."},
- {"id":"lotus","name":"연꽃 도포","price":600,"color":"ffc9d8","desc":"연꽃빛 분홍이 감도는 도포."},
- {"id":"ink","name":"먹빛 도포","price":750,"color":"9aa0c8","desc":"밤 먹물처럼 깊게 가라앉은 색."},
- {"id":"ember","name":"불꽃 도포","price":900,"color":"ffb27a","desc":"홍련의 불씨를 닮은 주황빛."},
- {"id":"jade","name":"옥빛 도포","price":1100,"color":"a8f0d8","desc":"서원의 이끼 낀 옥빛."}]
+  "fx_cast":"res://assets/woo/skins/woochi_pancake/fx_pancake_flip.png"}]
+## 판매·표시하지 않는다. 예전 저장의 장착 id만 조용히 해석한다.
 const LEGACY_SKINS=[
  {"id":"moon","name":"달빛 도포","price":450,"color":"cfe0ff","desc":"달빛을 머금은 옅은 청백색으로 물듭니다."},
  {"id":"lotus","name":"연꽃 도포","price":600,"color":"ffc9d8","desc":"연꽃빛 분홍이 감도는 도포."},
@@ -32,7 +26,7 @@ const LEGACY_SKINS=[
 ## `gems`는 코인 대신 낼 수 있는 보석 가격이다(2.0.32). 없으면 코인으로만 해금한다.
 const TITLES=[
  {"id":"","name":"칭호 없음","price":0,"desc":"칭호를 비웁니다."},
- {"id":"moon_guard","name":"달빛지기","price":300,"desc":"밤 서원을 지키는 이."},
+ {"id":"moon_guard","name":"달빛지기","price":300,"desc":"조선의 밤을 지키는 이."},
  {"id":"first_seal","name":"첫 봉인","price":350,"desc":"요괴의 봉인을 처음 막아낸 도사."},
  {"id":"rescue_hand","name":"구조의 손","price":500,"desc":"봉인된 동료를 세 번 구출했습니다."},
  {"id":"shadow_hunter","name":"그림자 사냥꾼","price":700,"gems":15,"desc":"어둠 속 요괴를 쫓는 추적자."},
@@ -44,8 +38,8 @@ const EFFECTS=[
  {"id":"foxfire","name":"여우불","price":1000,"gems":20,"color":"c39bff","desc":"보랏빛 도깨비불."},
  {"id":"lotus","name":"연꽃 안개","price":1000,"gems":20,"color":"ffb9cf","desc":"분홍 연꽃 안개."}]
 const ACHIEVEMENTS=[
- {"id":"first_match","name":"월하의 첫 경기","desc":"경기를 한 번 끝까지 치릅니다.","stat":"matches","goal":1,"reward":300},
- {"id":"ten_matches","name":"서원의 단골","desc":"경기 10회를 완주합니다.","stat":"matches","goal":10,"reward":700},
+ {"id":"first_match","name":"조선의 첫 경기","desc":"경기를 한 번 끝까지 치릅니다.","stat":"matches","goal":1,"reward":300},
+ {"id":"ten_matches","name":"조선의 단골","desc":"경기 10회를 완주합니다.","stat":"matches","goal":10,"reward":700},
  {"id":"first_win","name":"첫 승리","desc":"한 번 승리합니다.","stat":"wins","goal":1,"reward":400},
  {"id":"five_wins","name":"달빛의 승자","desc":"5회 승리합니다.","stat":"wins","goal":5,"reward":900},
  {"id":"seal_three","name":"봉인의 손길","desc":"요괴로 도사 3명을 봉인합니다.","stat":"seals","goal":3,"reward":500},
@@ -54,7 +48,7 @@ const ACHIEVEMENTS=[
  {"id":"disguise_five","name":"사물의 달인","desc":"사물 둔갑을 5회 사용합니다.","stat":"disguises","goal":5,"reward":450}]
 ## `reward`는 코인, `gems`는 함께 동봉되는 보석이다(2.0.32). 둘 다 수령할 때 실제 지갑에 들어간다.
 const MAILS=[
- {"id":"welcome","title":"월하의 서원에 오신 것을 환영합니다","body":"서원의 밤이 열렸습니다. 세 채의 한옥과 연못, 아치 목교를 걸어 보세요. 앞문과 뒷문으로 드나들 수 있고, 지붕은 들어가면 열립니다.","reward":500,"gems":2},
+ {"id":"welcome","title":"조선에 오신 것을 환영합니다","body":"조선의 밤이 열렸습니다. 서당·서책방·대나무 숲길·연못 정자·약재실·장독대 뒤뜰을 걸어 보세요. 앞문과 뒷문으로 드나들 수 있고, 지붕은 들어가면 열립니다.","reward":500,"gems":2},
  {"id":"update_zoom","title":"2.5D 시점·대형 한옥 업데이트","body":"기본 시점을 넓은 2.5D(1.32배)로 잡았습니다. 청월당·서고·별채 세 채를 출입할 수 있고, 실내에서는 바깥이 밤안개로 가려집니다.","reward":300,"gems":0},
  {"id":"market_open","title":"무료 마켓이 문을 열었습니다","body":"결제 없이 경기 보상으로만 도포·칭호·기운을 장착할 수 있습니다. 업적과 우편에서도 재화를 받을 수 있습니다.","reward":400,"gems":1},
  {"id":"lobby_bgm","title":"새 로비 음악","body":"로비에는 자체 합성한 국악풍 밤 음악이 흐릅니다. 모든 음원은 이 게임을 위해 직접 합성했고 외부 저작권 음원을 쓰지 않습니다.","reward":200,"gems":0}]
@@ -91,9 +85,18 @@ const ALERTS=[
  {"id":"market","title":"마켓이 문을 열었습니다","body":"코인과 보석으로 꾸미기를 해금합니다. 보상은 경기·업적·우편에서 나옵니다."},
  {"id":"quick","title":"빠른 매치·친구 방 코드","body":"로비에서 빠른 매치와 친구와 함께(방 코드 공유)를 바로 시작할 수 있습니다. 8인 구성은 도사6:요괴2로 고정되었습니다."}]
 static func skin(id: String) -> Dictionary:
+ if id=="" or id=="default":return DEFAULT_SKIN
  for item in SKINS+LEGACY_SKINS:
   if item.id==id:return item
- return SKINS[0]
+ return DEFAULT_SKIN
+## 그 캐릭터가 입을 수 있는 스킨만(전용 스킨). 없으면 빈 배열.
+static func skins_for(character: String) -> Array:
+ var out: Array=[]
+ var art: String=character
+ if art.contains(":"):art=art.split(":")[1]
+ for item in SKINS:
+  if String(item.get("skin_of",""))==art:out.append(item)
+ return out
 static func title(id: String) -> Dictionary:
  for item in TITLES:
   if item.id==id:return item

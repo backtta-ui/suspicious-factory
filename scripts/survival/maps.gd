@@ -1,6 +1,6 @@
 extends RefCounted
 ## 맵 레지스트리(2.0.35). 게임은 이 한 곳에서 '지금 어느 맵인지'를 읽는다.
-## - 월하의 서원(seowon): 2.0.33까지의 조선 서원 맵을 그대로 보존한다(삭제 금지).
+## - 조선(seowon): 2.0.33까지의 조선 서원 맵을 2.0.36 비대칭 순환 동선으로 다시 지었다(내부 id는 호환을 위해 seowon 유지).
 ## - 서울 강남역(gangnam): 2.0.34 어몽어스 스타일 지하철역 맵.
 ## - 부산 해운대(haeundae): 2.0.35 비대칭 해안선 해변 맵(전통시장·백사장·동백섬).
 ## - 대구 동성로(dongseongno): 2.0.35 도심 격자 골목 미로(별빛랜드·아케이드·반월당).
@@ -14,20 +14,19 @@ const DONGSEONGNO=preload("res://scripts/survival/dongseongno_layout.gd")
 const ORDER=["seowon","gangnam","haeundae","dongseongno"]
 const RANDOM="random"
 const INFO={
- "seowon":{"id":"seowon","name":"월하의 서원","subtitle":"달빛 아래 조선 서원","short":"서원",
-  "accent":"e8c98b","tint":"ffd9a0","arena":"seowon",
+ "seowon":{"id":"seowon","name":"조선","subtitle":"달빛 아래 조선 팔도","short":"조선",
+  "accent":"e8c98b","tint":"ffd9a0","arena":"seowon","circle":"월식결계",
   "layout":"res://scripts/survival/layout.gd","scene":"res://scripts/survival/world.gd",
-  "tip":"연못과 아치 목교, 여섯 채의 한옥 사이로 숨으세요."},
- "gangnam":{"id":"gangnam","name":"서울 강남역","subtitle":"지하상가 · 승강장","short":"강남역",
-  "accent":"7fd4ff","tint":"a9e6ff","arena":"gangnam",
+  "tip":"서당·서책방·대나무 숲길·연못 정자·약재실·장독대 뒤뜰을 잇는 비대칭 동선으로 숨으세요."}, "gangnam":{"id":"gangnam","name":"서울 강남역","subtitle":"지하상가 · 승강장","short":"강남역",
+  "accent":"7fd4ff","tint":"a9e6ff","arena":"gangnam","circle":"비상통제구역",
   "layout":"res://scripts/survival/gangnam_layout.gd","scene":"res://scripts/survival/gangnam_world.gd",
   "tip":"개찰구·에스컬레이터·자판기·CCTV·조명·셔터를 활용해 숨고 쫓으세요."},
  "haeundae":{"id":"haeundae","name":"부산 해운대","subtitle":"전통시장 · 백사장 · 동백섬","short":"해운대",
-  "accent":"7fe4d6","tint":"b9f1ff","arena":"haeundae",
+  "accent":"7fe4d6","tint":"b9f1ff","arena":"haeundae","circle":"밀물 침식",
   "layout":"res://scripts/survival/haeundae_layout.gd","scene":"res://scripts/survival/haeundae_world.gd",
   "tip":"좁은 시장 골목과 백사장 파라솔 사이로 숨고, 파도 경보와 밀물을 살피세요."},
  "dongseongno":{"id":"dongseongno","name":"대구 동성로","subtitle":"별빛랜드 · 아케이드 · 반월당","short":"동성로",
-  "accent":"ff8ad8","tint":"ffd0f2","arena":"dongseongno",
+  "accent":"ff8ad8","tint":"ffd0f2","arena":"dongseongno","circle":"폭염경보",
   "layout":"res://scripts/survival/dongseongno_layout.gd","scene":"res://scripts/survival/dongseongno_world.gd",
   "tip":"도술네컷 플래시와 오락실 소음, 환풍기 연기를 이용해 골목을 뒤집으세요."}}
 ## 지금 경기에서 쓰는 맵. rules가 만들어질 때 이 값으로 충돌·스폰·사물이 정해진다.
@@ -40,7 +39,7 @@ static func exists(id: String) -> bool:return INFO.has(id)
 static func info(id: String="") -> Dictionary:
  var key: String=id if id!="" else current_id
  return INFO.get(key,INFO["seowon"])
-static func name_of(id: String="") -> String:return String(info(id).get("name","월하의 서원"))
+static func name_of(id: String="") -> String:return String(info(id).get("name","조선"))
 static func name() -> String:return name_of(current_id)
 static func subtitle_of(id: String="") -> String:return String(info(id).get("subtitle",""))
 static func accent_of(id: String="") -> Color:return Color(String(info(id).get("accent","e8c98b")))

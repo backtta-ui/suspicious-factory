@@ -44,8 +44,8 @@ const BUILDINGS_RECTS=[
  # 중앙 열(아케이드·네컷·반월당)
  Rect2(1150,200,250,170),Rect2(1470,190,210,180),Rect2(1750,200,300,170),
  Rect2(1150,470,230,190),Rect2(1450,460,250,190),Rect2(1760,470,290,180),
- Rect2(1150,900,250,180),Rect2(1470,880,230,200),Rect2(1770,900,280,190),
- Rect2(1150,1160,220,180),Rect2(1440,1140,260,200),Rect2(1770,1150,280,180),
+ Rect2(1150,900,260,180),Rect2(1470,880,240,190),Rect2(1770,900,280,190),
+ Rect2(1150,1160,220,180),Rect2(1440,1150,260,190),Rect2(1770,1150,280,180),
  Rect2(1150,1580,230,190),Rect2(1450,1560,230,230),Rect2(1750,1590,290,190),
  Rect2(1150,1900,240,180),Rect2(1470,1890,240,200),Rect2(1790,1900,250,180),
  Rect2(1150,2170,290,160),Rect2(1510,2180,230,150),
@@ -114,22 +114,10 @@ const FORM_VISUALS={
 const GIMMICKS=[
  {"id":"flash","kind":"flash","zone":"fourcut","pos":Vector2(1440,1120),"radius":280.0,
   "label":"도술네컷","hint":"플래시가 터지면 근처 요괴가 1초 눈부십니다"},
- {"id":"claw","kind":"claw","zone":"arcadehall","pos":Vector2(2450,1100),"radius":280.0,
-  "label":"인형뽑기","hint":"동전을 넣으면 소음이 퍼집니다"},
  {"id":"speaker","kind":"speaker","zone":"busking","pos":Vector2(2050,1420),"radius":300.0,
   "label":"버스킹 스피커","hint":"일정 범위의 발소리를 교란합니다"},
- {"id":"shutter","kind":"shutter","zone":"arcadehall","pos":Vector2(2436,1260),"rect":Rect2(2424,1160,24,200),
-  "label":"아케이드 셔터","hint":"5초 동안 통로를 막습니다"},
  {"id":"smoke","kind":"smoke","zone":"food","pos":Vector2(2500,780),"radius":230.0,
-  "label":"먹자골목 환풍기","hint":"연기가 시야를 막습니다"},
- {"id":"sparkland","kind":"wheel","zone":"sparkland","pos":Vector2(420,170),
-  "label":"별빛랜드 대관람차","hint":"조명이 돌아갑니다"},
- {"id":"arcadegate","kind":"arcade_gate","zone":"arcade","pos":Vector2(1600,185),
-  "label":"아케이드 게이트","hint":"네온 아치가 맥동합니다"},
- {"id":"stairs","kind":"stairs","zone":"banwoldang","pos":Vector2(1270,1870),
-  "label":"반월당 지하상가","hint":"지하상가로 내려가는 계단"},
- {"id":"neon","kind":"neon","zone":"shopping","pos":Vector2(470,1420),
-  "label":"네온 입간판","hint":"불빛이 맥동합니다"}]
+  "label":"먹자골목 환풍기","hint":"연기가 시야를 막습니다"}]
 const CCTV_ZONES=[]
 ## ---- 기력 구슬 ----------------------------------------------------------
 const ORBS=[Vector2(470,660),Vector2(780,700),Vector2(1100,400),Vector2(1420,700),
@@ -180,16 +168,36 @@ const MEDALLION_RADIUS=0.0
 const DOOR_WIDTH=0.0
 const DOORS=[]
 const BUILDINGS=[]
+## 2.0.36 실제로 들어가는 실내 4곳: '화장/문구'처럼 겉만 있던 빈 상자를 없애고
+## 앞문·뒷문이 있는 꾸며진 가게로 만든다(진열장·카운터·오락기·포토부스).
+const INTERIOR_DEFS=[
+ {"id":"cosmetics","name":"화장품점","sub":"향과 화장품","rect":Rect2(1150,900,260,180),"kind":"shop","accent":Color("ff9ee0")},
+ {"id":"stationery","name":"문구점","sub":"종이와 붓","rect":Rect2(1470,880,240,190),"kind":"shop","accent":Color("8ff0ff")},
+ {"id":"arcade_room","name":"오락실","sub":"인형뽑기와 게임기","rect":Rect2(2190,900,240,190),"kind":"arcade","accent":Color("7fe4d6")},
+ {"id":"fourcut_room","name":"도술네컷","sub":"네 컷 사진관","rect":Rect2(1440,1150,260,190),"kind":"shop","accent":Color("ffd166")}]
+static var INTERIORS: Array=_make_interiors()
 static var HARD: Array=_make_hard()
 static var _spawn_cache: Dictionary={}
+static func _make_interiors() -> Array:
+ var out: Array=[]
+ for spec in INTERIOR_DEFS:
+  out.append(preload("res://scripts/survival/interiors.gd").make_entry(String(spec.id),String(spec.name),spec.rect as Rect2,String(spec.kind),spec.accent as Color,String(spec.get("sub",""))))
+ return out
 static func _make_hard() -> Array:
  var out: Array=[]
  out.append_array(OUTER_WALLS)
- out.append_array(BUILDINGS_RECTS)
+ var rooms:=_make_interiors()
+ for rect in BUILDINGS_RECTS:
+  var is_room:=false
+  for entry in rooms:
+   if (entry.rect as Rect2).is_equal_approx(rect):is_room=true;break
+  if is_room:continue
+  out.append(rect)
+ for entry in rooms:preload("res://scripts/survival/interiors.gd").add_walls(out,entry)
  return out
 static func map_id() -> String:return MAP_ID
 static func map_name() -> String:return NAME
-static func has_interiors() -> bool:return false
+static func has_interiors() -> bool:return true
 static func zones() -> Array:return ZONES
 static func zone(id: String) -> Dictionary:
  for entry in ZONES:
@@ -214,14 +222,38 @@ static func circle_final_center() -> Vector2:
  return CIRCLE_CENTER_FINAL if can_stand(CIRCLE_CENTER_FINAL,12) else safe(CIRCLE_CENTER_FINAL)
 static func corner_radius() -> float:
  return Vector2(SIZE.x*.5,SIZE.y*.5).length()
-static func buildings() -> Array:return BUILDINGS
-static func painted_door(_id: String) -> Vector2:return Vector2.ZERO
-static func building(_id: String) -> Dictionary:return {}
-static func door(_id: String) -> Dictionary:return {}
-static func building_doors(_id: String) -> Array:return []
-static func door_near(_p: Vector2,_distance: float=62.0) -> String:return ""
-static func interior_at(_p: Vector2,_pad: float=10.0) -> Dictionary:return {}
-static func inside(_p: Vector2) -> bool:return false
+static func buildings() -> Array:return INTERIORS
+static func painted_door(id: String) -> Vector2:
+ var entry:=building(id)
+ return entry.get("painted_door",Vector2.ZERO) if not entry.is_empty() else Vector2.ZERO
+static func building(id: String) -> Dictionary:
+ for entry in INTERIORS:
+  if String(entry.id)==id:return entry
+ return {}
+static func door(id: String) -> Dictionary:
+ for entry in INTERIORS:
+  for side in ["front","back"]:
+   if String(entry.id)+":"+side==id:return {"id":id,"building":entry.id,"side":side,"center":entry.doors[side],"label":String(entry.name)+(" 정문" if side=="front" else " 뒷문")}
+ return {}
+static func building_doors(id: String) -> Array:
+ var out: Array=[]
+ for side in ["front","back"]:
+  var entry:=door(id+":"+side)
+  if not entry.is_empty():out.append(entry)
+ return out
+static func door_near(p: Vector2,distance: float=62.0) -> String:
+ var best:="";var gap:=distance
+ for entry in INTERIORS:
+  for side in ["front","back"]:
+   var center: Vector2=entry.doors[side]
+   var d: float=p.distance_to(center)
+   if d<gap:gap=d;best=String(entry.id)+":"+side
+ return best
+static func interior_at(p: Vector2,pad: float=10.0) -> Dictionary:
+ for entry in INTERIORS:
+  if (entry.interior as Rect2).grow(pad).has_point(p):return entry
+ return {}
+static func inside(p: Vector2) -> bool:return not interior_at(p).is_empty()
 static func object_near(p: Vector2,distance: float=74.0) -> Dictionary:
  var best: Dictionary={};var gap:=distance
  for object in OBJECTS:

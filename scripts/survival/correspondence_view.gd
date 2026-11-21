@@ -26,7 +26,7 @@ var sheet_js: Array=[]
 
 func build() -> void:
 	tab=initial
-	header("우편" if tab=="mail" else "알림","서원으로 도착한 편지와 중요 안내를 확인하세요","mail")
+	header("우편" if tab=="mail" else "알림","조선으로 도착한 편지와 중요 안내를 확인하세요","mail")
 	for index in range(2):
 		var spec: Array=[["mail","우편","mail"],["alerts","알림","spark"]][index]
 		var key: String=spec[0]
@@ -84,7 +84,7 @@ func switch_tab(key: String) -> void:
 	tab=key
 	selected_id=""
 	title_label.text="우편" if tab=="mail" else "알림"
-	subtitle_label.text="서원으로 도착한 편지와 중요 안내를 확인하세요" if tab=="mail" else "서원의 공지와 새 소식을 확인하세요"
+	subtitle_label.text="조선으로 도착한 편지와 중요 안내를 확인하세요" if tab=="mail" else "조선의 공지와 새 소식을 확인하세요"
 	refresh()
 
 func _list() -> Array:
@@ -179,7 +179,7 @@ func _make_card(entry: Dictionary,index: int) -> void:
 	title.clip_text=true
 	title.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	place(title,Rect2(LIST.position.x+94,rect.position.y+16,rect.size.x-146,28))
-	var role_text: String="서원의 편지" if tab=="mail" else "서원의 공지"
+	var role_text: String="조선의 편지" if tab=="mail" else "조선의 공지"
 	var status_text: String="수령 가능" if tab=="mail" and not claimed else ("수령 완료" if tab=="mail" else "새 소식")
 	if read:status_text=("읽음" if tab=="mail" else "확인함")
 	var meta:=label(card,role_text,16,Color(.86,.80,.94))
@@ -246,7 +246,7 @@ func _paint_sheet() -> void:
 	place(body,Rect2(area.position.x+42,area.position.y+116,body_w,body_h))
 	var lower:=area.position.y+116.0+body_h+34.0
 	lower=minf(lower,area.position.y+area.size.y-226.0)
-	var signature:=label(paper,"— 월하의 서원 지기",14,Color(.40,.30,.20),true)
+	var signature:=label(paper,"— 조선 지기",14,Color(.40,.30,.20),true)
 	signature.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	signature.set_meta("content",true)
 	place(signature,Rect2(area.position.x+area.size.x-310,lower-58,260,22))
@@ -336,7 +336,7 @@ func _paint_sheet() -> void:
 		var hint2:=label(paper,"새 소식은 로비 알림에 금빛 점으로 표시됩니다.",12.5,Color(.44,.34,.24,.9))
 		hint2.set_meta("content",true)
 		place(hint2,Rect2(area.position.x+44,lower+64,420,18))
-	var footer:=label(paper,"달빛 아래, 월하의 서원",12,Color(.44,.34,.24,.65),true)
+	var footer:=label(paper,"달빛 아래, 조선",12,Color(.44,.34,.24,.65),true)
 	footer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	footer.set_meta("content",true)
 	place(footer,Rect2(area.position.x+40,area.position.y+area.size.y-40,area.size.x-80,20))

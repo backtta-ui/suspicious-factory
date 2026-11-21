@@ -13,6 +13,8 @@ const G=preload("res://scripts/ui/room_glyphs.gd")
 const LArt=preload("res://scripts/ui/lobby_art.gd")
 const C=preload("res://scripts/survival/characters.gd")
 const SkillFX=preload("res://scripts/survival/skill_fx.gd")
+const Market=preload("res://scripts/survival/market.gd")
+const Actor=preload("res://scripts/woo/actor.gd")
 ## 캐릭터 고유 테마색(전우치 청람 · 홍길동 하늘 · 장영실 황동 · 바리 연꽃 분홍금 ·
 ## 강림 보랏빛 · 구미호 자주 · 장산범 서릿빛 · 도깨비 주홍 · 어둑시니 심연 · 야광귀 연두).
 const THEME_COLORS={
@@ -57,7 +59,9 @@ var footer_layer: Control
 var strip: Control
 ## 2.0.34 캐릭터 선택 생동감: 입장 모션·호흡·살랑임·전용 이펙트 레이어·미니 걷기.
 var hero_art: Control
-var hero_fx: Control
+var hero_actor: Node2D
+var hero_actor_scale:=1.0
+var hero_fx: Node2D
 var hero_fx_file:=""
 var hero_fx_skill:=""
 var hero_anim:=0.0
@@ -68,6 +72,11 @@ var hero_mini: Node
 var hero_mini_phase:=0.0
 var last_sound_skill:=""
 var hero_fx_angle:=0.0
+## 2.0.36: 10인 고유 선택 모션(대표 도술 연출을 2.8초 주기로 재생) + 확정/선택 임팩트.
+var hero_motion:=0.0
+var hero_action:=0.0
+var hero_skin:=""
+var hero_skin_fx:=""
 ## 2.0.34 테마 컬러 플러드 + 확정 임팩트.
 var theme_color:=Color("5fb0ff")
 var theme_target:=Color("5fb0ff")
@@ -83,18 +92,20 @@ func _ready() -> void:
 	built=true
 
 func _process(delta: float) -> void:
-	## 선택창이 살아 움직이게: 입장은 튀어 오르고, 이후엔 호흡·좌우 살랑임·이펙트 회전·미니 걷기.
-	if not is_instance_valid(hero_art):return
+	## 선택창이 살아 움직이게: 캐릭터가 직접 걷고·숨 쉬고·고유 도술 모션을 반복한다.
+	if not is_instance_valid(hero_actor):return
 	hero_anim+=delta
 	hero_entry=minf(1.0,hero_entry+delta/0.34)
+	hero_motion+=delta
+	hero_action=maxf(0.0,hero_action-delta*1.8)
 	var ease_out:=1.0-pow(1.0-hero_entry,3.0)
 	var breathe:=sin(hero_anim*2.3)
 	var sway:=sin(hero_anim*1.35)
-	var pop:=lerpf(.84,1.0,ease_out)+sin(hero_entry*PI)*.09
+	var pop:=lerpf(.84,1.0,ease_out)+sin(hero_entry*PI)*.09+hero_action*.06
 	hero_art.pivot_offset=hero_art.size*.5
 	hero_art.scale=Vector2(pop*(1.0+.010*breathe),pop*(1.0-.014*breathe))
-	hero_art.position=hero_base.position+Vector2(sway*5.0,(1.0-ease_out)*34.0+breathe*3.0)
-	hero_art.rotation=sway*.008
+	hero_art.position=hero_base.position+Vector2(sway*3.0,(1.0-ease_out)*34.0+breathe*2.0)
+	hero_art.rotation=0.0
 	# 확정 임팩트: 금빛 플래시 + 1.1배 줌 강조가 짧게 터진다.
 	lock_flash=maxf(0.0,lock_flash-delta*1.9)
 	lock_zoom=maxf(0.0,lock_zoom-delta*2.2)
@@ -104,16 +115,25 @@ func _process(delta: float) -> void:
 	hero_art.modulate=Color(1,1,1,ease_out)
 	if is_instance_valid(theme_layer):theme_layer.queue_redraw()
 	hero_fx_angle=fmod(hero_fx_angle+delta*.55,TAU)
-	if is_instance_valid(hero_fx):hero_fx.queue_redraw()
-	# 발밑 미니 캐릭터: 8방향을 천천히 돌며 걷는 포즈(발끝 박자 포함).
+	# 실제 캐릭터: 앞·옆을 천천히 돌아보며 걷는 박자, 선택 순간에는 발을 구른다.
+	var actor: Node2D=hero_actor
+	var step:=int(hero_anim/1.25)%8
+	actor.facing=[2,3,4,5,6,7,0,1][step]
+	actor.gait_phase+=delta*(3.4+hero_action*5.0)
+	actor.gait_weight=move_toward(actor.gait_weight,1.0,delta*3.0)
+	actor.velocity=Vector2(46.0+hero_action*90.0,0)
+	actor.action_left=hero_action*.5
+	if hero_action>0.0:actor.action_skill=hero_fx_skill
+	actor.update_sprite()
 	hero_mini_phase+=delta
-	if is_instance_valid(hero_mini) and hero_mini is Node2D:
-		var actor: Node2D=hero_mini
-		actor.facing=posmod(int(hero_mini_phase/0.9),8)
-		actor.gait_phase+=delta*3.4
-		actor.gait_weight=move_toward(actor.gait_weight,1.0,delta*3.0)
-		actor.velocity=Vector2(60,0)
-		actor.update_sprite()
+	if is_instance_valid(hero_mini) and hero_mini is Node2D and hero_mini!=actor:
+		var mini: Node2D=hero_mini
+		mini.facing=posmod(int(hero_mini_phase/0.9),8)
+		mini.gait_phase+=delta*3.4
+		mini.gait_weight=move_toward(mini.gait_weight,1.0,delta*3.0)
+		mini.velocity=Vector2(60,0)
+		mini.update_sprite()
+	if is_instance_valid(hero_fx):hero_fx.queue_redraw()
 func setup(game_node: Node,selected: String,confirmed: bool) -> void:
 	game=game_node
 	selection_id=selected
@@ -348,7 +368,7 @@ func _header() -> void:
 	_add(self,crest,Rect2(MARGIN+112,16,44,44))
 	var title:=_label(self,"캐릭터 선택",34,P.HANJI,true)
 	_add(self,title,Rect2(MARGIN+164,4,430,44))
-	var subtitle:=_label(self,"월하의 서원 · 8인 생존전",14.5,Color(.84,.82,.94),false)
+	var subtitle:=_label(self,"조선 · 8인 생존전",14.5,Color(.84,.82,.94),false)
 	_add(self,subtitle,Rect2(MARGIN+166,48,430,22))
 	# 도사 6 : 요괴 2 명패
 	var roster=game.rules
@@ -578,7 +598,10 @@ func _paint_cards() -> void:
 			name_label.add_theme_color_override("font_color",Color("fff0cd") if chosen else P.HANJI)
 		card.modulate=Color(1.03,1.02,1.0) if chosen else Color(0.96,0.97,1.02)
 
-# ------------------------------------------------------------------ 중앙 대형 원화
+# ------------------------------------------------------------------ 중앙 대형 캐릭터
+## 2.0.36 전면 개편: 거대한 정지 일러스트(기울어 빙글 돌던 사각 그림)를 없애고,
+## 실제로 움직이는 인게임 캐릭터를 크게 세운다. 10인은 각자 고유 선택 모션
+## (전우치 부적·항아리, 강림 깃발·귀환, 바리 방울·보호막, 구미호 여우불 등)을 반복한다.
 func _hero() -> void:
 	var right_edge:=width-MARGIN-368-10
 	var left_edge:=MARGIN+110+352+12
@@ -586,10 +609,9 @@ func _hero() -> void:
 	_reset_layer("hero")
 	var spec:=C.find(selection_id)
 	var daoist:=String(spec.get("team","daoist"))=="daoist"
-	var accent:=P.BRASS_LIGHT if daoist else Color(.84,.70,1.0)
 	theme_target=theme_of(selection_id)
 	theme_color=theme_color.lerp(theme_target,.55)
-	accent=theme_color.lerp(Color(1,1,1),.18)
+	var accent:=theme_color.lerp(Color(1,1,1),.18)
 	# 달 광륜
 	var glow:=TextureRect.new()
 	glow.texture=LC.GLOW
@@ -616,7 +638,7 @@ func _hero() -> void:
 			crest.draw_line(c+Vector2.from_angle(a0)*rad*.70,c+Vector2.from_angle(a0)*rad*.86,P.alpha(accent,.12),1.2,true)
 		G.draw_glyph(crest,"lotus" if daoist else "fox",Rect2(c-Vector2(rad*.44,rad*.44),Vector2(rad*.88,rad*.88)),P.alpha(accent,.13),2.2))
 	_add(hero_layer,crest,Rect2(area.get_center().x-crest_size*.5,area.position.y-10,crest_size,crest_size))
-	# 2.0.34 테마 컬러 플러드: 캐릭터 고유색 오라가 배경에 은은하게 번지고,
+	# 테마 컬러 플러드: 캐릭터 고유색 오라가 배경에 은은하게 번지고,
 	# 확정 순간 금빛 플래시가 캐릭터를 감싼다.
 	theme_layer=Control.new()
 	theme_layer.name="HeroTheme"
@@ -640,66 +662,73 @@ func _hero() -> void:
 				var a:=float(k2)*TAU/12.0+hero_anim*2.0
 				var spot:=c+Vector2(0,rad*.18)+Vector2.from_angle(a)*rad*(.34+(1.0-flash)*.7)
 				theme_layer.draw_circle(spot,2.6*flash,Color(1,.95,.78,.9*flash)))
-	# 2.0.34 캐릭터 전용 이펙트 레이어(뒤): 대표 도술 PNG가 천천히 회전·발광·펄스한다.
+	# 캐릭터의 대표 도술 이름·고유 연출
 	hero_fx_file=character_fx_file(selection_id)
 	hero_accent=accent
-	hero_fx=Control.new()
-	hero_fx.name="HeroFx"
-	hero_fx.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	hero_skin=String(game.storage.equipped("skin")) if is_instance_valid(game) else ""
+	if not SkillFX.skin_allows(hero_skin,selection_id):hero_skin=""
+	hero_skin_fx=SkillFX.file_for(selection_id,hero_fx_skill,hero_skin) if hero_skin!="" else ""
+	var art_bottom:=area.end.y-44.0
+	var actor_height:=minf(area.size.y-30.0,340.0)
+	var foot:=Vector2(area.get_center().x,art_bottom)
+	# 캐릭터 전용 선택 모션 레이어: 대표 도술의 고유 연출이 2.8초마다 반복된다.
 	var fx_size:=minf(area.size.x*.96,540.0)
+	hero_fx=Node2D.new()
+	hero_fx.name="HeroFx"
+	hero_fx.position=Vector2(foot.x,foot.y-fx_size*.12)
+	hero_fx.z_index=-1
+	hero_layer.add_child(hero_fx)
+	hero_fx.position=Vector2(foot.x,foot.y-fx_size*.12)*s
 	hero_fx.draw.connect(func()->void:
-		if hero_fx_file=="" or not ResourceLoader.exists(hero_fx_file):return
-		var texture: Texture2D=load(hero_fx_file)
-		if texture==null:return
-		var c: Vector2=hero_fx.size*.5
+		var c: Vector2=Vector2.ZERO
 		var pulse: float=.5+.5*sin(hero_anim*2.6)
-		var base_scale: float=minf(hero_fx.size.x,hero_fx.size.y)*.92/maxf(1.0,maxf(texture.get_width(),texture.get_height()))
-		hero_fx.draw_set_transform(c+Vector2(0,10),hero_fx_angle*.35,Vector2(base_scale*(1.02+.04*pulse),base_scale*(1.02+.04*pulse)))
-		hero_fx.draw_texture(texture,-texture.get_size()*.5,Color(1,1,1,.24+.16*pulse))
-		hero_fx.draw_set_transform(c+Vector2(0,10),-hero_fx_angle*.22,Vector2(base_scale*.72,base_scale*.72))
-		hero_fx.draw_texture(texture,-texture.get_size()*.5,Color(1,.92,.78,.14+.10*pulse))
-		hero_fx.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
-		# 테두리 회전 링과 반짝임
-		var rad:=minf(hero_fx.size.x,hero_fx.size.y)*.42
+		# 스킨 전용 이펙트(김치전·부침개)가 있으면 발밑에서 크게 펼친다.
+		if hero_skin_fx!="" and ResourceLoader.exists(hero_skin_fx):
+			var skin_tex: Texture2D=load(hero_skin_fx)
+			if skin_tex!=null:
+				var sk: float=fx_size*.62/maxf(1.0,maxf(skin_tex.get_width(),skin_tex.get_height()))
+				hero_fx.draw_set_transform(c+Vector2(0,14),0,Vector2(sk*(1.0+.03*pulse),sk*(1.0+.03*pulse)))
+				hero_fx.draw_texture(skin_tex,-skin_tex.get_size()*.5,Color(1,1,1,.55+.20*pulse))
+				hero_fx.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+		# 10인 고유 선택 모션: 대표 도술의 실제 연출(부적·항아리·깃발·방울·여우불·기계·먹장막).
+		var loop_p:=fmod(hero_motion+0.35,2.8)/2.8
+		var cast_p:=clampf(loop_p/.72,0.0,1.0)
+		preload("res://scripts/survival/fx.gd").signature(hero_fx,c,cast_p,hero_fx_skill,float(hero_actor.facing if is_instance_valid(hero_actor) else 2))
+		# 회전 금빛 링과 반짝임
+		var rad:=fx_size*.23
 		hero_fx.draw_arc(c,rad,0,TAU,72,Color(hero_accent.r,hero_accent.g,hero_accent.b,.18+.12*pulse),2.0,true)
 		for i in range(10):
 			var a:=float(i)*TAU/10.0+hero_fx_angle
-			hero_fx.draw_circle(c+Vector2.from_angle(a)*rad,2.2,Color(1,.94,.74,.30+.35*pulse)))
-	_add(hero_layer,hero_fx,Rect2(area.get_center().x-fx_size*.5,area.position.y-4,fx_size,fx_size))
-	# 전신 원화(크게)
-	var sprite_path:=String(spec.get("sprite",""))
-	# 상단 배지(도사 6 : 요괴 2)를 가리지 않도록 일러스트 상단을 64 아래에서 시작한다.
-	var art_bottom:=area.end.y-44.0
-	if ResourceLoader.exists(sprite_path):
-		var art:=TextureRect.new()
-		art.texture=load(sprite_path)
-		art.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-		art.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		art.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		art.modulate=Color(1.04,1.02,1.02,1.0)
-		var art_height:=minf(area.size.y-14.0,448.0)
-		var art_width:=minf(area.size.x*.96,art_height*1.05)
-		hero_base=Rect2(area.get_center().x-art_width*.5,art_bottom-art_height,art_width,art_height)
-		hero_art=Control.new()
-		hero_art.name="HeroArt"
-		hero_art.mouse_filter=Control.MOUSE_FILTER_IGNORE
-		_add(hero_layer,hero_art,hero_base)
-		art.position=Vector2.ZERO
-		art.size=hero_base.size
-		hero_art.add_child(art)
-		hero_entry=0.0
-		hero_anim=0.0
-	# 달빛 마법진 단상
+			hero_fx.draw_circle(c+Vector2.from_angle(a)*rad,2.0,Color(1,.94,.74,.30+.35*pulse)))
+	# 실제로 걷고 움직이는 대형 인게임 캐릭터
+	hero_art=Control.new()
+	hero_art.name="HeroArt"
+	hero_art.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var art_width:=minf(area.size.x*.90,actor_height*.92)
+	hero_base=Rect2(foot.x-art_width*.5,foot.y-actor_height,art_width,actor_height)
+	_add(hero_layer,hero_art,hero_base)
+	var actor:=Actor.new()
+	actor.network_remote=true;actor.collision_layer=0;actor.collision_mask=0
+	actor.cosmetic=C.look(selection_id)
+	actor.ingame_art=true
+	var skin_key:=SkillFX.sheet_key(selection_id,hero_skin)
+	hero_actor_scale=maxf(2.4,actor_height/72.0)
+	actor.scale=Vector2.ONE*hero_actor_scale
+	actor.position=Vector2(art_width*.5,actor_height*.98)
+	hero_art.add_child(actor)
+	# 2.0.36: Actor가 _ready에서 기본 원화로 초기화하므로, 스킨 시트는 붙인 뒤에 확정한다.
+	actor.art_id=skin_key if skin_key!="" else C.fallback_art(String(spec.get("art","")))
+	actor.skin_tint=Color.WHITE
+	if actor.has_method("update_sprite"):actor.update_sprite()
+	hero_actor=actor
+	hero_entry=0.0
+	hero_anim=0.0
+	hero_motion=0.0
+	hero_action=0.0
+	# 달빛 마법진 단상(캐릭터 발밑)
 	var pedestal:=LArt.Pedestal.new()
 	pedestal.glow=Color(theme_color.r,theme_color.g,theme_color.b,.42)
-	_add(hero_layer,pedestal,Rect2(area.get_center().x-168.0,art_bottom-52.0,336,92))
-	# 단상 위 인게임 소형 캐릭터(8방향 걷기·포즈 모션)
-	if is_instance_valid(game):
-		var holder: Control=game.portrait(hero_layer,selection_id,Vector2(80,100)*s)
-		holder.position=Vector2(area.get_center().x-40.0,art_bottom-84.0)*s
-		holder.size=Vector2(80,100)*s
-		hero_mini=holder.get_child(0) if holder.get_child_count()>0 else null
-		hero_mini_phase=0.0
+	_add(hero_layer,pedestal,Rect2(foot.x-168.0,art_bottom-52.0,336,92))
 	# 이름 워터마크
 	var mark:=_label(hero_layer,String(spec.get("name","")),15.5,P.alpha(accent,.98),true)
 	mark.add_theme_color_override("font_outline_color",Color(.03,.02,.06,.8))
@@ -724,6 +753,7 @@ func character_fx_file(id: String) -> String:
 func play_lockin() -> void:
 	lock_flash=1.0
 	lock_zoom=1.0
+	hero_action=1.0
 	if is_instance_valid(game) and game.sound!=null:game.sound.play_clip("lock_in")
 
 ## 선택할 때 그 캐릭터의 대표 도술 효과음을 낸다(선택창이 살아 있게).
@@ -802,9 +832,27 @@ func _detail() -> void:
 	_add(detail_layer,gauge,Rect2(x0+24,area.position.y+348,320,13))
 	var desc:=_label(detail_layer,String(skill.get("description","")),13,Color(.84,.86,.96),false)
 	desc.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	_add(detail_layer,desc,Rect2(x0+24,area.position.y+368,320,52))
+	_add(detail_layer,desc,Rect2(x0+24,area.position.y+368,320,44))
+	# 2.0.36: 이 캐릭터가 입을 수 있는 전용 스킨만 표시·장착한다(도포 색 스킨 없음).
+	var skin_head:=_label(detail_layer,"스킨",12.5,Color(.82,.82,.92),false)
+	_add(detail_layer,skin_head,Rect2(x0+24,area.position.y+412,44,18))
+	var skins: Array=[Market.DEFAULT_SKIN]
+	skins.append_array(Market.skins_for(selection_id))
+	var equipped_skin:=String(game.storage.equipped("skin")) if is_instance_valid(game) else "default"
+	if equipped_skin=="":equipped_skin="default"
+	for i in range(mini(3,skins.size())):
+		var item: Dictionary=skins[i]
+		var skin_id: String=String(item.id)
+		var owned_skin: bool=skin_id=="default" or game.storage.owns(skin_id)
+		var chosen_skin: bool=skin_id==equipped_skin
+		var caption_skin:=String(item.get("name","기본"))
+		if not owned_skin:caption_skin="🔒 "+caption_skin
+		var chip:=_button(caption_skin,func()->void:_equip_skin(skin_id),"tab_lit" if chosen_skin else "tab","flower",Rect2(x0+70.0+float(i)*104.0,area.position.y+408,100,28),11.5)
+		chip.name="SelectionSkin_"+skin_id
+		chip.disabled=not owned_skin
+		if not owned_skin:chip.modulate=Color(1,1,1,.55)
 	var cost:=_label(detail_layer,"쿨타임 %d초 · 지속 능력 없음" % int(float(skill.get("cd",0.0))),12,Color(.76,.78,.90),false)
-	_add(detail_layer,cost,Rect2(x0+24,area.position.y+414,320,18))
+	_add(detail_layer,cost,Rect2(x0+24,area.position.y+438,320,18))
 
 func _pill_width(text_value: String,extent: float) -> float:
 	return FONT.get_string_size(text_value,HORIZONTAL_ALIGNMENT_LEFT,-1,maxi(9,int(extent*s))).x/s
@@ -1072,6 +1120,7 @@ func _pick(id: String) -> void:
 		return
 	if String(C.find(id).get("team",""))!=side():
 		selection_id=id
+		hero_motion=0.0;hero_action=1.0
 		play_select_sound(id)
 		_paint_cards()
 		_hero()
@@ -1081,11 +1130,24 @@ func _pick(id: String) -> void:
 	if game.rules.select_character("human",id):
 		selection_id=id
 		game.selection_id=id
+		hero_motion=0.0;hero_action=1.0
 		play_select_sound(id)
 		_paint_cards()
 		_hero()
 		_detail()
 		_footer()
+
+## 선택창에서 보유 스킨을 바로 갈아입는다(장착은 경기·로비에 즉시 반영).
+func _equip_skin(id: String) -> void:
+	if not is_instance_valid(game):return
+	if id!="default" and not game.storage.owns(id):return
+	game.storage.equip("skin",id)
+	game.storage.save()
+	if game.rules!=null and game.rules.players.has("human"):game.rules.players.human.skin=id
+	if game.sound!=null:game.sound.play_clip("button")
+	hero_action=1.0;hero_motion=0.0
+	_hero()
+	_detail()
 
 ## 확정 뒤 준비 카운트다운(2.0.27): 0이 되면 맵으로 넘어간다.
 func set_ready(left: float,active: bool) -> void:
