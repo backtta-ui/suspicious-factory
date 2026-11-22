@@ -106,7 +106,8 @@ func run() -> void:
    chip.disabled=false
    sel._equip_skin("woochi_pancake")
    await frames(3)
-   check(String(game.storage.equipped("skin"))=="woochi_pancake","the selection screen equips the owned skin")
+   # 2.0.38: 스킨 장착은 캐릭터별 칸(skins_by_character)에 저장된다.
+   check(String(game.storage.skin_for(sel.selection_id))=="woochi_pancake","the selection screen equips the owned skin")
    check(sel.hero_actor.art_id=="woochi_pancake" or sel.hero_actor.skin_tint==Color.WHITE,"the big character wears the equipped skin")
  game.rules.phase="selection"
  # ---------------------------------------------------------------- 5) 스킨 동기화(분신·인간둔갑)
@@ -172,7 +173,9 @@ func run() -> void:
  check(gangnam_src.contains("func draw_escalator") and gangnam_src.contains("if kind==\"escalator\":continue"),"the escalator is drawn under the actors (no hiding bug)")
  check(FileAccess.get_file_as_string("res://scripts/survival/rules.gd").contains("105.0*delta"),"rules move a standing rider along the escalator")
  check(FileAccess.get_file_as_string("res://scripts/survival/cctv_view.gd").contains("SubViewport") and FileAccess.get_file_as_string("res://scripts/survival/app.gd").contains("feed.world_2d=world.get_world_2d()"),"CCTV uses a real SubViewport camera feed")
- check(FileAccess.get_file_as_string("res://scripts/survival/gangnam_art.gd").contains("벽과 겹치면"),"floor zone labels are pushed away from walls")
+ # 2.0.38: 구역 표지판은 전용 레이어(zone_labels.gd)가 벽·건물·사물을 피해 그린다.
+ var labels_src:=FileAccess.get_file_as_string("res://scripts/survival/zone_labels.gd")
+ check(labels_src.contains("best_spot") and labels_src.contains("collides(box,blocks") and labels_src.contains("z_index=-74"),"floor zone labels avoid walls and sit above interiors")
  # ---------------------------------------------------------------- 8) 미니맵 장소명·이동·시야 차단
  check(SeowonL.zones().size()>=7 and HaeundaeL.zones().size()==8 and DongseongnoL.zones().size()==9,"every map exposes zone names for the minimap")
  check(FileAccess.get_file_as_string("res://scripts/survival/minimap.gd").contains("func draw_zone_names"),"the full map draws zone names")
@@ -231,7 +234,7 @@ func run() -> void:
  # ---------------------------------------------------------------- 11) 버전
  var project:=FileAccess.get_file_as_string("res://project.godot")
  var preset:=FileAccess.get_file_as_string("res://export_presets.cfg")
- check(project.contains("config/version=\"2.0.37\""),"project version is 2.0.37")
- check(preset.contains("version/code=48") and preset.contains("version/name=\"2.0.37\""),"Android versionCode 48 / 2.0.37")
+ check(project.contains("config/version=\"2.0.38\""),"project version is 2.0.37")
+ check(preset.contains("version/code=49") and preset.contains("version/name=\"2.0.38\""),"Android versionCode 49 / 2.0.38")
  print("V36 RESULT checks=",checks," failures=",failures)
  quit(1 if failures>0 else 0)

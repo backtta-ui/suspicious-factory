@@ -720,7 +720,7 @@ func _hero() -> void:
 		SelMotion.draw(hero_fx,hero_art_id,hero_entry,hero_motion,fx_size,hero_accent,float(hero_actor.facing if is_instance_valid(hero_actor) else 2))
 		var loop_p:=fmod(hero_motion+0.35,2.8)/2.8
 		var cast_p:=clampf(loop_p/.72,0.0,1.0)
-		preload("res://scripts/survival/fx.gd").signature(hero_fx,c,cast_p,hero_fx_skill,float(hero_actor.facing if is_instance_valid(hero_actor) else 2))
+		preload("res://scripts/survival/fx.gd").signature(hero_fx,c,cast_p,hero_fx_skill,float(hero_actor.facing if is_instance_valid(hero_actor) else 2),hero_skin)
 		# 회전 금빛 링과 반짝임
 		var rad:=fx_size*.23
 		hero_fx.draw_arc(c,rad,0,TAU,72,Color(hero_accent.r,hero_accent.g,hero_accent.b,.18+.12*pulse),2.0,true)
@@ -756,8 +756,13 @@ func _hero() -> void:
 	var pedestal:=LArt.Pedestal.new()
 	pedestal.glow=Color(theme_color.r,theme_color.g,theme_color.b,.42)
 	_add(hero_layer,pedestal,Rect2(foot.x-168.0,art_bottom-52.0,336,92))
-	# 이름 워터마크
-	var mark:=_label(hero_layer,String(spec.get("name","")),15.5,P.alpha(accent,.98),true)
+	# 이름 워터마크(스킨을 입으면 스킨 이름으로 바뀐다 — 2.0.38)
+	var hero_name:=String(spec.get("name",""))
+	if hero_skin!="":
+		var worn:=Market.skin(hero_skin)
+		if not worn.is_empty():hero_name=String(worn.get("name",hero_name))
+	var mark:=_label(hero_layer,hero_name,15.5,P.alpha(accent,.98),true)
+	mark.name="SelectionHeroName"
 	mark.add_theme_color_override("font_outline_color",Color(.03,.02,.06,.8))
 	mark.add_theme_constant_override("outline_size",3)
 	mark.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
@@ -772,7 +777,7 @@ func character_fx_file(id: String) -> String:
 		if String(entry.get("slot",""))=="main":skill=String(entry.get("skill",""));break
 	if skill=="" and not abilities.is_empty():skill=String((abilities[0] as Dictionary).get("skill",""))
 	hero_fx_skill=skill
-	var skin: String=String(game.storage.equipped("skin")) if is_instance_valid(game) else ""
+	var skin: String=String(game.storage.skin_for(id)) if is_instance_valid(game) else ""
 	var file:=SkillFX.file_for(id,skill,skin)
 	if file=="":file=SkillFX.file_for(id,"painting","")
 	return file
@@ -810,7 +815,15 @@ func _detail() -> void:
 	name_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	name_icon.draw.connect(func()->void:G.draw_glyph(name_icon,"lotus" if daoist else "fox",Rect2(Vector2.ZERO,name_icon.size),accent,1.8))
 	_add(detail_layer,name_icon,Rect2(x0+22,area.position.y+18,30,30))
-	var name_label:=_label(detail_layer,String(spec.get("name","")),30,P.HANJI,true)
+	# 2.0.38 스킨을 입고 있으면 이름 옆에 스킨 이름을 붙인다(전우치 · 부침개).
+	var detail_name:=String(spec.get("name",""))
+	var worn_skin_detail:=String(game.storage.skin_for(selection_id)) if is_instance_valid(game) else ""
+	if worn_skin_detail!="" and worn_skin_detail!="default":
+		var worn_item:=Market.skin(worn_skin_detail)
+		var short:=String(worn_item.get("name",worn_skin_detail)).replace(String(spec.get("name","")),"").strip_edges()
+		if short=="":short=String(worn_item.get("name",worn_skin_detail))
+		detail_name=detail_name+" · "+short
+	var name_label:=_label(detail_layer,detail_name,30,P.HANJI,true)
 	name_label.name="SelectionName"
 	_add(detail_layer,name_label,Rect2(x0+58,area.position.y+8,296,40))
 	var team_name: String="도사" if daoist else "요괴"
@@ -868,7 +881,7 @@ func _detail() -> void:
 	_add(detail_layer,skin_head,Rect2(x0+24,area.position.y+412,44,18))
 	var skins: Array=[Market.DEFAULT_SKIN]
 	skins.append_array(Market.skins_for(selection_id))
-	var equipped_skin:=String(game.storage.equipped("skin")) if is_instance_valid(game) else "default"
+	var equipped_skin:=String(game.storage.skin_for(selection_id)) if is_instance_valid(game) else ""
 	if equipped_skin=="":equipped_skin="default"
 	for i in range(mini(3,skins.size())):
 		var item: Dictionary=skins[i]
@@ -1090,12 +1103,20 @@ func _slot(r: Rect2,entry: Dictionary,group: String,index: int,tint: Color,conce
 	var frame:=UIK.nine(box,UIK.TEX_SLOT,16)
 	_place(frame,Rect2(0,0,r.size.x,r.size.y))
 	if filled and String(spec.get("portrait",""))!="":
+		# 2.0.38 내 칸은 장착한 스킨의 초상을 쓴다(부침개 전우치를 입으면 부침개 초상).
+		var portrait_path:=String(spec.portrait)
+		if host and is_instance_valid(game):
+			var worn_skin:=String(game.storage.skin_for(character))
+			if worn_skin!="":
+				var worn_item:=Market.skin(worn_skin)
+				var worn_portrait:=String(worn_item.get("portrait",""))
+				if worn_portrait!="" and ResourceLoader.exists(worn_portrait):portrait_path=worn_portrait
 		var holder:=Control.new()
 		holder.clip_contents=true
 		holder.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		_add(box,holder,Rect2(5,5,r.size.x-10,r.size.y-10))
 		var portrait:=TextureRect.new()
-		portrait.texture=load(String(spec.portrait))
+		portrait.texture=load(portrait_path)
 		portrait.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 		portrait.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_COVERED
 		portrait.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -1171,13 +1192,21 @@ func _pick(id: String) -> void:
 func _equip_skin(id: String) -> void:
 	if not is_instance_valid(game):return
 	if id!="default" and not game.storage.owns(id):return
-	game.storage.equip("skin",id)
+	# 2.0.38: 스킨은 캐릭터별로 장착한다(전역 equipped.skin이 아니라 이 캐릭터 칸).
+	# 2.0.37까지 전역 키만 바꿔, 부침개를 골라도 무대·초상·이름이 기본 전우치로 남았다.
+	game.storage.equip_skin(selection_id,id)
 	game.storage.save()
-	if game.rules!=null and game.rules.players.has("human"):game.rules.players.human.skin=id
+	if game.rules!=null and game.rules.players.has("human"):
+		var me_player: Dictionary=game.rules.players.human
+		if String(me_player.get("character",""))==selection_id:
+			me_player.skin=game.storage.skin_for(selection_id)
 	if game.sound!=null:game.sound.play_clip("button")
 	hero_action=1.0;hero_motion=0.0
+	# 무대 캐릭터·초상·이름·스킨 칩을 모두 같은 선택으로 다시 그린다.
 	_hero()
 	_detail()
+	_paint_cards()
+	_footer()
 
 ## 확정 뒤 준비 카운트다운(2.0.27): 0이 되면 맵으로 넘어간다.
 func set_ready(left: float,active: bool) -> void:

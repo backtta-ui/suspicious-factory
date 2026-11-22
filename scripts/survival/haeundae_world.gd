@@ -35,6 +35,7 @@ var observer:=L.SPAWN
 var clock:=0.0
 ## 2.0.36 들어가면 지붕이 사라지는 실내 레이어.
 var interior_layer: Node2D
+var zone_labels: Node2D
 var aim:=Vector2.ZERO
 var aim_active:=false
 var aim_cancelled:=false
@@ -51,6 +52,7 @@ var textures: Dictionary={}
 var culled: Array=[]
 var cull_rect:=Rect2()
 var tick:=0.0
+var water: Node2D
 func _ready() -> void:
  texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
  y_sort_enabled=true
@@ -58,6 +60,11 @@ func _ready() -> void:
  ground.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  ground.draw.connect(func()->void:Art.draw_base(ground))
  add_child(ground)
+ # 2.0.38 밤바다 물결·거품(동적). 바닥과 벽 사이에 깔린다.
+ water=Node2D.new();water.name="Sea";water.z_index=-94
+ water.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
+ water.draw.connect(func()->void:Art.draw_water(water,clock))
+ add_child(water)
  walls=Node2D.new();walls.name="Walls";walls.z_index=-92
  walls.texture_filter=CanvasItem.TEXTURE_FILTER_LINEAR
  walls.draw.connect(func()->void:Art.draw_walls(walls))
@@ -81,6 +88,11 @@ func _ready() -> void:
  interior_layer.name="Interiors"
  interior_layer.layout=L
  add_child(interior_layer)
+ # 2.0.38 구역 바닥 표지판(실내·백 레이어 위, 액터 아래).
+ zone_labels=preload("res://scripts/survival/zone_labels.gd").new()
+ zone_labels.name="ZoneLabels"
+ add_child(zone_labels)
+ zone_labels.setup(L)
 
 func tex(path: String) -> Texture2D:
  if textures.has(path):return textures[path]
@@ -141,6 +153,7 @@ func _process(delta: float) -> void:
  update_cull()
  update_walkers()
  tick+=delta
+ if is_instance_valid(water):water.queue_redraw()
  if tick>=1.0/20.0:
   tick=0
   if is_instance_valid(floor_fx):floor_fx.queue_redraw()

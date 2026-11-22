@@ -152,6 +152,8 @@ const GOLD=D.GOLD
 func _ready() -> void:
  process_mode=Node.PROCESS_MODE_ALWAYS
  storage=Storage.new();sound=preload("res://scripts/woo/sound.gd").new();add_child(sound)
+ # 2.0.38 저장된 화질 설정을 그리기 밀도에 반영한다.
+ preload("res://scripts/survival/quality.gd").set_quality(String(storage.data.quality))
  layer=CanvasLayer.new();layer.layer=3;add_child(layer)
  fog_layer=CanvasLayer.new();fog_layer.layer=2;add_child(fog_layer)
  vision_layer=CanvasLayer.new();vision_layer.layer=1;add_child(vision_layer)
@@ -1087,6 +1089,10 @@ func load_match(ticket: int) -> void:
  if ticket!=sequence:return
  status_label.text="캐릭터·카메라·경기 HUD 준비 중…"
  world=load(world_path).new();world.rules=rules;add_child(world)
+ if is_instance_valid(sound):
+  sound.bind_world(world)
+  sound.bind_layout(L)
+  sound.set_listener(rules.players.human.position if rules.players.has("human") else L.SPAWN)
  camera=Camera2D.new();camera.zoom=Vector2(L.CAMERA_ZOOM,L.CAMERA_ZOOM);camera.position=L.SPAWN+Vector2(0,-L.CAMERA_LIFT);camera.limit_left=0;camera.limit_top=0;camera.limit_right=int(L.SIZE.x);camera.limit_bottom=int(L.SIZE.y);world.add_child(camera);camera.make_current()
  bots.clear()
  for p in rules.players.values():
@@ -1456,7 +1462,11 @@ func show_settings() -> void:
  quality.add_theme_font_override("font",LC.FONT);quality.add_theme_font_size_override("font_size",17)
  screen_row.add_child(quality)
  vibrate.toggled.connect(func(value: bool)->void:storage.data.vibration=value)
- quality.item_selected.connect(func(index: int)->void:storage.data.quality="낮음" if index==1 else "보통")
+ quality.item_selected.connect(func(index: int)->void:
+  storage.data.quality="낮음" if index==1 else "보통"
+  storage.save()
+  # 2.0.38: 화질 설정이 실제 그리기 밀도에 반영된다(장식·조명·물결).
+  preload("res://scripts/survival/quality.gd").set_quality(String(storage.data.quality)))
  box.add_child(text("음소거는 배경음악·효과음 버스에 바로 적용됩니다.",15,Color(0.74,0.78,0.88,0.9)))
  var buttons:=HBoxContainer.new();buttons.add_theme_constant_override("separation",12);box.add_child(buttons)
  buttons.add_child(button("저장 및 닫기",func()->void:
@@ -1655,6 +1665,10 @@ func update_avatars() -> void:
   var rendered: Node2D=avatars.get(spectate)
   if rendered!=null:anchor=rendered.position
   camera.position=anchor+Vector2(0,-L.CAMERA_LIFT)
+  # 2.0.38 히트 시 짧고 절제된 화면 흔들림(규칙·판정·시야는 그대로).
+  if rules!=null and float(rules.hit_shake)>0.05:
+   var amp: float=float(rules.hit_shake)
+   camera.position+=Vector2(sin(render_clock*92.0),cos(render_clock*73.0))*amp
   world.observer=rules.players[spectate].position
 func safe_layout() -> void:
  if not is_instance_valid(content):return
@@ -1697,6 +1711,17 @@ func _process(delta: float) -> void:
     var spent:=bot_clock;bot_clock=0
     for bot in bots:bot.think(spent)
  if rules.phase=="result" and not result_seen:result_seen=true;build("result");return
+ # 2.0.38 추격 연출: 화면에 실제로 보이는 요괴와의 거리로만 긴장도를 계산한다
+ # (숨은 요괴의 위치가 소리로 새지 않게 rules.hidden을 먼저 확인).
+ if is_instance_valid(sound) and rules.players.has("human"):
+  sound.set_listener(me.position)
+  var tension_value:=0.0
+  if String(me.role)=="daoist" and not me.eliminated:
+   for other in rules.players.values():
+    if String(other.role)!="yokai" or other.eliminated or rules.hidden(other):continue
+    var gap: float=me.position.distance_to(other.position)
+    tension_value=maxf(tension_value,1.0-clampf((gap-240.0)/660.0,0.0,1.0))
+  sound.set_tension(tension_value,get_process_delta_time())
  world.aim=aim;world.aim_cancelled=aim_cancelled;world.aim_active=aiming()
  update_avatars();update_hud()
 ## 남은 목숨을 하트로 보여 준다(도사 전용).
@@ -1893,7 +1918,9 @@ func update_hud() -> void:
       show_banner(String(e.get("name","도술"))+" — "+String(e.get("reason","지금은 쓸 수 없습니다")),Color("ffc2b8"))
    if (clip!="" or cast_skill!="") and rules.players.has(e.actor):
     if me.position.distance_to(rules.players[e.actor].position)<520:
-     if cast_skill!="":sound.play_skill(cast_skill)
+     if cast_skill!="":
+      if String(e.actor)=="human":sound.play_skill(cast_skill)
+      else:sound.play_skill_at(cast_skill,rules.players[e.actor].position)
      else:sound.play_clip(clip)
     var caster: Node=avatars.get(String(e.actor))
     if caster!=null and String(e.kind) in ["skill","seal","rescue","transform"]:
