@@ -36,6 +36,7 @@ var observer:=L.SPAWN
 var clock:=0.0
 ## 2.0.36 들어가면 지붕이 사라지는 실내 레이어.
 var interior_layer: Node2D
+var zone_labels: Node2D
 var aim:=Vector2.ZERO
 var aim_active:=false
 var aim_cancelled:=false
@@ -82,6 +83,12 @@ func _ready() -> void:
  interior_layer.name="Interiors"
  interior_layer.layout=L
  add_child(interior_layer)
+ # 2.0.38 구역 바닥 표지판: 실내 레이어 위에서 벽·건물을 피해 빈 바닥에만 그린다
+ # (2.0.37 '자판기 코너'가 방 상자에 반쯤 가려지던 문제).
+ zone_labels=preload("res://scripts/survival/zone_labels.gd").new()
+ zone_labels.name="ZoneLabels"
+ add_child(zone_labels)
+ zone_labels.setup(L)
 
 func tex(path: String) -> Texture2D:
  if textures.has(path):return textures[path]

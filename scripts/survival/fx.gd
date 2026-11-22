@@ -3,6 +3,7 @@ extends RefCounted
 ## 모든 형태는 원/선/다각형 몇 개로 끝나며 텍스처·폰트를 새로 만들지 않는다.
 ## 2.0.27: 캐릭터 30개 능력마다 개성 있는 2.5D 도술(부적 흩날림·여우불·도깨비불·
 ## 그림자 안개·연꽃 빛·천문진·황금 파동·음파·기관·표식)을 따로 그린다.
+const SkinVFX=preload("res://scripts/survival/skin_vfx.gd")
 const GOLD=Color("f0c46a")
 const TALISMAN=Color("ffd98a")
 const FOX=Color("7fe4d6")
@@ -23,7 +24,7 @@ static func draw(node: Node2D,e: Dictionary,now: float) -> void:
   "fx_flame":flame(node,at,p)
   "fx_ghost":ghost(node,at,p)
   "fx_shadow":shadow(node,at,p,facing)
-  "fx_poof":poof(node,at,p)
+  "fx_poof":poof(node,at,p,e)
   "fx_rescue":rescue(node,at,p)
   "fx_door":door(node,at,p)
   "fx_lotus":lotus(node,at,p)
@@ -43,7 +44,7 @@ static func draw(node: Node2D,e: Dictionary,now: float) -> void:
   "fx_sound":sound(node,at,p)
   "fx_ink":ink(node,at,p)
   "fx_scroll":scroll(node,at,p,facing)
-  "fx_sig":signature(node,at,p,String(e.get("skill","")),float(e.get("facing",0)))
+  "fx_sig":signature(node,at,p,String(e.get("skill","")),float(e.get("facing",0)),String(e.get("skin","")))
   "fx_png":png_burst(node,at,p,e)
   "seal":seal(node,at,p)
   "miss":miss(node,at,p)
@@ -76,6 +77,7 @@ static func png_burst(node: Node2D,at: Vector2,p: float,e: Dictionary) -> void:
  node.draw_set_transform(at,0,Vector2(1,.45))
  node.draw_arc(Vector2.ZERO,10+p*44,0,TAU,30,Color(1,.88,.6,.22*(1.0-p)),2.2,true)
  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ commercial(node,at-Vector2(0,22),p,Color(1,.86,.52),String(e.get("skill","skin")))
 static func talisman(node: Node2D,at: Vector2,p: float,facing: float) -> void:
  var alpha:=1-p
  for i in range(6):
@@ -149,8 +151,25 @@ static func shadow(node: Node2D,at: Vector2,p: float,facing: float) -> void:
   node.draw_circle(Vector2.ZERO,8-i,Color(.7,.5,1,alpha*.25*(1-float(i)/5)),false,1)
   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
  node.draw_line(at,at-dir*(20+p*30),Color(.65,.45,1,alpha*.3),2)
-static func poof(node: Node2D,at: Vector2,p: float) -> void:
+static func poof(node: Node2D,at: Vector2,p: float,e: Dictionary={}) -> void:
  var alpha:=1-p
+ var jump:=bool(e.get("jump",false))
+ var land:=bool(e.get("land",false))
+ if jump or land:
+  # 2.0.38 점프 도약·착지 먼지: 바닥에 눌린 흙먼지 고리 + 튀는 흙 알갱이.
+  var spread:=28.0+p*(44.0 if land else 26.0)
+  node.draw_set_transform(at,0,Vector2(1,.34))
+  node.draw_arc(Vector2.ZERO,spread,0,TAU,26,Color(.10,.08,.06,.35*alpha),4.0,true)
+  node.draw_arc(Vector2.ZERO,spread*.7,0,TAU,22,Color(.62,.55,.44,.30*alpha),3.0,true)
+  for i in range(7):
+   var a:=float(i)*TAU/7.0+p*1.4
+   var pos:=at+Vector2.from_angle(a)*(spread*.6)+Vector2(0,-6.0-p*10.0)
+   node.draw_circle(pos,3.4*(1.0-p*.6),Color(.55,.48,.38,.45*alpha))
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+  if jump:
+   for i in range(4):
+    node.draw_line(at+Vector2(-10.0+float(i)*6.0,-4),at+Vector2(-14.0+float(i)*8.0,10.0+p*12.0),Color(.75,.88,1,.25*alpha),2.0,true)
+  return
  node.draw_arc(at-Vector2(0,8),6+p*26,0,TAU,22,Color(1,.9,.6,alpha*.6),2,true)
  node.draw_arc(at-Vector2(0,8),4+p*18,0,TAU,22,Color(.85,.7,1,alpha*.4),1.5,true)
  for i in range(8):
@@ -369,10 +388,20 @@ static func ink(node: Node2D,at: Vector2,p: float) -> void:
 static func seal(node: Node2D,at: Vector2,p: float) -> void:
  var alpha:=1-p
  var radius:=44-p*20
+ # 2.0.38 히트 임팩트: 굵은 외곽선 충격 고리 + 흰 심지 + 파편(맞은 지점 정렬).
+ var flash:=clampf(1.0-p*2.6,0.0,1.0)
+ node.draw_arc(at,18.0+p*40.0,0,TAU,44,Color(.04,.02,.08,.75),6.0,true)
+ node.draw_arc(at,18.0+p*40.0,0,TAU,44,Color(.95,.62,1,alpha*.85),3.4,true)
+ node.draw_circle(at,14.0*flash,Color(1,1,1,.55*flash))
+ for i in range(10):
+  var a:=float(i)*TAU/10.0+0.3
+  var inner:=at+Vector2.from_angle(a)*(12.0+p*18.0)
+  var outer:=at+Vector2.from_angle(a)*(22.0+p*30.0)
+  node.draw_line(inner,outer,Color(.9,.55,1,alpha*.55),3.0,true)
+  node.draw_line(inner,outer,Color(1,1,1,alpha*.25),1.2,true)
  for i in range(12):
   var angle:=i*TAU/12+ p*.5
   node.draw_circle(at+Vector2.from_angle(angle)*radius,2.4,Color(.95,.7,1,alpha*.85))
- node.draw_arc(at,radius,0,TAU,40,Color(.85,.55,1,alpha*.55),2,true)
  node.draw_arc(at,radius*.72,0,TAU,32,Color(1,.85,.95,alpha*.35),1.5,true)
  node.draw_line(at+Vector2(0,-8),at+Vector2(0,8),Color(1,.9,1,alpha*.6),2)
 static func miss(node: Node2D,at: Vector2,p: float) -> void:
@@ -409,8 +438,14 @@ const SIG={
  "mischief":{"m":"club","c":"8ff0c8"},"faketreasure":{"m":"chest","c":"ffd166"},"goblinfest":{"m":"burst","c":"8ff0c8"},
  "douse":{"m":"blow","c":"7a6a9a"},"blackvision":{"m":"shuteye","c":"9a8fd0"},"moonlessnight":{"m":"moon","c":"d8f0ff"},
  "shoeprints":{"m":"print","c":"d8f0ff"},"glowpowder":{"m":"powder","c":"a8ffe8"},"footprintmap":{"m":"map","c":"ffe0a8"}}
-static func signature(node: Node2D,at: Vector2,p: float,skill_id: String,facing: float) -> void:
+static func signature(node: Node2D,at: Vector2,p: float,skill_id: String,facing: float,skin: String="") -> void:
  var spec: Dictionary=SIG.get(skill_id,{})
+ # 2.0.38 스킨 전용 VFX: 같은 도술이라도 스킨이 다르면 연출이 완전히 달라진다.
+ # (부침개 전우치 = 무쇠팬·반죽·고춧가루, 기본 전우치 = 먹·부적·족자)
+ if skin!="" and SkinVFX.draw(node,at,p,skin,skill_id,facing):
+  commercial(node,at-Vector2(0,18),p,Color("ffd27a"),skill_id)
+  return
+
  var tint:=Color(String(spec.get("c","f0c46a")))
  var alpha:=1-p
  var center:=at-Vector2(0,18)
@@ -435,7 +470,7 @@ static func signature(node: Node2D,at: Vector2,p: float,skill_id: String,facing:
    var unfold:=clampf(p*2.2,0,1)
    var height: float=96.0*unfold
    var width: float=34.0+10.0*unfold
-   node.draw_rect(Rect2(center-Vector2(width*.5,height*.62),Vector2(width,height)),Color(.93,.87,.74,alpha*.92))
+   node.draw_rect(Rect2(center-Vector2(width*.5,height*.62),Vector2(width,height)),Color(.93,.87,.74,alpha*.58))
    node.draw_rect(Rect2(center-Vector2(width*.5,height*.62),Vector2(width,height)),Color(.42,.30,.18,alpha*.85),false,1.6)
    for i in range(4):
     var y: float=-height*.55+float(i)*height*.28
@@ -656,6 +691,11 @@ static func signature(node: Node2D,at: Vector2,p: float,skill_id: String,facing:
     node.draw_line(path[i],path[i+1],Color(tint.r,tint.g,tint.b,alpha*.6*minf(1.0,p*3.0)),2.0,true)
   _:
    node.draw_arc(center,12+p*24,0,TAU,24,Color(tint.r,tint.g,tint.b,alpha*.4),2.0,true)
+ # 기본 전우치의 화중은신은 먹 고리 + 금빛 부적이 족자를 감싼다(맨 위에 그린다).
+ if skin=="" and skill_id=="painting":
+  SkinVFX.ink_talisman(node,center,p)
+ # 2.0.38 상용 카툰 공통 4단계 레이어(차지→발동→지속→소멸).
+ commercial(node,center,p,tint,skill_id)
 ## 화중은신 전용: 위아래 축이 말리는 족자와 먹물 번짐.
 static func scroll(node: Node2D,at: Vector2,p: float,facing: float) -> void:
  var alpha:=1-p
@@ -953,3 +993,68 @@ static func shield_bubble(node: Node2D,at: Vector2,t: float,tint: Color=LOTUS,st
    var phase:=fmod(t*.55+float(i)*.19,1.0)
    var petal_at:=at+Vector2(sin(float(i)*2.1+t)*22.0,-phase*70.0)
    node.draw_circle(petal_at,2.2*(1.0-phase)+.6,Color(tint.r,tint.g,tint.b,(1.0-phase)*.45*strength))
+
+## ---------------------------------------------------------------- 2.0.38 상용 2D 카툰 VFX
+## 모든 도술이 같은 4단계 문법으로 읽히게 하는 공통 레이어.
+##  1) 차지: 바깥에서 심지로 모이는 입자
+##  2) 발동: 굵은 외곽선 + 밝은 심지의 이중 충격 고리
+##  3) 지속: 도는 각진 고리 + 꼬리를 남기는 궤도 입자
+##  4) 소멸: 위로 흩어지는 불티
+## 스킬 id로 색·고리 모양·회전 방향을 달리해 30도술이 서로 다르게 보인다.
+static func commercial(node: Node2D,center: Vector2,p: float,tint: Color,skill_id: String) -> void:
+ var ink:=Color(.04,.03,.08,.78)
+ var prep:=clampf(p/0.16,0.0,1.0)
+ var burst:=clampf((p-0.16)/0.14,0.0,1.0)
+ var sustain:=clampf((p-0.30)/0.45,0.0,1.0)
+ var fade:=clampf((p-0.78)/0.22,0.0,1.0)
+ var breathe:=.5+.5*sin(p*24.0)
+ var seed_value: int=abs(hash(skill_id))
+ # 바닥 광휘
+ node.draw_set_transform(Vector2(center.x,center.y+20),0,Vector2(1,.42))
+ node.draw_circle(Vector2.ZERO,24.0+p*26.0,Color(tint.r,tint.g,tint.b,.14*(1.0-fade)))
+ node.draw_circle(Vector2.ZERO,14.0+p*14.0,Color(1,1,1,.06*(1.0-fade)))
+ node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+ # 1) 차지
+ if burst<1.0:
+  for i in range(10):
+   var a:=float(i)*TAU/10.0+p*3.0+float(seed_value%7)
+   var r:=lerpf(56.0,11.0,prep)
+   var pos:=center+Vector2.from_angle(a)*r
+   node.draw_line(pos,pos+Vector2.from_angle(a+PI)*8.0,Color(tint.r,tint.g,tint.b,.5*(1.0-burst)),2.0,true)
+   node.draw_circle(pos,2.4,Color(1,1,1,.55*(1.0-burst)))
+ # 2) 발동
+ if burst>0.0:
+  var ring:=lerpf(9.0,62.0,burst)
+  node.draw_arc(center,ring,0,TAU,44,ink,6.5,true)
+  node.draw_arc(center,ring,0,TAU,44,Color(tint.r,tint.g,tint.b,.85*(1.0-fade)),3.6,true)
+  node.draw_arc(center,ring*.60,0,TAU,36,Color(1,1,1,.50*(1.0-burst)))
+  node.draw_circle(center,lerpf(15.0,3.0,burst),Color(1,1,1,.75*(1.0-burst)))
+  for i in range(8):
+   var a:=float(i)*TAU/8.0+float(seed_value%5)
+   var inner:=center+Vector2.from_angle(a)*(ring*.75)
+   var outer:=center+Vector2.from_angle(a)*(ring+10.0)
+   node.draw_line(inner,outer,Color(tint.r,tint.g,tint.b,.5*(1.0-burst)),2.6,true)
+ # 3) 지속
+ if sustain>0.0:
+  var sides:=6 if seed_value%2==0 else 8
+  var spin:=1.0 if seed_value%4<2 else -1.0
+  var rot:=p*5.0*spin
+  var rad:=30.0+breathe*5.0
+  for i in range(sides):
+   var a0:=float(i)*TAU/float(sides)+rot
+   var a1:=a0+TAU/float(sides)*.58
+   node.draw_arc(center,rad,a0,a1,8,ink,4.2,true)
+   node.draw_arc(center,rad,a0,a1,8,Color(tint.r,tint.g,tint.b,.70*(1.0-fade)),2.2,true)
+  for i in range(6):
+   var a:=float(i)*TAU/6.0+p*2.6*spin
+   var pos:=center+Vector2.from_angle(a)*(46.0+breathe*7.0)
+   var tail:=center+Vector2.from_angle(a-0.30*spin)*(46.0+breathe*7.0)
+   node.draw_line(tail,pos,Color(tint.r,tint.g,tint.b,.32*(1.0-fade)),3.2,true)
+   node.draw_circle(pos,2.8,Color(1,1,1,.72*(1.0-fade)))
+ # 4) 소멸
+ if fade>0.0:
+  for i in range(8):
+   var a:=float(i)*TAU/8.0+float(seed_value%3)
+   var pos:=center+Vector2.from_angle(a)*(22.0+fade*18.0)+Vector2(0,-fade*34.0)
+   node.draw_circle(pos,2.4*(1.0-fade),Color(tint.r,tint.g,tint.b,.65*(1.0-fade)))
+

@@ -189,7 +189,8 @@ func _default_id() -> String:
 		for item in items:
 			if String(item.id)==equipped:return equipped
 	elif tab=="skin":
-		var skin: String=game.storage.equipped("skin")
+		var character_id:=String(String(game.storage.data.daoist))
+		var skin: String=game.storage.skin_for(character_id)
 		for item in items:
 			if String(item.id)==skin:return skin
 	else:
@@ -521,7 +522,7 @@ func _rebuild_preview() -> void:
 		ring.color=Color(item.color)
 		preview_body.add_child(ring)
 		place(ring,Rect2(PANEL_POS.x+PANEL_SIZE.x*.5-124,PANEL_POS.y+168,248,100))
-	var figure_holder:=figure(preview_body,character_id,Vector2(190,188),tint)
+	var figure_holder:=figure(preview_body,character_id,Vector2(190,188),tint,String(item.get("id","")) if String(item.kind)=="skin" else "")
 	place(figure_holder,Rect2(PANEL_POS.x+PANEL_SIZE.x*.5-95,PANEL_POS.y+60,190,188))
 	if String(item.kind)=="title":
 		var plaque:=Art.Plaque.new()
@@ -651,7 +652,7 @@ func _preview_character(item: Dictionary) -> String:
 func _equipped(item: Dictionary) -> bool:
 	match String(item.kind):
 		"character":return String(game.storage.data[String(item.team)])==String(item.id)
-		"skin":return game.storage.equipped("skin")==String(item.id)
+		"skin":return game.storage.skin_for(String(item.get("character",game.storage.data.daoist)))==String(item.id)
 		"title":return game.storage.equipped("title")==String(item.get("item",{}).get("id",""))
 		"effect":return game.storage.equipped("effect")==String(item.get("item",{}).get("id",""))
 	return false

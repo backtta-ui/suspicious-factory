@@ -3,6 +3,8 @@ extends RefCounted
 ## 좌표는 haeundae_layout.gd를 그대로 쓴다(그림과 충돌이 어긋나지 않는다).
 ## 밝은 밤바다(청록 물빛·흰 파도) + 따뜻한 포장마차 등불 + 어두운 남색 건물.
 const L=preload("res://scripts/survival/haeundae_layout.gd")
+const K=preload("res://scripts/survival/art_kit.gd")
+const Q=preload("res://scripts/survival/quality.gd")
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const TITLE_FONT=preload("res://assets/fonts/WooTitle.otf")
 const SAND=Color("c8ab7d")
@@ -85,8 +87,9 @@ static func draw_base(node: Node2D) -> void:
    var t:=float(k)/5.0
    node.draw_circle(center,radius*(1.0-t),Color(accent.r,accent.g,accent.b,.035*(1.0-t)),true,-1.0,true)
   node.draw_rect(rect2.grow(-6),Color(accent.r,accent.g,accent.b,.14),false,2.0)
-  zone_label(node,rect2,String(zone.name),accent)
+  # 2.0.38 구역 이름은 zone_labels.gd가 실내 레이어 위에서 그린다.
  coast_line(node)
+ beach_details(node)
 ## 길 가장자리 연석.
 static func edge_curb(node: Node2D,rect: Rect2,wood: bool) -> void:
  var c: Color=Color(.30,.24,.17,.55) if wood else Color(.72,.78,.86,.40)
@@ -111,15 +114,8 @@ static func coast_line(node: Node2D) -> void:
    var p: Vector2=a.lerp(b,float(k)/steps)+Vector2(0,sin(float(k)*.9)*3.0)
    node.draw_circle(p,3.2,Color(FOAM.r,FOAM.g,FOAM.b,.35))
    if k%2==0:node.draw_circle(p+Vector2(-6,7),2.0,Color(FOAM.r,FOAM.g,FOAM.b,.18))
-static func zone_label(node: Node2D,rect: Rect2,text: String,accent: Color) -> void:
- var at:=rect.position+Vector2(28,52)
- var width: float=22.0+text.length()*27.0
- node.draw_rect(Rect2(at-Vector2(14,34),Vector2(width,52)),Color(.02,.04,.08,.52))
- node.draw_rect(Rect2(at-Vector2(14,34),Vector2(width,52)),Color(accent.r,accent.g,accent.b,.55),false,2.0)
- node.draw_rect(Rect2(at-Vector2(14,34),Vector2(6,52)),accent)
- node.draw_string(TITLE_FONT,at-Vector2(2,32),text,HORIZONTAL_ALIGNMENT_LEFT,-1,34,Color(0,0,0,.45))
- node.draw_string(TITLE_FONT,at-Vector2(4,36),text,HORIZONTAL_ALIGNMENT_LEFT,-1,32,Color(1,1,1,.94))
-## 건물: 위에서 본 지붕면 + 남쪽 외벽(창문·차양·간판). 2.5D에서 가장 읽기 좋은 형태.
+## 2.0.38 구역 이름표는 scripts/survival/zone_labels.gd가 그린다(벽·건물에 가리지 않게).
+## 건물: 위에서 본 지붕면 + 남쪽 외벽(창문·차양·간판).
 static func draw_walls(node: Node2D) -> void:
  var sign_words=["시장","포차","횟집","분식","서핑","샤워","카페","호텔","매점","어묵","조개","커피"]
  var roof_colors=[Color("4a3a33"),Color("3c3a4e"),Color("443a2e"),Color("39424f")]
@@ -284,4 +280,104 @@ static func draw_prop_shadows(node: Node2D) -> void:
   var side: float=float(visual.get("shadow",10.0))
   node.draw_set_transform(object.p,0,Vector2(1,.45))
   node.draw_circle(Vector2.ZERO,side*1.35,Color(0,0,0,.32))
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+
+## 2.0.38 밤바다 동적 연출: 흐르는 물결 띠 + 백사장에 부서지는 거품 + 달빛 반짝임.
+## 정적 바닥(ground)과 별개 레이어에서 20fps로 다시 그린다.
+static func draw_water(node: Node2D,time: float) -> void:
+ var sea: Rect2=L.zone_rect("seashore")
+ # 1) 바다 전체(구역 + 물길)를 깊이 그라데이션으로 다시 칠한다.
+ var bodies: Array=[sea]
+ for rect in L.WATER:bodies.append(rect)
+ for rect in bodies:
+  var bands:=12
+  for i in range(bands):
+   var t:=float(i)/float(bands-1)
+   var tone:=Color(0.05+0.10*t,0.18+0.17*t,0.28+0.16*t,1.0)
+   node.draw_rect(Rect2(rect.position.x,rect.position.y+rect.size.y*t,rect.size.x,rect.size.y/float(bands)+1.0),tone)
+  node.draw_rect(rect.grow(-2),Color(.06,.16,.24,.35),false,3.0)
+ # 2) 큰 물결 띠(굵은 흐름) — 시간에 따라 천천히 흐른다.
+ for band in range(3 if Q.low else 7):
+  var base_y: float=sea.position.y+70.0+float(band)*140.0
+  var phase:=time*(0.55+float(band)*0.06)+float(band)*1.7
+  var pts:=PackedVector2Array()
+  var x:=sea.position.x+4.0
+  while x<sea.end.x-4.0:
+   pts.append(Vector2(x,base_y+sin(x*0.010+phase)*16.0+sin(x*0.031-phase*0.7)*5.0))
+   x+=22.0
+  node.draw_polyline(pts,Color(.16,.40,.58,.45),10.0,true)
+  node.draw_polyline(pts,Color(.55,.82,.96,.42),3.4,true)
+  node.draw_polyline(pts,Color(.92,.98,1,.28),1.6,true)
+ # 3) 잔물결(두 겹, 서로 다른 속도) + 파도마루 흰 거품.
+ K.wave_band(node,sea,time,0,Color(.80,.94,1,.55))
+ K.wave_band(node,sea,time*1.35+3.0,1,Color(.55,.85,1,.35))
+ for crest in range(6 if Q.low else 16):
+  var cy: float=sea.position.y+fmod(float(crest)*86.0+time*26.0,sea.size.y)
+  var cx: float=sea.position.x+80.0+float((crest*211)%960)
+  var w: float=26.0+float(crest%3)*12.0
+  node.draw_arc(Vector2(cx,cy),w,PI*1.05,PI*1.95,10,Color(.92,.98,1,.42),2.4,true)
+  node.draw_arc(Vector2(cx+w*1.6,cy+8.0),w*.7,PI*1.1,PI*1.9,8,Color(.90,.97,1,.26),1.8,true)
+ # 4) 물가 거품: 해안선을 따라 밀려왔다 빠지는 흰 거품.
+ var shore:=PackedVector2Array([Vector2(150,1560),Vector2(700,1562),Vector2(1300,1558),Vector2(1900,1564),Vector2(2380,1560),
+  Vector2(2450,1610),Vector2(2446,1720),Vector2(2452,1820),Vector2(2448,1930),Vector2(2452,2030),Vector2(2449,2320)])
+ for i in range(shore.size()-1):
+  var a:=shore[i]
+  var b:=shore[i+1]
+  var steps:=maxi(1,int(a.distance_to(b)/18.0))
+  for k in range(steps):
+   var t2:=float(k)/float(steps)
+   var p:=a.lerp(b,t2)
+   var push:=sin(time*1.1+float(i)*.9+t2*3.0)*7.0
+   var normal: Vector2=(b-a).orthogonal().normalized()
+   if normal.y<0.0:normal=-normal
+   if normal.x>0.6:normal=Vector2(1,0)
+   var edge:=p+normal*push
+   var alpha:=.30+.24*absf(sin(time*1.1+t2*4.0))
+   node.draw_circle(edge,3.2,Color(.92,.98,1,alpha))
+   node.draw_circle(edge-normal*4.0,2.0,Color(.86,.95,1,alpha*.55))
+ # 4b) 해안선 젖은 모래 + 흰 거품 물결(가장 강한 시각 표식).
+ var wet:=Color(.30,.26,.18,.45)
+ node.draw_rect(Rect2(2372,1560,96,860),wet)
+ for i in range(34):
+  var y:=1566.0+float(i)*25.0
+  var tip:=4.0+float(i%3)*1.6
+  node.draw_arc(Vector2(2436.0,y),tip,PI*1.15,PI*1.85,7,Color(.94,.99,1,.42),1.8,true)
+  if i%2==0:node.draw_arc(Vector2(2428.0,y+7.0),tip*.7,PI*1.2,PI*1.8,6,Color(.90,.97,1,.28),1.4,true)
+ # 5) 달빛 기둥(물 위 세로 반사) + 반짝임.
+ for i in range(9):
+  var t3:=float(i)/9.0
+  node.draw_rect(Rect2(2940.0+float(i)*10.0,sea.position.y,10.0,sea.size.y),Color(.85,.95,1,.012*(1.0-t3)))
+ for i in range(26):
+  var x2:=2500.0+fmod(float(i)*127.0+time*22.0,880.0)
+  var y2:=1620.0+float((i*53)%700)
+  var tw:=.18+.22*absf(sin(time*2.2+float(i)))
+  node.draw_line(Vector2(x2,y2),Vector2(x2+10.0+float(i%4)*4.0,y2),Color(.85,.95,1,tw),1.6,true)
+## 백사장 디테일: 모래 잔물결·발자국·조개·불가사리·파라솔 자국.
+static func beach_details(node: Node2D) -> void:
+ var sand:=Rect2(150,1560,2300,860)
+ if not Q.low:K.sand_ripple(node,sand,Color(.42,.34,.22,.55))
+ # 모래 위 발자국 길(사람들이 다닌 자리)
+ for i in range(42):
+  var x:=260.0+float(i)*52.0+sin(float(i)*.7)*12.0
+  var y:=1700.0+sin(float(i)*.35)*40.0+float(i%3)*26.0
+  node.draw_set_transform(Vector2(x,y),float(i%2)*.4,Vector2(1,.55))
+  node.draw_circle(Vector2.ZERO,4.2,Color(.36,.28,.18,.22))
+  node.draw_set_transform(Vector2(0,0),0,Vector2.ONE)
+ # 조개·불가사리·작은 돌
+ for i in range(16):
+  var p:=Vector2(240.0+float((i*173)%2140),1640.0+float((i*97)%720))
+  if i%4==0:
+   node.draw_circle(p,4.0,Color(.96,.88,.80,.85))
+   node.draw_arc(p,4.0,PI,TAU,8,Color(.80,.68,.56,.9),1.2)
+  elif i%4==1:
+   for k in range(5):
+    var a:=float(k)*TAU/5.0
+    node.draw_line(p,p+Vector2.from_angle(a)*6.0,Color(.90,.50,.38,.85),2.0)
+  else:
+   node.draw_circle(p,2.6,Color(.62,.54,.42,.6))
+ # 파라솔 그늘 자국(밝은 모래 위 둥근 그늘)
+ for spot in [Vector2(700,1980),Vector2(1250,2050),Vector2(1750,1980),Vector2(2200,1900)]:
+  node.draw_set_transform(spot,0,Vector2(1,.42))
+  node.draw_circle(Vector2.ZERO,58,Color(.06,.10,.16,.20))
+  node.draw_arc(Vector2.ZERO,58,0,TAU,28,Color(.12,.14,.12,.22),2.0,true)
   node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)

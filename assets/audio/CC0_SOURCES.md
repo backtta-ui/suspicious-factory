@@ -53,3 +53,20 @@
 - Dark Stinger: https://opengameart.org/content/dark-stinger-1
 
 모든 파일은 CC0 1.0이라 표기는 의무가 아니지만, 원저작자를 밝히기 위해 이 문서를 남깁니다.
+
+## 2.0.38 추가: 맵 환경음 · 심장 박동
+
+| 게임 파일 | 원본 | 저작자 | 라이선스 | 원본 |
+|---|---|---|---|---|
+| `ambience/amb_gangnam_city.ogg` | Scifi City – Ambient Loop (`busy_cyberworld.ogg`) | TinyWorlds | CC0 | https://opengameart.org/content/scifi-city-ambient-loop |
+| `ambience/amb_dongseongno_traffic.ogg` | High traffic road sounds (`gatve Varniu_2.ogg`) | IgnasD | CC0 | https://opengameart.org/content/high-traffic-road-sounds |
+| `ambience/water_flowing.ogg` | 30 CC0 SFX loops 중 `water_flowing.ogg` (해운대 파도·물소리) | rubberduck | CC0 | https://opengameart.org/content/30-cc0-sfx-loops |
+| `heartbeat.wav` | `hit.wav`(Kenney RPG audio, CC0)를 저음으로 늘리고 두 박자로 다듬은 **파생음** | Kenney 원본 · 피클 편집 | CC0 | https://opengameart.org/content/50-rpg-sound-effects |
+
+환경음은 게임에서 루프 재생하며, 낮은 화질 설정에서는 한 겹만 재생합니다.
+
+## 2.0.38 추가: 바닥·벽 텍스처 (직접 생성)
+
+`assets/woo/v38/tex_gangnam_floor*.png`, `tex_gangnam_wall*.png`, `tex_gangnam_panel*.png`는
+이미지 생성 도구로 새로 만든 자체 제작 텍스처입니다(외부 저작물 아님, 재배포 제약 없음).
+256px 타일(_256)은 성능을 위해 같은 원본을 축소한 파일입니다.

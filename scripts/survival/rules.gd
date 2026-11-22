@@ -74,6 +74,8 @@ var lantern_until: Dictionary={}
 var prop_flips: Dictionary={}
 ## 2.0.30 도깨비장난 지대: 이 안에서는 둔갑이 풀리고 새 둔갑도 막힌다(수색용 장판).
 var mischief_zones: Array=[]
+## 2.0.38 히트 연출: 봉인/방어 순간의 짧은 카메라 흔들림(픽셀). 게임 규칙·판정은 바꾸지 않는다.
+var hit_shake:=0.0
 ## 2.0.30: 마지막으로 발동한 도술의 이름·슬롯을 남겨 HUD 배너·미니맵·시야 연출이
 ## 같은 값에서 출발하게 한다.
 const CAST_FEED_LIMIT=6
@@ -86,14 +88,14 @@ func burst(at: Vector2,kind: String,duration: float,extra: Dictionary={}) -> voi
 ## 도술 하나가 발동됐을 때 그 도술 고유의 서명 연출을 남긴다. fx.gd가 `skill` 키로
 ## 그림·여우 가면·부적·도깨비방망이·달·발자국 같은 전용 모션을 그린다.
 func signature(p: Dictionary,skill_id: String,aim: Vector2=Vector2.ZERO) -> void:
- var extra:={"skill":skill_id,"facing":p.facing,"cosmetic":C.look(p.character)}
+ var extra:={"skill":skill_id,"facing":p.facing,"cosmetic":C.look(p.character),"skin":String(p.get("skin",""))}
  if aim!=Vector2.ZERO:extra["aim"]=aim
  ## 스킨 전용 이펙트가 있으면 스킨 아트를, 없으면 그 캐릭터·도술의 기본 손그림 이펙트를 쓴다.
  ## 2.0.36: 장영실(기관·천문)을 비롯한 10인 기본 이펙트가 실제 경기에서도 반드시 터진다.
  var skin_fx: String=SkillFX.file_for(p.get("character",""),skill_id,p.get("skin",""))
  var base_fx: String=SkillFX.file_for(p.get("character",""),skill_id,"")
- if String(p.get("skin",""))=="":
-  burst(p.position,"fx_sig",0.85,extra)
+ # 2.0.38 스킨을 입어도 서명 연출은 항상 남긴다(스킨별 전용 VFX가 이 안에서 갈린다).
+ burst(p.position,"fx_sig",0.85,extra)
  var fx_file: String=skin_fx if skin_fx!="" else base_fx
  if fx_file!="":
   ## 2.0.34 피드백: 이펙트가 캐릭터를 너무 크게 가리지 않도록 크기·투명도를 낮춰
@@ -237,7 +239,10 @@ func command(id: String,op: String,data: Dictionary={}) -> bool:
  if op=="jump":
   if p.jump>0 or not p.rescue.is_empty():return false
   if p.form!="":p.form="";p.buff.erase("transform");p.wobble=0;burst(p.position,"fx_poof",.4)
-  p.jump=.8;p.ground=p.position;return true
+  p.jump=.8;p.ground=p.position
+  # 2.0.38 점프 도약 먼지: 발밑에서 짧게 퍼지는 흙먼지.
+  burst(p.position,"fx_poof",.35,{"jump":true})
+  return true
  if op=="seal":return seal(p)
  if op=="gimmick":
   if gimmicks==null:return false
@@ -313,6 +318,7 @@ func contact_seal() -> void:
   seal_hit(p,q)
 ## 봉인 1회 공통 처리: 호신부 방어 → 둔갑 해제 → 봉인 + 요괴 후딜.
 func seal_hit(p: Dictionary,q: Dictionary) -> bool:
+ hit_shake=maxf(hit_shake,7.0)
  p.cd.seal=elapsed+SEAL_RECOVER;p.stagger=elapsed+.35
  if q.buff.get("shield",0)>elapsed or q.buff.get("lifelamp",0)>elapsed:
   # 생명등불도 '봉인 한 번'만 막는다. 막은 뒤에는 두 보호 효과를 함께 지운다.
@@ -761,6 +767,7 @@ func animal_gait(kind: String,seed_phase: float) -> float:
  return .5+.5*sin(seed_phase)
 func tick(delta: float) -> void:
  delta=clampf(delta,0,.1)
+ hit_shake=move_toward(hit_shake,0.0,delta*46.0)
  if phase=="selection":
   selection_elapsed+=delta;selection_left=maxf(0,25-selection_elapsed)
   for p in players.values():
@@ -817,7 +824,10 @@ func tick(delta: float) -> void:
   p.stamina=clampf(p.stamina+(-25 if fast else 18)*delta,0,100)
   if p.stamina<=0:p.exhausted=true
   if p.jump>0:
+   var was_air: bool=p.jump>0.0
    p.jump=maxf(0,p.jump-delta);p.height=sin((.8-p.jump)/.8*PI)*36
+   # 2.0.38 착지 먼지: 높이 0으로 떨어지는 순간 발밑에 짧은 충격.
+   if was_air and p.jump<=0.0:burst(p.position,"fx_poof",.30,{"land":true})
   else:p.height=0
   # 캐릭터가 아직 비어 있는 참가자(테스트·복구 중)도 기본 이동 성능으로 계속 움직인다.
   var piece: Dictionary=C.find(p.character)

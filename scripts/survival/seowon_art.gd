@@ -192,8 +192,14 @@ static func low_ledge(node: Node2D,rect: Rect2) -> void:
    var x:=left+width*float(i)/float(blocks)
    node.draw_line(Vector2(x,base_y-12.0),Vector2(x,base_y-1.0),Color(.22,.21,.20,.65),1.0)
   # 3) 윗면(밝은 판석) + 윗모서리 하이라이트
-  node.draw_rect(Rect2(left-3.0,base_y-24.0,width+6.0,12.0),Color(.60,.58,.54,1.0))
-  node.draw_rect(Rect2(left-3.0,base_y-24.0,width+6.0,2.4),Color(.80,.78,.72,.95))
+  node.draw_rect(Rect2(left-3.0,base_y-24.0,width+6.0,12.0),Color(.66,.62,.55,1.0))
+  node.draw_rect(Rect2(left-3.0,base_y-24.0,width+6.0,2.4),Color(.86,.82,.72,.95))
+  # 기와 상판 결: 돌 벤치 위에 얇은 기와 줄을 얹어 회색 막대처럼 보이지 않게 한다.
+  var tx:=left
+  while tx<left+width:
+   node.draw_line(Vector2(tx,base_y-23.0),Vector2(tx,base_y-13.0),Color(.48,.45,.42,.55),1.2)
+   node.draw_line(Vector2(tx,base_y-23.0),Vector2(tx+7.0,base_y-23.0),Color(.42,.40,.46,.45),1.0)
+   tx+=9.0
   node.draw_rect(Rect2(left-3.0,base_y-13.0,width+6.0,1.6),Color(.42,.41,.39,.9))
   # 4) 이끼와 잔돌
   for i in range(3):
@@ -298,6 +304,19 @@ static func reeds(node: Node2D) -> void:
    node.draw_line(Vector2(x+k*4,base_y),Vector2(x+k*4-6+shade(i,63)*12,base_y-18-shade(i,64)*16),Color(.45,.55,.42,.7),1.6)
 ## 연못 원화 위에 달빛 반사와 물결만 얇게 얹는다(모양은 원화가 담당).
 static func draw_water_glints(node: Node2D,pond: Rect2,time: float) -> void:
+ # 2.0.38 연꽃잎·꽃: 연못 위에 떠 있는 둥근 잎과 분홍 꽃(목표 원화의 연못).
+ for i in range(9):
+  var at:=pond.position+Vector2(40.0+fmod(float(i)*83.0,pond.size.x-80.0),30.0+fmod(float(i)*61.0,pond.size.y-60.0))
+  var bob:=sin(time*.6+float(i))*1.2
+  node.draw_set_transform(at+Vector2(0,bob),float(i)*.4,Vector2(1,.62))
+  node.draw_circle(Vector2.ZERO,11.0,Color(.16,.30,.22,.85))
+  node.draw_arc(Vector2.ZERO,11.0,0.4,TAU-0.4,16,Color(.24,.42,.30,.9),1.6,true)
+  node.draw_line(Vector2.ZERO,Vector2.from_angle(float(i)*.8)*9.0,Color(.10,.22,.16,.7),1.4)
+  if i%3==0:
+   node.draw_circle(Vector2(3,-3),4.2,Color(.96,.72,.82,.92))
+   node.draw_circle(Vector2(3,-3),1.8,Color(1,.92,.72,.95))
+  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
+
  for i in range(10):
   var y:=pond.position.y+24+i*19
   var x:=pond.position.x+pond.size.x*.70+sin(time*.6+i*.7)*10

@@ -61,6 +61,7 @@ var occluders: Array=[]
 var occluder_tick:=0.0
 var water: Node2D
 var effects: Node2D
+var zone_labels: Node2D
 ## 캐릭터 발밑(액터 아래)에서 그리는 바닥 장치 레이어(덫·미끼).
 var floor_fx: Node2D
 var orbs: Node2D
@@ -92,6 +93,11 @@ func _ready() -> void:
  floor_fx=Node2D.new();floor_fx.name="FloorFx";floor_fx.z_index=-58;floor_fx.draw.connect(draw_floor);add_child(floor_fx)
  effects=Node2D.new();effects.z_index=8;effects.draw.connect(draw_effects);add_child(effects)
  orbs=Node2D.new();orbs.z_index=-70;orbs.draw.connect(draw_orbs);add_child(orbs)
+ # 2.0.38 구역 바닥 표지판(한옥·연못을 피해 빈 마당에만 놓는다).
+ zone_labels=preload("res://scripts/survival/zone_labels.gd").new()
+ zone_labels.name="ZoneLabels"
+ add_child(zone_labels)
+ zone_labels.setup(L)
 ## 부드러운 접지 그림자 한 장. (center=발밑, size=가로세로 지름)
 func shadow(center: Vector2,size: Vector2,alpha: float=1.0,z: int=-94) -> Sprite2D:
  var sprite:=Sprite2D.new();sprite.texture=SHADOW_TEX;sprite.centered=true
