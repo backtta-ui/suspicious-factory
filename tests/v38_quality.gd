@@ -193,9 +193,9 @@ func run() -> void:
  check(FileAccess.get_file_as_string("res://scripts/survival/app.gd").contains("quality.gd\").set_quality"),"settings screen writes the quality setting")
  # ---------------------------------------------------------------- 7) 버전·저장 호환
  var project:=FileAccess.get_file_as_string("res://project.godot")
- check(project.contains("config/version=\"2.0.38\""),"project version is 2.0.38")
+ check(project.contains("config/version=\"2.0.39\""),"project version is 2.0.38")
  var preset:=FileAccess.get_file_as_string("res://export_presets.cfg")
- check(preset.contains("version/code=49") and preset.contains("version/name=\"2.0.38\""),"Android versionCode 49 / 2.0.38")
+ check(preset.contains("version/code=50") and preset.contains("version/name=\"2.0.39\""),"Android versionCode 50 / 2.0.39")
  var stored: RefCounted=game.storage
  check(String(stored.data.get("character",""))=="" or true,"save data still loads")
  # ---------------------------------------------------------------- 8) 스킨별 도술 VFX 분기

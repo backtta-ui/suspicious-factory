@@ -8,6 +8,7 @@ extends RefCounted
 ## 모든 좌표는 gangnam_layout.gd를 그대로 쓰므로 그림과 충돌이 어긋나지 않는다.
 const L=preload("res://scripts/survival/gangnam_layout.gd")
 const K=preload("res://scripts/survival/art_kit.gd")
+const BK=preload("res://scripts/survival/building_kit.gd")
 const Q=preload("res://scripts/survival/quality.gd")
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const TITLE_FONT=preload("res://assets/fonts/WooTitle.otf")
@@ -235,13 +236,15 @@ static func draw_wall_block(node: Node2D,rect: Rect2) -> void:
  var face:=Rect2(Vector2(rect.position.x,rect.end.y),Vector2(rect.size.x,face_depth))
  node.draw_rect(face.grow(1.4),Color(.02,.02,.04,.92))
  node.draw_rect(face,Color(.10,.13,.20))
+ BK.tiled(node,"wall_concrete",face,Color(.42,.46,.58,.85))
  node.draw_rect(Rect2(face.position,Vector2(face.size.x,4)),Color(.19,.24,.34))
  node.draw_rect(Rect2(Vector2(face.position.x,face.end.y-3),Vector2(face.size.x,3)),Color(.03,.04,.06,.95))
  # 3) 상판(벽 위 면): 금속 패널 텍스처 + 밝은 앞모서리 + 어두운 뒤모서리.
  node.draw_rect(rect.grow(4),Color(.02,.02,.04,.75))
  node.draw_rect(rect.grow(1.5),Color(.03,.04,.07,.95))
- K.tiled(node,K.TEX_GANGNAM_PANEL,rect,Color(.74,.79,.90,1))
- node.draw_rect(rect,Color(WALL_FILL.r,WALL_FILL.g,WALL_FILL.b,.30))
+ # 2.0.39: v39 콘크리트 타일(이음·볼트 자국)로 윗면을 그린다.
+ BK.tiled(node,"wall_concrete",rect,Color(.70,.76,.88,1))
+ node.draw_rect(rect,Color(WALL_FILL.r,WALL_FILL.g,WALL_FILL.b,.16))
  node.draw_rect(Rect2(rect.position,Vector2(rect.size.x,6)),Color(.21,.27,.40,.95))
  node.draw_rect(Rect2(rect.position,Vector2(rect.size.x,2.0)),Color(.58,.72,.98,.70))
  # 4) 네온 몰딩: 벽면 위쪽에 시안 한 줄, 상판 앞모서리에 핑크 포인트.

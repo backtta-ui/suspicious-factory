@@ -4,6 +4,7 @@ extends RefCounted
 ## 2.0.27: 캐릭터 30개 능력마다 개성 있는 2.5D 도술(부적 흩날림·여우불·도깨비불·
 ## 그림자 안개·연꽃 빛·천문진·황금 파동·음파·기관·표식)을 따로 그린다.
 const SkinVFX=preload("res://scripts/survival/skin_vfx.gd")
+const Maps=preload("res://scripts/survival/maps.gd")
 const GOLD=Color("f0c46a")
 const TALISMAN=Color("ffd98a")
 const FOX=Color("7fe4d6")
@@ -994,67 +995,71 @@ static func shield_bubble(node: Node2D,at: Vector2,t: float,tint: Color=LOTUS,st
    var petal_at:=at+Vector2(sin(float(i)*2.1+t)*22.0,-phase*70.0)
    node.draw_circle(petal_at,2.2*(1.0-phase)+.6,Color(tint.r,tint.g,tint.b,(1.0-phase)*.45*strength))
 
-## ---------------------------------------------------------------- 2.0.38 상용 2D 카툰 VFX
+## ---------------------------------------------------------------- 2.0.39 상용 2D 카툰 VFX
 ## 모든 도술이 같은 4단계 문법으로 읽히게 하는 공통 레이어.
 ##  1) 차지: 바깥에서 심지로 모이는 입자
-##  2) 발동: 굵은 외곽선 + 밝은 심지의 이중 충격 고리
+##  2) 발동: 잉크 외곽선 + 밝은 심지의 이중 충격 고리
 ##  3) 지속: 도는 각진 고리 + 꼬리를 남기는 궤도 입자
 ##  4) 소멸: 위로 흩어지는 불티
-## 스킬 id로 색·고리 모양·회전 방향을 달리해 30도술이 서로 다르게 보인다.
+## 2.0.39 화풍 통일 규칙:
+##  - 크기·알파를 낮춰 캐릭터 실루엣과 배경을 가리지 않는다(발동 고리 최대 54px, 지속 25~55%).
+##  - 고리 색은 시그니처 70% + 현재 맵 앰비언트 30%로 섞어 어떤 맵에서도 붕 뜨지 않는다.
+##  - 외곽선은 남색 잉크(벽·캐릭터 선 굵기와 같은 2~3px)로 통일한다.
 static func commercial(node: Node2D,center: Vector2,p: float,tint: Color,skill_id: String) -> void:
- var ink:=Color(.04,.03,.08,.78)
+ var ink:=Color(.04,.03,.08,.70)
+ var ambient:=Maps.accent_of()
+ var glow:=Color(tint.r*0.70+ambient.r*0.30,tint.g*0.70+ambient.g*0.30,tint.b*0.70+ambient.b*0.30)
  var prep:=clampf(p/0.16,0.0,1.0)
  var burst:=clampf((p-0.16)/0.14,0.0,1.0)
  var sustain:=clampf((p-0.30)/0.45,0.0,1.0)
  var fade:=clampf((p-0.78)/0.22,0.0,1.0)
  var breathe:=.5+.5*sin(p*24.0)
  var seed_value: int=abs(hash(skill_id))
- # 바닥 광휘
+ # 바닥 광휘(접지 전용: 공중 연출과 분리, 낮고 옅게)
  node.draw_set_transform(Vector2(center.x,center.y+20),0,Vector2(1,.42))
- node.draw_circle(Vector2.ZERO,24.0+p*26.0,Color(tint.r,tint.g,tint.b,.14*(1.0-fade)))
- node.draw_circle(Vector2.ZERO,14.0+p*14.0,Color(1,1,1,.06*(1.0-fade)))
+ node.draw_circle(Vector2.ZERO,20.0+p*16.0,Color(glow.r,glow.g,glow.b,.10*(1.0-fade)))
+ node.draw_circle(Vector2.ZERO,12.0+p*10.0,Color(1,1,1,.05*(1.0-fade)))
  node.draw_set_transform(Vector2.ZERO,0,Vector2.ONE)
  # 1) 차지
  if burst<1.0:
   for i in range(10):
    var a:=float(i)*TAU/10.0+p*3.0+float(seed_value%7)
-   var r:=lerpf(56.0,11.0,prep)
+   var r:=lerpf(48.0,11.0,prep)
    var pos:=center+Vector2.from_angle(a)*r
-   node.draw_line(pos,pos+Vector2.from_angle(a+PI)*8.0,Color(tint.r,tint.g,tint.b,.5*(1.0-burst)),2.0,true)
-   node.draw_circle(pos,2.4,Color(1,1,1,.55*(1.0-burst)))
+   node.draw_line(pos,pos+Vector2.from_angle(a+PI)*7.0,Color(glow.r,glow.g,glow.b,.42*(1.0-burst)),1.8,true)
+   node.draw_circle(pos,2.2,Color(1,1,1,.45*(1.0-burst)))
  # 2) 발동
  if burst>0.0:
-  var ring:=lerpf(9.0,62.0,burst)
-  node.draw_arc(center,ring,0,TAU,44,ink,6.5,true)
-  node.draw_arc(center,ring,0,TAU,44,Color(tint.r,tint.g,tint.b,.85*(1.0-fade)),3.6,true)
-  node.draw_arc(center,ring*.60,0,TAU,36,Color(1,1,1,.50*(1.0-burst)))
-  node.draw_circle(center,lerpf(15.0,3.0,burst),Color(1,1,1,.75*(1.0-burst)))
+  var ring:=lerpf(8.0,54.0,burst)
+  node.draw_arc(center,ring,0,TAU,44,ink,4.6,true)
+  node.draw_arc(center,ring,0,TAU,44,Color(glow.r,glow.g,glow.b,.72*(1.0-fade)),2.6,true)
+  node.draw_arc(center,ring*.58,0,TAU,36,Color(1,1,1,.42*(1.0-burst)))
+  node.draw_circle(center,lerpf(13.0,3.0,burst),Color(1,1,1,.62*(1.0-burst)))
   for i in range(8):
    var a:=float(i)*TAU/8.0+float(seed_value%5)
-   var inner:=center+Vector2.from_angle(a)*(ring*.75)
-   var outer:=center+Vector2.from_angle(a)*(ring+10.0)
-   node.draw_line(inner,outer,Color(tint.r,tint.g,tint.b,.5*(1.0-burst)),2.6,true)
- # 3) 지속
+   var inner:=center+Vector2.from_angle(a)*(ring*.78)
+   var outer:=center+Vector2.from_angle(a)*(ring+6.0)
+   node.draw_line(inner,outer,Color(glow.r,glow.g,glow.b,.40*(1.0-burst)),2.0,true)
+ # 3) 지속(25~55% 알파, 몸을 가리지 않는 반지름)
  if sustain>0.0:
   var sides:=6 if seed_value%2==0 else 8
   var spin:=1.0 if seed_value%4<2 else -1.0
   var rot:=p*5.0*spin
-  var rad:=30.0+breathe*5.0
+  var rad:=26.0+breathe*4.0
   for i in range(sides):
    var a0:=float(i)*TAU/float(sides)+rot
    var a1:=a0+TAU/float(sides)*.58
-   node.draw_arc(center,rad,a0,a1,8,ink,4.2,true)
-   node.draw_arc(center,rad,a0,a1,8,Color(tint.r,tint.g,tint.b,.70*(1.0-fade)),2.2,true)
+   node.draw_arc(center,rad,a0,a1,8,ink,2.8,true)
+   node.draw_arc(center,rad,a0,a1,8,Color(glow.r,glow.g,glow.b,.52*(1.0-fade)),1.8,true)
   for i in range(6):
    var a:=float(i)*TAU/6.0+p*2.6*spin
-   var pos:=center+Vector2.from_angle(a)*(46.0+breathe*7.0)
-   var tail:=center+Vector2.from_angle(a-0.30*spin)*(46.0+breathe*7.0)
-   node.draw_line(tail,pos,Color(tint.r,tint.g,tint.b,.32*(1.0-fade)),3.2,true)
-   node.draw_circle(pos,2.8,Color(1,1,1,.72*(1.0-fade)))
+   var pos:=center+Vector2.from_angle(a)*(40.0+breathe*6.0)
+   var tail:=center+Vector2.from_angle(a-0.30*spin)*(40.0+breathe*6.0)
+   node.draw_line(tail,pos,Color(glow.r,glow.g,glow.b,.26*(1.0-fade)),2.4,true)
+   node.draw_circle(pos,2.4,Color(1,1,1,.58*(1.0-fade)))
  # 4) 소멸
  if fade>0.0:
   for i in range(8):
    var a:=float(i)*TAU/8.0+float(seed_value%3)
-   var pos:=center+Vector2.from_angle(a)*(22.0+fade*18.0)+Vector2(0,-fade*34.0)
-   node.draw_circle(pos,2.4*(1.0-fade),Color(tint.r,tint.g,tint.b,.65*(1.0-fade)))
-
+   var pos:=center+Vector2.from_angle(a)*(20.0+fade*16.0)+Vector2(0,-fade*30.0)
+   node.draw_circle(pos,2.2*(1.0-fade),Color(glow.r,glow.g,glow.b,.55*(1.0-fade)))

@@ -39,7 +39,8 @@ func run() -> void:
  var own: String=game.rules.players.human.role
  check(not game.rules.select_character("human",C.catalog("daoist" if own=="yokai" else "yokai")[0].id),"opposing character not selectable")
  game.rules.confirm_character("human");check(not game.rules.select_character("human",C.catalog(own)[1].id),"confirmed character cannot change")
- for i in range(300):
+ # 2.0.39: 지붕·벽 타일 아틀라스 12장이 로딩에 얹히므로 대기 프레임을 600으로 넓힌다.
+ for i in range(600):
   if game.rules.phase=="selection":game.rules.tick(.1)
   await process_frame
   if game.screen=="match" and not game.changing:break
