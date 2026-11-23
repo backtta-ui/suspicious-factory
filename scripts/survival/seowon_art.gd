@@ -10,6 +10,7 @@ const GROUND=preload("res://assets/woo/worlds/plaza_ground.png")
 const GROUND_ART=preload("res://assets/woo/seowon/seowon_ground.png")
 const WALL_TEX=preload("res://assets/woo/seowon/wall_h.png")
 const L=preload("res://scripts/survival/layout.gd")
+const BK=preload("res://scripts/survival/building_kit.gd")
 const HANOK_CELL=Rect2(0,0,512,512)
 const HANOK_B_CELL=Rect2(512,0,512,512)
 const PAVILION_CELL=Rect2(0,512,512,512)
@@ -109,20 +110,18 @@ static func wall_sprite(node: Node2D,rect: Rect2) -> void:
    node.draw_rect(Rect2(rect.position.x+1,y,rect.size.x,h),color)
    node.draw_rect(Rect2(rect.position.x+1,y,2,h),Color(STONE_LIGHT,.55))
    node.draw_rect(Rect2(rect.end.x-3,y,3,h),Color(STONE_DARK,.75))
+ # 2.0.39: 돌 사이 흙벽 질감(은은하게, 원래 톤을 해치지 않게).
+ BK.tiled(node,"wall_plaster",rect,Color(STONE_BASE.r*0.9,STONE_BASE.g*0.88,STONE_BASE.b*0.85,.42))
  # 3) 기와 지붕 띠: 담장 위쪽으로 얹는다.
  var roof_depth:=13.0
  if horizontal:
   var top:=rect.position.y-roof_depth
   node.draw_rect(Rect2(rect.position.x-5,top,rect.size.x+10,roof_depth+4),TILE_DARK)
-  var row:=0.0
-  while row<roof_depth:
-   var shade_row:=TILE_MID if int(row/4.0)%2==0 else TILE_DARK
-   node.draw_rect(Rect2(rect.position.x-4,top+row,rect.size.x+8,3.0),Color(shade_row,.9))
-   row+=4.0
+  # 2.0.39: 기와 타일 한 줄을 반복해 담장 기와를 그린다(물받이 곡선이 살아 있다).
+  BK.tiled(node,"roof_giwa",Rect2(rect.position.x-4,top+1,rect.size.x+8,roof_depth),Color(1,1,1,1))
   var x2:=rect.position.x-4
   while x2<rect.end.x+4:
-   node.draw_line(Vector2(x2,top),Vector2(x2,top+roof_depth*0.75),Color(TILE_DARK,.7),1.0)
-   node.draw_circle(Vector2(x2,top+roof_depth*.8),1.6,Color(TILE_LIGHT,.55))
+   node.draw_circle(Vector2(x2,top+roof_depth*.82),1.6,Color(TILE_LIGHT,.55))
    x2+=9.0
   node.draw_rect(Rect2(rect.position.x-6,top-2,rect.size.x+12,3),TILE_LIGHT)
   node.draw_rect(Rect2(rect.position.x-6,top-3,rect.size.x+12,1.5),Color(.72,.76,.86,.55))
@@ -130,15 +129,10 @@ static func wall_sprite(node: Node2D,rect: Rect2) -> void:
  else:
   var left:=rect.position.x-roof_depth
   node.draw_rect(Rect2(left,rect.position.y-5,roof_depth+4,rect.size.y+10),TILE_DARK)
-  var row2:=0.0
-  while row2<roof_depth:
-   var shade_row2:=TILE_MID if int(row2/4.0)%2==0 else TILE_DARK
-   node.draw_rect(Rect2(left+row2,rect.position.y-4,3.0,rect.size.y+8),Color(shade_row2,.9))
-   row2+=4.0
+  BK.tiled(node,"roof_giwa",Rect2(left+1,rect.position.y-4,roof_depth,rect.size.y+8),Color(1,1,1,1))
   var y2:=rect.position.y-4
   while y2<rect.end.y+4:
-   node.draw_line(Vector2(left,y2),Vector2(left+roof_depth*0.75,y2),Color(TILE_DARK,.7),1.0)
-   node.draw_circle(Vector2(left+roof_depth*.8,y2),1.6,Color(TILE_LIGHT,.55))
+   node.draw_circle(Vector2(left+roof_depth*.82,y2),1.6,Color(TILE_LIGHT,.55))
    y2+=9.0
   node.draw_rect(Rect2(left-2,rect.position.y-6,3,rect.size.y+12),TILE_LIGHT)
   node.draw_rect(Rect2(left-3,rect.position.y-6,1.5,rect.size.y+12),Color(.72,.76,.86,.55))

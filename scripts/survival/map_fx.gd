@@ -9,16 +9,24 @@ extends RefCounted
 ## - 밝은 바닥(해운대 모래·강남 대리석) = 어두운 외곽선 + 선명한 색 + 발광 테두리
 ## - 어두운 바닥(조선 흙·동성로 아스팔트) = 밝은 외곽선 + 바닥 투영 링
 const FX=preload("res://scripts/survival/fx.gd")
+const Maps=preload("res://scripts/survival/maps.gd")
 const TONE_BRIGHT="bright"
 const TONE_DARK="dark"
 ## 그리기 횟수(테스트·디버그용): 바닥 연출이 실제로 호출됐는지 이 값으로 확인한다.
 static var draw_counts: Dictionary={"traps":0,"mischief":0,"douse":0,"moonless":0,"dash":0,"detect":0}
 static func is_bright(tone: String) -> bool:return tone==TONE_BRIGHT
 ## 함정·장판의 외곽선: 밝은 바닥엔 검은 테, 어두운 바닥엔 흰 테를 겹쳐 어디서도 묻히지 않게.
+## 2.0.39: 테두리·빛 색에 현재 맵 앰비언트 30%를 섞어, 어떤 맵에서도
+## 이펙트가 배경 위에 붙어 보이지 않게 한다(명암 방향은 바닥 톤이 정한다).
 static func rim_color(tone: String,a: float) -> Color:
- return Color(.02,.02,.05,a) if is_bright(tone) else Color(1,.96,.86,a)
+ var accent:=Maps.accent_of()
+ var base:=Color(.02,.02,.05) if is_bright(tone) else Color(1,.96,.86)
+ var mixed:=Color(base.r*0.70+accent.r*0.30,base.g*0.70+accent.g*0.30,base.b*0.70+accent.b*0.30)
+ return Color(mixed.r,mixed.g,mixed.b,a)
 static func glow_color(tone: String) -> Color:
- return Color(1,.86,.42) if is_bright(tone) else Color(.55,1,.85)
+ var accent:=Maps.accent_of()
+ var base:=Color(1,.86,.42) if is_bright(tone) else Color(.55,1,.85)
+ return Color(base.r*0.70+accent.r*0.30,base.g*0.70+accent.g*0.30,base.b*0.70+accent.b*0.30)
 ## ---------------------------------------------------------------- 바닥 한 겹
 ## mischief_zones → 등불끄기 연막 → 무월야 연막 → 압력기관/가짜보물 순서로 깐다.
 ## (연막을 먼저, 장치를 나중에 그려 장치가 연막에 묻히지 않는다.)

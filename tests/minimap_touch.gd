@@ -29,7 +29,7 @@ func run() -> void:
  game.rules.players.human.ready=true
  game.start_match();await frames()
  game.rules.confirm_character("human")
- for i in range(300):
+ for i in range(600):
   if game.rules.phase=="selection":game.rules.tick(.1)
   await process_frame
   if game.screen=="match" and not game.changing:break

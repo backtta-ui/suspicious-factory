@@ -5,6 +5,7 @@ extends RefCounted
 const L=preload("res://scripts/survival/dongseongno_layout.gd")
 const Q=preload("res://scripts/survival/quality.gd")
 const K=preload("res://scripts/survival/art_kit.gd")
+const BK=preload("res://scripts/survival/building_kit.gd")
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const TITLE_FONT=preload("res://assets/fonts/WooTitle.otf")
 const ASPHALT=Color("3f4049")
@@ -35,8 +36,8 @@ static func fill_texture(node: Node2D,key: String,rect: Rect2,tint: Color) -> vo
 ## 바닥: 아스팔트 → 큰길(보도블록) → 아케이드 네온 바닥 → 구역 색조·이름.
 static func draw_base(node: Node2D) -> void:
  node.draw_rect(Rect2(Vector2(-300,-300),L.SIZE+Vector2(600,600)),Color("04050a"))
- fill_texture(node,"asphalt",Rect2(150,140,3090,2320),Color(.72,.72,.78,.98))
- node.draw_rect(Rect2(150,140,3090,2320),Color(ASPHALT.r,ASPHALT.g,ASPHALT.b,.35))
+ BK.tiled(node,"floor_asphalt",Rect2(150,140,3090,2320),Color(.62,.63,.72,1))
+ node.draw_rect(Rect2(150,140,3090,2320),Color(ASPHALT.r,ASPHALT.g,ASPHALT.b,.18))
  # 큰길: 넓은 보도블록 + 차선
  for path in L.PATHS:
   var w: float=float(path.w)
@@ -45,7 +46,7 @@ static func draw_base(node: Node2D) -> void:
    var a: Vector2=pts[i]
    var b: Vector2=pts[i+1]
    var rect:=Rect2(Vector2(minf(a.x,b.x)-w*.5,minf(a.y,b.y)-w*.5),Vector2(absf(b.x-a.x)+w,absf(b.y-a.y)+w))
-   fill_texture(node,"plaza",rect,Color(.94,.94,1,.9))
+   BK.tiled(node,"floor_paving",rect,Color(.60,.62,.72,1))
    node.draw_rect(rect,Color(.55,.48,.62,.22),false,2.0)
    lane_marks(node,rect,a,b)
  # 구역 바닥: 아케이드 계열은 네온 인레이 타일
@@ -110,126 +111,96 @@ static func lane_marks(node: Node2D,rect: Rect2,from: Vector2,to: Vector2) -> vo
   var p: Vector2=from+along*(float(k)/steps*length)
   var side:=Vector2(-along.y,along.x)
   node.draw_line(p-side*6,p+side*6,Color(1,.86,.5,.26),2.4)
-## 2.0.38 구역 이름표는 scripts/survival/zone_labels.gd가 그린다(벽·건물에 가리지 않게).
-## 건물: 위에서 본 지붕면 + 남쪽 외벽(쇼윈도·차양·네온 간판).
+## 2.0.39: 건물을 '지붕 타일 아틀라스 + 파사드' 두 층으로 그린다.
+##  - 지붕: 슬레이트·기와 타일 반복 + 용마루 + 처마 마구리 + 들린 처마
+##  - 외벽: 벽 텍스처 + 간판 띠 + 차양 + 따뜻한 유리창 + 접지 그림자
+##  - 옥상: 물탱크·환풍구·실외기·옥상 간판·텃밭
+## 구역 이름표는 scripts/survival/zone_labels.gd가 그린다(벽·건물에 가리지 않게).
 static func draw_walls(node: Node2D) -> void:
  var sign_words=["노래","포차","분식","네컷","오락","치킨","커피","화장","문구","의류","떡볶이","아케이드"]
  var neon_colors=[NEON_PINK,NEON_CYAN,NEON_PURPLE,WARM]
  var awnings=[Color("d9564e"),Color("e0a04a"),Color("4aa6b8"),Color("c85f92"),Color("6fb05e"),Color("7f7fd0")]
- # 1) 모든 건물의 바닥 그림자(남동쪽으로 번짐).
+ var roof_styles=["roof_slate","roof_giwa","roof_slate","roof_metal"]
+ var wall_styles=["wall_brick","wall_plaster","wall_concrete","wall_plaster"]
+ # 1) 모든 건물의 접지 그림자(남동쪽으로 번짐) — 건물끼리 겹쳐도 발밑이 뜨지 않는다.
  for rect in L.BUILDINGS_RECTS:
-  for i in range(3):
-   node.draw_rect(Rect2(rect.position.x+6.0+float(i)*4.0,rect.end.y+float(i)*4.0,rect.size.x,12.0),Color(.01,.01,.03,.20-float(i)*.05))
- # 2) 건물: 지붕면 → 옥상 설비 → 남쪽 외벽(쇼윈도·차양·간판).
+  BK.contact(node,rect,15.0,.40)
+ # 2) 건물: 외벽(파사드) → 지붕(처마가 외벽 위를 살짝 덮는다) → 옥상 설비 → 간판.
  for index in range(L.BUILDINGS_RECTS.size()):
   var rect2: Rect2=L.BUILDINGS_RECTS[index]
   var neon_c: Color=neon_colors[index%neon_colors.size()]
   var awning_c: Color=awnings[index%awnings.size()]
   var word: String=sign_words[index%sign_words.size()]
-  var face_h: float=46.0
-  var roof:=Rect2(rect2.position,Vector2(rect2.size.x,maxf(20.0,rect2.size.y-face_h)))
-  # 외곽선 + 지붕
-  node.draw_rect(rect2.grow(4),Color(.02,.02,.04,.92))
-  if index%3==0:
-   fill_texture(node,"brick",roof,Color(.52,.48,.56,.95))
-  else:
-   # 지붕 색을 골목마다 다르게(청기와·슬레이트·동판·먹기와) — 목표 원화의 지붕 변화.
-   var roof_tint: Color=[Color("2f3a56"),Color("2f2a3e"),Color("2b4438"),Color("3a2e3a")][index%4]
-   node.draw_rect(roof,roof_tint)
-   var ry: float=roof.position.y
-   while ry<roof.end.y:
-    node.draw_line(Vector2(roof.position.x,ry),Vector2(roof.end.x,ry),Color(.08,.07,.12,.30),1.2)
-    ry+=12.0
-  node.draw_rect(Rect2(roof.position,Vector2(roof.size.x,4)),Color(1,1,1,.10))
-  node.draw_rect(Rect2(roof.position,Vector2(roof.size.x,1.6)),Color(.62,.58,.72,.55))
-  # 옥상 난간(톱니) + 설비
-  node.draw_rect(roof.grow(-3),Color(.10,.09,.14,.20),false,2.0)
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.58,rect2.size.y*.26),Vector2(34,24)),Color(.16,.15,.20))
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.58,rect2.size.y*.26),Vector2(34,5)),Color(.34,.33,.42))
-  node.draw_circle(rect2.position+Vector2(rect2.size.x*.28,rect2.size.y*.40),11,Color(.10,.09,.13))
-  node.draw_circle(rect2.position+Vector2(rect2.size.x*.28,rect2.size.y*.40),6,Color(.28,.26,.34))
-  if rect2.size.x>260.0:
-   node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.78,rect2.size.y*.24),Vector2(20,20)),Color(.18,.17,.23))
-   node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.78,rect2.size.y*.24),Vector2(20,4)),Color(.36,.35,.44))
-  # 남쪽 외벽
-  var face:=Rect2(Vector2(rect2.position.x,rect2.end.y-face_h),Vector2(rect2.size.x,face_h))
-  if index%3!=1:fill_texture(node,"brick",face,Color(.66,.60,.68,.98))
-  else:node.draw_rect(face,Color("332c48"))
-  node.draw_rect(Rect2(face.position,Vector2(face.size.x,3)),Color(.03,.02,.05,.92))
-  node.draw_rect(Rect2(face.position,Vector2(face.size.x,1.4)),Color(.70,.62,.78,.55))
-  # 쇼윈도: 따뜻한 불빛 + 진열 실루엣
-  var glass:=Rect2(Vector2(face.position.x+10,face.position.y+12),Vector2(face.size.x-20,face.size.y-20))
-  node.draw_rect(glass.grow(2),Color(.03,.02,.05,.96))
-  var pane_w:=34.0
-  var px:=glass.position.x
-  var pi:=0
-  while px<glass.end.x-10.0:
-   var lit: Color=WARM if pi%4!=3 else NEON_CYAN
-   var pane:=Rect2(px,glass.position.y,minf(pane_w,glass.end.x-px),glass.size.y)
-   node.draw_rect(pane,Color(.05,.04,.08,.98))
-   node.draw_rect(pane.grow(-2.5),Color(lit.r,lit.g,lit.b,.72))
-   node.draw_rect(Rect2(pane.position+Vector2(2.5,2.5),Vector2(pane.size.x-5,3)),Color(1,1,1,.30))
-   # 진열/사람 실루엣
-   if pi%3==0:
-    node.draw_rect(Rect2(pane.position+Vector2(pane.size.x*.30,pane.size.y*.55),Vector2(pane.size.x*.22,pane.size.y*.36)),Color(.06,.05,.09,.55))
-   px+=pane_w+4.0
-   pi+=1
-  # 출입문 + 손잡이 + 문턱
-  var door_c:=Vector2(rect2.get_center().x,face.position.y+8)
-  var door:=Rect2(door_c-Vector2(16,4),Vector2(32,face_h-10))
-  node.draw_rect(door.grow(1.4),Color(.02,.02,.04,.98))
-  node.draw_rect(door,Color(.24,.19,.30))
-  node.draw_rect(door.grow(-3),Color(.36,.55,.68,.45))
-  node.draw_circle(door.position+Vector2(door.size.x-6,door.size.y*.55),1.8,Color(.92,.86,.62,.95))
-  node.draw_rect(Rect2(door.position.x-4,door.end.y-3,door.size.x+8,3),Color(.60,.56,.64,.7))
-  # 차양(파사드 위쪽에 붙는다)
-  K_awning(node,Rect2(rect2.position.x+3,face.position.y+2,rect2.size.x-6,13),awning_c)
-  # 파사드 간판(작게, 벽에 붙임)
-  var label_w:=24.0+FONT.get_string_size(word,HORIZONTAL_ALIGNMENT_LEFT,-1,15).x+14.0
-  var board:=Rect2(Vector2(rect2.position.x+12,rect2.position.y+roof.size.y-face_h*0.42),Vector2(minf(label_w,rect2.size.x-24.0),24))
-  node.draw_rect(Rect2(board.position+Vector2(2,3),board.size),Color(0,0,0,.5))
-  node.draw_rect(board.grow(1.2),Color(.02,.02,.05,.95))
-  node.draw_rect(board,Color(.06,.05,.09,.95))
-  node.draw_rect(board,Color(neon_c.r,neon_c.g,neon_c.b,.85),false,1.8)
-  node.draw_string(FONT,board.position+Vector2(7,17),word,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color(1,.96,1,.95))
-  # 세로 돌출 간판(골목에서 읽히는 네온)
+  var face_h: float=clampf(rect2.size.y*0.34,44.0,62.0)
+  # 외벽·차양·유리·문
+  BK.facade(node,rect2,face_h,wall_styles[index%wall_styles.size()],awning_c,word,"shop",index)
+  # 지붕
+  var drawn: Rect2=BK.roof(node,rect2,roof_styles[index%roof_styles.size()],index,face_h,9.0)
+  # 옥상 디테일: 옥상 간판·텃밭·빨랫줄
+  roof_details(node,rect2,drawn,neon_c,index)
+  # 돌출 세로 간판(골목에서 읽히는 네온) — 지붕 남쪽 모서리에 매단다.
   if rect2.size.x>210.0:
-   var vsign:=Rect2(Vector2(rect2.end.x-22,rect2.position.y+30),Vector2(16,72))
-   node.draw_rect(vsign.grow(2),Color(0,0,0,.55))
+   var vsign:=Rect2(Vector2(drawn.end.x-20.0,drawn.position.y+26.0),Vector2(15,64))
+   node.draw_rect(Rect2(vsign.position+Vector2(2,3),vsign.size),Color(0,0,0,.45))
    node.draw_rect(vsign,Color(.05,.04,.08,.95))
    node.draw_rect(vsign,Color(neon_c.r,neon_c.g,neon_c.b,.85),false,1.6)
    for k in range(3):
-    node.draw_rect(Rect2(vsign.position+Vector2(4,8+float(k)*20),Vector2(8,9)),Color(neon_c.r,neon_c.g,neon_c.b,.85))
-   for k in range(3):
-    node.draw_line(Vector2(vsign.end.x-2,vsign.position.y+8+float(k)*14),Vector2(vsign.end.x+7,vsign.position.y+8+float(k)*14),Color(.10,.10,.14,.9),2.0)
+    node.draw_rect(Rect2(vsign.position+Vector2(4,7.0+float(k)*18.0),Vector2(7,8)),Color(neon_c.r,neon_c.g,neon_c.b,.85))
+   node.draw_line(Vector2(vsign.end.x-1,vsign.position.y+6),Vector2(vsign.end.x+7,vsign.position.y+6),Color(.10,.10,.14,.9),2.0)
   # 벽면 포스터·에어컨 실외기·배관
-  if rect2.size.x>300.0:
-   node.draw_rect(Rect2(rect2.position.x+rect2.size.x*.12,face.position.y+6,26,34),Color(.90,.86,.80))
-   node.draw_rect(Rect2(rect2.position.x+rect2.size.x*.12,face.position.y+6,26,10),neon_c.darkened(.2))
-   for k in range(3):
-    node.draw_rect(Rect2(rect2.position.x+rect2.size.x*.12+3,face.position.y+20+float(k)*6,20,2.2),Color(.20,.20,.26,.5))
-   var ac:=Rect2(rect2.position.x+rect2.size.x*.86,face.position.y+4,22,20)
+  if rect2.size.x>300.0 and not Q.low:
+   var face:=Rect2(Vector2(rect2.position.x,rect2.end.y-face_h),Vector2(rect2.size.x,face_h))
+   node.draw_rect(Rect2(face.position.x+face.size.x*0.34,face.position.y+2,20,16),Color(.90,.86,.80))
+   node.draw_rect(Rect2(face.position.x+face.size.x*0.34,face.position.y+2,20,5),neon_c.darkened(.25))
+   var ac:=Rect2(face.position.x+face.size.x*0.74,face.position.y+2,22,15)
    node.draw_rect(ac.grow(1.2),Color(.02,.02,.04,.9))
    node.draw_rect(ac,Color(.72,.74,.78))
    for k in range(3):
-    node.draw_line(Vector2(ac.position.x+3,ac.position.y+5+float(k)*5),Vector2(ac.end.x-3,ac.position.y+5+float(k)*5),Color(.35,.36,.40,.8),1.4)
-  if not Q.low:roof_furniture(node,rect2,roof,neon_c,index)
-  # 상점 앞 도로에 따뜻한 불빛이 번진다(유리창 불빛 → 보도).
-  K_glow(node,Vector2(rect2.get_center().x,rect2.end.y+34.0),118.0,Color(1,.76,.42,.12))
-  K_glow(node,Vector2(rect2.position.x+rect2.size.x*.22,rect2.end.y+22.0),66.0,Color(1,.72,.40,.10))
-  # 보도 화단(가게 앞 꽃 화분) — 세 채 중 한 채만.
+    node.draw_line(Vector2(ac.position.x+3,ac.position.y+4.0+float(k)*4.0),Vector2(ac.end.x-3,ac.position.y+4.0+float(k)*4.0),Color(.35,.36,.40,.8),1.4)
+  # 상점 앞 도로에 따뜻한 불빛·네온이 번진다.
+  BK.light_spill(node,Vector2(rect2.get_center().x,rect2.end.y+26.0),96.0,Color(1,.76,.42,.13))
+  BK.light_spill(node,Vector2(rect2.get_center().x,rect2.end.y+10.0),64.0,Color(neon_c.r,neon_c.g,neon_c.b,.10))
+  # 보도 화단(세 채 중 한 채)
   if not Q.low and index%3==0:
    for k in range(2):
     var bx:=rect2.position.x+rect2.size.x*(0.26+0.36*float(k))
-    K.planter_box(node,Rect2(Vector2(bx,rect2.end.y+16.0),Vector2(46,26)))
-  # 간판 빛 번짐: 벽 앞 바닥을 은은하게 밝힌다.
-  K_glow(node,Vector2(rect2.get_center().x,rect2.end.y+16),72.0,Color(neon_c.r,neon_c.g,neon_c.b,.10))
+    K.planter_box(node,Rect2(Vector2(bx,rect2.end.y+14.0),Vector2(42,24)))
  # 3) 골목 위 전선
  for wire in [[Vector2(190,760),Vector2(1090,760)],[Vector2(900,1450),Vector2(1700,1450)],[Vector2(1400,2050),Vector2(2100,2050)],[Vector2(2160,760),Vector2(3100,760)]]:
   node.draw_line(wire[0],wire[1],Color(.05,.05,.08,.55),2.0)
   for k in range(7):
    var t:=float(k+1)/8.0
    node.draw_circle(wire[0].lerp(wire[1],t)+Vector2(0,sin(t*PI)*10.0),1.7,Color(.09,.09,.13,.9))
+## 옥상에 세운 간판·텃밭·빨랫줄. 지붕 타일 위에 얹혀 지붕과 한 몸으로 보인다.
+static func roof_details(node: Node2D,rect: Rect2,roof: Rect2,neon: Color,index: int) -> void:
+ var tiles:=Rect2(rect.position,Vector2(rect.size.x,maxf(20.0,roof.size.y-6.0)))
+ # 옥상 간판: 지붕 북쪽에 세운 판 + 지지대 + 아래 그림자
+ if index%2==0 and roof.size.x>200.0 and not Q.low:
+  var board:=Rect2(Vector2(roof.position.x+roof.size.x*0.14,roof.position.y+roof.size.y*0.16),Vector2(minf(150.0,roof.size.x*0.5),24))
+  node.draw_rect(Rect2(board.position+Vector2(4,5),board.size),Color(0,0,0,.40))
+  node.draw_rect(board.grow(1.5),Color(.02,.02,.05,.95))
+  node.draw_rect(board,Color(.06,.05,.10,.96))
+  node.draw_rect(board,Color(neon.r,neon.g,neon.b,.9),false,2.0)
+  node.draw_string(FONT,board.position+Vector2(9,17),["별빛랜드","노래방","24시","분식","네컷"][index%5],HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color(1,.97,1,.96))
+  for rod in [board.position.x+10,board.end.x-10]:
+   node.draw_line(Vector2(rod,board.end.y),Vector2(rod,board.end.y+8),Color(.10,.10,.14,.9),2.2)
+  K_glow(node,board.get_center(),60.0,Color(neon.r,neon.g,neon.b,.09))
+ # 옥상 텃밭(화단 상자 + 잎)
+ if index%5==3 and roof.size.x>240.0 and not Q.low:
+  for k in range(2):
+   var box:=Rect2(Vector2(roof.position.x+roof.size.x*0.52+float(k)*52.0,roof.position.y+roof.size.y*0.52),Vector2(44,22))
+   node.draw_rect(box.grow(1.2),Color(.02,.02,.04,.85))
+   node.draw_rect(box,Color(.28,.20,.16))
+   node.draw_rect(Rect2(box.position,Vector2(box.size.x,3)),Color(.44,.33,.24))
+   for j in range(4):
+    node.draw_circle(box.get_center()+Vector2(-13.0+float(j)*9.0,-5.0),4.6,Color(.22,.44,.28,.9))
+ # 빨랫줄
+ if index%6==1 and roof.size.x>260.0 and not Q.low:
+  var y:=roof.position.y+roof.size.y*0.38
+  node.draw_line(Vector2(roof.position.x+26.0,y),Vector2(roof.position.x+140.0,y),Color(.40,.40,.46,.8),1.6)
+  for k in range(4):
+   var c: Color=[Color(.86,.40,.42),Color(.42,.62,.86),Color(.90,.86,.70),Color(.62,.78,.60)][k]
+   node.draw_rect(Rect2(Vector2(roof.position.x+38.0+float(k)*24.0,y+1),Vector2(15,17)),Color(c.r,c.g,c.b,.92))
 ## 차양(줄무늬 + 물결 밑단).
 static func K_awning(node: Node2D,rect: Rect2,color: Color) -> void:
  var stripes:=maxi(2,int(rect.size.x/24.0))

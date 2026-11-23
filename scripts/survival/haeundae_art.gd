@@ -4,6 +4,7 @@ extends RefCounted
 ## 밝은 밤바다(청록 물빛·흰 파도) + 따뜻한 포장마차 등불 + 어두운 남색 건물.
 const L=preload("res://scripts/survival/haeundae_layout.gd")
 const K=preload("res://scripts/survival/art_kit.gd")
+const BK=preload("res://scripts/survival/building_kit.gd")
 const Q=preload("res://scripts/survival/quality.gd")
 const FONT=preload("res://assets/fonts/NotoSansCJK-Regular.ttc")
 const TITLE_FONT=preload("res://assets/fonts/WooTitle.otf")
@@ -114,70 +115,35 @@ static func coast_line(node: Node2D) -> void:
    var p: Vector2=a.lerp(b,float(k)/steps)+Vector2(0,sin(float(k)*.9)*3.0)
    node.draw_circle(p,3.2,Color(FOAM.r,FOAM.g,FOAM.b,.35))
    if k%2==0:node.draw_circle(p+Vector2(-6,7),2.0,Color(FOAM.r,FOAM.g,FOAM.b,.18))
-## 2.0.38 구역 이름표는 scripts/survival/zone_labels.gd가 그린다(벽·건물에 가리지 않게).
-## 건물: 위에서 본 지붕면 + 남쪽 외벽(창문·차양·간판).
+## 2.0.39: 건물을 '지붕 타일 아틀라스 + 파사드' 두 층으로 그린다(동성로와 같은 규칙).
+##  - 지붕: 슬레이트·너와(쉰글)·금속 타일 반복 + 용마루 + 처마 마구리
+##  - 외벽: 벽 텍스처 + 간판 띠 + 차양 + 따뜻한 유리창 + 접지 그림자
+## 구역 이름표는 scripts/survival/zone_labels.gd가 그린다(벽·건물에 가리지 않게).
 static func draw_walls(node: Node2D) -> void:
  var sign_words=["시장","포차","횟집","분식","서핑","샤워","카페","호텔","매점","어묵","조개","커피"]
- var roof_colors=[Color("4a3a33"),Color("3c3a4e"),Color("443a2e"),Color("39424f")]
+ var awning_colors=[Color("e8574d"),Color("f0a24d"),Color("4db6c8"),Color("d8588f"),Color("7fc66a")]
+ var roof_styles=["roof_slate","roof_shingle","roof_metal","roof_shingle"]
+ var wall_styles=["wall_wood","wall_plaster","wall_concrete","wall_wood"]
+ # 1) 접지 그림자
+ for rect in L.BUILDINGS_RECTS:
+  BK.contact(node,rect,15.0,.40)
+ # 2) 건물: 파사드 → 지붕 → 옥상 설비
  for index in range(L.BUILDINGS_RECTS.size()):
-  var rect: Rect2=L.BUILDINGS_RECTS[index]
-  node.draw_rect(Rect2(rect.position+Vector2(10,16),rect.size),Color(0,0,0,.5))
- for index2 in range(L.BUILDINGS_RECTS.size()):
-  var rect2: Rect2=L.BUILDINGS_RECTS[index2]
-  var roof_c: Color=roof_colors[index2%roof_colors.size()]
-  var face_h: float=34.0
-  var roof:=Rect2(rect2.position,Vector2(rect2.size.x,rect2.size.y-face_h))
-  # 지붕면
-  node.draw_rect(rect2.grow(4),Color(.02,.03,.05,.92))
-  node.draw_rect(roof,roof_c)
-  var ry: float=roof.position.y
-  while ry<roof.end.y:
-   node.draw_line(Vector2(roof.position.x,ry),Vector2(roof.end.x,ry),Color(.08,.08,.11,.35),1.2)
-   ry+=10.0
-  var rx: float=roof.position.x
-  while rx<roof.end.x:
-   node.draw_line(Vector2(rx,roof.position.y),Vector2(rx,roof.end.y),Color(.08,.08,.11,.22),1.0)
-   rx+=24.0
-  node.draw_rect(Rect2(roof.position,Vector2(roof.size.x,4)),Color(1,1,1,.10))
-  # 옥상 설비·물탱크·환풍구
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.62,rect2.size.y*.30),Vector2(30,22)),Color("28324a"))
-  node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.62,rect2.size.y*.30),Vector2(30,5)),Color("4d638a"))
-  node.draw_circle(rect2.position+Vector2(rect2.size.x*.28,rect2.size.y*.42),11,Color("1f2738"))
-  node.draw_circle(rect2.position+Vector2(rect2.size.x*.28,rect2.size.y*.42),6,Color("3d4c66"))
-  if rect2.size.x>240.0:
-   node.draw_rect(Rect2(rect2.position+Vector2(rect2.size.x*.80,rect2.size.y*.24),Vector2(20,20)),Color("303a52"))
-  # 남쪽 외벽
-  var face:=Rect2(Vector2(rect2.position.x,rect2.end.y-face_h),Vector2(rect2.size.x,face_h))
-  var wall_c: Color=Color("35506a").lerp(Color("4a6584"),float(index2%3)*.2)
-  node.draw_rect(face,wall_c)
-  node.draw_rect(Rect2(face.position,Vector2(face.size.x,4)),Color(.05,.07,.10,.9))
-  var wx: float=face.position.x+14.0
-  while wx<face.end.x-26.0:
-   node.draw_rect(Rect2(Vector2(wx-2,face.position.y+9),Vector2(24,18)),Color(.04,.05,.08,.95))
-   node.draw_rect(Rect2(Vector2(wx,face.position.y+11),Vector2(20,14)),Color(WARM.r,WARM.g,WARM.b,.9))
-   node.draw_rect(Rect2(Vector2(wx,face.position.y+11),Vector2(20,3)),Color(1,1,1,.25))
-   wx+=40.0
-  # 출입문
-  var door_c:=Vector2(rect2.get_center().x,face.position.y+8)
-  node.draw_rect(Rect2(door_c-Vector2(15,6),Vector2(30,face_h-8)),Color(.06,.05,.08,.96))
-  node.draw_rect(Rect2(door_c-Vector2(13,-2),Vector2(26,face_h-14)),Color(.48,.30,.20,.95))
-  # 차양
-  var awning_colors=[Color("e8574d"),Color("f0a24d"),Color("4db6c8"),Color("d8588f"),Color("7fc66a")]
-  var awning: Color=awning_colors[index2%awning_colors.size()]
-  for k in range(int(rect2.size.x/34.0)):
-   var x2: float=rect2.position.x+float(k)*34.0
-   var col: Color=awning if k%2==0 else Color(.96,.96,.96)
-   node.draw_rect(Rect2(Vector2(x2,face.position.y-7),Vector2(34,9)),Color(col.r,col.g,col.b,.95))
-  node.draw_rect(Rect2(Vector2(rect2.position.x,face.position.y+2),Vector2(rect2.size.x,2)),Color(0,0,0,.35))
-  # 지붕 위 간판(세워 둔 판)
-  var word: String=sign_words[index2%sign_words.size()]
-  var board_w: float=minf(rect2.size.x-30.0,120.0)
-  var board:=Rect2(Vector2(rect2.position.x+16,rect2.position.y+10),Vector2(board_w,24))
-  node.draw_rect(board.grow(2),Color(0,0,0,.55))
-  node.draw_rect(board,Color(.04,.06,.10,.92))
-  node.draw_rect(board,Color(awning.r,awning.g,awning.b,.9),false,2.0)
-  node.draw_string(FONT,board.position+Vector2(6,18),word,HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color(1,.95,.85,.96))
-  node.draw_rect(rect2,Color(.60,.76,1,.24),false,1.8)
+  var rect2: Rect2=L.BUILDINGS_RECTS[index]
+  var word: String=sign_words[index%sign_words.size()]
+  var face_h: float=clampf(rect2.size.y*0.34,40.0,58.0)
+  BK.facade(node,rect2,face_h,wall_styles[index%wall_styles.size()],awning_colors[index%awning_colors.size()],word,"shop",index)
+  BK.roof(node,rect2,roof_styles[index%roof_styles.size()],index,face_h,9.0)
+  # 지붕 위 세워 둔 간판(해운대 실루엣)
+  if not Q.low and rect2.size.x>170.0:
+   var roof_top: float=rect2.position.y-9.0
+   var board_w: float=minf(rect2.size.x-30.0,120.0)
+   var board:=Rect2(Vector2(rect2.position.x+16,roof_top+10),Vector2(board_w,22))
+   node.draw_rect(Rect2(board.position+Vector2(3,4),board.size),Color(0,0,0,.42))
+   node.draw_rect(board.grow(2),Color(.02,.03,.05,.95))
+   node.draw_rect(board,Color(.04,.06,.10,.94))
+   node.draw_rect(board,Color(awning_colors[index%awning_colors.size()].r,awning_colors[index%awning_colors.size()].g,awning_colors[index%awning_colors.size()].b,.9),false,2.0)
+   node.draw_string(FONT,board.position+Vector2(6,17),word,HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color(1,.95,.85,.96))
  # 바다 호안벽
  for rect3 in L.WATER:
   node.draw_rect(rect3.grow(2),Color(.72,.78,.86,.38),false,2.4)
